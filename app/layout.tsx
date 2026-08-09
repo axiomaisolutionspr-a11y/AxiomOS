@@ -16,7 +16,13 @@ export const metadata: Metadata = {
 title: "AxiomAI Solutions",
 description:
 "Automatización, inteligencia artificial y desarrollo de software para empresas.",
+icons: {
+icon: "/logo.png",
+shortcut: "/logo.png",
+apple: "/logo.png",
+},
 };
+
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
