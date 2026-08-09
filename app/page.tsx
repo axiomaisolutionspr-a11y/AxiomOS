@@ -296,6 +296,46 @@ export default function Home() {
               line-height: 1.5;
             }
 
+            .axiom-contact-card {
+              position: relative;
+              padding: 30px;
+              border-radius: 30px;
+              background:
+                linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(14, 116, 144, 0.16));
+              border: 1px solid rgba(125, 211, 252, 0.24);
+              box-shadow:
+                0 24px 70px rgba(2, 6, 23, 0.42),
+                inset 0 1px 0 rgba(255,255,255,0.08);
+              overflow: hidden;
+            }
+
+            .axiom-contact-card::before {
+              content: "";
+              position: absolute;
+              inset: 0;
+              background:
+                radial-gradient(circle at top right, rgba(56,189,248,0.22), transparent 34%),
+                linear-gradient(135deg, rgba(255,255,255,0.06), transparent 40%);
+              pointer-events: none;
+            }
+
+            .axiom-contact-card > * {
+              position: relative;
+              z-index: 2;
+            }
+
+            .axiom-contact-link {
+              color: #7dd3fc;
+              text-decoration: none;
+              font-weight: 900;
+              word-break: break-word;
+            }
+
+            .axiom-contact-link:hover {
+              color: white;
+              text-shadow: 0 0 16px rgba(56,189,248,0.75);
+            }
+
             @media (max-width: 980px) {
               .axiom-service-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -532,32 +572,115 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="evaluacion" style={ctaSectionStyle}>
-        <div style={ctaBoxStyle}>
-          <p style={sectionLabelStyle}>EVALUACIÓN GRATUITA</p>
+      <section id="evaluacion" style={evaluationSectionStyle}>
+        <div style={evaluationGlowStyle} />
 
-          <h2 style={ctaTitleStyle}>
-            Descubre qué puedes automatizar primero
-          </h2>
+        <div style={evaluationGridStyle}>
+          <div style={evaluationTextStyle}>
+            <p style={sectionLabelStyle}>EVALUACIÓN GRATUITA</p>
 
-          <p style={ctaTextStyle}>
-            Te ayudamos a identificar oportunidades reales para mejorar tu
-            negocio con inteligencia artificial, automatización y software.
-          </p>
+            <h2 style={evaluationTitleStyle}>
+              Descubre dónde tu negocio está perdiendo tiempo, dinero y
+              oportunidades.
+            </h2>
 
-          <div style={ctaButtonsStyle}>
-            <a href="mailto:axiomai@outlook.com" style={primaryLinkStyle}>
-              Solicitar evaluación
-            </a>
+            <p style={evaluationParagraphStyle}>
+              Analizamos tu operación y te recomendamos el primer sistema,
+              automatización o asistente de IA que puede generar valor real sin
+              complicar tu negocio.
+            </p>
 
-            <a href="#contacto" style={secondaryLinkStyle}>
-              Ver contacto
-            </a>
+            <div style={evaluationListStyle}>
+              <div style={checkLineStyle}>✓ Revisión de procesos actuales</div>
+              <div style={checkLineStyle}>✓ Ideas claras para automatizar</div>
+              <div style={checkLineStyle}>✓ Recomendación inicial sin costo</div>
+              <div style={checkLineStyle}>✓ Enfoque práctico para pequeñas empresas</div>
+            </div>
+
+            <div style={ctaButtonsStyle}>
+              <a href="mailto:axiomai@outlook.com" style={primaryLinkStyle}>
+                Solicitar evaluación
+              </a>
+
+              <a href="#contacto" style={secondaryLinkStyle}>
+                Ver contacto
+              </a>
+            </div>
+          </div>
+
+          <div style={evaluationPanelStyle}>
+            <div style={panelTopLineStyle}>
+              <span style={statusDotStyle} />
+              AxiomAI Assessment
+            </div>
+
+            <h3 style={panelTitleStyle}>Diagnóstico inicial</h3>
+
+            <p style={panelTextStyle}>
+              Te ayudamos a identificar qué parte de tu negocio conviene
+              automatizar primero para obtener resultados rápidos y medibles.
+            </p>
+
+            <div style={panelBoxStyle}>
+              <span style={panelLabelStyle}>Prioridad</span>
+              <strong>Reducir trabajo manual</strong>
+            </div>
+
+            <div style={panelBoxStyle}>
+              <span style={panelLabelStyle}>Objetivo</span>
+              <strong>Mejor servicio + más eficiencia</strong>
+            </div>
+
+            <div style={panelBoxStyle}>
+              <span style={panelLabelStyle}>Resultado</span>
+              <strong>Plan inicial claro</strong>
+            </div>
           </div>
         </div>
       </section>
 
-      <footer id="contacto" style={footerStyle}>
+      <section id="contacto" style={contactSectionStyle}>
+        <div style={sectionHeaderStyle}>
+          <p style={sectionLabelStyle}>CONTACTO</p>
+
+          <h2 style={sectionTitleStyle}>Hablemos de tu próximo sistema</h2>
+
+          <p style={sectionTextStyle}>
+            Escríbenos con una idea, problema o proceso que quieras mejorar.
+            Nosotros te ayudamos a convertirlo en una solución inteligente.
+          </p>
+        </div>
+
+        <div style={contactGridStyle}>
+          <div className="axiom-contact-card">
+            <p style={contactLabelStyle}>Correo principal</p>
+            <h3 style={contactTitleStyle}>AxiomAI Solutions</h3>
+            <a href="mailto:axiomai@outlook.com" className="axiom-contact-link">
+              axiomai@outlook.com
+            </a>
+          </div>
+
+          <div className="axiom-contact-card">
+            <p style={contactLabelStyle}>Disponibilidad</p>
+            <h3 style={contactTitleStyle}>Servicio 24/7</h3>
+            <p style={contactTextStyle}>
+              Podemos preparar soluciones para negocios que necesitan responder,
+              organizarse y operar fuera del horario tradicional.
+            </p>
+          </div>
+
+          <div className="axiom-contact-card">
+            <p style={contactLabelStyle}>Primera reunión</p>
+            <h3 style={contactTitleStyle}>Evaluación inicial gratuita</h3>
+            <p style={contactTextStyle}>
+              Revisamos tu necesidad y te recomendamos un primer paso claro,
+              realista y útil para tu empresa.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer style={footerStyle}>
         <div>
           <h2 style={{ margin: 0, color: "white" }}>AxiomAI Solutions</h2>
 
@@ -755,6 +878,169 @@ const processSectionStyle: CSSProperties = {
   overflow: "hidden",
 };
 
+const evaluationSectionStyle: CSSProperties = {
+  position: "relative",
+  padding: "115px 6%",
+  background:
+    "radial-gradient(circle at center, rgba(56,189,248,0.16), transparent 36%), linear-gradient(180deg, rgba(15,23,42,0.9), rgba(2,6,23,0.86))",
+  borderTop: "1px solid rgba(125, 211, 252, 0.16)",
+  overflow: "hidden",
+};
+
+const evaluationGlowStyle: CSSProperties = {
+  position: "absolute",
+  right: "-180px",
+  top: "80px",
+  width: "520px",
+  height: "520px",
+  borderRadius: "50%",
+  background:
+    "radial-gradient(circle, rgba(56,189,248,0.22), rgba(37,99,235,0.12), transparent 70%)",
+  filter: "blur(8px)",
+};
+
+const evaluationGridStyle: CSSProperties = {
+  position: "relative",
+  zIndex: 2,
+  maxWidth: "1160px",
+  margin: "0 auto",
+  display: "grid",
+  gridTemplateColumns: "1.1fr 0.9fr",
+  gap: "34px",
+  alignItems: "center",
+};
+
+const evaluationTextStyle: CSSProperties = {
+  padding: "10px 0",
+};
+
+const evaluationTitleStyle: CSSProperties = {
+  fontSize: "48px",
+  lineHeight: 1.05,
+  margin: "0 0 22px",
+  letterSpacing: "-1.5px",
+  textShadow: "0 0 34px rgba(56, 189, 248, 0.24)",
+};
+
+const evaluationParagraphStyle: CSSProperties = {
+  color: "#c7ddff",
+  fontSize: "18px",
+  lineHeight: 1.75,
+  maxWidth: "700px",
+  margin: "0 0 28px",
+};
+
+const evaluationListStyle: CSSProperties = {
+  display: "grid",
+  gap: "12px",
+  marginBottom: "30px",
+};
+
+const checkLineStyle: CSSProperties = {
+  padding: "13px 16px",
+  borderRadius: "18px",
+  background: "rgba(2, 6, 23, 0.42)",
+  border: "1px solid rgba(125, 211, 252, 0.18)",
+  color: "#dbeafe",
+  fontWeight: 800,
+};
+
+const evaluationPanelStyle: CSSProperties = {
+  borderRadius: "34px",
+  padding: "34px",
+  background:
+    "linear-gradient(145deg, rgba(15,23,42,0.92), rgba(30,64,175,0.24))",
+  border: "1px solid rgba(125, 211, 252, 0.3)",
+  boxShadow:
+    "0 30px 90px rgba(2, 6, 23, 0.45), 0 0 48px rgba(56,189,248,0.16)",
+};
+
+const panelTopLineStyle: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  color: "#bae6fd",
+  fontSize: "13px",
+  fontWeight: 900,
+  letterSpacing: "3px",
+  textTransform: "uppercase",
+  marginBottom: "22px",
+};
+
+const statusDotStyle: CSSProperties = {
+  width: "11px",
+  height: "11px",
+  borderRadius: "50%",
+  background: "#22c55e",
+  boxShadow: "0 0 16px #22c55e",
+};
+
+const panelTitleStyle: CSSProperties = {
+  fontSize: "30px",
+  margin: "0 0 14px",
+  color: "white",
+};
+
+const panelTextStyle: CSSProperties = {
+  color: "#c7ddff",
+  lineHeight: 1.7,
+  marginBottom: "24px",
+};
+
+const panelBoxStyle: CSSProperties = {
+  padding: "18px",
+  borderRadius: "20px",
+  background: "rgba(2, 6, 23, 0.5)",
+  border: "1px solid rgba(125, 211, 252, 0.2)",
+  marginTop: "14px",
+};
+
+const panelLabelStyle: CSSProperties = {
+  display: "block",
+  color: "#38bdf8",
+  fontSize: "12px",
+  fontWeight: 900,
+  letterSpacing: "3px",
+  textTransform: "uppercase",
+  marginBottom: "8px",
+};
+
+const contactSectionStyle: CSSProperties = {
+  padding: "105px 6%",
+  background:
+    "radial-gradient(circle at bottom left, rgba(56,189,248,0.14), transparent 34%), linear-gradient(180deg, rgba(2,6,23,0.88), rgba(2,6,23,0.96))",
+  borderTop: "1px solid rgba(125, 211, 252, 0.16)",
+};
+
+const contactGridStyle: CSSProperties = {
+  maxWidth: "1160px",
+  margin: "0 auto",
+  display: "grid",
+  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+  gap: "24px",
+};
+
+const contactLabelStyle: CSSProperties = {
+  color: "#38bdf8",
+  fontSize: "12px",
+  fontWeight: 900,
+  letterSpacing: "4px",
+  textTransform: "uppercase",
+  marginBottom: "12px",
+};
+
+const contactTitleStyle: CSSProperties = {
+  color: "white",
+  fontSize: "24px",
+  margin: "0 0 14px",
+};
+
+const contactTextStyle: CSSProperties = {
+  color: "#c7ddff",
+  lineHeight: 1.7,
+  margin: 0,
+};
+
 const sectionHeaderStyle: CSSProperties = {
   textAlign: "center",
   maxWidth: "860px",
@@ -787,38 +1073,10 @@ const sectionTextStyle: CSSProperties = {
   margin: 0,
 };
 
-const ctaSectionStyle: CSSProperties = {
-  padding: "95px 8%",
-  textAlign: "center",
-};
-
-const ctaBoxStyle: CSSProperties = {
-  maxWidth: "900px",
-  margin: "0 auto",
-  padding: "52px",
-  borderRadius: "34px",
-  background:
-    "linear-gradient(145deg, rgba(14, 116, 144, 0.28), rgba(30, 64, 175, 0.22))",
-  border: "1px solid rgba(125, 211, 252, 0.3)",
-  boxShadow: "0 0 70px rgba(37, 99, 235, 0.28)",
-};
-
-const ctaTitleStyle: CSSProperties = {
-  fontSize: "40px",
-  margin: "0 0 18px",
-};
-
-const ctaTextStyle: CSSProperties = {
-  color: "#dbeafe",
-  fontSize: "18px",
-  lineHeight: 1.7,
-  marginBottom: "30px",
-};
-
 const ctaButtonsStyle: CSSProperties = {
   display: "flex",
   gap: "14px",
-  justifyContent: "center",
+  justifyContent: "flex-start",
   flexWrap: "wrap",
 };
 
@@ -851,7 +1109,7 @@ const footerStyle: CSSProperties = {
   flexWrap: "wrap",
   padding: "44px 8%",
   borderTop: "1px solid rgba(125, 211, 252, 0.16)",
-  background: "rgba(2, 6, 23, 0.88)",
+  background: "rgba(2, 6, 23, 0.98)",
   color: "#bfdbfe",
 };
 
