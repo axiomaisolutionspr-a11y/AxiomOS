@@ -158,233 +158,15 @@ export default function Home() {
               letter-spacing: 3px;
             }
 
-            .axiom-process-shell {
-              max-width: 1160px;
-              margin: 0 auto;
-              position: relative;
-            }
-
-            .axiom-process-line {
-              position: absolute;
-              left: 50%;
-              top: 18px;
-              bottom: 18px;
-              width: 1px;
-              background: linear-gradient(
-                180deg,
-                transparent,
-                rgba(56, 189, 248, 0.75),
-                rgba(37, 99, 235, 0.45),
-                transparent
-              );
-              box-shadow: 0 0 28px rgba(56, 189, 248, 0.45);
-              transform: translateX(-50%);
-            }
-
-            .axiom-process-step {
-              position: relative;
-              display: grid;
-              grid-template-columns: 1fr 92px 1fr;
-              gap: 28px;
-              align-items: center;
-              margin-bottom: 34px;
-            }
-
-            .axiom-process-card {
-              position: relative;
-              min-height: 190px;
-              padding: 30px;
-              border-radius: 30px;
-              background:
-                linear-gradient(145deg, rgba(15,23,42,0.92), rgba(14,116,144,0.14));
-              border: 1px solid rgba(125, 211, 252, 0.24);
-              box-shadow:
-                0 24px 70px rgba(2, 6, 23, 0.45),
-                inset 0 1px 0 rgba(255,255,255,0.08);
-              overflow: hidden;
-            }
-
-            .axiom-process-card::before {
-              content: "";
-              position: absolute;
-              inset: 0;
-              background:
-                radial-gradient(circle at top right, rgba(56,189,248,0.2), transparent 32%),
-                linear-gradient(135deg, rgba(255,255,255,0.06), transparent 34%);
-              pointer-events: none;
-            }
-
-            .axiom-process-card h3 {
-              position: relative;
-              z-index: 2;
-              margin: 0 0 12px;
-              font-size: 24px;
-              color: white;
-              letter-spacing: -0.5px;
-            }
-
-            .axiom-process-card p {
-              position: relative;
-              z-index: 2;
-              margin: 0;
-              color: #c7ddff;
-              line-height: 1.7;
-              font-size: 16px;
-            }
-
-            .axiom-process-orb {
-              position: relative;
-              z-index: 3;
-              width: 92px;
-              height: 92px;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background:
-                radial-gradient(circle at 30% 25%, #ffffff, #67e8f9 22%, #2563eb 68%, #071a3a 100%);
-              border: 1px solid rgba(186, 230, 253, 0.66);
-              box-shadow:
-                0 0 34px rgba(56, 189, 248, 0.58),
-                0 24px 65px rgba(37, 99, 235, 0.38);
-              color: white;
-              font-weight: 950;
-              letter-spacing: 2px;
-            }
-
-            .axiom-process-meta {
-              color: #38bdf8;
-              font-size: 12px;
-              font-weight: 900;
-              letter-spacing: 4px;
-              margin-bottom: 12px;
-              position: relative;
-              z-index: 2;
-            }
-
-            .axiom-process-empty {
-              min-height: 1px;
-            }
-
-            .axiom-metric-strip {
-              max-width: 1060px;
-              margin: 54px auto 0;
-              display: grid;
-              grid-template-columns: repeat(3, minmax(0, 1fr));
-              gap: 18px;
-            }
-
-            .axiom-metric {
-              padding: 24px;
-              border-radius: 26px;
-              text-align: center;
-              background: rgba(2, 6, 23, 0.52);
-              border: 1px solid rgba(125, 211, 252, 0.2);
-              box-shadow: 0 0 38px rgba(37, 99, 235, 0.18);
-            }
-
-            .axiom-metric strong {
-              display: block;
-              color: white;
-              font-size: 24px;
-              margin-bottom: 8px;
-            }
-
-            .axiom-metric span {
-              color: #bfdbfe;
-              font-size: 14px;
-              line-height: 1.5;
-            }
-
-            .axiom-contact-card {
-              position: relative;
-              padding: 30px;
-              border-radius: 30px;
-              background:
-                linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(14, 116, 144, 0.16));
-              border: 1px solid rgba(125, 211, 252, 0.24);
-              box-shadow:
-                0 24px 70px rgba(2, 6, 23, 0.42),
-                inset 0 1px 0 rgba(255,255,255,0.08);
-              overflow: hidden;
-            }
-
-            .axiom-contact-card::before {
-              content: "";
-              position: absolute;
-              inset: 0;
-              background:
-                radial-gradient(circle at top right, rgba(56,189,248,0.22), transparent 34%),
-                linear-gradient(135deg, rgba(255,255,255,0.06), transparent 40%);
-              pointer-events: none;
-            }
-
-            .axiom-contact-card > * {
-              position: relative;
-              z-index: 2;
-            }
-
-            .axiom-contact-link {
-              color: #7dd3fc;
-              text-decoration: none;
-              font-weight: 900;
-              word-break: break-word;
-            }
-
-            .axiom-contact-link:hover {
-              color: white;
-              text-shadow: 0 0 16px rgba(56,189,248,0.75);
-            }
-
             @media (max-width: 980px) {
               .axiom-service-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-              }
-
-              .axiom-process-line {
-                left: 46px;
-              }
-
-              .axiom-process-step {
-                grid-template-columns: 92px 1fr;
-                gap: 22px;
-              }
-
-              .axiom-process-step .axiom-process-empty {
-                display: none;
-              }
-
-              .axiom-process-step:nth-child(even) .axiom-process-orb {
-                grid-column: 1;
-                grid-row: 1;
-              }
-
-              .axiom-process-step:nth-child(even) .axiom-process-card {
-                grid-column: 2;
-                grid-row: 1;
-              }
-
-              .axiom-metric-strip {
-                grid-template-columns: 1fr;
               }
             }
 
             @media (max-width: 640px) {
               .axiom-service-grid {
                 grid-template-columns: 1fr;
-              }
-
-              .axiom-process-step {
-                grid-template-columns: 1fr;
-              }
-
-              .axiom-process-line {
-                display: none;
-              }
-
-              .axiom-process-orb {
-                width: 72px;
-                height: 72px;
               }
             }
           `}
@@ -473,214 +255,83 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="proceso" style={processSectionStyle}>
+      <section id="proceso" style={darkSectionStyle}>
         <div style={sectionHeaderStyle}>
-          <p style={sectionLabelStyle}>PROCESO EJECUTIVO</p>
+          <p style={sectionLabelStyle}>PROCESO</p>
 
-          <h2 style={sectionTitleStyle}>
-            Cómo convertimos una idea en un sistema inteligente
+          <h2 style={sectionTitleStyle}>Cómo trabajamos</h2>
+
+          <p style={sectionTextStyle}>
+            Primero entendemos tu negocio. Después construimos soluciones
+            simples, útiles y escalables.
+          </p>
+        </div>
+
+        <div style={processGridStyle}>
+          <div style={processCardStyle}>
+            <span style={stepNumberStyle}>01</span>
+            <h3>Evaluamos</h3>
+            <p>
+              Identificamos qué tareas consumen más tiempo y dónde la IA puede
+              ayudar.
+            </p>
+          </div>
+
+          <div style={processCardStyle}>
+            <span style={stepNumberStyle}>02</span>
+            <h3>Diseñamos</h3>
+            <p>
+              Creamos un plan claro con la primera automatización o sistema
+              recomendado.
+            </p>
+          </div>
+
+          <div style={processCardStyle}>
+            <span style={stepNumberStyle}>03</span>
+            <h3>Construimos</h3>
+            <p>
+              Desarrollamos la solución y la ajustamos a la forma real en que
+              trabaja tu empresa.
+            </p>
+          </div>
+
+          <div style={processCardStyle}>
+            <span style={stepNumberStyle}>04</span>
+            <h3>Optimizamos</h3>
+            <p>
+              Medimos resultados y seguimos mejorando para ahorrar más tiempo y
+              aumentar eficiencia.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="evaluacion" style={ctaSectionStyle}>
+        <div style={ctaBoxStyle}>
+          <p style={sectionLabelStyle}>EVALUACIÓN GRATUITA</p>
+
+          <h2 style={ctaTitleStyle}>
+            Descubre qué puedes automatizar primero
           </h2>
 
-          <p style={sectionTextStyle}>
-            Nuestro proceso está diseñado para que el negocio entienda el valor
-            rápido, vea resultados claros y pueda crecer sin perder control.
+          <p style={ctaTextStyle}>
+            Te ayudamos a identificar oportunidades reales para mejorar tu
+            negocio con inteligencia artificial, automatización y software.
           </p>
-        </div>
 
-        <div className="axiom-process-shell">
-          <div className="axiom-process-line" />
+          <div style={ctaButtonsStyle}>
+            <a href="mailto:axiomaI@outlook.com" style={primaryLinkStyle}>
+              Solicitar evaluación
+            </a>
 
-          <div className="axiom-process-step">
-            <div className="axiom-process-card">
-              <div className="axiom-process-meta">DIAGNÓSTICO</div>
-              <h3>Evaluamos tu operación</h3>
-              <p>
-                Identificamos tareas repetitivas, puntos lentos, oportunidades
-                de automatización y áreas donde la inteligencia artificial puede
-                generar impacto inmediato.
-              </p>
-            </div>
-
-            <div className="axiom-process-orb">01</div>
-
-            <div className="axiom-process-empty" />
-          </div>
-
-          <div className="axiom-process-step">
-            <div className="axiom-process-empty" />
-
-            <div className="axiom-process-orb">02</div>
-
-            <div className="axiom-process-card">
-              <div className="axiom-process-meta">DISEÑO</div>
-              <h3>Diseñamos la solución</h3>
-              <p>
-                Creamos una arquitectura clara: qué se automatiza primero, qué
-                herramientas se conectan y cómo el sistema debe trabajar para tu
-                negocio.
-              </p>
-            </div>
-          </div>
-
-          <div className="axiom-process-step">
-            <div className="axiom-process-card">
-              <div className="axiom-process-meta">CONSTRUCCIÓN</div>
-              <h3>Desarrollamos AxiomOS</h3>
-              <p>
-                Construimos páginas, paneles, flujos, asistentes y conexiones
-                inteligentes con una experiencia moderna, estable y fácil de
-                usar.
-              </p>
-            </div>
-
-            <div className="axiom-process-orb">03</div>
-
-            <div className="axiom-process-empty" />
-          </div>
-
-          <div className="axiom-process-step">
-            <div className="axiom-process-empty" />
-
-            <div className="axiom-process-orb">04</div>
-
-            <div className="axiom-process-card">
-              <div className="axiom-process-meta">OPTIMIZACIÓN</div>
-              <h3>Medimos y mejoramos</h3>
-              <p>
-                Revisamos resultados, ajustamos procesos y seguimos mejorando el
-                sistema para ahorrar más tiempo, responder mejor y escalar.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="axiom-metric-strip">
-          <div className="axiom-metric">
-            <strong>Menos trabajo manual</strong>
-            <span>Automatizaciones enfocadas en tareas repetitivas.</span>
-          </div>
-
-          <div className="axiom-metric">
-            <strong>Más velocidad</strong>
-            <span>Respuestas, procesos y decisiones más rápidas.</span>
-          </div>
-
-          <div className="axiom-metric">
-            <strong>Más control</strong>
-            <span>Información organizada en sistemas claros y modernos.</span>
-          </div>
-        </div>
-      </section>
-
-      <section id="evaluacion" style={evaluationSectionStyle}>
-        <div style={evaluationGlowStyle} />
-
-        <div style={evaluationGridStyle}>
-          <div style={evaluationTextStyle}>
-            <p style={sectionLabelStyle}>EVALUACIÓN GRATUITA</p>
-
-            <h2 style={evaluationTitleStyle}>
-              Descubre dónde tu negocio está perdiendo tiempo, dinero y
-              oportunidades.
-            </h2>
-
-            <p style={evaluationParagraphStyle}>
-              Analizamos tu operación y te recomendamos el primer sistema,
-              automatización o asistente de IA que puede generar valor real sin
-              complicar tu negocio.
-            </p>
-
-            <div style={evaluationListStyle}>
-              <div style={checkLineStyle}>✓ Revisión de procesos actuales</div>
-              <div style={checkLineStyle}>✓ Ideas claras para automatizar</div>
-              <div style={checkLineStyle}>✓ Recomendación inicial sin costo</div>
-              <div style={checkLineStyle}>✓ Enfoque práctico para pequeñas empresas</div>
-            </div>
-
-            <div style={ctaButtonsStyle}>
-              <a href="mailto:axiomaisolutionspr@gmail.com" style={primaryLinkStyle}>
-                Solicitar evaluación
-              </a>
-
-              <a href="#contacto" style={secondaryLinkStyle}>
-                Ver contacto
-              </a>
-            </div>
-          </div>
-
-          <div style={evaluationPanelStyle}>
-            <div style={panelTopLineStyle}>
-              <span style={statusDotStyle} />
-              AxiomAI Assessment
-            </div>
-
-            <h3 style={panelTitleStyle}>Diagnóstico inicial</h3>
-
-            <p style={panelTextStyle}>
-              Te ayudamos a identificar qué parte de tu negocio conviene
-              automatizar primero para obtener resultados rápidos y medibles.
-            </p>
-
-            <div style={panelBoxStyle}>
-              <span style={panelLabelStyle}>Prioridad</span>
-              <strong>Reducir trabajo manual</strong>
-            </div>
-
-            <div style={panelBoxStyle}>
-              <span style={panelLabelStyle}>Objetivo</span>
-              <strong>Mejor servicio + más eficiencia</strong>
-            </div>
-
-            <div style={panelBoxStyle}>
-              <span style={panelLabelStyle}>Resultado</span>
-              <strong>Plan inicial claro</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="contacto" style={contactSectionStyle}>
-        <div style={sectionHeaderStyle}>
-          <p style={sectionLabelStyle}>CONTACTO</p>
-
-          <h2 style={sectionTitleStyle}>Hablemos de tu próximo sistema</h2>
-
-          <p style={sectionTextStyle}>
-            Escríbenos con una idea, problema o proceso que quieras mejorar.
-            Nosotros te ayudamos a convertirlo en una solución inteligente.
-          </p>
-        </div>
-
-        <div style={contactGridStyle}>
-          <div className="axiom-contact-card">
-            <p style={contactLabelStyle}>Correo principal</p>
-            <h3 style={contactTitleStyle}>AxiomAI Solutions</h3>
-            <a href="mailto:axiomaisolutionspr@gmail.com" className="axiom-contact-link">
-              axiomaisolutionspr@gmail.com
+            <a href="#contacto" style={secondaryLinkStyle}>
+              Ver contacto
             </a>
           </div>
-
-          <div className="axiom-contact-card">
-            <p style={contactLabelStyle}>Disponibilidad</p>
-            <h3 style={contactTitleStyle}>Servicio 24/7</h3>
-            <p style={contactTextStyle}>
-              Podemos preparar soluciones para negocios que necesitan responder,
-              organizarse y operar fuera del horario tradicional.
-            </p>
-          </div>
-
-          <div className="axiom-contact-card">
-            <p style={contactLabelStyle}>Primera reunión</p>
-            <h3 style={contactTitleStyle}>Evaluación inicial gratuita</h3>
-            <p style={contactTextStyle}>
-              Revisamos tu necesidad y te recomendamos un primer paso claro,
-              realista y útil para tu empresa.
-            </p>
-          </div>
         </div>
       </section>
 
-      <footer style={footerStyle}>
+      <footer id="contacto" style={footerStyle}>
         <div>
           <h2 style={{ margin: 0, color: "white" }}>AxiomAI Solutions</h2>
 
@@ -696,8 +347,8 @@ export default function Home() {
         <div style={footerInfoStyle}>
           <p>Correo:</p>
 
-          <a href="mailto:axiomaisolutionspr@gmail.com" style={footerLinkStyle}>
-            axiomaisolutionspr@gmail.com
+          <a href="mailto:axiomaI@outlook.com" style={footerLinkStyle}>
+            axiomaI@outlook.com
           </a>
         </div>
       </footer>
@@ -869,176 +520,11 @@ const servicesNoteStyle: CSSProperties = {
   boxShadow: "0 0 40px rgba(37, 99, 235, 0.18)",
 };
 
-const processSectionStyle: CSSProperties = {
-  position: "relative",
-  padding: "110px 6%",
+const darkSectionStyle: CSSProperties = {
+  padding: "90px 8%",
   background:
-    "radial-gradient(circle at top right, rgba(37,99,235,0.18), transparent 34%), linear-gradient(180deg, rgba(2,6,23,0.78), rgba(15,23,42,0.9))",
+    "linear-gradient(180deg, rgba(2,6,23,0.35), rgba(15,23,42,0.72))",
   borderTop: "1px solid rgba(125, 211, 252, 0.16)",
-  overflow: "hidden",
-};
-
-const evaluationSectionStyle: CSSProperties = {
-  position: "relative",
-  padding: "115px 6%",
-  background:
-    "radial-gradient(circle at center, rgba(56,189,248,0.16), transparent 36%), linear-gradient(180deg, rgba(15,23,42,0.9), rgba(2,6,23,0.86))",
-  borderTop: "1px solid rgba(125, 211, 252, 0.16)",
-  overflow: "hidden",
-};
-
-const evaluationGlowStyle: CSSProperties = {
-  position: "absolute",
-  right: "-180px",
-  top: "80px",
-  width: "520px",
-  height: "520px",
-  borderRadius: "50%",
-  background:
-    "radial-gradient(circle, rgba(56,189,248,0.22), rgba(37,99,235,0.12), transparent 70%)",
-  filter: "blur(8px)",
-};
-
-const evaluationGridStyle: CSSProperties = {
-  position: "relative",
-  zIndex: 2,
-  maxWidth: "1160px",
-  margin: "0 auto",
-  display: "grid",
-  gridTemplateColumns: "1.1fr 0.9fr",
-  gap: "34px",
-  alignItems: "center",
-};
-
-const evaluationTextStyle: CSSProperties = {
-  padding: "10px 0",
-};
-
-const evaluationTitleStyle: CSSProperties = {
-  fontSize: "48px",
-  lineHeight: 1.05,
-  margin: "0 0 22px",
-  letterSpacing: "-1.5px",
-  textShadow: "0 0 34px rgba(56, 189, 248, 0.24)",
-};
-
-const evaluationParagraphStyle: CSSProperties = {
-  color: "#c7ddff",
-  fontSize: "18px",
-  lineHeight: 1.75,
-  maxWidth: "700px",
-  margin: "0 0 28px",
-};
-
-const evaluationListStyle: CSSProperties = {
-  display: "grid",
-  gap: "12px",
-  marginBottom: "30px",
-};
-
-const checkLineStyle: CSSProperties = {
-  padding: "13px 16px",
-  borderRadius: "18px",
-  background: "rgba(2, 6, 23, 0.42)",
-  border: "1px solid rgba(125, 211, 252, 0.18)",
-  color: "#dbeafe",
-  fontWeight: 800,
-};
-
-const evaluationPanelStyle: CSSProperties = {
-  borderRadius: "34px",
-  padding: "34px",
-  background:
-    "linear-gradient(145deg, rgba(15,23,42,0.92), rgba(30,64,175,0.24))",
-  border: "1px solid rgba(125, 211, 252, 0.3)",
-  boxShadow:
-    "0 30px 90px rgba(2, 6, 23, 0.45), 0 0 48px rgba(56,189,248,0.16)",
-};
-
-const panelTopLineStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  color: "#bae6fd",
-  fontSize: "13px",
-  fontWeight: 900,
-  letterSpacing: "3px",
-  textTransform: "uppercase",
-  marginBottom: "22px",
-};
-
-const statusDotStyle: CSSProperties = {
-  width: "11px",
-  height: "11px",
-  borderRadius: "50%",
-  background: "#22c55e",
-  boxShadow: "0 0 16px #22c55e",
-};
-
-const panelTitleStyle: CSSProperties = {
-  fontSize: "30px",
-  margin: "0 0 14px",
-  color: "white",
-};
-
-const panelTextStyle: CSSProperties = {
-  color: "#c7ddff",
-  lineHeight: 1.7,
-  marginBottom: "24px",
-};
-
-const panelBoxStyle: CSSProperties = {
-  padding: "18px",
-  borderRadius: "20px",
-  background: "rgba(2, 6, 23, 0.5)",
-  border: "1px solid rgba(125, 211, 252, 0.2)",
-  marginTop: "14px",
-};
-
-const panelLabelStyle: CSSProperties = {
-  display: "block",
-  color: "#38bdf8",
-  fontSize: "12px",
-  fontWeight: 900,
-  letterSpacing: "3px",
-  textTransform: "uppercase",
-  marginBottom: "8px",
-};
-
-const contactSectionStyle: CSSProperties = {
-  padding: "105px 6%",
-  background:
-    "radial-gradient(circle at bottom left, rgba(56,189,248,0.14), transparent 34%), linear-gradient(180deg, rgba(2,6,23,0.88), rgba(2,6,23,0.96))",
-  borderTop: "1px solid rgba(125, 211, 252, 0.16)",
-};
-
-const contactGridStyle: CSSProperties = {
-  maxWidth: "1160px",
-  margin: "0 auto",
-  display: "grid",
-  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-  gap: "24px",
-};
-
-const contactLabelStyle: CSSProperties = {
-  color: "#38bdf8",
-  fontSize: "12px",
-  fontWeight: 900,
-  letterSpacing: "4px",
-  textTransform: "uppercase",
-  marginBottom: "12px",
-};
-
-const contactTitleStyle: CSSProperties = {
-  color: "white",
-  fontSize: "24px",
-  margin: "0 0 14px",
-};
-
-const contactTextStyle: CSSProperties = {
-  color: "#c7ddff",
-  lineHeight: 1.7,
-  margin: 0,
 };
 
 const sectionHeaderStyle: CSSProperties = {
@@ -1073,10 +559,62 @@ const sectionTextStyle: CSSProperties = {
   margin: 0,
 };
 
+const processGridStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+  gap: "22px",
+};
+
+const processCardStyle: CSSProperties = {
+  padding: "26px",
+  borderRadius: "24px",
+  background: "rgba(2, 6, 23, 0.58)",
+  border: "1px solid rgba(125, 211, 252, 0.2)",
+  color: "#dbeafe",
+  lineHeight: 1.6,
+};
+
+const stepNumberStyle: CSSProperties = {
+  display: "inline-block",
+  color: "#38bdf8",
+  fontSize: "14px",
+  fontWeight: 900,
+  letterSpacing: "3px",
+  marginBottom: "12px",
+};
+
+const ctaSectionStyle: CSSProperties = {
+  padding: "95px 8%",
+  textAlign: "center",
+};
+
+const ctaBoxStyle: CSSProperties = {
+  maxWidth: "900px",
+  margin: "0 auto",
+  padding: "52px",
+  borderRadius: "34px",
+  background:
+    "linear-gradient(145deg, rgba(14, 116, 144, 0.28), rgba(30, 64, 175, 0.22))",
+  border: "1px solid rgba(125, 211, 252, 0.3)",
+  boxShadow: "0 0 70px rgba(37, 99, 235, 0.28)",
+};
+
+const ctaTitleStyle: CSSProperties = {
+  fontSize: "40px",
+  margin: "0 0 18px",
+};
+
+const ctaTextStyle: CSSProperties = {
+  color: "#dbeafe",
+  fontSize: "18px",
+  lineHeight: 1.7,
+  marginBottom: "30px",
+};
+
 const ctaButtonsStyle: CSSProperties = {
   display: "flex",
   gap: "14px",
-  justifyContent: "flex-start",
+  justifyContent: "center",
   flexWrap: "wrap",
 };
 
@@ -1109,7 +647,7 @@ const footerStyle: CSSProperties = {
   flexWrap: "wrap",
   padding: "44px 8%",
   borderTop: "1px solid rgba(125, 211, 252, 0.16)",
-  background: "rgba(2, 6, 23, 0.98)",
+  background: "rgba(2, 6, 23, 0.88)",
   color: "#bfdbfe",
 };
 
