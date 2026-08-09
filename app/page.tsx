@@ -158,15 +158,193 @@ export default function Home() {
               letter-spacing: 3px;
             }
 
+            .axiom-process-shell {
+              max-width: 1160px;
+              margin: 0 auto;
+              position: relative;
+            }
+
+            .axiom-process-line {
+              position: absolute;
+              left: 50%;
+              top: 18px;
+              bottom: 18px;
+              width: 1px;
+              background: linear-gradient(
+                180deg,
+                transparent,
+                rgba(56, 189, 248, 0.75),
+                rgba(37, 99, 235, 0.45),
+                transparent
+              );
+              box-shadow: 0 0 28px rgba(56, 189, 248, 0.45);
+              transform: translateX(-50%);
+            }
+
+            .axiom-process-step {
+              position: relative;
+              display: grid;
+              grid-template-columns: 1fr 92px 1fr;
+              gap: 28px;
+              align-items: center;
+              margin-bottom: 34px;
+            }
+
+            .axiom-process-card {
+              position: relative;
+              min-height: 190px;
+              padding: 30px;
+              border-radius: 30px;
+              background:
+                linear-gradient(145deg, rgba(15,23,42,0.92), rgba(14,116,144,0.14));
+              border: 1px solid rgba(125, 211, 252, 0.24);
+              box-shadow:
+                0 24px 70px rgba(2, 6, 23, 0.45),
+                inset 0 1px 0 rgba(255,255,255,0.08);
+              overflow: hidden;
+            }
+
+            .axiom-process-card::before {
+              content: "";
+              position: absolute;
+              inset: 0;
+              background:
+                radial-gradient(circle at top right, rgba(56,189,248,0.2), transparent 32%),
+                linear-gradient(135deg, rgba(255,255,255,0.06), transparent 34%);
+              pointer-events: none;
+            }
+
+            .axiom-process-card h3 {
+              position: relative;
+              z-index: 2;
+              margin: 0 0 12px;
+              font-size: 24px;
+              color: white;
+              letter-spacing: -0.5px;
+            }
+
+            .axiom-process-card p {
+              position: relative;
+              z-index: 2;
+              margin: 0;
+              color: #c7ddff;
+              line-height: 1.7;
+              font-size: 16px;
+            }
+
+            .axiom-process-orb {
+              position: relative;
+              z-index: 3;
+              width: 92px;
+              height: 92px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background:
+                radial-gradient(circle at 30% 25%, #ffffff, #67e8f9 22%, #2563eb 68%, #071a3a 100%);
+              border: 1px solid rgba(186, 230, 253, 0.66);
+              box-shadow:
+                0 0 34px rgba(56, 189, 248, 0.58),
+                0 24px 65px rgba(37, 99, 235, 0.38);
+              color: white;
+              font-weight: 950;
+              letter-spacing: 2px;
+            }
+
+            .axiom-process-meta {
+              color: #38bdf8;
+              font-size: 12px;
+              font-weight: 900;
+              letter-spacing: 4px;
+              margin-bottom: 12px;
+              position: relative;
+              z-index: 2;
+            }
+
+            .axiom-process-empty {
+              min-height: 1px;
+            }
+
+            .axiom-metric-strip {
+              max-width: 1060px;
+              margin: 54px auto 0;
+              display: grid;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 18px;
+            }
+
+            .axiom-metric {
+              padding: 24px;
+              border-radius: 26px;
+              text-align: center;
+              background: rgba(2, 6, 23, 0.52);
+              border: 1px solid rgba(125, 211, 252, 0.2);
+              box-shadow: 0 0 38px rgba(37, 99, 235, 0.18);
+            }
+
+            .axiom-metric strong {
+              display: block;
+              color: white;
+              font-size: 24px;
+              margin-bottom: 8px;
+            }
+
+            .axiom-metric span {
+              color: #bfdbfe;
+              font-size: 14px;
+              line-height: 1.5;
+            }
+
             @media (max-width: 980px) {
               .axiom-service-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
+              }
+
+              .axiom-process-line {
+                left: 46px;
+              }
+
+              .axiom-process-step {
+                grid-template-columns: 92px 1fr;
+                gap: 22px;
+              }
+
+              .axiom-process-step .axiom-process-empty {
+                display: none;
+              }
+
+              .axiom-process-step:nth-child(even) .axiom-process-orb {
+                grid-column: 1;
+                grid-row: 1;
+              }
+
+              .axiom-process-step:nth-child(even) .axiom-process-card {
+                grid-column: 2;
+                grid-row: 1;
+              }
+
+              .axiom-metric-strip {
+                grid-template-columns: 1fr;
               }
             }
 
             @media (max-width: 640px) {
               .axiom-service-grid {
                 grid-template-columns: 1fr;
+              }
+
+              .axiom-process-step {
+                grid-template-columns: 1fr;
+              }
+
+              .axiom-process-line {
+                display: none;
+              }
+
+              .axiom-process-orb {
+                width: 72px;
+                height: 72px;
               }
             }
           `}
@@ -255,53 +433,101 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="proceso" style={darkSectionStyle}>
+      <section id="proceso" style={processSectionStyle}>
         <div style={sectionHeaderStyle}>
-          <p style={sectionLabelStyle}>PROCESO</p>
+          <p style={sectionLabelStyle}>PROCESO EJECUTIVO</p>
 
-          <h2 style={sectionTitleStyle}>Cómo trabajamos</h2>
+          <h2 style={sectionTitleStyle}>
+            Cómo convertimos una idea en un sistema inteligente
+          </h2>
 
           <p style={sectionTextStyle}>
-            Primero entendemos tu negocio. Después construimos soluciones
-            simples, útiles y escalables.
+            Nuestro proceso está diseñado para que el negocio entienda el valor
+            rápido, vea resultados claros y pueda crecer sin perder control.
           </p>
         </div>
 
-        <div style={processGridStyle}>
-          <div style={processCardStyle}>
-            <span style={stepNumberStyle}>01</span>
-            <h3>Evaluamos</h3>
-            <p>
-              Identificamos qué tareas consumen más tiempo y dónde la IA puede
-              ayudar.
-            </p>
+        <div className="axiom-process-shell">
+          <div className="axiom-process-line" />
+
+          <div className="axiom-process-step">
+            <div className="axiom-process-card">
+              <div className="axiom-process-meta">DIAGNÓSTICO</div>
+              <h3>Evaluamos tu operación</h3>
+              <p>
+                Identificamos tareas repetitivas, puntos lentos, oportunidades
+                de automatización y áreas donde la inteligencia artificial puede
+                generar impacto inmediato.
+              </p>
+            </div>
+
+            <div className="axiom-process-orb">01</div>
+
+            <div className="axiom-process-empty" />
           </div>
 
-          <div style={processCardStyle}>
-            <span style={stepNumberStyle}>02</span>
-            <h3>Diseñamos</h3>
-            <p>
-              Creamos un plan claro con la primera automatización o sistema
-              recomendado.
-            </p>
+          <div className="axiom-process-step">
+            <div className="axiom-process-empty" />
+
+            <div className="axiom-process-orb">02</div>
+
+            <div className="axiom-process-card">
+              <div className="axiom-process-meta">DISEÑO</div>
+              <h3>Diseñamos la solución</h3>
+              <p>
+                Creamos una arquitectura clara: qué se automatiza primero, qué
+                herramientas se conectan y cómo el sistema debe trabajar para tu
+                negocio.
+              </p>
+            </div>
           </div>
 
-          <div style={processCardStyle}>
-            <span style={stepNumberStyle}>03</span>
-            <h3>Construimos</h3>
-            <p>
-              Desarrollamos la solución y la ajustamos a la forma real en que
-              trabaja tu empresa.
-            </p>
+          <div className="axiom-process-step">
+            <div className="axiom-process-card">
+              <div className="axiom-process-meta">CONSTRUCCIÓN</div>
+              <h3>Desarrollamos AxiomOS</h3>
+              <p>
+                Construimos páginas, paneles, flujos, asistentes y conexiones
+                inteligentes con una experiencia moderna, estable y fácil de
+                usar.
+              </p>
+            </div>
+
+            <div className="axiom-process-orb">03</div>
+
+            <div className="axiom-process-empty" />
           </div>
 
-          <div style={processCardStyle}>
-            <span style={stepNumberStyle}>04</span>
-            <h3>Optimizamos</h3>
-            <p>
-              Medimos resultados y seguimos mejorando para ahorrar más tiempo y
-              aumentar eficiencia.
-            </p>
+          <div className="axiom-process-step">
+            <div className="axiom-process-empty" />
+
+            <div className="axiom-process-orb">04</div>
+
+            <div className="axiom-process-card">
+              <div className="axiom-process-meta">OPTIMIZACIÓN</div>
+              <h3>Medimos y mejoramos</h3>
+              <p>
+                Revisamos resultados, ajustamos procesos y seguimos mejorando el
+                sistema para ahorrar más tiempo, responder mejor y escalar.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="axiom-metric-strip">
+          <div className="axiom-metric">
+            <strong>Menos trabajo manual</strong>
+            <span>Automatizaciones enfocadas en tareas repetitivas.</span>
+          </div>
+
+          <div className="axiom-metric">
+            <strong>Más velocidad</strong>
+            <span>Respuestas, procesos y decisiones más rápidas.</span>
+          </div>
+
+          <div className="axiom-metric">
+            <strong>Más control</strong>
+            <span>Información organizada en sistemas claros y modernos.</span>
           </div>
         </div>
       </section>
@@ -320,7 +546,7 @@ export default function Home() {
           </p>
 
           <div style={ctaButtonsStyle}>
-            <a href="mailto:axiomaI@outlook.com" style={primaryLinkStyle}>
+            <a href="mailto:axiomai@outlook.com" style={primaryLinkStyle}>
               Solicitar evaluación
             </a>
 
@@ -347,8 +573,8 @@ export default function Home() {
         <div style={footerInfoStyle}>
           <p>Correo:</p>
 
-          <a href="mailto:axiomaI@outlook.com" style={footerLinkStyle}>
-            axiomaI@outlook.com
+          <a href="mailto:axiomai@outlook.com" style={footerLinkStyle}>
+            axiomai@outlook.com
           </a>
         </div>
       </footer>
@@ -520,11 +746,13 @@ const servicesNoteStyle: CSSProperties = {
   boxShadow: "0 0 40px rgba(37, 99, 235, 0.18)",
 };
 
-const darkSectionStyle: CSSProperties = {
-  padding: "90px 8%",
+const processSectionStyle: CSSProperties = {
+  position: "relative",
+  padding: "110px 6%",
   background:
-    "linear-gradient(180deg, rgba(2,6,23,0.35), rgba(15,23,42,0.72))",
+    "radial-gradient(circle at top right, rgba(37,99,235,0.18), transparent 34%), linear-gradient(180deg, rgba(2,6,23,0.78), rgba(15,23,42,0.9))",
   borderTop: "1px solid rgba(125, 211, 252, 0.16)",
+  overflow: "hidden",
 };
 
 const sectionHeaderStyle: CSSProperties = {
@@ -557,30 +785,6 @@ const sectionTextStyle: CSSProperties = {
   fontSize: "18px",
   lineHeight: 1.7,
   margin: 0,
-};
-
-const processGridStyle: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: "22px",
-};
-
-const processCardStyle: CSSProperties = {
-  padding: "26px",
-  borderRadius: "24px",
-  background: "rgba(2, 6, 23, 0.58)",
-  border: "1px solid rgba(125, 211, 252, 0.2)",
-  color: "#dbeafe",
-  lineHeight: 1.6,
-};
-
-const stepNumberStyle: CSSProperties = {
-  display: "inline-block",
-  color: "#38bdf8",
-  fontSize: "14px",
-  fontWeight: 900,
-  letterSpacing: "3px",
-  marginBottom: "12px",
 };
 
 const ctaSectionStyle: CSSProperties = {
