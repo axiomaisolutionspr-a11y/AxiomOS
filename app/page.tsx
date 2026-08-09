@@ -2,135 +2,9 @@ import type { CSSProperties } from "react";
 import Logo from "./components/Logo";
 import BrainButton from "./components/BrainButton";
 
-const requestEmail = "axiomaisolutionspr@gmail.com";
-const requestMailLink =
-  "mailto:axiomaisolutionspr@gmail.com?subject=Solicitud%20de%20evaluacion%20gratuita";
-
 export default function Home() {
   return (
     <main style={pageStyle}>
-      <style>{`
-        html {
-          scroll-behavior: smooth;
-        }
-
-        .axiom-service-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 18px;
-          width: 100%;
-          max-width: 1120px;
-          margin: 34px auto 0;
-        }
-
-        .axiom-service-card {
-          position: relative;
-          overflow: hidden;
-          border: 1px solid rgba(125, 211, 252, 0.18);
-          background: linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.92));
-          border-radius: 28px;
-          padding: 28px;
-          min-height: 245px;
-          box-shadow: 0 24px 90px rgba(0, 0, 0, 0.35);
-        }
-
-        .axiom-service-card::before {
-          content: "";
-          position: absolute;
-          inset: -80px -80px auto auto;
-          width: 190px;
-          height: 190px;
-          border-radius: 999px;
-          background: rgba(56, 189, 248, 0.13);
-          filter: blur(8px);
-        }
-
-        .axiom-service-number {
-          width: 42px;
-          height: 42px;
-          border-radius: 14px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: 900;
-          background: linear-gradient(135deg, #38bdf8, #2563eb);
-          box-shadow: 0 0 34px rgba(56, 189, 248, 0.28);
-          margin-bottom: 22px;
-        }
-
-        .axiom-service-card h3 {
-          position: relative;
-          z-index: 2;
-          margin: 0 0 12px;
-          color: white;
-          font-size: 22px;
-          letter-spacing: -0.4px;
-        }
-
-        .axiom-service-card p {
-          position: relative;
-          z-index: 2;
-          margin: 0;
-          color: #c7d2fe;
-          font-size: 15.5px;
-          line-height: 1.65;
-        }
-
-        .axiom-process-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 16px;
-          max-width: 1120px;
-          width: 100%;
-          margin: 34px auto 0;
-        }
-
-        .axiom-process-card {
-          border: 1px solid rgba(147, 197, 253, 0.18);
-          background: rgba(2, 6, 23, 0.62);
-          border-radius: 26px;
-          padding: 24px;
-          min-height: 190px;
-        }
-
-        .axiom-process-orb {
-          width: 18px;
-          height: 18px;
-          border-radius: 999px;
-          background: #38bdf8;
-          box-shadow: 0 0 28px rgba(56, 189, 248, 0.72);
-          margin-bottom: 18px;
-        }
-
-        .axiom-process-card h3 {
-          margin: 0 0 10px;
-          color: white;
-          font-size: 18px;
-        }
-
-        .axiom-process-card p {
-          margin: 0;
-          color: #bfdbfe;
-          font-size: 14.5px;
-          line-height: 1.6;
-        }
-
-        .axiom-contact-card {
-          border: 1px solid rgba(125, 211, 252, 0.18);
-          background: rgba(2, 6, 23, 0.68);
-          border-radius: 26px;
-          padding: 24px;
-        }
-
-        @media (max-width: 900px) {
-          .axiom-service-grid,
-          .axiom-process-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-
       <header style={headerStyle}>
         <div style={brandStyle}>AxiomAI Solutions</div>
 
@@ -160,16 +34,16 @@ export default function Home() {
           <Logo />
         </div>
 
-        <p style={pillStyle}>INTELIGENCIA • AUTOMATIZACIÓN • SOFTWARE</p>
+        <div style={pillStyle}>INTELIGENCIA • AUTOMATIZACIÓN • SOFTWARE</div>
 
         <h1 style={titleStyle}>AxiomOS</h1>
 
-        <h2 style={subtitleStyle}>Soluciones inteligentes para empresas</h2>
+        <h2 style={subtitleStyle}>Soluciones Inteligentes para Empresas</h2>
 
         <p style={descriptionStyle}>
-          Creamos páginas web, automatizaciones, asistentes con IA y sistemas
-          digitales para que tu negocio trabaje más rápido, se vea más
-          profesional y atienda mejor a sus clientes.
+          Creamos sistemas con inteligencia artificial, automatización y
+          software a la medida para que tu negocio responda más rápido, opere
+          mejor y crezca con menos trabajo manual.
         </p>
 
         <div style={buttonAreaStyle}>
@@ -177,92 +51,524 @@ export default function Home() {
         </div>
 
         <div style={heroBadgesStyle}>
-          <span style={badgeStyle}>Evaluación gratuita</span>
+          <span style={badgeStyle}>Evaluación inicial gratuita</span>
           <span style={badgeStyle}>Servicio 24/7</span>
-          <span style={badgeStyle}>IA para negocios reales</span>
+          <span style={badgeStyle}>Automatización empresarial</span>
         </div>
       </section>
 
       <section id="servicios" style={servicesSectionStyle}>
+        <style>
+          {`
+            .axiom-service-grid {
+              display: grid;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 26px;
+              max-width: 1180px;
+              margin: 0 auto;
+            }
+
+            .axiom-service-card {
+              position: relative;
+              min-height: 245px;
+              padding: 30px;
+              border-radius: 30px;
+              background:
+                linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(30, 64, 175, 0.24));
+              border: 1px solid rgba(125, 211, 252, 0.24);
+              box-shadow:
+                0 22px 60px rgba(2, 6, 23, 0.42),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+              color: #e0f2fe;
+              overflow: hidden;
+              transition:
+                transform 220ms ease,
+                border-color 220ms ease,
+                box-shadow 220ms ease,
+                background 220ms ease;
+            }
+
+            .axiom-service-card::before {
+              content: "";
+              position: absolute;
+              inset: -1px;
+              background:
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.18), transparent 38%);
+              opacity: 0;
+              transition: opacity 220ms ease;
+              pointer-events: none;
+            }
+
+            .axiom-service-card:hover {
+              transform: translateY(-8px);
+              border-color: rgba(125, 211, 252, 0.56);
+              box-shadow:
+                0 28px 80px rgba(37, 99, 235, 0.32),
+                0 0 38px rgba(56, 189, 248, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            }
+
+            .axiom-service-card:hover::before {
+              opacity: 1;
+            }
+
+            .axiom-service-icon {
+              position: relative;
+              z-index: 2;
+              width: 54px;
+              height: 54px;
+              border-radius: 18px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-bottom: 22px;
+              font-size: 25px;
+              background:
+                linear-gradient(135deg, rgba(56,189,248,0.32), rgba(37,99,235,0.24));
+              border: 1px solid rgba(125, 211, 252, 0.34);
+              box-shadow: 0 0 28px rgba(56, 189, 248, 0.22);
+            }
+
+            .axiom-service-card h3 {
+              position: relative;
+              z-index: 2;
+              margin: 0 0 12px;
+              color: white;
+              font-size: 21px;
+              letter-spacing: -0.4px;
+            }
+
+            .axiom-service-card p {
+              position: relative;
+              z-index: 2;
+              margin: 0;
+              color: #bfdbfe;
+              font-size: 15.5px;
+              line-height: 1.7;
+            }
+
+            .axiom-service-number {
+              position: absolute;
+              top: 26px;
+              right: 28px;
+              color: rgba(125, 211, 252, 0.28);
+              font-size: 13px;
+              font-weight: 900;
+              letter-spacing: 3px;
+            }
+
+            .axiom-process-shell {
+              max-width: 1160px;
+              margin: 0 auto;
+              position: relative;
+            }
+
+            .axiom-process-line {
+              position: absolute;
+              left: 50%;
+              top: 18px;
+              bottom: 18px;
+              width: 1px;
+              background: linear-gradient(
+                180deg,
+                transparent,
+                rgba(56, 189, 248, 0.75),
+                rgba(37, 99, 235, 0.45),
+                transparent
+              );
+              box-shadow: 0 0 28px rgba(56, 189, 248, 0.45);
+              transform: translateX(-50%);
+            }
+
+            .axiom-process-step {
+              position: relative;
+              display: grid;
+              grid-template-columns: 1fr 92px 1fr;
+              gap: 28px;
+              align-items: center;
+              margin-bottom: 34px;
+            }
+
+            .axiom-process-card {
+              position: relative;
+              min-height: 190px;
+              padding: 30px;
+              border-radius: 30px;
+              background:
+                linear-gradient(145deg, rgba(15,23,42,0.92), rgba(14,116,144,0.14));
+              border: 1px solid rgba(125, 211, 252, 0.24);
+              box-shadow:
+                0 24px 70px rgba(2, 6, 23, 0.45),
+                inset 0 1px 0 rgba(255,255,255,0.08);
+              overflow: hidden;
+            }
+
+            .axiom-process-card::before {
+              content: "";
+              position: absolute;
+              inset: 0;
+              background:
+                radial-gradient(circle at top right, rgba(56,189,248,0.2), transparent 32%),
+                linear-gradient(135deg, rgba(255,255,255,0.06), transparent 34%);
+              pointer-events: none;
+            }
+
+            .axiom-process-card h3 {
+              position: relative;
+              z-index: 2;
+              margin: 0 0 12px;
+              font-size: 24px;
+              color: white;
+              letter-spacing: -0.5px;
+            }
+
+            .axiom-process-card p {
+              position: relative;
+              z-index: 2;
+              margin: 0;
+              color: #c7ddff;
+              line-height: 1.7;
+              font-size: 16px;
+            }
+
+            .axiom-process-orb {
+              position: relative;
+              z-index: 3;
+              width: 92px;
+              height: 92px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background:
+                radial-gradient(circle at 30% 25%, #ffffff, #67e8f9 22%, #2563eb 68%, #071a3a 100%);
+              border: 1px solid rgba(186, 230, 253, 0.66);
+              box-shadow:
+                0 0 34px rgba(56, 189, 248, 0.58),
+                0 24px 65px rgba(37, 99, 235, 0.38);
+              color: white;
+              font-weight: 950;
+              letter-spacing: 2px;
+            }
+
+            .axiom-process-meta {
+              color: #38bdf8;
+              font-size: 12px;
+              font-weight: 900;
+              letter-spacing: 4px;
+              margin-bottom: 12px;
+              position: relative;
+              z-index: 2;
+            }
+
+            .axiom-process-empty {
+              min-height: 1px;
+            }
+
+            .axiom-metric-strip {
+              max-width: 1060px;
+              margin: 54px auto 0;
+              display: grid;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 18px;
+            }
+
+            .axiom-metric {
+              padding: 24px;
+              border-radius: 26px;
+              text-align: center;
+              background: rgba(2, 6, 23, 0.52);
+              border: 1px solid rgba(125, 211, 252, 0.2);
+              box-shadow: 0 0 38px rgba(37, 99, 235, 0.18);
+            }
+
+            .axiom-metric strong {
+              display: block;
+              color: white;
+              font-size: 24px;
+              margin-bottom: 8px;
+            }
+
+            .axiom-metric span {
+              color: #bfdbfe;
+              font-size: 14px;
+              line-height: 1.5;
+            }
+
+            .axiom-contact-card {
+              position: relative;
+              padding: 30px;
+              border-radius: 30px;
+              background:
+                linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(14, 116, 144, 0.16));
+              border: 1px solid rgba(125, 211, 252, 0.24);
+              box-shadow:
+                0 24px 70px rgba(2, 6, 23, 0.42),
+                inset 0 1px 0 rgba(255,255,255,0.08);
+              overflow: hidden;
+            }
+
+            .axiom-contact-card::before {
+              content: "";
+              position: absolute;
+              inset: 0;
+              background:
+                radial-gradient(circle at top right, rgba(56,189,248,0.22), transparent 34%),
+                linear-gradient(135deg, rgba(255,255,255,0.06), transparent 40%);
+              pointer-events: none;
+            }
+
+            .axiom-contact-card > * {
+              position: relative;
+              z-index: 2;
+            }
+
+            .axiom-contact-link {
+              color: #7dd3fc;
+              text-decoration: none;
+              font-weight: 900;
+              word-break: break-word;
+            }
+
+            .axiom-contact-link:hover {
+              color: white;
+              text-shadow: 0 0 16px rgba(56,189,248,0.75);
+            }
+
+            @media (max-width: 980px) {
+              .axiom-service-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+              }
+
+              .axiom-process-line {
+                left: 46px;
+              }
+
+              .axiom-process-step {
+                grid-template-columns: 92px 1fr;
+                gap: 22px;
+              }
+
+              .axiom-process-step .axiom-process-empty {
+                display: none;
+              }
+
+              .axiom-process-step:nth-child(even) .axiom-process-orb {
+                grid-column: 1;
+                grid-row: 1;
+              }
+
+              .axiom-process-step:nth-child(even) .axiom-process-card {
+                grid-column: 2;
+                grid-row: 1;
+              }
+
+              .axiom-metric-strip {
+                grid-template-columns: 1fr;
+              }
+            }
+
+            @media (max-width: 640px) {
+              .axiom-service-grid {
+                grid-template-columns: 1fr;
+              }
+
+              .axiom-process-step {
+                grid-template-columns: 1fr;
+              }
+
+              .axiom-process-line {
+                display: none;
+              }
+
+              .axiom-process-orb {
+                width: 72px;
+                height: 72px;
+              }
+            }
+          `}
+        </style>
+
         <div style={sectionHeaderStyle}>
-          <p style={sectionLabelStyle}>SERVICIOS</p>
-          <h2 style={sectionTitleStyle}>Tecnología clara para negocios que quieren crecer.</h2>
+          <p style={sectionLabelStyle}>SERVICIOS PREMIUM</p>
+
+          <h2 style={sectionTitleStyle}>
+            Tecnología inteligente para operar como una empresa de alto nivel
+          </h2>
+
           <p style={sectionTextStyle}>
-            Ayudamos a negocios pequeños y medianos a organizar procesos,
-            automatizar tareas repetitivas y ofrecer una imagen digital más
-            profesional.
+            AxiomAI diseña sistemas elegantes, rápidos y prácticos para
+            automatizar operaciones, atender clientes y transformar procesos de
+            negocio con IA.
           </p>
         </div>
 
         <div className="axiom-service-grid">
           <article className="axiom-service-card">
-            <div className="axiom-service-number">01</div>
-            <h3>Páginas web profesionales</h3>
+            <span className="axiom-service-number">01</span>
+            <div className="axiom-service-icon">⚙️</div>
+            <h3>Automatización empresarial</h3>
             <p>
-              Diseñamos páginas modernas, rápidas y enfocadas en convertir
-              visitantes en clientes.
+              Convertimos tareas repetitivas en procesos automáticos: órdenes,
+              mensajes, formularios, seguimientos, reportes y flujos internos.
             </p>
           </article>
 
           <article className="axiom-service-card">
-            <div className="axiom-service-number">02</div>
-            <h3>Automatización de procesos</h3>
+            <span className="axiom-service-number">02</span>
+            <div className="axiom-service-icon">🧠</div>
+            <h3>Asistentes con inteligencia artificial</h3>
             <p>
-              Organizamos solicitudes, órdenes, mensajes y tareas internas para
-              reducir trabajo manual.
+              Creamos asistentes inteligentes para responder clientes, organizar
+              datos, apoyar decisiones y reducir trabajo manual.
             </p>
           </article>
 
           <article className="axiom-service-card">
-            <div className="axiom-service-number">03</div>
-            <h3>Asistentes con IA</h3>
+            <span className="axiom-service-number">03</span>
+            <div className="axiom-service-icon">💬</div>
+            <h3>Atención por WhatsApp y web</h3>
             <p>
-              Creamos asistentes para responder preguntas, orientar clientes y
-              apoyar decisiones del negocio.
+              Diseñamos flujos de respuesta, captación y seguimiento para que tu
+              negocio atienda clientes incluso cuando no estás disponible.
+            </p>
+          </article>
+
+          <article className="axiom-service-card">
+            <span className="axiom-service-number">04</span>
+            <div className="axiom-service-icon">📊</div>
+            <h3>Dashboards de control</h3>
+            <p>
+              Paneles modernos para visualizar clientes, solicitudes, proyectos,
+              documentos, ventas y métricas importantes en un solo lugar.
+            </p>
+          </article>
+
+          <article className="axiom-service-card">
+            <span className="axiom-service-number">05</span>
+            <div className="axiom-service-icon">🌐</div>
+            <h3>Páginas web premium</h3>
+            <p>
+              Sitios rápidos, elegantes y orientados a convertir visitantes en
+              clientes, con diseño profesional y estructura comercial clara.
+            </p>
+          </article>
+
+          <article className="axiom-service-card">
+            <span className="axiom-service-number">06</span>
+            <div className="axiom-service-icon">🚀</div>
+            <h3>AxiomOS Brain</h3>
+            <p>
+              El centro operativo inteligente donde conectaremos IA, clientes,
+              documentos, servicios, automatizaciones y análisis del negocio.
             </p>
           </article>
         </div>
 
-        <p style={servicesNoteStyle}>
-          Nuestro enfoque es práctico: primero entendemos el problema, luego
-          construimos una solución que puedas usar.
-        </p>
+        <div style={servicesNoteStyle}>
+          <strong style={{ color: "white" }}>Nuestro enfoque:</strong>{" "}
+          soluciones limpias, modernas y útiles. Tecnología que no solo se ve
+          bien, sino que ayuda a tu empresa a trabajar mejor desde el primer día.
+        </div>
       </section>
 
       <section id="proceso" style={processSectionStyle}>
         <div style={sectionHeaderStyle}>
           <p style={sectionLabelStyle}>PROCESO EJECUTIVO</p>
-          <h2 style={sectionTitleStyle}>De una idea a un sistema funcionando.</h2>
+
+          <h2 style={sectionTitleStyle}>
+            Cómo convertimos una idea en un sistema inteligente
+          </h2>
+
           <p style={sectionTextStyle}>
-            Trabajamos paso a paso para que el cliente entienda qué se va a
-            crear, por qué se necesita y cómo le ayuda al negocio.
+            Nuestro proceso está diseñado para que el negocio entienda el valor
+            rápido, vea resultados claros y pueda crecer sin perder control.
           </p>
         </div>
 
-        <div className="axiom-process-grid">
-          <article className="axiom-process-card">
-            <div className="axiom-process-orb" />
-            <h3>1. Diagnóstico</h3>
-            <p>Revisamos el proceso actual y detectamos dónde se pierde tiempo.</p>
-          </article>
+        <div className="axiom-process-shell">
+          <div className="axiom-process-line" />
 
-          <article className="axiom-process-card">
-            <div className="axiom-process-orb" />
-            <h3>2. Estrategia</h3>
-            <p>Definimos la solución más útil: web, automatización, IA o sistema.</p>
-          </article>
+          <div className="axiom-process-step">
+            <div className="axiom-process-card">
+              <div className="axiom-process-meta">DIAGNÓSTICO</div>
+              <h3>Evaluamos tu operación</h3>
+              <p>
+                Identificamos tareas repetitivas, puntos lentos, oportunidades
+                de automatización y áreas donde la inteligencia artificial puede
+                generar impacto inmediato.
+              </p>
+            </div>
 
-          <article className="axiom-process-card">
-            <div className="axiom-process-orb" />
-            <h3>3. Desarrollo</h3>
-            <p>Construimos una versión clara, funcional y lista para probar.</p>
-          </article>
+            <div className="axiom-process-orb">01</div>
 
-          <article className="axiom-process-card">
-            <div className="axiom-process-orb" />
-            <h3>4. Mejora</h3>
-            <p>Ajustamos el sistema para que se adapte al uso real del negocio.</p>
-          </article>
+            <div className="axiom-process-empty" />
+          </div>
+
+          <div className="axiom-process-step">
+            <div className="axiom-process-empty" />
+
+            <div className="axiom-process-orb">02</div>
+
+            <div className="axiom-process-card">
+              <div className="axiom-process-meta">DISEÑO</div>
+              <h3>Diseñamos la solución</h3>
+              <p>
+                Creamos una arquitectura clara: qué se automatiza primero, qué
+                herramientas se conectan y cómo el sistema debe trabajar para tu
+                negocio.
+              </p>
+            </div>
+          </div>
+
+          <div className="axiom-process-step">
+            <div className="axiom-process-card">
+              <div className="axiom-process-meta">CONSTRUCCIÓN</div>
+              <h3>Desarrollamos AxiomOS</h3>
+              <p>
+                Construimos páginas, paneles, flujos, asistentes y conexiones
+                inteligentes con una experiencia moderna, estable y fácil de
+                usar.
+              </p>
+            </div>
+
+            <div className="axiom-process-orb">03</div>
+
+            <div className="axiom-process-empty" />
+          </div>
+
+          <div className="axiom-process-step">
+            <div className="axiom-process-empty" />
+
+            <div className="axiom-process-orb">04</div>
+
+            <div className="axiom-process-card">
+              <div className="axiom-process-meta">OPTIMIZACIÓN</div>
+              <h3>Medimos y mejoramos</h3>
+              <p>
+                Revisamos resultados, ajustamos procesos y seguimos mejorando el
+                sistema para ahorrar más tiempo, responder mejor y escalar.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="axiom-metric-strip">
+          <div className="axiom-metric">
+            <strong>Menos trabajo manual</strong>
+            <span>Automatizaciones enfocadas en tareas repetitivas.</span>
+          </div>
+
+          <div className="axiom-metric">
+            <strong>Más velocidad</strong>
+            <span>Respuestas, procesos y decisiones más rápidas.</span>
+          </div>
+
+          <div className="axiom-metric">
+            <strong>Más control</strong>
+            <span>Información organizada en sistemas claros y modernos.</span>
+          </div>
         </div>
       </section>
 
@@ -292,7 +598,7 @@ export default function Home() {
             </div>
 
             <div style={ctaButtonsStyle}>
-              <a href={requestMailLink} style={primaryLinkStyle}>
+              <a href="mailto:axiomaisolutionspr@gmail.com" style={primaryLinkStyle}>
                 Solicitar evaluación
               </a>
 
@@ -305,24 +611,29 @@ export default function Home() {
           <div style={evaluationPanelStyle}>
             <div style={panelTopLineStyle}>
               <span style={statusDotStyle} />
-              Diagnóstico inicial
+              AxiomAI Assessment
             </div>
 
-            <h3 style={panelTitleStyle}>AxiomAI Review</h3>
+            <h3 style={panelTitleStyle}>Diagnóstico inicial</h3>
 
             <p style={panelTextStyle}>
-              Cuéntanos qué parte de tu negocio quieres mejorar y te orientamos
-              con una primera ruta clara.
+              Te ayudamos a identificar qué parte de tu negocio conviene
+              automatizar primero para obtener resultados rápidos y medibles.
             </p>
 
             <div style={panelBoxStyle}>
-              <span style={panelLabelStyle}>Enfoque</span>
-              Automatización • IA • Web • Organización digital
+              <span style={panelLabelStyle}>Prioridad</span>
+              <strong>Reducir trabajo manual</strong>
             </div>
 
             <div style={panelBoxStyle}>
-              <span style={panelLabelStyle}>Correo de solicitudes</span>
-              {requestEmail}
+              <span style={panelLabelStyle}>Objetivo</span>
+              <strong>Mejor servicio + más eficiencia</strong>
+            </div>
+
+            <div style={panelBoxStyle}>
+              <span style={panelLabelStyle}>Resultado</span>
+              <strong>Plan inicial claro</strong>
             </div>
           </div>
         </div>
@@ -331,46 +642,64 @@ export default function Home() {
       <section id="contacto" style={contactSectionStyle}>
         <div style={sectionHeaderStyle}>
           <p style={sectionLabelStyle}>CONTACTO</p>
-          <h2 style={sectionTitleStyle}>Hablemos de tu próximo sistema.</h2>
+
+          <h2 style={sectionTitleStyle}>Hablemos de tu próximo sistema</h2>
+
           <p style={sectionTextStyle}>
-            Escríbenos para evaluar tu idea, tu proceso actual o la página web
-            que necesitas para tu negocio.
+            Escríbenos con una idea, problema o proceso que quieras mejorar.
+            Nosotros te ayudamos a convertirlo en una solución inteligente.
           </p>
         </div>
 
         <div style={contactGridStyle}>
           <div className="axiom-contact-card">
-            <p style={contactLabelStyle}>Correo</p>
-            <a href={requestMailLink} style={contactTitleStyle}>
-              {requestEmail}
+            <p style={contactLabelStyle}>Correo principal</p>
+            <h3 style={contactTitleStyle}>AxiomAI Solutions</h3>
+            <a href="mailto:axiomaisolutionspr@gmail.com" className="axiom-contact-link">
+              axiomaisolutionspr@gmail.com
             </a>
-            <p style={contactTextStyle}>Solicitudes, evaluaciones y propuestas.</p>
           </div>
 
           <div className="axiom-contact-card">
-            <p style={contactLabelStyle}>Horario</p>
+            <p style={contactLabelStyle}>Disponibilidad</p>
             <h3 style={contactTitleStyle}>Servicio 24/7</h3>
-            <p style={contactTextStyle}>Recibimos solicitudes en cualquier momento.</p>
+            <p style={contactTextStyle}>
+              Podemos preparar soluciones para negocios que necesitan responder,
+              organizarse y operar fuera del horario tradicional.
+            </p>
           </div>
 
           <div className="axiom-contact-card">
-            <p style={contactLabelStyle}>Especialidad</p>
-            <h3 style={contactTitleStyle}>IA y automatización</h3>
+            <p style={contactLabelStyle}>Primera reunión</p>
+            <h3 style={contactTitleStyle}>Evaluación inicial gratuita</h3>
             <p style={contactTextStyle}>
-              Soluciones prácticas para negocios que quieren modernizarse.
+              Revisamos tu necesidad y te recomendamos un primer paso claro,
+              realista y útil para tu empresa.
             </p>
           </div>
         </div>
       </section>
 
       <footer style={footerStyle}>
-        <div style={footerInfoStyle}>
-          © 2026 AxiomAI Solutions. Todos los derechos reservados.
+        <div>
+          <h2 style={{ margin: 0, color: "white" }}>AxiomAI Solutions</h2>
+
+          <p style={{ marginTop: "10px" }}>
+            Inteligencia • Automatización • Software
+          </p>
+
+          <p style={{ color: "#7dd3fc" }}>
+            Evaluación inicial gratuita • Servicio 24/7
+          </p>
         </div>
 
-        <a href={requestMailLink} style={footerLinkStyle}>
-          {requestEmail}
-        </a>
+        <div style={footerInfoStyle}>
+          <p>Correo:</p>
+
+          <a href="mailto:axiomaisolutionspr@gmail.com" style={footerLinkStyle}>
+            axiomaisolutionspr@gmail.com
+          </a>
+        </div>
       </footer>
     </main>
   );
@@ -379,271 +708,251 @@ export default function Home() {
 const pageStyle: CSSProperties = {
   minHeight: "100vh",
   background:
-    "radial-gradient(circle at top, rgba(37, 99, 235, 0.26), transparent 34%), linear-gradient(180deg, #020617 0%, #030712 45%, #000 100%)",
+    "radial-gradient(circle at top, #1552b8 0%, #071a3a 42%, #020617 100%)",
   color: "white",
+  fontFamily: "Arial, sans-serif",
   overflowX: "hidden",
 };
 
 const headerStyle: CSSProperties = {
   position: "sticky",
   top: 0,
-  zIndex: 20,
+  zIndex: 50,
   display: "flex",
-  alignItems: "center",
   justifyContent: "space-between",
-  gap: "24px",
-  padding: "22px clamp(18px, 5vw, 70px)",
-  background: "rgba(2, 6, 23, 0.76)",
-  backdropFilter: "blur(18px)",
-  borderBottom: "1px solid rgba(125, 211, 252, 0.12)",
+  alignItems: "center",
+  gap: "20px",
+  padding: "16px 5%",
+  background: "rgba(2, 6, 23, 0.88)",
+  backdropFilter: "blur(16px)",
+  borderBottom: "1px solid rgba(125, 211, 252, 0.18)",
 };
 
 const brandStyle: CSSProperties = {
   fontSize: "18px",
-  fontWeight: 950,
-  letterSpacing: "-0.3px",
-  color: "white",
+  fontWeight: 900,
+  letterSpacing: "-0.5px",
+  whiteSpace: "nowrap",
 };
 
 const navStyle: CSSProperties = {
   display: "flex",
-  alignItems: "center",
   gap: "18px",
   flexWrap: "wrap",
+  justifyContent: "flex-end",
+  alignItems: "center",
 };
 
 const navLinkStyle: CSSProperties = {
-  color: "#bfdbfe",
+  color: "white",
   textDecoration: "none",
-  fontSize: "14px",
-  fontWeight: 750,
+  fontSize: "13px",
+  fontWeight: 800,
+  whiteSpace: "nowrap",
 };
 
 const heroStyle: CSSProperties = {
   position: "relative",
-  minHeight: "calc(100vh - 82px)",
+  minHeight: "92vh",
   display: "flex",
   flexDirection: "column",
-  alignItems: "center",
   justifyContent: "center",
+  alignItems: "center",
   textAlign: "center",
-  padding: "80px 18px 90px",
+  padding: "72px 24px 60px",
 };
 
 const glowOrbStyle: CSSProperties = {
   position: "absolute",
-  width: "520px",
-  height: "520px",
-  borderRadius: "999px",
-  background: "rgba(37, 99, 235, 0.24)",
-  filter: "blur(80px)",
-  top: "12%",
-  left: "50%",
-  transform: "translateX(-50%)",
+  top: "90px",
+  width: "620px",
+  height: "620px",
+  borderRadius: "50%",
+  background:
+    "radial-gradient(circle, rgba(56,189,248,0.32), rgba(37,99,235,0.12), transparent 68%)",
+  filter: "blur(10px)",
+  zIndex: 0,
 };
 
 const logoWrapStyle: CSSProperties = {
   position: "relative",
   zIndex: 2,
-  width: "min(360px, 76vw)",
-  marginBottom: "20px",
+  marginBottom: "4px",
 };
 
 const pillStyle: CSSProperties = {
   position: "relative",
   zIndex: 2,
-  margin: "0 0 18px",
+  marginTop: "8px",
   padding: "10px 18px",
   borderRadius: "999px",
+  border: "1px solid rgba(125, 211, 252, 0.3)",
+  background: "rgba(2, 6, 23, 0.35)",
   color: "#bae6fd",
-  background: "rgba(14, 165, 233, 0.12)",
-  border: "1px solid rgba(125, 211, 252, 0.22)",
-  fontSize: "12px",
+  fontSize: "13px",
   fontWeight: 900,
-  letterSpacing: "1.8px",
+  letterSpacing: "5px",
 };
 
 const titleStyle: CSSProperties = {
   position: "relative",
   zIndex: 2,
-  margin: 0,
-  fontSize: "clamp(62px, 12vw, 150px)",
-  lineHeight: 0.92,
-  fontWeight: 1000,
-  letterSpacing: "-6px",
-  background: "linear-gradient(180deg, #ffffff, #7dd3fc 58%, #2563eb)",
-  WebkitBackgroundClip: "text",
-  color: "transparent",
-  textShadow: "0 0 80px rgba(37, 99, 235, 0.38)",
+  fontSize: "78px",
+  lineHeight: 1,
+  margin: "24px 0 18px",
+  letterSpacing: "-3px",
+  textShadow: "0 0 42px rgba(56, 189, 248, 0.42)",
 };
 
 const subtitleStyle: CSSProperties = {
   position: "relative",
   zIndex: 2,
-  margin: "20px 0 0",
-  fontSize: "clamp(26px, 4vw, 54px)",
-  lineHeight: 1.08,
-  fontWeight: 950,
-  letterSpacing: "-1.8px",
+  fontSize: "36px",
+  margin: "0 0 18px",
 };
 
 const descriptionStyle: CSSProperties = {
   position: "relative",
   zIndex: 2,
   maxWidth: "820px",
-  margin: "22px auto 0",
-  color: "#c7d2fe",
-  fontSize: "19px",
-  lineHeight: 1.7,
+  fontSize: "18px",
+  lineHeight: 1.75,
+  color: "#dbeafe",
+  margin: "0 0 36px",
 };
 
 const buttonAreaStyle: CSSProperties = {
   position: "relative",
   zIndex: 2,
-  marginTop: "38px",
+  transform: "scale(0.92)",
 };
 
 const heroBadgesStyle: CSSProperties = {
   position: "relative",
   zIndex: 2,
   display: "flex",
-  justifyContent: "center",
-  flexWrap: "wrap",
   gap: "12px",
-  marginTop: "34px",
+  flexWrap: "wrap",
+  justifyContent: "center",
+  marginTop: "26px",
 };
 
 const badgeStyle: CSSProperties = {
-  padding: "12px 16px",
+  padding: "9px 14px",
   borderRadius: "999px",
-  border: "1px solid rgba(147, 197, 253, 0.18)",
-  background: "rgba(2, 6, 23, 0.56)",
-  color: "#dbeafe",
+  background: "rgba(15, 23, 42, 0.65)",
+  border: "1px solid rgba(125, 211, 252, 0.2)",
+  color: "#bfdbfe",
   fontSize: "14px",
-  fontWeight: 800,
+  fontWeight: 700,
 };
 
 const servicesSectionStyle: CSSProperties = {
-  padding: "100px clamp(18px, 5vw, 70px)",
+  position: "relative",
+  padding: "110px 6%",
+  background:
+    "radial-gradient(circle at top left, rgba(56,189,248,0.16), transparent 34%), linear-gradient(180deg, rgba(2,6,23,0.35), rgba(2,6,23,0.78))",
+  borderTop: "1px solid rgba(125, 211, 252, 0.16)",
+  overflow: "hidden",
 };
 
 const servicesNoteStyle: CSSProperties = {
-  maxWidth: "860px",
-  margin: "32px auto 0",
+  maxWidth: "980px",
+  margin: "48px auto 0",
+  padding: "24px 28px",
+  borderRadius: "26px",
+  background: "rgba(2, 6, 23, 0.48)",
+  border: "1px solid rgba(125, 211, 252, 0.2)",
+  color: "#dbeafe",
   textAlign: "center",
-  color: "#bfdbfe",
-  fontSize: "17px",
   lineHeight: 1.7,
+  boxShadow: "0 0 40px rgba(37, 99, 235, 0.18)",
 };
 
 const processSectionStyle: CSSProperties = {
-  padding: "100px clamp(18px, 5vw, 70px)",
-  background: "rgba(2, 6, 23, 0.42)",
-  borderTop: "1px solid rgba(125, 211, 252, 0.08)",
-  borderBottom: "1px solid rgba(125, 211, 252, 0.08)",
+  position: "relative",
+  padding: "110px 6%",
+  background:
+    "radial-gradient(circle at top right, rgba(37,99,235,0.18), transparent 34%), linear-gradient(180deg, rgba(2,6,23,0.78), rgba(15,23,42,0.9))",
+  borderTop: "1px solid rgba(125, 211, 252, 0.16)",
+  overflow: "hidden",
 };
 
 const evaluationSectionStyle: CSSProperties = {
   position: "relative",
+  padding: "115px 6%",
+  background:
+    "radial-gradient(circle at center, rgba(56,189,248,0.16), transparent 36%), linear-gradient(180deg, rgba(15,23,42,0.9), rgba(2,6,23,0.86))",
+  borderTop: "1px solid rgba(125, 211, 252, 0.16)",
   overflow: "hidden",
-  padding: "110px clamp(18px, 5vw, 70px)",
 };
 
 const evaluationGlowStyle: CSSProperties = {
   position: "absolute",
-  width: "420px",
-  height: "420px",
-  borderRadius: "999px",
-  background: "rgba(56, 189, 248, 0.16)",
-  filter: "blur(90px)",
-  right: "-120px",
+  right: "-180px",
   top: "80px",
+  width: "520px",
+  height: "520px",
+  borderRadius: "50%",
+  background:
+    "radial-gradient(circle, rgba(56,189,248,0.22), rgba(37,99,235,0.12), transparent 70%)",
+  filter: "blur(8px)",
 };
 
 const evaluationGridStyle: CSSProperties = {
   position: "relative",
   zIndex: 2,
-  maxWidth: "1120px",
+  maxWidth: "1160px",
   margin: "0 auto",
   display: "grid",
   gridTemplateColumns: "1.1fr 0.9fr",
-  gap: "30px",
+  gap: "34px",
   alignItems: "center",
 };
 
 const evaluationTextStyle: CSSProperties = {
-  minWidth: 0,
+  padding: "10px 0",
 };
 
 const evaluationTitleStyle: CSSProperties = {
-  margin: "14px 0 0",
-  color: "white",
-  fontSize: "clamp(34px, 5vw, 64px)",
-  lineHeight: 1.02,
-  fontWeight: 980,
-  letterSpacing: "-2px",
+  fontSize: "48px",
+  lineHeight: 1.05,
+  margin: "0 0 22px",
+  letterSpacing: "-1.5px",
+  textShadow: "0 0 34px rgba(56, 189, 248, 0.24)",
 };
 
 const evaluationParagraphStyle: CSSProperties = {
-  margin: "22px 0 0",
-  color: "#c7d2fe",
+  color: "#c7ddff",
   fontSize: "18px",
   lineHeight: 1.75,
-  maxWidth: "760px",
+  maxWidth: "700px",
+  margin: "0 0 28px",
 };
 
 const evaluationListStyle: CSSProperties = {
   display: "grid",
   gap: "12px",
-  marginTop: "26px",
+  marginBottom: "30px",
 };
 
 const checkLineStyle: CSSProperties = {
-  color: "#e0f2fe",
-  fontSize: "16px",
+  padding: "13px 16px",
+  borderRadius: "18px",
+  background: "rgba(2, 6, 23, 0.42)",
+  border: "1px solid rgba(125, 211, 252, 0.18)",
+  color: "#dbeafe",
   fontWeight: 800,
 };
 
-const ctaButtonsStyle: CSSProperties = {
-  display: "flex",
-  gap: "14px",
-  flexWrap: "wrap",
-  marginTop: "32px",
-};
-
-const primaryLinkStyle: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "15px 22px",
-  borderRadius: "999px",
-  textDecoration: "none",
-  color: "white",
-  fontWeight: 950,
-  background: "linear-gradient(135deg, #38bdf8, #2563eb)",
-  boxShadow: "0 0 30px rgba(56, 189, 248, 0.32)",
-};
-
-const secondaryLinkStyle: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "15px 22px",
-  borderRadius: "999px",
-  textDecoration: "none",
-  color: "#dbeafe",
-  fontWeight: 900,
-  background: "rgba(2, 6, 23, 0.58)",
-  border: "1px solid rgba(125, 211, 252, 0.22)",
-};
-
 const evaluationPanelStyle: CSSProperties = {
-  border: "1px solid rgba(125, 211, 252, 0.22)",
   borderRadius: "34px",
-  padding: "30px",
+  padding: "34px",
   background:
-    "linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.92))",
-  boxShadow: "0 28px 100px rgba(0, 0, 0, 0.38)",
+    "linear-gradient(145deg, rgba(15,23,42,0.92), rgba(30,64,175,0.24))",
+  border: "1px solid rgba(125, 211, 252, 0.3)",
+  boxShadow:
+    "0 30px 90px rgba(2, 6, 23, 0.45), 0 0 48px rgba(56,189,248,0.16)",
 };
 
 const panelTopLineStyle: CSSProperties = {
@@ -653,141 +962,163 @@ const panelTopLineStyle: CSSProperties = {
   color: "#bae6fd",
   fontSize: "13px",
   fontWeight: 900,
+  letterSpacing: "3px",
   textTransform: "uppercase",
-  letterSpacing: "1.2px",
+  marginBottom: "22px",
 };
 
 const statusDotStyle: CSSProperties = {
-  width: "10px",
-  height: "10px",
-  borderRadius: "999px",
+  width: "11px",
+  height: "11px",
+  borderRadius: "50%",
   background: "#22c55e",
-  boxShadow: "0 0 18px rgba(34, 197, 94, 0.72)",
+  boxShadow: "0 0 16px #22c55e",
 };
 
 const panelTitleStyle: CSSProperties = {
-  margin: "24px 0 0",
+  fontSize: "30px",
+  margin: "0 0 14px",
   color: "white",
-  fontSize: "34px",
-  fontWeight: 950,
-  letterSpacing: "-1px",
 };
 
 const panelTextStyle: CSSProperties = {
-  margin: "14px 0 0",
-  color: "#bfdbfe",
-  fontSize: "16px",
+  color: "#c7ddff",
   lineHeight: 1.7,
+  marginBottom: "24px",
 };
 
 const panelBoxStyle: CSSProperties = {
-  marginTop: "18px",
   padding: "18px",
-  borderRadius: "22px",
-  background: "rgba(2, 6, 23, 0.62)",
-  border: "1px solid rgba(125, 211, 252, 0.16)",
-  color: "#dbeafe",
-  fontSize: "15px",
-  lineHeight: 1.6,
+  borderRadius: "20px",
+  background: "rgba(2, 6, 23, 0.5)",
+  border: "1px solid rgba(125, 211, 252, 0.2)",
+  marginTop: "14px",
 };
 
 const panelLabelStyle: CSSProperties = {
   display: "block",
-  marginBottom: "6px",
-  color: "#7dd3fc",
+  color: "#38bdf8",
   fontSize: "12px",
-  fontWeight: 950,
+  fontWeight: 900,
+  letterSpacing: "3px",
   textTransform: "uppercase",
-  letterSpacing: "1px",
+  marginBottom: "8px",
 };
 
 const contactSectionStyle: CSSProperties = {
-  padding: "100px clamp(18px, 5vw, 70px)",
-  background: "rgba(2, 6, 23, 0.42)",
+  padding: "105px 6%",
+  background:
+    "radial-gradient(circle at bottom left, rgba(56,189,248,0.14), transparent 34%), linear-gradient(180deg, rgba(2,6,23,0.88), rgba(2,6,23,0.96))",
+  borderTop: "1px solid rgba(125, 211, 252, 0.16)",
 };
 
 const contactGridStyle: CSSProperties = {
+  maxWidth: "1160px",
+  margin: "0 auto",
   display: "grid",
   gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-  gap: "18px",
-  maxWidth: "1120px",
-  margin: "34px auto 0",
+  gap: "24px",
 };
 
 const contactLabelStyle: CSSProperties = {
-  margin: "0 0 12px",
-  color: "#7dd3fc",
+  color: "#38bdf8",
   fontSize: "12px",
-  fontWeight: 950,
-  letterSpacing: "1.2px",
+  fontWeight: 900,
+  letterSpacing: "4px",
   textTransform: "uppercase",
+  marginBottom: "12px",
 };
 
 const contactTitleStyle: CSSProperties = {
-  margin: 0,
   color: "white",
-  fontSize: "20px",
-  fontWeight: 950,
-  textDecoration: "none",
+  fontSize: "24px",
+  margin: "0 0 14px",
 };
 
 const contactTextStyle: CSSProperties = {
-  margin: "12px 0 0",
-  color: "#bfdbfe",
-  fontSize: "15px",
-  lineHeight: 1.6,
+  color: "#c7ddff",
+  lineHeight: 1.7,
+  margin: 0,
 };
 
 const sectionHeaderStyle: CSSProperties = {
-  maxWidth: "880px",
-  margin: "0 auto",
   textAlign: "center",
+  maxWidth: "860px",
+  margin: "0 auto 58px",
+  position: "relative",
+  zIndex: 2,
 };
 
 const sectionLabelStyle: CSSProperties = {
-  margin: 0,
-  color: "#7dd3fc",
-  fontSize: "12px",
-  fontWeight: 950,
-  letterSpacing: "1.7px",
-  textTransform: "uppercase",
+  color: "#38bdf8",
+  letterSpacing: "6px",
+  fontSize: "13px",
+  fontWeight: 900,
+  marginBottom: "14px",
 };
 
 const sectionTitleStyle: CSSProperties = {
-  margin: "14px 0 0",
+  fontSize: "46px",
+  lineHeight: 1.08,
+  margin: "0 0 18px",
   color: "white",
-  fontSize: "clamp(34px, 5vw, 62px)",
-  lineHeight: 1.03,
-  fontWeight: 980,
-  letterSpacing: "-2px",
+  letterSpacing: "-1.4px",
+  textShadow: "0 0 34px rgba(56, 189, 248, 0.28)",
 };
 
 const sectionTextStyle: CSSProperties = {
-  margin: "18px auto 0",
-  color: "#c7d2fe",
+  color: "#c7ddff",
   fontSize: "18px",
   lineHeight: 1.7,
-  maxWidth: "760px",
+  margin: 0,
+};
+
+const ctaButtonsStyle: CSSProperties = {
+  display: "flex",
+  gap: "14px",
+  justifyContent: "flex-start",
+  flexWrap: "wrap",
+};
+
+const primaryLinkStyle: CSSProperties = {
+  display: "inline-block",
+  padding: "16px 28px",
+  borderRadius: "999px",
+  background: "linear-gradient(135deg, #38bdf8, #2563eb)",
+  color: "white",
+  textDecoration: "none",
+  fontWeight: 900,
+  boxShadow: "0 0 28px rgba(56, 189, 248, 0.45)",
+};
+
+const secondaryLinkStyle: CSSProperties = {
+  display: "inline-block",
+  padding: "16px 28px",
+  borderRadius: "999px",
+  background: "rgba(15, 23, 42, 0.75)",
+  color: "#dbeafe",
+  textDecoration: "none",
+  fontWeight: 900,
+  border: "1px solid rgba(125, 211, 252, 0.25)",
 };
 
 const footerStyle: CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
-  gap: "18px",
+  gap: "24px",
   flexWrap: "wrap",
-  padding: "32px clamp(18px, 5vw, 70px)",
-  borderTop: "1px solid rgba(125, 211, 252, 0.12)",
-  background: "#020617",
+  padding: "44px 8%",
+  borderTop: "1px solid rgba(125, 211, 252, 0.16)",
+  background: "rgba(2, 6, 23, 0.98)",
+  color: "#bfdbfe",
 };
 
 const footerInfoStyle: CSSProperties = {
-  color: "#94a3b8",
-  fontSize: "14px",
+  textAlign: "right",
 };
 
 const footerLinkStyle: CSSProperties = {
   color: "#7dd3fc",
-  fontSize: "14px",
-  fontWeight: 850,
   textDecoration: "none",
+  fontWeight: 800,
 };
