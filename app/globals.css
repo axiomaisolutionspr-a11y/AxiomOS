@@ -24,3 +24,123 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* AXIOM SERVICES SUPER PREMIUM */
+#servicios {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#servicios .service-grid {
+  max-width: 1280px !important;
+  gap: 34px !important;
+  margin-top: 70px !important;
+}
+
+#servicios .service-card {
+  min-height: 410px !important;
+  padding: 42px !important;
+  border-radius: 44px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  transform: perspective(900px) rotateX(0deg) !important;
+  border: 1px solid rgba(125, 211, 252, 0.55) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0)),
+    radial-gradient(circle at 82% 12%, rgba(56, 189, 248, 0.55), transparent 34%),
+    radial-gradient(circle at 12% 88%, rgba(37, 99, 235, 0.36), transparent 35%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.96)) !important;
+  box-shadow:
+    0 45px 140px rgba(0, 0, 0, 0.72),
+    0 0 80px rgba(56, 189, 248, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+#servicios .service-card:hover {
+  transform: translateY(-14px) scale(1.02) !important;
+  border-color: rgba(56, 189, 248, 0.95) !important;
+  box-shadow:
+    0 55px 160px rgba(0, 0, 0, 0.78),
+    0 0 120px rgba(56, 189, 248, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+#servicios .service-number {
+  display: none !important;
+}
+
+#servicios .service-card::after {
+  position: absolute !important;
+  right: 26px !important;
+  top: 16px !important;
+  z-index: 1 !important;
+  font-size: 82px !important;
+  font-weight: 1000 !important;
+  letter-spacing: -4px !important;
+  color: rgba(125, 211, 252, 0.12) !important;
+  text-shadow: 0 0 65px rgba(56, 189, 248, 0.4) !important;
+}
+
+#servicios .service-card:nth-child(1)::after {
+  content: "WEB" !important;
+}
+
+#servicios .service-card:nth-child(2)::after {
+  content: "AUTO" !important;
+}
+
+#servicios .service-card:nth-child(3)::after {
+  content: "IA" !important;
+}
+
+#servicios .service-card h3 {
+  position: relative !important;
+  z-index: 3 !important;
+  font-size: 36px !important;
+  line-height: 1.02 !important;
+  letter-spacing: -1.4px !important;
+  margin-bottom: 20px !important;
+  max-width: 350px !important;
+}
+
+#servicios .service-card h3::before {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 78px !important;
+  height: 78px !important;
+  margin-bottom: 34px !important;
+  border-radius: 28px !important;
+  background:
+    radial-gradient(circle at 30% 20%, #ffffff, #7dd3fc 35%, #2563eb 100%) !important;
+  color: white !important;
+  font-size: 15px !important;
+  font-weight: 1000 !important;
+  letter-spacing: 1px !important;
+  box-shadow:
+    0 0 45px rgba(56, 189, 248, 0.85),
+    inset 0 0 22px rgba(255,255,255,0.42) !important;
+}
+
+#servicios .service-card:nth-child(1) h3::before {
+  content: "WEB" !important;
+}
+
+#servicios .service-card:nth-child(2) h3::before {
+  content: "AUTO" !important;
+}
+
+#servicios .service-card:nth-child(3) h3::before {
+  content: "IA" !important;
+}
+
+#servicios .service-card p {
+  position: relative !important;
+  z-index: 3 !important;
+  color: #e0f2fe !important;
+  font-size: 18px !important;
+  line-height: 1.75 !important;
+  max-width: 350px !important;
+}
+
