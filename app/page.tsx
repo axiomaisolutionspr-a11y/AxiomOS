@@ -279,7 +279,7 @@ export default function Home() {
             solución tecnológica tiene más sentido para tu negocio.
           </p>
 
-          <a href={requestMailLink} style={primaryButtonStyle}>
+          <a href="/solicitud" style={primaryButtonStyle}>
             Solicitar evaluación gratuita
           </a>
         </div>
