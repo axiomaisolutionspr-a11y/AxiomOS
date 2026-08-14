@@ -886,7 +886,6 @@ export default function Home() {
           --logo-brain-glow-y: 0px;
           background: transparent;
           filter: drop-shadow(0 0 30px rgba(31, 146, 255, 0.10));
-          touch-action: none;
         }
 
         /* Mancha oscura orgánica detrás del logo: negra en el centro y
@@ -1211,7 +1210,6 @@ export default function Home() {
           place-items: center;
           margin: 4px auto 14px;
           isolation: isolate;
-          touch-action: none;
         }
 
         .home-brain-aura {
@@ -1985,28 +1983,13 @@ export default function Home() {
               );
           }
 
-          /* V108: en móvil mantenemos activas las mismas capas del cerebro del logo
-             que se usan en desktop. Están dimensionadas en porcentajes para que
-             sigan contenidas dentro del logo y puedan seguir el dedo sin deformarse. */
-          .home-logo-brain-cover {
-            display: block;
-            left: 38.5%;
-            top: 43.4%;
-            width: 22.8%;
-            height: 24.2%;
-          }
-
-          .home-logo-brain-follower {
-            display: block;
-            left: 39.0%;
-            top: 43.7%;
-            width: 21.4%;
-            height: 22.6%;
-            transition: transform 55ms linear;
-          }
-
+          /* En móvil usamos el cerebro que ya pertenece al arte base. Esto evita
+             duplicaciones o deformaciones por gestos táctiles, pero conserva la
+             corriente animada del SVG por encima del logo. */
+          .home-logo-brain-cover,
+          .home-logo-brain-follower,
           .home-logo-brain-glow {
-            display: block;
+            display: none;
           }
 
           .home-logo-halo {
@@ -2101,60 +2084,33 @@ export default function Home() {
         <div
           className="home-logo-wrap"
           aria-label="AxiomAI Solutions"
-          onPointerDown={(event) => {
-            if (event.pointerType === "touch") {
-              event.currentTarget.setPointerCapture?.(event.pointerId);
-            }
-          }}
           onPointerMove={(event) => {
+            if (event.pointerType === "touch") return;
+
             const rect = event.currentTarget.getBoundingClientRect();
             const x = (event.clientX - rect.left) / rect.width;
             const y = (event.clientY - rect.top) / rect.height;
             const nx = Math.max(-1, Math.min(1, (x - 0.5) * 2));
             const ny = Math.max(-1, Math.min(1, (y - 0.5) * 2));
 
-            const strengthX = event.pointerType === "touch" ? 10 : 7.5;
-            const strengthY = event.pointerType === "touch" ? 9 : 6.5;
-            const glowX = event.pointerType === "touch" ? 16 : 13;
-            const glowY = event.pointerType === "touch" ? 14 : 11;
-
             event.currentTarget.style.setProperty(
               "--logo-brain-x",
-              `${(nx * strengthX).toFixed(2)}px`
+              `${(nx * 7.5).toFixed(2)}px`
             );
             event.currentTarget.style.setProperty(
               "--logo-brain-y",
-              `${(ny * strengthY).toFixed(2)}px`
+              `${(ny * 6.5).toFixed(2)}px`
             );
             event.currentTarget.style.setProperty(
               "--logo-brain-glow-x",
-              `${(nx * glowX).toFixed(2)}px`
+              `${(nx * 13).toFixed(2)}px`
             );
             event.currentTarget.style.setProperty(
               "--logo-brain-glow-y",
-              `${(ny * glowY).toFixed(2)}px`
+              `${(ny * 11).toFixed(2)}px`
             );
           }}
-          onPointerUp={(event) => {
-            if (
-              event.pointerType === "touch" &&
-              event.currentTarget.hasPointerCapture?.(event.pointerId)
-            ) {
-              event.currentTarget.releasePointerCapture?.(event.pointerId);
-            }
-            event.currentTarget.style.setProperty("--logo-brain-x", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-y", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-glow-y", "0px");
-          }}
-          onPointerCancel={(event) => {
-            event.currentTarget.style.setProperty("--logo-brain-x", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-y", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-glow-y", "0px");
-          }}
           onPointerLeave={(event) => {
-            if (event.pointerType === "touch") return;
             event.currentTarget.style.setProperty("--logo-brain-x", "0px");
             event.currentTarget.style.setProperty("--logo-brain-y", "0px");
             event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
@@ -2358,29 +2314,8 @@ export default function Home() {
           href="/brain"
           className="home-brain-shell"
           aria-label={t("Abrir AxiomOS Brain", "Open AxiomOS Brain")}
-          onClick={(event) => {
-            if (event.currentTarget.dataset.touchDragged === "1") {
-              event.preventDefault();
-            }
-          }}
-          onPointerDown={(event) => {
-            if (event.pointerType === "touch") {
-              event.currentTarget.dataset.touchStartX = String(event.clientX);
-              event.currentTarget.dataset.touchStartY = String(event.clientY);
-              event.currentTarget.dataset.touchDragged = "0";
-              event.currentTarget.setPointerCapture?.(event.pointerId);
-            }
-          }}
           onPointerMove={(event) => {
-            if (event.pointerType === "touch") {
-              const startX = Number(event.currentTarget.dataset.touchStartX ?? event.clientX);
-              const startY = Number(event.currentTarget.dataset.touchStartY ?? event.clientY);
-              const distance = Math.hypot(event.clientX - startX, event.clientY - startY);
-
-              if (distance > 8) {
-                event.currentTarget.dataset.touchDragged = "1";
-              }
-            }
+            if (event.pointerType === "touch") return;
 
             const rect = event.currentTarget.getBoundingClientRect();
             const x = (event.clientX - rect.left) / rect.width;
@@ -2396,16 +2331,13 @@ export default function Home() {
               "--orb-y",
               `${Math.round(y * 100)}%`
             );
-            const brainStrengthX = event.pointerType === "touch" ? 18 : 15;
-            const brainStrengthY = event.pointerType === "touch" ? 16 : 13;
-
             event.currentTarget.style.setProperty(
               "--brain-x",
-              `${(nx * brainStrengthX).toFixed(2)}px`
+              `${(nx * 15).toFixed(2)}px`
             );
             event.currentTarget.style.setProperty(
               "--brain-y",
-              `${(ny * brainStrengthY).toFixed(2)}px`
+              `${(ny * 13).toFixed(2)}px`
             );
             event.currentTarget.style.setProperty(
               "--shadow-x",
@@ -2420,44 +2352,7 @@ export default function Home() {
           onPointerEnter={(event) => {
             event.currentTarget.style.setProperty("--orb-scale", "1.025");
           }}
-          onPointerUp={(event) => {
-            const shell = event.currentTarget;
-
-            if (
-              event.pointerType === "touch" &&
-              shell.hasPointerCapture?.(event.pointerId)
-            ) {
-              shell.releasePointerCapture?.(event.pointerId);
-            }
-
-            shell.style.setProperty("--orb-x", "35%");
-            shell.style.setProperty("--orb-y", "30%");
-            shell.style.setProperty("--brain-x", "0px");
-            shell.style.setProperty("--brain-y", "0px");
-            shell.style.setProperty("--shadow-x", "0px");
-            shell.style.setProperty("--shadow-y", "18px");
-            shell.style.setProperty("--orb-scale", "1");
-
-            if (event.pointerType === "touch") {
-              window.setTimeout(() => {
-                shell.dataset.touchDragged = "0";
-              }, 80);
-            }
-          }}
-          onPointerCancel={(event) => {
-            const shell = event.currentTarget;
-            shell.style.setProperty("--orb-x", "35%");
-            shell.style.setProperty("--orb-y", "30%");
-            shell.style.setProperty("--brain-x", "0px");
-            shell.style.setProperty("--brain-y", "0px");
-            shell.style.setProperty("--shadow-x", "0px");
-            shell.style.setProperty("--shadow-y", "18px");
-            shell.style.setProperty("--orb-scale", "1");
-            shell.dataset.touchDragged = "0";
-          }}
           onPointerLeave={(event) => {
-            if (event.pointerType === "touch") return;
-
             const shell = event.currentTarget;
             shell.style.setProperty("--orb-x", "35%");
             shell.style.setProperty("--orb-y", "30%");

@@ -1985,28 +1985,13 @@ export default function Home() {
               );
           }
 
-          /* V108: en móvil mantenemos activas las mismas capas del cerebro del logo
-             que se usan en desktop. Están dimensionadas en porcentajes para que
-             sigan contenidas dentro del logo y puedan seguir el dedo sin deformarse. */
-          .home-logo-brain-cover {
-            display: block;
-            left: 38.5%;
-            top: 43.4%;
-            width: 22.8%;
-            height: 24.2%;
-          }
-
-          .home-logo-brain-follower {
-            display: block;
-            left: 39.0%;
-            top: 43.7%;
-            width: 21.4%;
-            height: 22.6%;
-            transition: transform 55ms linear;
-          }
-
+          /* En móvil usamos el cerebro que ya pertenece al arte base. Esto evita
+             duplicaciones o deformaciones por gestos táctiles, pero conserva la
+             corriente animada del SVG por encima del logo. */
+          .home-logo-brain-cover,
+          .home-logo-brain-follower,
           .home-logo-brain-glow {
-            display: block;
+            display: none;
           }
 
           .home-logo-halo {
@@ -2113,10 +2098,10 @@ export default function Home() {
             const nx = Math.max(-1, Math.min(1, (x - 0.5) * 2));
             const ny = Math.max(-1, Math.min(1, (y - 0.5) * 2));
 
-            const strengthX = event.pointerType === "touch" ? 10 : 7.5;
-            const strengthY = event.pointerType === "touch" ? 9 : 6.5;
-            const glowX = event.pointerType === "touch" ? 16 : 13;
-            const glowY = event.pointerType === "touch" ? 14 : 11;
+            const strengthX = event.pointerType === "touch" ? 13 : 7.5;
+            const strengthY = event.pointerType === "touch" ? 11 : 6.5;
+            const glowX = event.pointerType === "touch" ? 19 : 13;
+            const glowY = event.pointerType === "touch" ? 17 : 11;
 
             event.currentTarget.style.setProperty(
               "--logo-brain-x",
