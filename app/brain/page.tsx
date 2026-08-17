@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormEvent, KeyboardEvent, ReactNode } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 type ConversationMessage = {
@@ -23,6 +23,105 @@ type BrainCase = {
   createdAt: string;
 };
 
+type SavedBrainSession = {
+  version: 1;
+  conversation: ConversationMessage[];
+  result: string;
+  savedAt: string;
+};
+
+const BRAIN_SESSION_STORAGE_KEY = "axiomai_brain_session_v1";
+
+function readSavedBrainSession(): SavedBrainSession | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(BRAIN_SESSION_STORAGE_KEY);
+
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<SavedBrainSession>;
+
+    const restoredConversation = Array.isArray(parsed.conversation)
+      ? parsed.conversation.filter(
+          (item): item is ConversationMessage =>
+            Boolean(
+              item &&
+                (item.role === "user" || item.role === "assistant") &&
+                typeof item.text === "string"
+            )
+        )
+      : [];
+
+    if (restoredConversation.length === 0) {
+      return null;
+    }
+
+    const restoredResult =
+      typeof parsed.result === "string" && parsed.result.trim()
+        ? parsed.result
+        : [...restoredConversation]
+            .reverse()
+            .find((item) => item.role === "assistant")?.text || "";
+
+    return {
+      version: 1,
+      conversation: restoredConversation,
+      result: restoredResult,
+      savedAt:
+        typeof parsed.savedAt === "string"
+          ? parsed.savedAt
+          : new Date().toISOString(),
+    };
+  } catch (storageError) {
+    console.error(
+      "No se pudo leer la conversación guardada de Brain:",
+      storageError
+    );
+    return null;
+  }
+}
+
+function persistBrainSession(
+  conversation: ConversationMessage[],
+  result: string
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    if (conversation.length === 0 && !result) {
+      window.localStorage.removeItem(BRAIN_SESSION_STORAGE_KEY);
+      return;
+    }
+
+    const savedSession: SavedBrainSession = {
+      version: 1,
+      conversation: conversation.map((item) => ({
+        role: item.role,
+        text: item.text,
+      })),
+      result,
+      savedAt: new Date().toISOString(),
+    };
+
+    window.localStorage.setItem(
+      BRAIN_SESSION_STORAGE_KEY,
+      JSON.stringify(savedSession)
+    );
+  } catch (storageError) {
+    console.error(
+      "No se pudo guardar la conversación de Brain:",
+      storageError
+    );
+  }
+}
+
 
 type BusinessProfile = {
   businessType: string;
@@ -41,6 +140,7 @@ const businessTypePatterns = [
   { pattern: /barber[ií]a|barbero/i, label: "Barbería" },
   { pattern: /sal[oó]n de belleza|estilista|peluquer/i, label: "Salón de belleza" },
   { pattern: /restaurante|cafeter[ií]a|food truck/i, label: "Restaurante / alimentos" },
+  { pattern: /panader[ií]a|bakery|reposter[ií]a|pasteler[ií]a/i, label: "Panadería / repostería" },
   { pattern: /cuidado(?:s)? de (?:adultos mayores|personas mayores|envejecientes)|cuidador(?:es)?|home care|senior care|asistencia domiciliaria|hogar de (?:ancianos|envejecientes)/i, label: "Cuidado de adultos mayores" },
   { pattern: /dentista|dental|odontolog/i, label: "Oficina dental" },
   { pattern: /cl[ií]nica|consultorio|m[eé]dic[oa]/i, label: "Servicios de salud" },
@@ -133,13 +233,12 @@ function detectFocus(text: string) {
 function detectChannels(text: string) {
   const channelPatterns = [
     { pattern: /whatsapp/i, label: "WhatsApp" },
-    { pattern: /llamada|tel[eé]fono|telefon[ií]a/i, label: "Llamadas" },
+    { pattern: /llamada|llamadas|llamar|llaman|llamamos/i, label: "Llamadas" },
     { pattern: /instagram/i, label: "Instagram" },
     { pattern: /facebook/i, label: "Facebook" },
     { pattern: /p[aá]gina web|sitio web|web/i, label: "Página web" },
     { pattern: /correo|email|e-mail/i, label: "Correo" },
     { pattern: /formulario/i, label: "Formularios" },
-    { pattern: /crm/i, label: "CRM" },
     { pattern: /google calendar|outlook|calendly|calendario/i, label: "Calendario" },
   ];
 
@@ -182,11 +281,13 @@ function extractLevel(text: string, label: "Prioridad" | "Complejidad") {
 function extractDiagnosticSummary(text: string) {
   const lines = cleanMarkdownEscapes(text).split("\n");
   const diagnosticIndex = lines.findIndex((line) =>
-    /^#{0,3}\s*Diagn[oó]stico\s*:?[\s]*$/i.test(line.trim())
+    /^#{0,3}\s*Diagn[oó]stico\s*:?\s*$/i.test(line.trim())
   );
 
+  // Si esta respuesta no incluye una sección de Diagnóstico, devolvemos vacío.
+  // buildBusinessProfile buscará el último diagnóstico útil de la conversación.
   if (diagnosticIndex === -1) {
-    return "Brain seguirá refinando este perfil a medida que avance la conversación.";
+    return "";
   }
 
   const parts: string[] = [];
@@ -209,7 +310,7 @@ function extractDiagnosticSummary(text: string) {
   const summary = parts.join(" ").trim();
 
   if (!summary) {
-    return "Brain seguirá refinando este perfil a medida que avance la conversación.";
+    return "";
   }
 
   return summary.length > 260
@@ -235,7 +336,17 @@ function buildBusinessProfile(
   // Prioridad y complejidad sí son evaluaciones de Brain sobre el caso actual.
   const priority = extractLevel(result, "Prioridad");
   const complexity = extractLevel(result, "Complejidad");
-  const summary = extractDiagnosticSummary(result);
+  const currentSummary = extractDiagnosticSummary(result);
+  const previousSummary = [...conversation]
+    .reverse()
+    .filter((item) => item.role === "assistant")
+    .map((item) => extractDiagnosticSummary(item.text))
+    .find((item) => item.length > 0);
+
+  const summary =
+    currentSummary ||
+    previousSummary ||
+    "Brain seguirá refinando este perfil a medida que avance la conversación.";
 
   const confirmedCount = [
     businessType !== "Por identificar",
@@ -790,6 +901,7 @@ export default function BrainPage() {
   const [conversation, setConversation] =
     useState<ConversationMessage[]>([]);
   const [copyStatus, setCopyStatus] = useState("");
+  const [storageReady, setStorageReady] = useState(false);
 
   const inputRef =
     useRef<HTMLTextAreaElement | null>(null);
@@ -804,6 +916,25 @@ export default function BrainPage() {
 
   const profileNextQuestion = getProfileNextQuestion(businessProfile);
 
+  useEffect(() => {
+    const savedSession = readSavedBrainSession();
+
+    if (savedSession) {
+      setConversation(savedSession.conversation);
+      setResult(savedSession.result);
+    }
+
+    setStorageReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!storageReady) {
+      return;
+    }
+
+    persistBrainSession(conversation, result);
+  }, [conversation, result, storageReady]);
+
   async function askBrain(text?: string) {
     const finalMessage =
       (text ?? message).trim();
@@ -812,8 +943,26 @@ export default function BrainPage() {
       return;
     }
 
+    // Si el usuario acaba de refrescar y React todavía no terminó de
+    // restaurar el estado visual, recuperamos el contexto directamente
+    // desde localStorage antes de enviar la nueva consulta.
+    const savedSession =
+      conversation.length === 0 ? readSavedBrainSession() : null;
+
+    const baseConversation =
+      conversation.length > 0
+        ? conversation
+        : savedSession?.conversation || [];
+
+    if (conversation.length === 0 && baseConversation.length > 0) {
+      setConversation(baseConversation);
+      if (!result && savedSession?.result) {
+        setResult(savedSession.result);
+      }
+    }
+
     const nextConversation: ConversationMessage[] = [
-      ...conversation,
+      ...baseConversation,
       {
         role: "user",
         text: finalMessage,
@@ -854,16 +1003,21 @@ export default function BrainPage() {
         data.result ||
         "AxiomOS Brain no devolvió una respuesta.";
 
-      setConversation([
+      const completedConversation: ConversationMessage[] = [
         ...nextConversation,
         {
           role: "assistant",
           text: answer,
         },
-      ]);
+      ];
 
+      setConversation(completedConversation);
       setResult(answer);
       setMessage("");
+
+      // Guardado inmediato: no dependemos únicamente del siguiente ciclo
+      // de render antes de que el usuario haga refresh o cierre la pestaña.
+      persistBrainSession(completedConversation, answer);
 
       window.setTimeout(() => {
         answerRef.current?.scrollIntoView({
@@ -908,6 +1062,32 @@ export default function BrainPage() {
     setCopyStatus("");
 
     setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+  }
+
+  function startNewConversation() {
+    if (loading) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "¿Quieres iniciar una conversación nueva? Se borrará el contexto guardado de esta conversación."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setConversation([]);
+    setResult("");
+    setError("");
+    setMessage("");
+    setCopyStatus("");
+
+    persistBrainSession([], "");
+
+    window.setTimeout(() => {
       inputRef.current?.focus();
     }, 50);
   }
@@ -1916,7 +2096,7 @@ export default function BrainPage() {
                       }}
                     >
                       AXIOMOS BRAIN
-                      2.1
+                      2.2
                     </div>
 
                     <div
@@ -2223,7 +2403,7 @@ export default function BrainPage() {
                       lineHeight: 1.45,
                     }}
                   >
-                    Contexto confirmado a partir de {businessProfile.interactionCount || 1} interacción{businessProfile.interactionCount === 1 ? "" : "es"}. Los datos del negocio se toman de lo que el cliente ha mencionado; prioridad y complejidad son evaluaciones de Brain.
+                    Contexto confirmado a partir de {businessProfile.interactionCount || 1} {(businessProfile.interactionCount || 1) === 1 ? "interacción" : "interacciones"}. Los datos del negocio se toman de lo que el cliente ha mencionado; prioridad y complejidad son evaluaciones de Brain.
                   </div>
 
 
@@ -2518,6 +2698,24 @@ export default function BrainPage() {
                       }}
                     >
                       Hacer otra pregunta
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={startNewConversation}
+                      className="brain-secondary-button"
+                      style={{
+                        minHeight: "48px",
+                        padding: "0 18px",
+                        borderRadius: "13px",
+                        border: "1px solid rgba(120,147,170,0.28)",
+                        background: "rgba(6,18,31,0.72)",
+                        color: "#9db4c8",
+                        fontWeight: 800,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Nueva conversación
                     </button>
                   </div>
 
