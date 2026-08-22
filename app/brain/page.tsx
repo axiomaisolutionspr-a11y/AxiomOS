@@ -140,7 +140,7 @@ const businessTypePatterns = [
   { pattern: /barber[ií]a|barbero/i, label: "Barbería" },
   { pattern: /sal[oó]n de belleza|estilista|peluquer/i, label: "Salón de belleza" },
   { pattern: /restaurante|cafeter[ií]a|food truck/i, label: "Restaurante / alimentos" },
-  { pattern: /panader[ií]a|bakery|reposter[ií]a|pasteler[ií]a/i, label: "Panadería / repostería" },
+  { pattern: /panader[ií]a|bakery|reposter[ií]a|pasteler[ií]a/i, label: "Panadería / repostería" }, 
   { pattern: /cuidado(?:s)? de (?:adultos mayores|personas mayores|envejecientes)|cuidador(?:es)?|home care|senior care|asistencia domiciliaria|hogar de (?:ancianos|envejecientes)/i, label: "Cuidado de adultos mayores" },
   { pattern: /dentista|dental|odontolog/i, label: "Oficina dental" },
   { pattern: /cl[ií]nica|consultorio|m[eé]dic[oa]/i, label: "Servicios de salud" },
