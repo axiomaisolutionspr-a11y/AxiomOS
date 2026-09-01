@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
+import { sendSmsAlert } from "../../lib/send-sms-alert";
 
 export const runtime = "nodejs";
 
@@ -174,6 +175,9 @@ export async function GET() {
     service: "AxiomAI Telnyx Webhook",
     database: "Neon",
     crm: "Prospect Master",
+    sms: process.env.SMS_ENABLED === "true"
+      ? "enabled"
+      : "disabled",
     status: "ready",
   });
 }
@@ -191,6 +195,9 @@ export async function POST(request: NextRequest) {
     console.log("=== AXIOMAI TELNYX WEBHOOK ===");
     console.log("Event:", eventType);
 
+    /*
+      Solo procesamos los insights finales de la conversación.
+    */
     if (eventType !== "conversation_insight_result") {
       return NextResponse.json(
         {
@@ -222,14 +229,42 @@ export async function POST(request: NextRequest) {
       textValue(metadata?.from) ??
       textValue(metadata?.telnyx_end_user_target);
 
-    const nextAction = cleanNextAction(results?.[0]?.result);
-    const callSummary = textValue(results?.[1]?.result);
-    const callOutcome = textValue(results?.[2]?.result);
-    const callClassification = textValue(results?.[3]?.result);
-    const callReason = cleanReason(results?.[4]?.result);
-    const callerCompany = cleanBusinessName(results?.[5]?.result);
-    const callerName = cleanCallerName(results?.[6]?.result);
+    /*
+      Los resultados de Telnyx se interpretan
+      según el orden configurado en Conversation Insights.
+    */
+    const nextAction = cleanNextAction(
+      results?.[0]?.result
+    );
 
+    const callSummary = textValue(
+      results?.[1]?.result
+    );
+
+    const callOutcome = textValue(
+      results?.[2]?.result
+    );
+
+    const callClassification = textValue(
+      results?.[3]?.result
+    );
+
+    const callReason = cleanReason(
+      results?.[4]?.result
+    );
+
+    const callerCompany = cleanBusinessName(
+      results?.[5]?.result
+    );
+
+    const callerName = cleanCallerName(
+      results?.[6]?.result
+    );
+
+    /*
+      Sin conversation_id no podemos deduplicar
+      la llamada de forma segura.
+    */
     if (!conversationId) {
       console.warn(
         "AxiomAI: conversation_insight_result without conversation_id"
@@ -249,7 +284,9 @@ export async function POST(request: NextRequest) {
     const databaseUrl = process.env.DATABASE_URL;
 
     if (!databaseUrl) {
-      throw new Error("DATABASE_URL is not configured");
+      throw new Error(
+        "DATABASE_URL is not configured"
+      );
     }
 
     const sql = neon(databaseUrl);
@@ -259,7 +296,10 @@ export async function POST(request: NextRequest) {
       conversationId
     );
 
-    console.log("Prospect key:", prospectKey);
+    console.log(
+      "Prospect key:",
+      prospectKey
+    );
 
     /*
       ======================================================
@@ -326,8 +366,10 @@ export async function POST(request: NextRequest) {
       2. GUARDAR LA LLAMADA EN EL HISTORIAL
       ======================================================
 
-      Cada conversación sigue teniendo su propia fila.
-      Esto permite conservar TODO el historial.
+      Cada conversación tiene su propia fila.
+
+      conversation_id evita que Telnyx genere
+      registros duplicados si reintenta el webhook.
     */
 
     const insertedRows = await sql`
@@ -368,7 +410,37 @@ export async function POST(request: NextRequest) {
       RETURNING id
     `;
 
-    const saved = insertedRows.length > 0;
+    const saved =
+      insertedRows.length > 0;
+
+    /*
+      ======================================================
+      3. ALERTA SMS
+      ======================================================
+
+      MUY IMPORTANTE:
+
+      Solo intentamos crear la alerta cuando
+      realmente se guardó una llamada NUEVA.
+
+      Si Telnyx reenvía el mismo webhook,
+      saved será false y NO generaremos otra alerta.
+
+      Además sendSmsAlert() verifica SMS_ENABLED.
+
+      Mientras:
+        SMS_ENABLED=false
+
+      el sistema prepara la alerta pero NO envía SMS.
+    */
+
+    let smsAlert:
+      | {
+          sent: boolean;
+          reason?: string;
+          result?: unknown;
+        }
+      | null = null;
 
     if (saved) {
       console.log(
@@ -380,12 +452,56 @@ export async function POST(request: NextRequest) {
         "=== MASTER PROSPECT ===",
         prospectId
       );
+
+      try {
+        smsAlert = await sendSmsAlert({
+          callerName,
+          callerCompany,
+          callerPhone,
+          callReason,
+        });
+
+        if (smsAlert.sent) {
+          console.log(
+            "=== AXIOMAI SMS ALERT SENT ==="
+          );
+        } else {
+          console.log(
+            "=== AXIOMAI SMS ALERT NOT SENT ===",
+            smsAlert.reason
+          );
+        }
+      } catch (smsError) {
+        /*
+          Si en el futuro Telnyx SMS falla,
+          NO queremos perder una llamada que
+          ya quedó correctamente guardada en Neon.
+
+          Por eso registramos el error pero
+          mantenemos exitoso el webhook principal.
+        */
+        console.error(
+          "AxiomAI SMS alert error:",
+          smsError
+        );
+
+        smsAlert = {
+          sent: false,
+          reason: "SMS_ERROR",
+        };
+      }
     } else {
       console.log(
         "=== DUPLICATE CONVERSATION IGNORED ===",
         conversationId
       );
     }
+
+    /*
+      ======================================================
+      4. RESPUESTA A TELNYX
+      ======================================================
+    */
 
     return NextResponse.json(
       {
@@ -394,6 +510,9 @@ export async function POST(request: NextRequest) {
         processed: true,
         saved,
         prospect_id: prospectId,
+        call_id:
+          insertedRows[0]?.id ?? null,
+        sms_alert: smsAlert,
       },
       { status: 200 }
     );

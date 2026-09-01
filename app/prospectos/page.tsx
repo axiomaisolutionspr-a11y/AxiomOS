@@ -185,7 +185,7 @@ async function marcarComoRevisada(formData: FormData) {
   await sql`
     UPDATE prospects
     SET
-      last_reviewed_at = last_seen_at,
+      last_reviewed_at = NOW(),
       updated_at = NOW()
     WHERE id = ${id}
   `;
