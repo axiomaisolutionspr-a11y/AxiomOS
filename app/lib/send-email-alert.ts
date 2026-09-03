@@ -46,7 +46,10 @@ function translateEmailValue(value: string): string {
 
     "Schedule Appointment": "Programar cita",
     "Send Information": "Enviar información",
+
     "Transfer": "Transferir",
+    "Transferred": "Transferencia realizada",
+
     "No Follow-up": "No requiere seguimiento",
 
     "Resolved": "Resuelto",
