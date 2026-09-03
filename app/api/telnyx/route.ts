@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import { sendSmsAlert } from "../../lib/send-sms-alert";
+import { sendEmailAlert } from "../../lib/send-email-alert";
 
 export const runtime = "nodejs";
 
@@ -175,9 +176,10 @@ export async function GET() {
     service: "AxiomAI Telnyx Webhook",
     database: "Neon",
     crm: "Prospect Master",
-    sms: process.env.SMS_ENABLED === "true"
-      ? "enabled"
-      : "disabled",
+    sms:
+      process.env.SMS_ENABLED === "true"
+        ? "enabled"
+        : "disabled",
     status: "ready",
   });
 }
@@ -415,26 +417,31 @@ export async function POST(request: NextRequest) {
 
     /*
       ======================================================
-      3. ALERTA SMS
+      3. ALERTAS SMS + EMAIL
       ======================================================
 
-      MUY IMPORTANTE:
-
-      Solo intentamos crear la alerta cuando
-      realmente se guardó una llamada NUEVA.
+      Solo intentamos crear alertas cuando realmente
+      se guardó una llamada NUEVA.
 
       Si Telnyx reenvía el mismo webhook,
       saved será false y NO generaremos otra alerta.
 
-      Además sendSmsAlert() verifica SMS_ENABLED.
+      sendSmsAlert() verifica SMS_ENABLED.
+      sendEmailAlert() verifica EMAIL_ENABLED.
 
-      Mientras:
-        SMS_ENABLED=false
-
-      el sistema prepara la alerta pero NO envía SMS.
+      Si alguna alerta falla, la llamada NO se pierde
+      porque ya quedó guardada en Neon.
     */
 
     let smsAlert:
+      | {
+          sent: boolean;
+          reason?: string;
+          result?: unknown;
+        }
+      | null = null;
+
+    let emailAlert:
       | {
           sent: boolean;
           reason?: string;
@@ -472,14 +479,6 @@ export async function POST(request: NextRequest) {
           );
         }
       } catch (smsError) {
-        /*
-          Si en el futuro Telnyx SMS falla,
-          NO queremos perder una llamada que
-          ya quedó correctamente guardada en Neon.
-
-          Por eso registramos el error pero
-          mantenemos exitoso el webhook principal.
-        */
         console.error(
           "AxiomAI SMS alert error:",
           smsError
@@ -488,6 +487,40 @@ export async function POST(request: NextRequest) {
         smsAlert = {
           sent: false,
           reason: "SMS_ERROR",
+        };
+      }
+
+      try {
+        emailAlert = await sendEmailAlert({
+          callerName,
+          callerCompany,
+          callerPhone,
+          callReason,
+          callClassification,
+          callOutcome,
+          nextAction,
+          callSummary,
+        });
+
+        if (emailAlert.sent) {
+          console.log(
+            "=== AXIOMAI EMAIL ALERT SENT ==="
+          );
+        } else {
+          console.log(
+            "=== AXIOMAI EMAIL ALERT NOT SENT ===",
+            emailAlert.reason
+          );
+        }
+      } catch (emailError) {
+        console.error(
+          "AxiomAI email alert error:",
+          emailError
+        );
+
+        emailAlert = {
+          sent: false,
+          reason: "EMAIL_ERROR",
         };
       }
     } else {
@@ -513,6 +546,7 @@ export async function POST(request: NextRequest) {
         call_id:
           insertedRows[0]?.id ?? null,
         sms_alert: smsAlert,
+        email_alert: emailAlert,
       },
       { status: 200 }
     );
