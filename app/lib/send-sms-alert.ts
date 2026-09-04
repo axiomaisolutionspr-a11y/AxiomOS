@@ -14,9 +14,9 @@ function safe(
 }
 
 /*
-  Dejamos el SMS sin acentos para reducir la posibilidad
-  de que Telnyx lo convierta a Unicode y lo divida
-  innecesariamente en varios segmentos.
+  Limpia acentos y caracteres especiales para ayudar
+  a mantener el SMS compacto y evitar segmentos Unicode
+  innecesarios.
 */
 function smsClean(value: string) {
   return value
@@ -26,6 +26,10 @@ function smsClean(value: string) {
     .trim();
 }
 
+/*
+  Limita textos largos para que la alerta SMS
+  siga siendo rápida de leer.
+*/
 function shorten(
   value: string,
   maxLength: number
@@ -34,7 +38,9 @@ function shorten(
     return value;
   }
 
-  return `${value.slice(0, maxLength - 3).trim()}...`;
+  return `${value
+    .slice(0, maxLength - 3)
+    .trim()}...`;
 }
 
 export async function sendSmsAlert(
@@ -44,6 +50,10 @@ export async function sendSmsAlert(
     String(process.env.SMS_ENABLED || "")
       .toLowerCase() === "true";
 
+  /*
+    Si SMS_ENABLED no está activo,
+    no enviamos el mensaje.
+  */
   if (!smsEnabled) {
     console.log(
       "SMS desactivado. Alerta preparada pero no enviada."
@@ -55,6 +65,9 @@ export async function sendSmsAlert(
     };
   }
 
+  /*
+    Variables de entorno.
+  */
   const telnyxApiKey =
     process.env.TELNYX_API_KEY;
 
@@ -64,6 +77,9 @@ export async function sendSmsAlert(
   const smsTo =
     process.env.SMS_ALERT_TO;
 
+  /*
+    Validamos configuración antes de llamar a Telnyx.
+  */
   if (!telnyxApiKey) {
     throw new Error(
       "Falta TELNYX_API_KEY."
@@ -82,6 +98,9 @@ export async function sendSmsAlert(
     );
   }
 
+  /*
+    Datos que aparecerán en la alerta.
+  */
   const callerName = shorten(
     smsClean(
       safe(
@@ -113,19 +132,26 @@ export async function sendSmsAlert(
   );
 
   /*
-    SMS corto y pensado como alerta.
+    FORMATO FINAL DEL SMS
 
-    El detalle completo permanece en:
-    - Email
-    - CRM de AxiomOS
+    El SMS funciona como alerta rápida.
+    El detalle completo continúa disponible
+    en el email y en el CRM de AxiomOS.
   */
   const text = [
     "AxiomAI: Nueva llamada",
-    `${callerName} | ${callerPhone}`,
+    "",
+    callerName,
+    `Tel: ${callerPhone}`,
+    "",
     `Motivo: ${callReason}`,
-    "Accion: revisar AxiomOS.",
+    "",
+    "Revisar AxiomOS.",
   ].join("\n");
 
+  /*
+    Envío mediante Telnyx Messaging API.
+  */
   const response = await fetch(
     "https://api.telnyx.com/v2/messages",
     {
@@ -134,6 +160,7 @@ export async function sendSmsAlert(
       headers: {
         Authorization:
           `Bearer ${telnyxApiKey}`,
+
         "Content-Type":
           "application/json",
       },
@@ -149,6 +176,10 @@ export async function sendSmsAlert(
   const result =
     await response.json();
 
+  /*
+    Si Telnyx rechaza el mensaje,
+    registramos el error para verlo en Vercel Logs.
+  */
   if (!response.ok) {
     console.error(
       "Error enviando SMS con Telnyx:",
