@@ -298,9 +298,10 @@ export default async function ProspectosPage({
   const ahora = new Date();
   const hoyPR = fechaPuertoRico(ahora);
 
-  const prospectosConLlamadasNuevas = prospectos.filter(
-    (p) => llamadasNuevas(p).length > 0
-  ).length;
+  const prospectosConLlamadasNuevas = prospectos.reduce(
+    (total, p) => total + llamadasNuevas(p).length,
+    0
+  );
 
   const nuevos = prospectos.filter(
     (p) => (p.crm_stage || "Nuevo") === "Nuevo"
