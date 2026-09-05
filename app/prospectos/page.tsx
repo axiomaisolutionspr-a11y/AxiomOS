@@ -186,6 +186,101 @@ async function actualizarProspecto(formData: FormData) {
   revalidatePath("/prospectos");
 }
 
+
+function telefonoE164(valor: string) {
+  const limpio = valor.trim();
+
+  if (/^\+\d{8,15}$/.test(limpio)) {
+    return limpio;
+  }
+
+  const digitos = limpio.replace(/\D/g, "");
+
+  if (digitos.length === 10) {
+    return `+1${digitos}`;
+  }
+
+  if (digitos.length === 11 && digitos.startsWith("1")) {
+    return `+${digitos}`;
+  }
+
+  throw new Error("El teléfono del prospecto no tiene un formato válido.");
+}
+
+async function iniciarLlamadaAxiomAI(formData: FormData) {
+  "use server";
+
+  const apiKey = process.env.TELNYX_API_KEY;
+  const texmlAppId = process.env.TELNYX_TEXML_APP_ID;
+  const assistantId = process.env.TELNYX_AI_ASSISTANT_ID;
+  const fromNumber = process.env.TELNYX_FROM_NUMBER;
+  const crmCallPin = process.env.AXIOMOS_CRM_CALL_PIN;
+
+  if (
+    !apiKey ||
+    !texmlAppId ||
+    !assistantId ||
+    !fromNumber ||
+    !crmCallPin
+  ) {
+    throw new Error(
+      "Falta configurar TELNYX_API_KEY, TELNYX_TEXML_APP_ID, TELNYX_AI_ASSISTANT_ID, TELNYX_FROM_NUMBER o AXIOMOS_CRM_CALL_PIN."
+    );
+  }
+
+  const pin = String(formData.get("crm_call_pin") || "").trim();
+
+  if (pin !== crmCallPin) {
+    throw new Error("PIN de llamadas incorrecto.");
+  }
+
+  const prospectoId = String(formData.get("id") || "").trim();
+  const telefono = telefonoE164(
+    String(formData.get("caller_phone") || "")
+  );
+
+  if (!/^\d+$/.test(prospectoId)) {
+    throw new Error("ID de prospecto inválido.");
+  }
+
+  const response = await fetch(
+    `https://api.telnyx.com/v2/texml/ai_calls/${encodeURIComponent(
+      texmlAppId
+    )}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        From: telefonoE164(fromNumber),
+        To: telefono,
+        AIAssistantId: assistantId,
+      }),
+      cache: "no-store",
+    }
+  );
+
+  const raw = await response.text();
+
+  if (!response.ok) {
+    console.error("Telnyx outbound AI call failed:", response.status, raw);
+    throw new Error(
+      `Telnyx rechazó la llamada saliente (${response.status}).`
+    );
+  }
+
+  console.log(
+    "AxiomOS outbound AI call started:",
+    prospectoId,
+    telefono,
+    raw
+  );
+
+  revalidatePath("/prospectos");
+}
+
 async function marcarComoRevisada(formData: FormData) {
   "use server";
 
@@ -220,6 +315,7 @@ export default async function ProspectosPage({
   searchParams?: Promise<{
     q?: string;
     estado?: string;
+    call?: string;
   }>;
 }) {
   const params = (await searchParams) ?? {};
@@ -713,6 +809,23 @@ export default async function ProspectosPage({
           margin-top: 12px;
         }
 
+        .call-pin {
+          width: 132px;
+          border: 1px solid #344a63;
+          background: #0b1625;
+          color: white;
+          border-radius: 9px;
+          padding: 10px 12px;
+          outline: none;
+        }
+
+        .call-help {
+          width: 100%;
+          color: #73869e;
+          font-size: 11px;
+          margin-top: 2px;
+        }
+
         .phone-link {
           color: #75d8ff;
           text-decoration: none;
@@ -1039,12 +1152,41 @@ export default async function ProspectosPage({
                         </button>
 
                         {prospecto.caller_phone && (
-                          <a
-                            className="link-button secondary"
-                            href={`tel:${prospecto.caller_phone}`}
-                          >
-                            Llamar
-                          </a>
+                          <form action={iniciarLlamadaAxiomAI}>
+                            <input
+                              type="hidden"
+                              name="id"
+                              value={prospecto.id}
+                            />
+                            <input
+                              type="hidden"
+                              name="caller_phone"
+                              value={prospecto.caller_phone}
+                            />
+                            <div className="actions-row" style={{ marginTop: 0 }}>
+                              <input
+                                className="call-pin"
+                                type="password"
+                                name="crm_call_pin"
+                                inputMode="numeric"
+                                autoComplete="off"
+                                placeholder="PIN de llamada"
+                                required
+                                aria-label="PIN para autorizar llamada saliente"
+                              />
+                              <button
+                                className="link-button secondary"
+                                type="submit"
+                              >
+                                Llamar con AxiomAI
+                              </button>
+                              <div className="call-help">
+                                La llamada sale desde Telnyx y conecta al prospecto
+                                con el asistente de AxiomAI. El PIN evita llamadas
+                                no autorizadas desde el CRM.
+                              </div>
+                            </div>
+                          </form>
                         )}
                       </div>
                     </form>
