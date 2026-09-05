@@ -46,6 +46,17 @@ const ETAPAS = [
 
 function texto(valor: string | null) {
   if (!valor || valor.trim() === "") return "No disponible";
+
+  const normalizado = valor.trim().toLowerCase();
+
+  if (
+    normalizado === "not provided" ||
+    normalizado === "not specified" ||
+    normalizado === "unknown"
+  ) {
+    return "Prospecto sin identificar";
+  }
+
   return valor;
 }
 
@@ -298,8 +309,8 @@ export default async function ProspectosPage({
   const ahora = new Date();
   const hoyPR = fechaPuertoRico(ahora);
 
-  const prospectosConLlamadasNuevas = prospectos.reduce(
-    (total, p) => total + llamadasNuevas(p).length,
+  const totalLlamadasNuevas = prospectos.reduce(
+    (total, prospecto) => total + llamadasNuevas(prospecto).length,
     0
   );
 
@@ -763,7 +774,7 @@ export default async function ProspectosPage({
           {[
             ["Prospectos únicos", prospectos.length],
             ["Llamadas totales", llamadas.length],
-            ["Nuevas llamadas", prospectosConLlamadasNuevas],
+            ["Nuevas llamadas", totalLlamadasNuevas],
             ["Nuevos", nuevos],
             ["Vencidos", vencidos],
             ["Seguimientos hoy", seguimientosHoy],
