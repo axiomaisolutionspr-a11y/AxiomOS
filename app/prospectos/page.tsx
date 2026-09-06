@@ -1152,18 +1152,23 @@ export default async function ProspectosPage({
                         </button>
 
                         {prospecto.caller_phone && (
-                          <form action={iniciarLlamadaAxiomAI}>
+                          <>
                             <input
                               type="hidden"
                               name="id"
                               value={prospecto.id}
                             />
+
                             <input
                               type="hidden"
                               name="caller_phone"
                               value={prospecto.caller_phone}
                             />
-                            <div className="actions-row" style={{ marginTop: 0 }}>
+
+                            <div
+                              className="actions-row"
+                              style={{ marginTop: 0 }}
+                            >
                               <input
                                 className="call-pin"
                                 type="password"
@@ -1171,22 +1176,25 @@ export default async function ProspectosPage({
                                 inputMode="numeric"
                                 autoComplete="off"
                                 placeholder="PIN de llamada"
-                                required
                                 aria-label="PIN para autorizar llamada saliente"
                               />
+
                               <button
                                 className="link-button secondary"
                                 type="submit"
+                                formAction={iniciarLlamadaAxiomAI}
+                                formNoValidate
                               >
                                 Llamar con AxiomAI
                               </button>
+
                               <div className="call-help">
                                 La llamada sale desde Telnyx y conecta al prospecto
                                 con el asistente de AxiomAI. El PIN evita llamadas
                                 no autorizadas desde el CRM.
                               </div>
                             </div>
-                          </form>
+                          </>
                         )}
                       </div>
                     </form>
