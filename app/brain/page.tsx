@@ -1677,7 +1677,19 @@ export default function BrainPage() {
             >
               <span className="brain-orb-sheen" />
               <span className="brain-orb-grid" />
-              <span className="brain-orb-core">🧠</span>
+              <img
+              src="/axiomai-logo-transparent.webp"
+              alt="AxiomAI"
+              style={{
+                width: "88%",
+                height: "88%",
+                objectFit: "contain",
+                position: "relative",
+                zIndex: 3,
+                pointerEvents: "none",
+                filter: "drop-shadow(0 0 12px rgba(93, 200, 255, 0.55))",
+              }}
+            />
             </button>
           </div>
 
