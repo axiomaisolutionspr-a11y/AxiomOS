@@ -549,6 +549,49 @@ export default function Home() {
     delete payload._next;
 
     try {
+
+      // =====================================================
+      // 1. GUARDAR PROSPECTO EN AXIOMOS CRM / NEON
+      // =====================================================
+
+      const crmResponse = await fetch("/api/prospectos-web", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const crmData = (await crmResponse
+        .json()
+        .catch(() => null)) as
+        | {
+            ok?: boolean;
+            error?: string;
+            prospectId?: string;
+          }
+        | null;
+
+      if (!crmResponse.ok || !crmData?.ok) {
+        throw new Error(
+          crmData?.error ||
+            t(
+              "No pudimos registrar el caso en AxiomOS CRM.",
+              "We could not register the case in AxiomOS CRM."
+            )
+        );
+      }
+
+      console.log(
+        "AxiomOS CRM: prospecto guardado.",
+        crmData.prospectId
+      );
+
+      // =====================================================
+      // 2. ENVIAR EMAIL DE LA SOLICITUD
+      // =====================================================
+
       const response = await fetch(
         "https://formsubmit.co/ajax/axiomaisolutionspr@gmail.com",
         {
