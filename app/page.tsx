@@ -601,84 +601,565 @@ export default function Home() {
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at top, #102040 0%, #050914 45%, #000000 100%)",
-        color: "white",
-        fontFamily: "Arial, sans-serif",
-        textAlign: "center",
-        overflowX: "hidden",
-      }}
-    >
-      <div
-        role="group"
-        aria-label={t("Selector de idioma", "Language selector")}
-        style={{
-          position: "fixed",
-          top: "16px",
-          right: "16px",
-          zIndex: 100,
-          display: "flex",
-          alignItems: "center",
-          gap: "4px",
-          padding: "4px",
-          borderRadius: "999px",
-          border: "1px solid rgba(99, 204, 255, 0.34)",
-          background: "rgba(3, 12, 27, 0.78)",
-          boxShadow: "0 8px 30px rgba(0, 0, 0, 0.28), 0 0 22px rgba(53, 190, 255, 0.10)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => changeLanguage("es")}
-          aria-pressed={language === "es"}
-          title="Español"
-          style={{
-            border: "none",
-            borderRadius: "999px",
-            padding: "8px 11px",
-            background: language === "es"
-              ? "linear-gradient(135deg, #147df5, #35d4ff)"
-              : "transparent",
-            color: "white",
-            fontSize: "12px",
-            fontWeight: 800,
-            letterSpacing: "0.5px",
-            cursor: "pointer",
-            boxShadow: language === "es" ? "0 0 16px rgba(53, 212, 255, 0.26)" : "none",
-          }}
-        >
-          ES
-        </button>
-        <button
-          type="button"
-          onClick={() => changeLanguage("en")}
-          aria-pressed={language === "en"}
-          title="English"
-          style={{
-            border: "none",
-            borderRadius: "999px",
-            padding: "8px 11px",
-            background: language === "en"
-              ? "linear-gradient(135deg, #147df5, #35d4ff)"
-              : "transparent",
-            color: "white",
-            fontSize: "12px",
-            fontWeight: 800,
-            letterSpacing: "0.5px",
-            cursor: "pointer",
-            boxShadow: language === "en" ? "0 0 16px rgba(53, 212, 255, 0.26)" : "none",
-          }}
-        >
-          EN
-        </button>
-      </div>
-
+    <main className="axiom-site">
+      <div className="ambient-layer" aria-hidden="true" />
       <style jsx>{`
+        :global(html) {
+          scroll-behavior: smooth;
+        }
+
+        :global(body) {
+          margin: 0;
+          background: #030711;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        .axiom-site {
+          position: relative;
+          min-height: 100vh;
+          color: #f7fbff;
+          font-family: Arial, Helvetica, sans-serif;
+          background:
+            radial-gradient(circle at 82% 8%, rgba(0, 153, 255, 0.13), transparent 30%),
+            radial-gradient(circle at 12% 24%, rgba(71, 65, 255, 0.08), transparent 28%),
+            linear-gradient(180deg, #071120 0%, #030711 42%, #010307 100%);
+          overflow-x: hidden;
+        }
+
+        @keyframes auroraShift {
+          0%, 100% { transform: translate3d(-4%, -2%, 0) scale(1); opacity: .72; }
+          50% { transform: translate3d(6%, 4%, 0) scale(1.08); opacity: 1; }
+        }
+
+        @keyframes driftGrid {
+          from { background-position: 0 0, 0 0; }
+          to { background-position: 64px 32px, 32px 64px; }
+        }
+
+        @keyframes scan {
+          0% { transform: translateY(-120%); opacity: 0; }
+          12% { opacity: .62; }
+          82% { opacity: .18; }
+          100% { transform: translateY(560%); opacity: 0; }
+        }
+
+        @keyframes tickerMove {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+
+        @keyframes signalPulse {
+          0%, 100% { transform: scale(.82); opacity: .48; }
+          50% { transform: scale(1.32); opacity: 1; }
+        }
+
+        @keyframes orbitSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes borderFlow {
+          0% { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
+          18% { opacity: .75; }
+          48% { opacity: .12; }
+          100% { transform: translateX(260%) skewX(-18deg); opacity: 0; }
+        }
+
+        @keyframes floatChip {
+          0%, 100% { transform: translate3d(0, 0, 0); }
+          50% { transform: translate3d(0, -9px, 0); }
+        }
+
+        @keyframes revealUp {
+          from { opacity: 0; transform: translateY(28px); filter: blur(7px); }
+          to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+
+        .ambient-layer {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          overflow: hidden;
+        }
+
+        .ambient-layer::before {
+          content: "";
+          position: absolute;
+          width: 70vw;
+          height: 70vw;
+          min-width: 700px;
+          min-height: 700px;
+          right: -22vw;
+          top: -30vw;
+          border-radius: 50%;
+          background:
+            radial-gradient(circle at 35% 35%, rgba(50, 220, 255, .16), transparent 33%),
+            radial-gradient(circle at 62% 58%, rgba(37, 103, 255, .18), transparent 38%),
+            radial-gradient(circle at 50% 50%, rgba(134, 73, 255, .08), transparent 58%);
+          filter: blur(42px);
+          animation: auroraShift 12s ease-in-out infinite;
+        }
+
+        .ambient-layer::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background:
+            linear-gradient(rgba(73, 178, 255, .018) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(73, 178, 255, .018) 1px, transparent 1px);
+          background-size: 64px 64px;
+          mask-image: linear-gradient(to bottom, rgba(0,0,0,.85), transparent 78%);
+          animation: driftGrid 18s linear infinite;
+        }
+
+        .topbar,
+        .shell,
+        .footer {
+          position: relative;
+          z-index: 2;
+        }
+
+        .reveal {
+          animation: revealUp .9s cubic-bezier(.2,.7,.2,1) both;
+          animation-timeline: view();
+          animation-range: entry 8% cover 24%;
+        }
+
+        .shell {
+          width: min(1180px, calc(100% - 40px));
+          margin: 0 auto;
+        }
+
+        .topbar {
+          position: sticky;
+          top: 0;
+          z-index: 90;
+          border-bottom: 1px solid rgba(128, 206, 255, 0.10);
+          background: rgba(3, 8, 18, 0.78);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+        }
+
+        .nav {
+          height: 72px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 24px;
+        }
+
+        .brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          color: white;
+          text-decoration: none;
+          font-weight: 900;
+          letter-spacing: -0.4px;
+        }
+
+        .brand-mark {
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
+          display: grid;
+          place-items: center;
+          background: linear-gradient(135deg, #1579ff, #36d9ff);
+          color: white;
+          box-shadow: 0 0 26px rgba(45, 182, 255, 0.26);
+          font-size: 18px;
+        }
+
+        .brand small {
+          display: block;
+          margin-top: 2px;
+          color: #66809f;
+          font-size: 9px;
+          letter-spacing: 2px;
+          font-weight: 800;
+        }
+
+        .nav-links {
+          display: flex;
+          align-items: center;
+          gap: 30px;
+        }
+
+        .nav-links a {
+          color: #a9b8cb;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 700;
+          transition: color 160ms ease;
+        }
+
+        .nav-links a:hover {
+          color: white;
+        }
+
+        .nav-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .lang {
+          display: flex;
+          gap: 4px;
+          padding: 3px;
+          border: 1px solid rgba(93, 183, 255, 0.18);
+          border-radius: 999px;
+          background: rgba(9, 18, 34, 0.88);
+        }
+
+        .lang button {
+          border: 0;
+          min-width: 34px;
+          height: 30px;
+          border-radius: 999px;
+          background: transparent;
+          color: #7f93ac;
+          font-size: 10px;
+          font-weight: 900;
+          cursor: pointer;
+        }
+
+        .lang button.active {
+          background: linear-gradient(135deg, #1680ff, #37d9ff);
+          color: white;
+          box-shadow: 0 0 14px rgba(42, 180, 255, 0.22);
+        }
+
+        .nav-cta,
+        .primary,
+        .secondary {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          text-decoration: none;
+          border-radius: 12px;
+          font-weight: 850;
+          transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+        }
+
+        .nav-cta {
+          min-height: 40px;
+          padding: 0 16px;
+          background: white;
+          color: #07111f;
+          font-size: 12px;
+        }
+
+        .nav-cta:hover,
+        .primary:hover,
+        .secondary:hover {
+          transform: translateY(-2px);
+        }
+
+        .hero {
+          position: relative;
+          min-height: calc(100svh - 72px);
+          display: grid;
+          grid-template-columns: 1.02fr 0.98fr;
+          gap: 74px;
+          align-items: center;
+          padding: 96px 0 92px;
+        }
+
+        .hero::before {
+          content: "";
+          position: absolute;
+          width: 520px;
+          height: 520px;
+          right: -180px;
+          top: 50px;
+          border-radius: 50%;
+          background: rgba(21, 126, 255, 0.08);
+          filter: blur(90px);
+          pointer-events: none;
+        }
+
+        .eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          padding: 8px 12px;
+          border: 1px solid rgba(85, 196, 255, 0.16);
+          border-radius: 999px;
+          background: rgba(11, 24, 43, 0.66);
+          color: #7adfff;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 1.8px;
+          text-transform: uppercase;
+        }
+
+        .pulse {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #43d8ff;
+          box-shadow: 0 0 16px rgba(67, 216, 255, 0.85);
+        }
+
+        .hero h1 {
+          margin: 24px 0 22px;
+          max-width: 760px;
+          font-size: clamp(54px, 6.7vw, 96px);
+          line-height: 0.94;
+          letter-spacing: -5.3px;
+          font-weight: 900;
+        }
+
+        .hero h1 span {
+          background: linear-gradient(135deg, #ffffff 0%, #8eeaff 44%, #2a8cff 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+
+        .hero-lead {
+          max-width: 670px;
+          margin: 0;
+          color: #a6b8ce;
+          font-size: clamp(17px, 1.8vw, 21px);
+          line-height: 1.7;
+        }
+
+        .hero-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin-top: 34px;
+        }
+
+        .primary {
+          min-height: 52px;
+          padding: 0 22px;
+          border: 1px solid rgba(74, 211, 255, 0.42);
+          background: linear-gradient(135deg, #1378ff 0%, #21a7ff 58%, #43dcff 100%);
+          color: white;
+          font-size: 14px;
+          box-shadow: 0 16px 45px rgba(18, 126, 255, 0.20);
+        }
+
+        .secondary {
+          min-height: 52px;
+          padding: 0 22px;
+          border: 1px solid rgba(142, 195, 235, 0.18);
+          background: rgba(8, 18, 33, 0.72);
+          color: #dcecff;
+          font-size: 14px;
+        }
+
+        .micro-proof {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 9px;
+          margin-top: 28px;
+        }
+
+        .micro-proof span {
+          padding: 8px 11px;
+          border-radius: 9px;
+          background: rgba(11, 23, 40, 0.55);
+          border: 1px solid rgba(104, 183, 238, 0.10);
+          color: #7f93ac;
+          font-size: 11px;
+          font-weight: 700;
+        }
+
+        .hero-visual {
+          position: relative;
+          perspective: 1200px;
+        }
+
+        .hero-visual::before {
+          content: "";
+          position: absolute;
+          width: 88%;
+          height: 76%;
+          left: 7%;
+          top: 14%;
+          border-radius: 50%;
+          background: rgba(27, 157, 255, .14);
+          filter: blur(70px);
+          transform: translateZ(-1px);
+          pointer-events: none;
+        }
+
+        .console {
+          --rx: 0deg;
+          --ry: 0deg;
+          --mx: 50%;
+          --my: 50%;
+          position: relative;
+          overflow: hidden;
+          border: 1px solid rgba(83, 188, 255, 0.20);
+          border-radius: 28px;
+          background:
+            linear-gradient(180deg, rgba(11, 25, 47, 0.94), rgba(5, 13, 27, 0.96));
+          box-shadow:
+            0 42px 125px rgba(0, 0, 0, 0.48),
+            0 0 75px rgba(32, 146, 255, 0.13);
+          transform: rotateX(var(--rx)) rotateY(var(--ry));
+          transform-style: preserve-3d;
+          transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+        }
+
+        .console:hover {
+          border-color: rgba(86, 206, 255, .33);
+          box-shadow:
+            0 48px 140px rgba(0, 0, 0, 0.52),
+            0 0 90px rgba(32, 146, 255, 0.18);
+        }
+
+        .console-cursor-light {
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+          background: radial-gradient(
+            circle 190px at var(--mx) var(--my),
+            rgba(61, 212, 255, .14),
+            rgba(42, 115, 255, .055) 35%,
+            transparent 72%
+          );
+        }
+
+        .console-scan {
+          position: absolute;
+          z-index: 3;
+          left: 5%;
+          right: 5%;
+          top: 0;
+          height: 1px;
+          pointer-events: none;
+          background: linear-gradient(90deg, transparent, rgba(86, 232, 255, .95), transparent);
+          box-shadow: 0 0 16px rgba(72, 216, 255, .75);
+          animation: scan 4.8s ease-in-out infinite;
+        }
+
+        .console-orbit {
+          position: absolute;
+          z-index: 1;
+          width: 230px;
+          height: 230px;
+          right: -105px;
+          top: 62px;
+          border-radius: 50%;
+          border: 1px solid rgba(84, 198, 255, .12);
+          box-shadow:
+            inset 0 0 40px rgba(44, 139, 255, .05),
+            0 0 55px rgba(44, 139, 255, .05);
+          animation: orbitSpin 18s linear infinite;
+          pointer-events: none;
+        }
+
+        .console-orbit::before,
+        .console-orbit::after {
+          content: "";
+          position: absolute;
+          border-radius: 50%;
+          background: #58dcff;
+          box-shadow: 0 0 16px rgba(88, 220, 255, .9);
+        }
+
+        .console-orbit::before {
+          width: 7px; height: 7px; top: 20px; left: 50%;
+        }
+
+        .console-orbit::after {
+          width: 5px; height: 5px; bottom: 42px; left: 18px;
+          background: #a779ff;
+          box-shadow: 0 0 15px rgba(167, 121, 255, .9);
+        }
+
+        .console::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background:
+            linear-gradient(90deg, rgba(58, 179, 255, 0.035) 1px, transparent 1px),
+            linear-gradient(rgba(58, 179, 255, 0.035) 1px, transparent 1px);
+          background-size: 34px 34px;
+          mask-image: linear-gradient(to bottom, rgba(0,0,0,.85), transparent 72%);
+        }
+
+        .console-top {
+          position: relative;
+          z-index: 2;
+          height: 54px;
+          padding: 0 18px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid rgba(123, 199, 255, 0.10);
+        }
+
+        .console-title {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          color: #c8ddf4;
+          font-size: 11px;
+          font-weight: 850;
+          letter-spacing: 0.4px;
+        }
+
+        .status {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          color: #6ee6bd;
+          font-size: 10px;
+          font-weight: 800;
+        }
+
+        .status i {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #59e6b5;
+          box-shadow: 0 0 12px rgba(89, 230, 181, 0.7);
+        }
+
+        .brand-panel {
+          position: relative;
+          z-index: 2;
+          margin: 18px;
+          padding: 18px;
+          border: 1px solid rgba(87, 176, 241, 0.12);
+          border-radius: 20px;
+          background: #020711;
+          overflow: hidden;
+        }
+
+        .brand-panel::after {
+          content: "";
+          position: absolute;
+          width: 42%;
+          height: 160%;
+          left: -58%;
+          top: -30%;
+          background: linear-gradient(90deg, transparent, rgba(148, 229, 255, .16), transparent);
+          transform: skewX(-18deg);
+          animation: borderFlow 6.5s ease-in-out infinite;
+          pointer-events: none;
+        }
+
+        .brand-panel > img {
+          width: 100%;
+          height: auto;
+          display: block;
+          object-fit: contain;
+        }
+
         @keyframes homeBrainAura {
           0%, 100% {
             transform: scale(0.94);
@@ -1352,21 +1833,37 @@ export default function Home() {
 
         .home-brain-art {
           position: absolute;
-          inset: -2%;
-          width: 104%;
-          height: 104%;
-          object-fit: cover;
+          left: 14%;
+          top: 14%;
+          width: 72%;
+          height: 72%;
+          object-fit: contain;
           object-position: center;
           border-radius: 50%;
           z-index: 2;
           pointer-events: none;
           user-select: none;
           -webkit-user-drag: none;
-          transform: scale(1.035);
-          transition: filter 160ms ease;
+
+          transform:
+            translate3d(
+              var(--brain-x, 0px),
+              var(--brain-y, 0px),
+              0
+            )
+            scale(0.96);
+
+          transform-origin: center;
+          transition:
+            transform 70ms ease-out,
+            filter 160ms ease;
+
+          will-change: transform, filter;
+
           filter:
-            saturate(1.08)
-            contrast(1.04)
+            saturate(1.16)
+            contrast(1.12)
+            brightness(0.88)
             drop-shadow(0 0 8px rgba(70, 211, 255, 0.25));
         }
 
@@ -1611,1834 +2108,2434 @@ export default function Home() {
           transform: translateX(4px);
         }
 
-        .home-solutions-kicker {
+
+
+        /* Integración del efecto ORIGINAL en la página premium */
+        .brand-panel .home-logo-wrap {
+          width: min(100%, 520px);
+          margin: -8px auto -16px;
+        }
+
+        .premium-original-brain {
+          display: grid;
+          justify-items: start;
+          margin: 0 0 18px;
+        }
+
+        .premium-original-brain .home-brain-shell {
           margin: 0 0 10px;
-          color: #55c7ff;
-          font-size: 12px;
-          font-weight: 900;
-          letter-spacing: 3.2px;
         }
 
-        .home-service-card {
-          isolation: isolate;
-          transition:
-            transform 220ms ease,
-            border-color 220ms ease,
-            box-shadow 220ms ease;
+        @media (max-width: 960px) {
+          .premium-original-brain {
+            justify-items: center;
+          }
         }
 
-        .home-service-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: -1;
-          opacity: 0;
-          background:
-            radial-gradient(circle at 20% 0%, rgba(79, 211, 255, 0.18), transparent 42%),
-            linear-gradient(145deg, rgba(21, 73, 125, 0.12), transparent 58%);
-          transition: opacity 220ms ease;
+        .workflow {
+          position: relative;
+          z-index: 2;
+          padding: 0 18px 18px;
+          display: grid;
+          gap: 10px;
         }
 
-        .home-service-card::after {
-          content: "";
-          position: absolute;
-          left: 24px;
-          right: 24px;
-          bottom: 0;
-          height: 1px;
-          opacity: 0.55;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(87, 215, 255, 0.7),
-            transparent
-          );
-        }
-
-        .home-service-card:hover {
-          transform: translateY(-6px);
-          border-color: rgba(101, 218, 255, 0.58) !important;
-          box-shadow:
-            0 24px 56px rgba(0, 0, 0, 0.32),
-            0 0 32px rgba(35, 151, 255, 0.12),
-            inset 0 1px 0 rgba(255,255,255,0.04) !important;
-        }
-
-        .home-service-card:hover::before {
-          opacity: 1;
-        }
-
-        .home-service-icon {
-          width: 48px;
-          height: 48px;
-          margin-bottom: 20px;
+        .workflow-row {
+          display: grid;
+          grid-template-columns: 42px 1fr auto;
+          gap: 12px;
+          align-items: center;
+          padding: 13px 14px;
+          border: 1px solid rgba(94, 174, 233, 0.11);
           border-radius: 14px;
+          background: rgba(7, 17, 31, 0.74);
+        }
+
+        .workflow-icon {
+          width: 42px;
+          height: 42px;
           display: grid;
           place-items: center;
-          color: #effbff;
-          font-size: 23px;
-          background:
-            linear-gradient(145deg, rgba(29, 126, 244, 0.92), rgba(29, 210, 255, 0.62));
-          border: 1px solid rgba(151, 235, 255, 0.48);
-          box-shadow:
-            0 10px 24px rgba(18, 111, 255, 0.22),
-            inset 0 1px 0 rgba(255,255,255,0.26);
-          transition:
-            transform 220ms ease,
-            box-shadow 220ms ease;
+          border-radius: 12px;
+          background: linear-gradient(145deg, rgba(31, 136, 255, 0.22), rgba(40, 213, 255, 0.08));
+          border: 1px solid rgba(76, 192, 255, 0.16);
+          font-size: 17px;
         }
 
-        .home-service-card:hover .home-service-icon {
-          transform: translateY(-2px) rotate(-2deg) scale(1.05);
-          box-shadow:
-            0 14px 30px rgba(24, 145, 255, 0.3),
-            0 0 24px rgba(79, 214, 255, 0.16),
-            inset 0 1px 0 rgba(255,255,255,0.3);
+        .workflow-row strong {
+          display: block;
+          color: #e8f4ff;
+          font-size: 12px;
         }
 
-        .home-service-title {
-          margin: 0 0 10px;
-          color: #ffffff;
-          font-size: 21px;
-          line-height: 1.3;
-          font-weight: 850;
+        .workflow-row small {
+          display: block;
+          margin-top: 4px;
+          color: #6f87a3;
+          font-size: 10px;
+          line-height: 1.4;
         }
 
-        .home-service-copy {
-          margin: 0;
-          min-height: 82px;
-          color: #aebed2;
-          font-size: 15.5px;
-          line-height: 1.68;
-        }
-
-        .home-service-meta {
-          margin-top: 22px;
-          padding-top: 16px;
-          border-top: 1px solid rgba(116, 199, 255, 0.12);
-          color: #6fcfff;
-          font-size: 11px;
-          line-height: 1.5;
-          letter-spacing: 1.1px;
-          font-weight: 800;
+        .workflow-row b {
+          color: #69ddff;
+          font-size: 9px;
+          letter-spacing: 1px;
           text-transform: uppercase;
         }
 
-        .home-automation-card {
-          isolation: isolate;
-          transition:
-            transform 190ms ease,
-            border-color 190ms ease,
-            box-shadow 190ms ease;
+        .signal-strip {
+          position: relative;
+          z-index: 2;
+          overflow: hidden;
+          border-top: 1px solid rgba(100, 190, 244, .09);
+          border-bottom: 1px solid rgba(100, 190, 244, .09);
+          background: rgba(4, 12, 24, .62);
+          mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
         }
 
-        .home-automation-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: -1;
-          opacity: 0;
-          background:
-            radial-gradient(circle at 16% 0%, rgba(59, 191, 255, 0.12), transparent 46%);
-          transition: opacity 190ms ease;
-        }
-
-        .home-automation-card:hover {
-          transform: translateY(-4px);
-          border-color: rgba(98, 209, 255, 0.46) !important;
-          box-shadow:
-            0 18px 38px rgba(0, 0, 0, 0.25),
-            0 0 24px rgba(29, 139, 255, 0.09),
-            inset 0 1px 0 rgba(255,255,255,0.025) !important;
-        }
-
-        .home-automation-card:hover::before {
-          opacity: 1;
-        }
-
-        .home-automation-head {
+        .signal-track {
+          width: max-content;
           display: flex;
           align-items: center;
+          gap: 22px;
+          padding: 13px 0;
+          animation: tickerMove 24s linear infinite;
+        }
+
+        .signal-item {
+          display: inline-flex;
+          align-items: center;
           gap: 12px;
-          margin-bottom: 12px;
+          color: #7893ae;
+          font-size: 10px;
+          font-weight: 850;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          white-space: nowrap;
         }
 
-        .home-automation-icon {
-          width: 34px;
-          height: 34px;
-          flex: 0 0 34px;
-          border-radius: 10px;
-          display: grid;
-          place-items: center;
-          color: #effcff;
-          font-size: 16px;
+        .signal-item i {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: #50d9ff;
+          box-shadow: 0 0 12px rgba(80, 217, 255, .86);
+          animation: signalPulse 1.8s ease-in-out infinite;
+        }
+
+        .experience {
+          position: relative;
+          margin-top: 50px;
+          padding: 26px;
+          border: 1px solid rgba(95, 193, 249, .14);
+          border-radius: 24px;
           background:
-            linear-gradient(145deg, rgba(22, 106, 218, 0.9), rgba(28, 195, 238, 0.54));
-          border: 1px solid rgba(118, 223, 255, 0.36);
-          box-shadow:
-            0 8px 18px rgba(18, 101, 220, 0.16),
-            inset 0 1px 0 rgba(255,255,255,0.2);
-          transition:
-            transform 190ms ease,
-            box-shadow 190ms ease;
+            radial-gradient(circle at 50% -10%, rgba(37, 162, 255, .11), transparent 34%),
+            rgba(5, 14, 28, .72);
+          overflow: hidden;
         }
 
-        .home-automation-card:hover .home-automation-icon {
-          transform: translateY(-1px) scale(1.04);
-          box-shadow:
-            0 10px 22px rgba(21, 132, 235, 0.23),
-            inset 0 1px 0 rgba(255,255,255,0.22);
+        .experience-line {
+          position: absolute;
+          left: 8%;
+          right: 8%;
+          top: 50%;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(74, 202, 255, .42), rgba(80, 129, 255, .35), transparent);
+          box-shadow: 0 0 18px rgba(61, 177, 255, .16);
         }
 
-        .home-automation-title {
+        .experience-grid {
+          position: relative;
+          z-index: 2;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+        }
+
+        .experience-node {
+          min-height: 145px;
+          padding: 18px;
+          border: 1px solid rgba(99, 186, 241, .12);
+          border-radius: 17px;
+          background: rgba(4, 12, 24, .86);
+          transition: transform 220ms ease, border-color 220ms ease;
+        }
+
+        .experience-node:hover {
+          transform: translateY(-6px);
+          border-color: rgba(78, 210, 255, .30);
+        }
+
+        .experience-node b {
+          display: inline-grid;
+          place-items: center;
+          width: 30px;
+          height: 30px;
+          border-radius: 10px;
+          background: rgba(40, 164, 255, .12);
+          border: 1px solid rgba(80, 200, 255, .16);
+          color: #62ddff;
+          font-size: 10px;
+        }
+
+        .experience-node strong {
+          display: block;
+          margin-top: 18px;
+          color: #edf7ff;
+          font-size: 13px;
+        }
+
+        .experience-node span {
+          display: block;
+          margin-top: 7px;
+          color: #6f86a0;
+          font-size: 10px;
+          line-height: 1.55;
+        }
+
+        .section {
+          padding: 110px 0;
+        }
+
+        .section-border {
+          border-top: 1px solid rgba(122, 193, 243, 0.08);
+        }
+
+        .section-kicker {
+          color: #46d0ff;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 2.4px;
+          text-transform: uppercase;
+        }
+
+        .section h2 {
+          margin: 14px 0 14px;
+          max-width: 760px;
+          font-size: clamp(34px, 5vw, 58px);
+          line-height: 1.05;
+          letter-spacing: -2.2px;
+        }
+
+        .section-copy {
+          max-width: 690px;
           margin: 0;
-          color: #dff6ff;
-          font-size: 17px;
-          line-height: 1.35;
-          font-weight: 800;
+          color: #8297b0;
+          font-size: 16px;
+          line-height: 1.75;
         }
 
-        .home-automation-copy {
-          margin: 0;
-          color: #afbed0;
-          line-height: 1.62;
-          font-size: 14.5px;
+        .bento {
+          display: grid;
+          grid-template-columns: repeat(12, 1fr);
+          gap: 14px;
+          margin-top: 44px;
         }
 
-        .home-smart-cta {
+        .card {
           position: relative;
           overflow: hidden;
-          isolation: isolate;
+          padding: 26px;
+          border: 1px solid rgba(104, 188, 244, 0.13);
+          border-radius: 22px;
+          background: linear-gradient(180deg, rgba(10, 23, 42, 0.84), rgba(5, 13, 25, 0.9));
+          min-height: 220px;
           transition:
-            transform 220ms ease,
-            border-color 220ms ease,
-            box-shadow 220ms ease;
+            transform 260ms cubic-bezier(.2,.75,.2,1),
+            border-color 260ms ease,
+            box-shadow 260ms ease,
+            background 260ms ease;
         }
 
-        .home-smart-cta::before {
+        .card:hover {
+          transform: translateY(-7px);
+          border-color: rgba(88, 205, 255, .28);
+          background: linear-gradient(180deg, rgba(12, 29, 53, 0.92), rgba(5, 14, 27, 0.94));
+          box-shadow: 0 22px 65px rgba(0,0,0,.24), 0 0 38px rgba(31, 153, 255, .07);
+        }
+
+        .card::after {
           content: "";
           position: absolute;
-          inset: 0;
-          z-index: -1;
-          pointer-events: none;
-          background:
-            radial-gradient(circle at 16% 14%, rgba(94, 229, 255, 0.2), transparent 34%),
-            radial-gradient(circle at 86% 82%, rgba(28, 112, 255, 0.2), transparent 38%);
+          width: 180px;
+          height: 180px;
+          top: -90px;
+          right: -70px;
+          border-radius: 50%;
+          background: rgba(28, 143, 255, 0.08);
+          filter: blur(35px);
         }
 
-        .home-smart-cta::after {
-          content: "";
-          position: absolute;
-          left: 10%;
-          right: 10%;
-          bottom: 0;
-          height: 1px;
-          background:
-            linear-gradient(90deg, transparent, rgba(94, 226, 255, 0.76), transparent);
-          opacity: 0.75;
+        .card.wide {
+          grid-column: span 7;
         }
 
-        .home-smart-cta:hover {
-          transform: translateY(-4px);
-          border-color: rgba(106, 221, 255, 0.64) !important;
-          box-shadow:
-            0 24px 58px rgba(0, 0, 0, 0.3),
-            0 0 38px rgba(34, 151, 255, 0.14),
-            inset 0 1px 0 rgba(255,255,255,0.04) !important;
+        .card.medium {
+          grid-column: span 5;
         }
 
-        .home-smart-cta-icon {
-          width: 52px;
-          height: 52px;
-          border-radius: 16px;
-          display: grid;
-          place-items: center;
-          margin: 0 auto 18px;
+        .card.third {
+          grid-column: span 4;
+        }
+
+        .card-index {
+          color: #3ccfff;
+          font-size: 10px;
+          letter-spacing: 1.7px;
+          font-weight: 900;
+        }
+
+        .card h3 {
+          position: relative;
+          z-index: 2;
+          margin: 34px 0 10px;
           font-size: 24px;
-          background:
-            linear-gradient(145deg, rgba(26, 121, 237, 0.94), rgba(42, 213, 255, 0.7));
-          border: 1px solid rgba(154, 235, 255, 0.5);
-          box-shadow:
-            0 12px 28px rgba(17, 112, 255, 0.22),
-            inset 0 1px 0 rgba(255,255,255,0.28);
-          transition:
-            transform 220ms ease,
-            box-shadow 220ms ease;
+          letter-spacing: -0.7px;
         }
 
-        .home-smart-cta:hover .home-smart-cta-icon {
-          transform: translateY(-2px) scale(1.05);
-          box-shadow:
-            0 15px 34px rgba(20, 143, 255, 0.3),
-            0 0 28px rgba(73, 214, 255, 0.15),
-            inset 0 1px 0 rgba(255,255,255,0.3);
-        }
-
-        .home-smart-cta-label {
-          color: #6edcff;
-          font-size: 11px;
-          font-weight: 900;
-          letter-spacing: 2.6px;
-          text-transform: uppercase;
-          margin-bottom: 10px;
-        }
-
-        .home-smart-cta-title {
+        .card p {
+          position: relative;
+          z-index: 2;
           margin: 0;
-          color: #ffffff;
-          font-size: clamp(25px, 4vw, 34px);
-          line-height: 1.22;
-          font-weight: 900;
-        }
-
-        .home-smart-cta-copy {
-          max-width: 700px;
-          margin: 14px auto 0;
-          color: #b7c9dc;
-          font-size: 16px;
+          max-width: 500px;
+          color: #8094ad;
+          font-size: 14px;
           line-height: 1.7;
         }
 
-        .home-smart-cta-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 19px;
-          color: #9feaff;
-          font-size: 13px;
+        .card-tags {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px;
+          margin-top: 24px;
+        }
+
+        .card-tags span {
+          padding: 7px 9px;
+          border-radius: 8px;
+          background: rgba(48, 151, 230, 0.08);
+          color: #74bfe8;
+          font-size: 9px;
           font-weight: 850;
-          letter-spacing: 0.3px;
-          text-decoration: none;
+          text-transform: uppercase;
+          letter-spacing: 0.7px;
         }
 
-        .home-smart-cta-link span {
-          display: inline-block;
-          transition: transform 180ms ease;
+        .process-grid {
+          display: grid;
+          grid-template-columns: 0.85fr 1.15fr;
+          gap: 60px;
+          align-items: start;
+          margin-top: 52px;
         }
 
-        .home-smart-cta-link:hover span {
-          transform: translateY(3px);
+        .process-list {
+          display: grid;
+          gap: 12px;
         }
 
-        @media (max-width: 700px) {
-          .home-hero-section {
-            min-height: auto !important;
-            justify-content: flex-start !important;
-            padding: 24px 14px 64px !important;
-          }
+        .process-item {
+          display: grid;
+          grid-template-columns: 48px 1fr;
+          gap: 16px;
+          padding: 20px;
+          border-radius: 18px;
+          border: 1px solid rgba(101, 184, 240, 0.11);
+          background: rgba(6, 15, 28, 0.68);
+        }
 
-          .home-logo-wrap {
-            width: min(360px, 88vw);
-            margin: 0 auto 10px;
-            border-radius: 0;
-            overflow: visible;
-            filter: drop-shadow(0 0 22px rgba(31, 146, 255, 0.10));
-          }
+        .step {
+          width: 48px;
+          height: 48px;
+          display: grid;
+          place-items: center;
+          border-radius: 14px;
+          background: linear-gradient(145deg, rgba(24, 126, 255, 0.22), rgba(55, 218, 255, 0.08));
+          color: #6ee1ff;
+          font-size: 12px;
+          font-weight: 900;
+        }
 
-          /* En móvil eliminamos por completo el marco/inset que podía revelar
-             la silueta rectangular y hacemos una transición todavía más larga. */
-          .home-logo-wrap::after {
+        .process-item h3 {
+          margin: 2px 0 7px;
+          font-size: 17px;
+        }
+
+        .process-item p {
+          margin: 0;
+          color: #788da6;
+          font-size: 13px;
+          line-height: 1.65;
+        }
+
+        .brain-spotlight {
+          position: sticky;
+          top: 104px;
+          padding: 34px;
+          border-radius: 26px;
+          border: 1px solid rgba(105, 201, 255, 0.18);
+          background:
+            radial-gradient(circle at 82% 12%, rgba(41, 155, 255, 0.16), transparent 30%),
+            linear-gradient(180deg, rgba(11, 26, 48, 0.96), rgba(5, 14, 28, 0.96));
+          box-shadow: 0 28px 80px rgba(0,0,0,.28);
+        }
+
+        .brain-orb {
+          width: 74px;
+          height: 74px;
+          display: grid;
+          place-items: center;
+          border-radius: 22px;
+          background: linear-gradient(145deg, rgba(17, 117, 255, 0.28), rgba(49, 220, 255, 0.10));
+          border: 1px solid rgba(90, 202, 255, 0.20);
+          font-size: 32px;
+          box-shadow: 0 0 40px rgba(27, 154, 255, 0.16);
+        }
+
+        .brain-spotlight h3 {
+          margin: 24px 0 12px;
+          font-size: 30px;
+          letter-spacing: -1px;
+        }
+
+        .brain-spotlight p {
+          margin: 0 0 24px;
+          color: #859bb5;
+          font-size: 14px;
+          line-height: 1.75;
+        }
+
+        .cta-band {
+          position: relative;
+          overflow: hidden;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 30px;
+          align-items: center;
+          padding: 40px;
+          border-radius: 28px;
+          border: 1px solid rgba(90, 200, 255, 0.18);
+          background:
+            radial-gradient(circle at 82% 20%, rgba(42, 193, 255, 0.14), transparent 28%),
+            linear-gradient(135deg, rgba(13, 44, 83, 0.96), rgba(8, 26, 52, 0.98));
+        }
+
+        .cta-band::after {
+          content: "";
+          position: absolute;
+          width: 36%;
+          height: 190%;
+          left: -52%;
+          top: -46%;
+          background: linear-gradient(90deg, transparent, rgba(139, 226, 255, .11), transparent);
+          transform: skewX(-18deg);
+          animation: borderFlow 7.2s ease-in-out infinite;
+          pointer-events: none;
+        }
+
+        .cta-band h3 {
+          margin: 0 0 9px;
+          font-size: clamp(26px, 4vw, 42px);
+          letter-spacing: -1.3px;
+        }
+
+        .cta-band p {
+          margin: 0;
+          max-width: 690px;
+          color: #9ab0c9;
+          line-height: 1.7;
+          font-size: 14px;
+        }
+
+        .contact-grid {
+          display: grid;
+          grid-template-columns: 0.85fr 1.15fr;
+          gap: 56px;
+          align-items: start;
+          margin-top: 46px;
+        }
+
+        .contact-copy {
+          position: sticky;
+          top: 104px;
+        }
+
+        .contact-copy h3 {
+          margin: 0 0 14px;
+          font-size: 29px;
+          letter-spacing: -0.8px;
+        }
+
+        .contact-copy p {
+          margin: 0;
+          color: #8296ae;
+          line-height: 1.75;
+          font-size: 14px;
+        }
+
+        .contact-lines {
+          display: grid;
+          gap: 10px;
+          margin-top: 28px;
+        }
+
+        .contact-line {
+          padding: 14px 15px;
+          border-radius: 13px;
+          border: 1px solid rgba(99, 182, 238, 0.11);
+          background: rgba(7, 16, 30, 0.66);
+          color: #a8c1da;
+          font-size: 12px;
+        }
+
+        .brain-return {
+          margin-top: 24px;
+          padding: 18px;
+          border: 1px solid rgba(73, 213, 255, 0.18);
+          border-radius: 16px;
+          background: rgba(11, 37, 61, 0.46);
+        }
+
+        .brain-return strong {
+          display: block;
+          color: #68e0ff;
+          font-size: 12px;
+          margin-bottom: 6px;
+        }
+
+        .brain-return p {
+          margin: 0;
+          color: #9fb3c9;
+          font-size: 12px;
+          line-height: 1.6;
+        }
+
+        .form-card {
+          display: grid;
+          gap: 17px;
+          padding: 30px;
+          border-radius: 24px;
+          border: 1px solid rgba(103, 191, 248, 0.16);
+          background: linear-gradient(180deg, rgba(7, 17, 32, 0.94), rgba(3, 10, 20, 0.97));
+          box-shadow: 0 30px 90px rgba(0,0,0,.30);
+        }
+
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px;
+        }
+
+        .field {
+          display: grid;
+          gap: 8px;
+        }
+
+        .field label {
+          color: #a9bdd3;
+          font-size: 11px;
+          font-weight: 850;
+        }
+
+        .field input,
+        .field textarea {
+          width: 100%;
+          padding: 14px 15px;
+          border-radius: 12px;
+          border: 1px solid rgba(93, 171, 227, 0.18);
+          outline: none;
+          background: #050d19;
+          color: white;
+          font: inherit;
+          font-size: 13px;
+          transition: border-color 160ms ease, box-shadow 160ms ease;
+        }
+
+        .field input:focus,
+        .field textarea:focus {
+          border-color: rgba(73, 207, 255, 0.55);
+          box-shadow: 0 0 0 3px rgba(53, 178, 255, 0.08);
+        }
+
+        .field textarea {
+          min-height: 150px;
+          resize: vertical;
+          line-height: 1.6;
+        }
+
+        .submit {
+          min-height: 52px;
+          border: 0;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #1378ff, #42dfff);
+          color: white;
+          font-size: 13px;
+          font-weight: 900;
+          cursor: pointer;
+          box-shadow: 0 16px 40px rgba(26, 139, 255, 0.18);
+        }
+
+        .submit:disabled {
+          cursor: wait;
+          opacity: 0.66;
+        }
+
+        .error {
+          padding: 12px 14px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 110, 110, 0.25);
+          background: rgba(93, 20, 31, 0.30);
+          color: #ffd1d1;
+          font-size: 12px;
+          line-height: 1.5;
+          text-align: center;
+        }
+
+        .form-note {
+          margin: 0;
+          text-align: center;
+          color: #5f748e;
+          font-size: 10px;
+        }
+
+        .footer {
+          padding: 34px 0 46px;
+          border-top: 1px solid rgba(117, 190, 239, 0.08);
+          color: #536a85;
+          font-size: 11px;
+        }
+
+        .footer-inner {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 20px;
+        }
+
+        @media (max-width: 960px) {
+          .nav-links {
             display: none;
           }
 
-          .home-logo-wrap::before {
-            inset: 1% -4% -1%;
-            filter: blur(22px);
-            transform: scale(1.12);
-            background:
-              radial-gradient(
-                ellipse 64% 60% at 50% 48%,
-                rgba(0, 2, 10, 0.95) 0%,
-                rgba(1, 8, 23, 0.82) 40%,
-                rgba(5, 20, 48, 0.48) 61%,
-                rgba(9, 30, 65, 0.20) 76%,
-                rgba(12, 35, 72, 0.06) 87%,
-                transparent 95%
-              );
+          .hero {
+            grid-template-columns: 1fr;
+            gap: 44px;
+            min-height: auto;
+            padding: 70px 0 80px;
           }
 
-          .home-logo-image {
-            border-radius: 0;
-            -webkit-mask-image:
-              radial-gradient(
-                ellipse 65% 61% at 50% 49%,
-                #000 0%,
-                #000 51%,
-                rgba(0,0,0,0.95) 59%,
-                rgba(0,0,0,0.76) 68%,
-                rgba(0,0,0,0.45) 77%,
-                rgba(0,0,0,0.18) 86%,
-                transparent 95%
-              );
-            mask-image:
-              radial-gradient(
-                ellipse 65% 61% at 50% 49%,
-                #000 0%,
-                #000 51%,
-                rgba(0,0,0,0.95) 59%,
-                rgba(0,0,0,0.76) 68%,
-                rgba(0,0,0,0.45) 77%,
-                rgba(0,0,0,0.18) 86%,
-                transparent 95%
-              );
+          .hero-copy {
+            text-align: center;
           }
 
-          /* V108: en móvil mantenemos activas las mismas capas del cerebro del logo
-             que se usan en desktop. Están dimensionadas en porcentajes para que
-             sigan contenidas dentro del logo y puedan seguir el dedo sin deformarse. */
-          .home-logo-brain-cover {
-            display: block;
-            left: 38.5%;
-            top: 43.4%;
-            width: 22.8%;
-            height: 24.2%;
+          .hero-lead {
+            margin-left: auto;
+            margin-right: auto;
           }
 
-          .home-logo-brain-follower {
-            display: block;
-            left: 39.0%;
-            top: 43.7%;
-            width: 21.4%;
-            height: 22.6%;
-            transition: transform 55ms linear;
+          .hero-actions,
+          .micro-proof {
+            justify-content: center;
           }
 
-          .home-logo-brain-glow {
-            display: block;
+          .hero-visual {
+            width: min(680px, 100%);
+            margin: 0 auto;
           }
 
-          .home-logo-halo {
-            opacity: 0.42;
+          .card.wide,
+          .card.medium,
+          .card.third {
+            grid-column: span 6;
           }
 
-          .home-logo-current-line {
-            stroke-width: 2.15;
+          .experience-grid {
+            grid-template-columns: repeat(2, 1fr);
           }
 
-          .home-brain-shell {
-            width: 156px;
-            height: 156px;
-            margin-top: 0;
+          .process-grid,
+          .contact-grid {
+            grid-template-columns: 1fr;
           }
 
-          .home-brain-launcher {
-            width: 116px;
-            height: 116px;
-          }
-
-          .home-brain-icon {
-            font-size: 42px;
-          }
-
-          .home-brain-word {
-            font-size: 11px;
-            letter-spacing: 1.8px;
+          .brain-spotlight,
+          .contact-copy {
+            position: relative;
+            top: auto;
           }
         }
 
-        @media (max-width: 390px) {
-          .home-logo-wrap {
-            width: min(330px, 86vw);
-          }
 
+        /* ===== ELECTRICIDAD VISIBLE: LOGO + BRAIN ===== */
+        .home-logo-overlay {
+          z-index: 12 !important;
+          opacity: 1 !important;
+          mix-blend-mode: screen;
+          filter:
+            drop-shadow(0 0 6px rgba(76, 225, 255, 0.75))
+            drop-shadow(0 0 14px rgba(62, 137, 255, 0.32));
+        }
+
+        .home-logo-current-line {
+          stroke-width: 5.2 !important;
+          stroke-dasharray: 10 28 !important;
+          animation-duration: 1.45s !important;
+          opacity: 1 !important;
+        }
+
+        .home-logo-current-cyan {
+          stroke: rgba(202, 251, 255, 0.99) !important;
+          filter:
+            drop-shadow(0 0 4px rgba(255,255,255,0.98))
+            drop-shadow(0 0 9px rgba(69, 231, 255, 1))
+            drop-shadow(0 0 18px rgba(22, 112, 255, 0.82)) !important;
+        }
+
+        .home-logo-current-violet {
+          stroke: rgba(246, 205, 255, 0.98) !important;
+          filter:
+            drop-shadow(0 0 4px rgba(255,255,255,0.92))
+            drop-shadow(0 0 10px rgba(232, 102, 255, 0.95))
+            drop-shadow(0 0 17px rgba(118, 74, 255, 0.72)) !important;
+        }
+
+        .home-logo-current-gold {
+          stroke: rgba(255, 247, 205, 0.99) !important;
+          filter:
+            drop-shadow(0 0 4px rgba(255,255,255,0.94))
+            drop-shadow(0 0 10px rgba(255, 224, 109, 0.98))
+            drop-shadow(0 0 16px rgba(255, 177, 59, 0.65)) !important;
+        }
+
+        .home-logo-node {
+          opacity: 1 !important;
+          filter:
+            drop-shadow(0 0 5px rgba(255,255,255,0.94))
+            drop-shadow(0 0 12px rgba(66, 221, 255, 0.95));
+        }
+
+        .home-logo-brain-glow {
+          opacity: 0.95 !important;
+          filter: blur(10px) saturate(1.25) !important;
+        }
+
+        .home-logo-brain-follower {
+          z-index: 9 !important;
+          filter:
+            saturate(1.18)
+            contrast(1.08)
+            brightness(1.08)
+            drop-shadow(0 0 10px rgba(255, 79, 217, 0.64))
+            drop-shadow(0 0 16px rgba(68, 220, 255, 0.48)) !important;
+        }
+
+        .home-logo-electric-bloom {
+          opacity: 0.72 !important;
+        }
+
+        .home-brain-shell {
+          width: 224px !important;
+          height: 224px !important;
+        }
+
+        .home-brain-launcher {
+          width: 168px !important;
+          height: 168px !important;
+          overflow: visible !important;
+          border-color: rgba(213, 250, 255, 1) !important;
+          box-shadow:
+            var(--shadow-x, 0px) var(--shadow-y, 18px) 34px rgba(0,0,0,.46),
+            0 0 48px rgba(44, 207, 255, .76),
+            0 0 105px rgba(40, 98, 255, .30),
+            inset 0 10px 18px rgba(255,255,255,.17),
+            inset 0 -18px 28px rgba(0,10,35,.42) !important;
+        }
+
+        .home-brain-electric-overlay {
+          z-index: 18 !important;
+          overflow: visible !important;
+          opacity: .28 !important;
+          pointer-events: none !important;
+          filter:
+            drop-shadow(0 0 5px rgba(65, 225, 255, .24));
+        }
+
+        .home-brain-electric-path {
+          stroke-width: 1.30px !important;
+          stroke-dasharray: 3 12 5 20 !important;
+          animation: homeBrainCircuitCurrent 1.05s linear infinite !important;
+          opacity: .24 !important;
+        }
+
+        .home-brain-current-path {
+          stroke: rgba(218, 251, 255, .94) !important;
+          stroke-width: 1.65px !important;
+          stroke-linecap: round !important;
+          stroke-linejoin: round !important;
+          stroke-dasharray: 6 28 !important;
+          animation: homeBrainCurrentRun .76s linear infinite !important;
+          opacity: .46 !important;
+          filter:
+            drop-shadow(0 0 3px rgba(255,255,255,.72))
+            drop-shadow(0 0 7px rgba(60,220,255,.66)) !important;
+        }
+
+        .home-brain-electric-cyan {
+          stroke: rgba(70, 220, 255, .50) !important;
+          filter:
+            drop-shadow(0 0 4px rgba(54, 212, 255, .38)) !important;
+        }
+
+        .home-brain-electric-pink {
+          stroke: rgba(245, 90, 205, .46) !important;
+          filter:
+            drop-shadow(0 0 4px rgba(238, 73, 203, .34)) !important;
+        }
+
+        .home-brain-electric-halo {
+          opacity: .10 !important;
+          filter:
+            drop-shadow(0 0 7px rgba(68, 220, 255, .22))
+            drop-shadow(0 0 10px rgba(235, 79, 205, .14)) !important;
+        }
+
+        .home-brain-art,
+        .home-brain-art-follower {
+          filter:
+            saturate(1.34)
+            contrast(1.16)
+            brightness(0.97)
+            drop-shadow(0 0 7px rgba(52, 210, 255, .24))
+            drop-shadow(0 0 7px rgba(255, 72, 216, .16)) !important;
+        }
+
+        .premium-original-brain {
+          position: relative;
+          width: 252px;
+          min-height: 268px;
+          display: grid;
+          place-items: center;
+          justify-items: center !important;
+          margin: 2px 0 20px;
+        }
+
+        .premium-original-brain::before,
+        .premium-original-brain::after {
+          content: "";
+          position: absolute;
+          inset: 28px 18px 52px;
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .premium-original-brain::before {
+          border: 1px solid rgba(87, 226, 255, .22);
+          box-shadow:
+            0 0 28px rgba(63, 212, 255, .20),
+            inset 0 0 28px rgba(71, 116, 255, .08);
+          animation: homeBrainOrbit 10s linear infinite;
+        }
+
+        .premium-original-brain::after {
+          inset: 44px 34px 68px;
+          border: 1px dashed rgba(243, 102, 255, .20);
+          box-shadow: 0 0 24px rgba(243, 102, 255, .14);
+          animation: homeBrainOrbitReverse 7s linear infinite;
+        }
+
+        /* ===== SOLUCIONES PREMIUM ===== */
+        .bento {
+          gap: 18px !important;
+        }
+
+        .card {
+          min-height: 248px !important;
+          padding: 28px !important;
+          border-radius: 24px !important;
+          background:
+            radial-gradient(circle at 82% 10%, rgba(35, 169, 255, .12), transparent 30%),
+            linear-gradient(180deg, rgba(10, 24, 45, .92), rgba(4, 12, 24, .96)) !important;
+          border-color: rgba(95, 194, 255, .16) !important;
+        }
+
+        .card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background:
+            linear-gradient(115deg, transparent 0 36%, rgba(105, 224, 255, .055) 46%, transparent 58%);
+          transform: translateX(-120%);
+          transition: transform .85s cubic-bezier(.2,.7,.2,1);
+        }
+
+        .card:hover::before {
+          transform: translateX(120%);
+        }
+
+        .card:hover {
+          transform: translateY(-8px) scale(1.012) !important;
+          border-color: rgba(83, 216, 255, .34) !important;
+          box-shadow:
+            0 28px 80px rgba(0,0,0,.26),
+            0 0 46px rgba(32, 157, 255, .10) !important;
+        }
+
+        .solution-top {
+          position: relative;
+          z-index: 3;
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          margin-bottom: 30px;
+        }
+
+        .solution-icon {
+          position: relative;
+          width: 54px;
+          height: 54px;
+          flex: 0 0 54px;
+          display: grid;
+          place-items: center;
+          border-radius: 16px;
+          color: #dff9ff;
+          background:
+            radial-gradient(circle at 28% 22%, rgba(255,255,255,.20), transparent 24%),
+            linear-gradient(145deg, rgba(23, 143, 255, .38), rgba(42, 216, 255, .10));
+          border: 1px solid rgba(104, 220, 255, .30);
+          box-shadow:
+            0 12px 30px rgba(10, 102, 255, .14),
+            inset 0 1px 0 rgba(255,255,255,.10);
+          transition: transform 260ms ease, box-shadow 260ms ease;
+        }
+
+        .card:hover .solution-icon {
+          transform: translateY(-3px) rotate(-4deg) scale(1.08);
+          box-shadow:
+            0 16px 36px rgba(10, 102, 255, .20),
+            0 0 28px rgba(66, 219, 255, .18),
+            inset 0 1px 0 rgba(255,255,255,.13);
+        }
+
+        .solution-icon svg {
+          width: 27px;
+          height: 27px;
+          fill: none;
+          stroke: currentColor;
+          stroke-width: 1.75;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+
+        .solution-label {
+          color: #55d7ff;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 1.8px;
+          text-transform: uppercase;
+        }
+
+        .solution-label small {
+          display: block;
+          margin-top: 5px;
+          color: #55708d;
+          font-size: 9px;
+          font-weight: 750;
+          letter-spacing: .8px;
+        }
+
+        .card h3 {
+          margin: 0 0 12px !important;
+          font-size: clamp(22px, 2.2vw, 30px) !important;
+          letter-spacing: -1px !important;
+        }
+
+        .card p {
+          font-size: 14px !important;
+          line-height: 1.75 !important;
+        }
+
+        .card-tags {
+          margin-top: 22px !important;
+        }
+
+        .card-tags span {
+          border: 1px solid rgba(86, 195, 255, .10);
+          background: rgba(36, 142, 221, .08) !important;
+        }
+
+        .solution-signal {
+          position: absolute;
+          right: 20px;
+          bottom: 18px;
+          width: 92px;
+          height: 42px;
+          opacity: .54;
+          pointer-events: none;
+        }
+
+        .solution-signal span {
+          position: absolute;
+          bottom: 0;
+          width: 6px;
+          border-radius: 999px;
+          background: linear-gradient(to top, rgba(37,121,255,.12), rgba(80,224,255,.82));
+          box-shadow: 0 0 12px rgba(63,209,255,.28);
+          animation: signalPulse 1.8s ease-in-out infinite;
+          transform-origin: bottom;
+        }
+
+        .solution-signal span:nth-child(1) { left: 0; height: 16px; animation-delay: -.1s; }
+        .solution-signal span:nth-child(2) { left: 14px; height: 28px; animation-delay: -.35s; }
+        .solution-signal span:nth-child(3) { left: 28px; height: 20px; animation-delay: -.6s; }
+        .solution-signal span:nth-child(4) { left: 42px; height: 38px; animation-delay: -.85s; }
+        .solution-signal span:nth-child(5) { left: 56px; height: 24px; animation-delay: -1.1s; }
+        .solution-signal span:nth-child(6) { left: 70px; height: 34px; animation-delay: -1.35s; }
+
+        @media (max-width: 680px) {
           .home-brain-shell {
-            width: 148px;
-            height: 148px;
+            width: 196px !important;
+            height: 196px !important;
           }
 
           .home-brain-launcher {
-            width: 110px;
-            height: 110px;
+            width: 148px !important;
+            height: 148px !important;
+          }
+
+          .premium-original-brain {
+            width: 220px;
+            min-height: 238px;
+          }
+
+          .solution-signal {
+            opacity: .34;
           }
         }
+
 
         @media (prefers-reduced-motion: reduce) {
-          .home-brain-aura,
-          .home-brain-ring-one,
-          .home-brain-ring-two,
-          .home-brain-core,
-          .home-brain-icon,
-          .home-brain-electric-halo,
-          .home-brain-electric-path,
-          .home-brain-spark,
-          .home-logo-current-line,
-          .home-logo-node,
-          .home-logo-brain-glow,
-          .home-logo-halo,
-          .home-logo-letter-shine::before,
-          .home-logo-electric-bloom,
-          .home-logo-brain-follower {
+          .ambient-layer::before,
+          .ambient-layer::after,
+          .signal-track,
+          .console-scan,
+          .console-orbit,
+          .brand-panel::after,
+          .cta-band::after,
+          .signal-item i {
             animation: none !important;
           }
 
-          .home-brain-launcher,
-          .home-brain-caption-arrow,
-          .home-service-card,
-          .home-service-icon,
-          .home-automation-card,
-          .home-automation-icon,
-          .home-smart-cta,
-          .home-smart-cta-icon,
-          .home-smart-cta-link span {
-            transition: none !important;
+          .reveal {
+            animation: none !important;
+          }
+
+          .console {
+            transform: none !important;
+          }
+        }
+
+        @media (max-width: 680px) {
+          .shell {
+            width: min(100% - 28px, 1180px);
+          }
+
+          .topbar {
+            position: relative;
+          }
+
+          .nav {
+            height: 64px;
+          }
+
+          .brand small,
+          .nav-cta {
+            display: none;
+          }
+
+          .hero {
+            padding: 54px 0 64px;
+          }
+
+          .hero h1 {
+            font-size: clamp(43px, 14vw, 64px);
+            letter-spacing: -3px;
+          }
+
+          .hero-lead {
+            font-size: 16px;
+          }
+
+          .primary,
+          .secondary {
+            width: 100%;
+          }
+
+          .console {
+            border-radius: 20px;
+          }
+
+          .brand-panel {
+            margin: 12px;
+            padding: 10px;
+          }
+
+          .workflow {
+            padding: 0 12px 12px;
+          }
+
+          .workflow-row {
+            grid-template-columns: 38px 1fr;
+          }
+
+          .workflow-row b {
+            display: none;
+          }
+
+          .section {
+            padding: 78px 0;
+          }
+
+          .section h2 {
+            font-size: 38px;
+          }
+
+          .card.wide,
+          .card.medium,
+          .card.third {
+            grid-column: span 12;
+          }
+
+          .experience {
+            padding: 16px;
+          }
+
+          .experience-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .experience-line {
+            display: none;
+          }
+
+          .card {
+            min-height: 0;
+          }
+
+          .cta-band {
+            grid-template-columns: 1fr;
+            padding: 28px;
+          }
+
+          .form-row {
+            grid-template-columns: 1fr;
+          }
+
+          .form-card {
+            padding: 20px;
+          }
+
+          .footer-inner {
+            flex-direction: column;
+            align-items: flex-start;
           }
         }
       `}</style>
 
-      <section
-        className="home-hero-section"
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "40px 20px 80px",
-        }}
-      >
-        <div
-          className="home-logo-wrap"
-          aria-label="AxiomAI Solutions"
-          onPointerDown={(event) => {
-            if (event.pointerType === "touch") {
-              event.currentTarget.setPointerCapture?.(event.pointerId);
-            }
-          }}
-          onPointerMove={(event) => {
-            const rect = event.currentTarget.getBoundingClientRect();
-            const x = (event.clientX - rect.left) / rect.width;
-            const y = (event.clientY - rect.top) / rect.height;
-            const nx = Math.max(-1, Math.min(1, (x - 0.5) * 2));
-            const ny = Math.max(-1, Math.min(1, (y - 0.5) * 2));
-
-            const strengthX = event.pointerType === "touch" ? 10 : 7.5;
-            const strengthY = event.pointerType === "touch" ? 9 : 6.5;
-            const glowX = event.pointerType === "touch" ? 16 : 13;
-            const glowY = event.pointerType === "touch" ? 14 : 11;
-
-            event.currentTarget.style.setProperty(
-              "--logo-brain-x",
-              `${(nx * strengthX).toFixed(2)}px`
-            );
-            event.currentTarget.style.setProperty(
-              "--logo-brain-y",
-              `${(ny * strengthY).toFixed(2)}px`
-            );
-            event.currentTarget.style.setProperty(
-              "--logo-brain-glow-x",
-              `${(nx * glowX).toFixed(2)}px`
-            );
-            event.currentTarget.style.setProperty(
-              "--logo-brain-glow-y",
-              `${(ny * glowY).toFixed(2)}px`
-            );
-          }}
-          onPointerUp={(event) => {
-            if (
-              event.pointerType === "touch" &&
-              event.currentTarget.hasPointerCapture?.(event.pointerId)
-            ) {
-              event.currentTarget.releasePointerCapture?.(event.pointerId);
-            }
-            event.currentTarget.style.setProperty("--logo-brain-x", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-y", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-glow-y", "0px");
-          }}
-          onPointerCancel={(event) => {
-            event.currentTarget.style.setProperty("--logo-brain-x", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-y", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-glow-y", "0px");
-          }}
-          onPointerLeave={(event) => {
-            if (event.pointerType === "touch") return;
-            event.currentTarget.style.setProperty("--logo-brain-x", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-y", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
-            event.currentTarget.style.setProperty("--logo-brain-glow-y", "0px");
-          }}
-        >
-          <img
-            src={FINAL_LOGO_DATA}
-            alt="AxiomAI Solutions"
-            width={1448}
-            height={1086}
-            className="home-logo-image"
-            draggable={false}
-          />
-
-          <span className="home-logo-electric-bloom" aria-hidden="true" />
-          <span className="home-logo-halo" aria-hidden="true" />
-          <span className="home-logo-brain-cover" aria-hidden="true" />
-          <span className="home-logo-brain-glow" aria-hidden="true" />
-          <span
-            className="home-logo-brain-follower"
-            aria-hidden="true"
-            style={{ backgroundImage: `url("${FINAL_LOGO_DATA}")` }}
-          />
-          <span className="home-logo-letter-shine" aria-hidden="true" />
-
-          <svg
-            className="home-logo-overlay"
-            viewBox="0 0 1448 1086"
-            aria-hidden="true"
-          >
-            <g opacity="0.94">
-              {/* Corriente por la A grande */}
-              <path
-                className="home-logo-current-line home-logo-current-cyan"
-                d="M 690 95 L 667 170 L 646 235 L 615 304 L 586 369 L 548 438 L 508 512 L 465 583 L 419 655"
-              />
-              <path
-                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-1"
-                d="M 744 119 L 731 186 L 720 248 L 704 306 L 690 357"
-              />
-              <path
-                className="home-logo-current-line home-logo-current-violet home-logo-current-delay-2"
-                d="M 425 658 L 503 614 L 585 563 L 675 509 L 772 452 L 879 395 L 993 337 L 1123 287"
-              />
-              <path
-                className="home-logo-current-line home-logo-current-cyan home-logo-current-delay-3"
-                d="M 459 699 L 549 638 L 652 581 L 760 528 L 879 472 L 1007 420 L 1130 383"
-              />
-              <path
-                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-2"
-                d="M 953 425 L 966 493 L 982 558 L 1000 623 L 1021 687"
-              />
-
-              {/* Corriente saliendo del cerebro */}
-              <path
-                className="home-logo-current-line home-logo-current-violet"
-                d="M 724 561 L 672 548 L 622 531 L 574 510 L 531 483 L 488 451"
-              />
-              <path
-                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-1"
-                d="M 720 595 L 656 593 L 599 586 L 541 573 L 486 553 L 433 529"
-              />
-              <path
-                className="home-logo-current-line home-logo-current-cyan home-logo-current-delay-2"
-                d="M 724 561 L 781 548 L 835 528 L 892 501 L 948 467 L 1003 429"
-              />
-              <path
-                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-3"
-                d="M 723 601 L 790 597 L 854 588 L 916 573 L 981 549 L 1043 519"
-              />
-              <path
-                className="home-logo-current-line home-logo-current-violet home-logo-current-delay-1"
-                d="M 722 632 L 671 646 L 620 667 L 577 694"
-              />
-              <path
-                className="home-logo-current-line home-logo-current-cyan home-logo-current-delay-2"
-                d="M 724 632 L 779 647 L 830 669 L 871 697"
-              />
-            </g>
-
-            {/* Nodos que pulsan */}
-            <g>
-              <circle className="home-logo-node" cx="419" cy="655" r="7" fill="#75efff" />
-              <circle className="home-logo-node home-logo-node-delay-1" cx="1123" cy="287" r="7" fill="#ffe494" />
-              <circle className="home-logo-node home-logo-node-delay-2" cx="1130" cy="383" r="7" fill="#76eaff" />
-              <circle className="home-logo-node home-logo-node-delay-3" cx="1021" cy="687" r="6.5" fill="#ffe494" />
-            </g>
-
-            {/* Bolitas de energía que viajan por los circuitos */}
-            <g>
-              <circle r="5.2" fill="#fff2a8" opacity="0.98">
-                <animateMotion
-                  dur="2.15s"
-                  repeatCount="indefinite"
-                  path="M 690 95 L 667 170 L 646 235 L 615 304 L 586 369 L 548 438 L 508 512 L 465 583 L 419 655"
-                />
-              </circle>
-              <circle r="4.7" fill="#87f3ff" opacity="0.98">
-                <animateMotion
-                  dur="2.55s"
-                  begin="-0.8s"
-                  repeatCount="indefinite"
-                  path="M 425 658 L 503 614 L 585 563 L 675 509 L 772 452 L 879 395 L 993 337 L 1123 287"
-                />
-              </circle>
-              <circle r="4.5" fill="#ffd97a" opacity="0.98">
-                <animateMotion
-                  dur="2.35s"
-                  begin="-1.25s"
-                  repeatCount="indefinite"
-                  path="M 459 699 L 549 638 L 652 581 L 760 528 L 879 472 L 1007 420 L 1130 383"
-                />
-              </circle>
-
-              <circle r="4.4" fill="#ffdda0" opacity="0.98">
-                <animateMotion
-                  dur="1.7s"
-                  repeatCount="indefinite"
-                  path="M 724 561 L 672 548 L 622 531 L 574 510 L 531 483 L 488 451"
-                />
-              </circle>
-              <circle r="4.2" fill="#96efff" opacity="0.98">
-                <animateMotion
-                  dur="1.9s"
-                  begin="-0.5s"
-                  repeatCount="indefinite"
-                  path="M 724 561 L 781 548 L 835 528 L 892 501 L 948 467 L 1003 429"
-                />
-              </circle>
-              <circle r="4.1" fill="#ffd77b" opacity="0.98">
-                <animateMotion
-                  dur="2.0s"
-                  begin="-1.05s"
-                  repeatCount="indefinite"
-                  path="M 720 595 L 656 593 L 599 586 L 541 573 L 486 553 L 433 529"
-                />
-              </circle>
-              <circle r="4.1" fill="#e9b3ff" opacity="0.98">
-                <animateMotion
-                  dur="2.1s"
-                  begin="-1.35s"
-                  repeatCount="indefinite"
-                  path="M 723 601 L 790 597 L 854 588 L 916 573 L 981 549 L 1043 519"
-                />
-              </circle>
-            </g>
-          </svg>
-        </div>
-
-        <p
-          style={{
-            marginTop: "24px",
-            marginBottom: "8px",
-            fontSize: "18px",
-            letterSpacing: "4px",
-            color: "#53b7ff",
-          }}
-        >
-          AxiomAI
-        </p>
-
-        <h1
-          style={{
-            margin: 0,
-            fontSize: "clamp(42px, 8vw, 82px)",
-            fontWeight: 800,
-            letterSpacing: "-2px",
-          }}
-        >
-          Axiom OS
-        </h1>
-
-        <h2
-          style={{
-            marginTop: "16px",
-            marginBottom: "12px",
-            fontSize: "clamp(22px, 4vw, 38px)",
-            fontWeight: 500,
-          }}
-        >
-          {t("Soluciones Inteligentes para Empresas", "Intelligent Solutions for Businesses")}
-        </h2>
-
-        <p
-          style={{
-            maxWidth: "720px",
-            margin: "0 auto 30px",
-            color: "#b9c6d8",
-            fontSize: "18px",
-            lineHeight: 1.7,
-          }}
-        >
-          {t(
-            "Automatización, inteligencia artificial y desarrollo de software diseñados para transformar la manera en que opera tu negocio.",
-            "Automation, artificial intelligence, and software development designed to transform the way your business operates."
-          )}
-        </p>
-
-        <a
-          href="/brain"
-          className="home-brain-shell"
-          aria-label={t("Abrir AxiomOS Brain", "Open AxiomOS Brain")}
-          onClick={(event) => {
-            if (event.currentTarget.dataset.touchDragged === "1") {
-              event.preventDefault();
-            }
-          }}
-          onPointerDown={(event) => {
-            if (event.pointerType === "touch") {
-              event.currentTarget.dataset.touchStartX = String(event.clientX);
-              event.currentTarget.dataset.touchStartY = String(event.clientY);
-              event.currentTarget.dataset.touchDragged = "0";
-              event.currentTarget.setPointerCapture?.(event.pointerId);
-            }
-          }}
-          onPointerMove={(event) => {
-            if (event.pointerType === "touch") {
-              const startX = Number(event.currentTarget.dataset.touchStartX ?? event.clientX);
-              const startY = Number(event.currentTarget.dataset.touchStartY ?? event.clientY);
-              const distance = Math.hypot(event.clientX - startX, event.clientY - startY);
-
-              if (distance > 8) {
-                event.currentTarget.dataset.touchDragged = "1";
-              }
-            }
-
-            const rect = event.currentTarget.getBoundingClientRect();
-            const x = (event.clientX - rect.left) / rect.width;
-            const y = (event.clientY - rect.top) / rect.height;
-            const nx = Math.max(-1, Math.min(1, (x - 0.5) * 2));
-            const ny = Math.max(-1, Math.min(1, (y - 0.5) * 2));
-
-            event.currentTarget.style.setProperty(
-              "--orb-x",
-              `${Math.round(x * 100)}%`
-            );
-            event.currentTarget.style.setProperty(
-              "--orb-y",
-              `${Math.round(y * 100)}%`
-            );
-            const brainStrengthX = event.pointerType === "touch" ? 18 : 15;
-            const brainStrengthY = event.pointerType === "touch" ? 16 : 13;
-
-            event.currentTarget.style.setProperty(
-              "--brain-x",
-              `${(nx * brainStrengthX).toFixed(2)}px`
-            );
-            event.currentTarget.style.setProperty(
-              "--brain-y",
-              `${(ny * brainStrengthY).toFixed(2)}px`
-            );
-            event.currentTarget.style.setProperty(
-              "--shadow-x",
-              `${(-nx * 7).toFixed(2)}px`
-            );
-            event.currentTarget.style.setProperty(
-              "--shadow-y",
-              `${(18 - ny * 3).toFixed(2)}px`
-            );
-            event.currentTarget.style.setProperty("--orb-scale", "1.025");
-          }}
-          onPointerEnter={(event) => {
-            event.currentTarget.style.setProperty("--orb-scale", "1.025");
-          }}
-          onPointerUp={(event) => {
-            const shell = event.currentTarget;
-
-            if (
-              event.pointerType === "touch" &&
-              shell.hasPointerCapture?.(event.pointerId)
-            ) {
-              shell.releasePointerCapture?.(event.pointerId);
-            }
-
-            shell.style.setProperty("--orb-x", "35%");
-            shell.style.setProperty("--orb-y", "30%");
-            shell.style.setProperty("--brain-x", "0px");
-            shell.style.setProperty("--brain-y", "0px");
-            shell.style.setProperty("--shadow-x", "0px");
-            shell.style.setProperty("--shadow-y", "18px");
-            shell.style.setProperty("--orb-scale", "1");
-
-            if (event.pointerType === "touch") {
-              window.setTimeout(() => {
-                shell.dataset.touchDragged = "0";
-              }, 80);
-            }
-          }}
-          onPointerCancel={(event) => {
-            const shell = event.currentTarget;
-            shell.style.setProperty("--orb-x", "35%");
-            shell.style.setProperty("--orb-y", "30%");
-            shell.style.setProperty("--brain-x", "0px");
-            shell.style.setProperty("--brain-y", "0px");
-            shell.style.setProperty("--shadow-x", "0px");
-            shell.style.setProperty("--shadow-y", "18px");
-            shell.style.setProperty("--orb-scale", "1");
-            shell.dataset.touchDragged = "0";
-          }}
-          onPointerLeave={(event) => {
-            if (event.pointerType === "touch") return;
-
-            const shell = event.currentTarget;
-            shell.style.setProperty("--orb-x", "35%");
-            shell.style.setProperty("--orb-y", "30%");
-            shell.style.setProperty("--brain-x", "0px");
-            shell.style.setProperty("--brain-y", "0px");
-            shell.style.setProperty("--shadow-x", "0px");
-            shell.style.setProperty("--shadow-y", "18px");
-            shell.style.setProperty("--orb-scale", "1");
-          }}
-        >
-          <span className="home-brain-ring home-brain-ring-one" />
-          <span className="home-brain-ring home-brain-ring-two" />
-          <span className="home-brain-aura" />
-
-          <span className="home-brain-launcher">
-            <span className="home-brain-grid" />
-            <span className="home-brain-electric-halo" aria-hidden="true" />
-            <svg
-              className="home-brain-electric-overlay"
-              viewBox="0 0 140 140"
-              aria-hidden="true"
-            >
-              <path
-                className="home-brain-electric-path home-brain-electric-cyan"
-                d="M 70 68 L 59 53 L 48 52 L 39 44 L 26 44 L 18 36"
-                style={{ animationDelay: "-0.00s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-pink"
-                d="M 69 70 L 57 61 L 46 61 L 38 56 L 27 56 L 17 52"
-                style={{ animationDelay: "-0.11s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-cyan"
-                d="M 68 72 L 55 68 L 45 70 L 35 70 L 24 70 L 15 70"
-                style={{ animationDelay: "-0.22s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-pink"
-                d="M 68 74 L 55 77 L 44 82 L 34 84 L 24 88 L 16 94"
-                style={{ animationDelay: "-0.33s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-cyan"
-                d="M 70 76 L 57 85 L 48 92 L 39 98 L 30 104 L 22 113"
-                style={{ animationDelay: "-0.44s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-pink"
-                d="M 72 77 L 64 91 L 61 102 L 55 112 L 50 122"
-                style={{ animationDelay: "-0.55s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-cyan"
-                d="M 74 76 L 78 90 L 82 101 L 87 112 L 90 123"
-                style={{ animationDelay: "-0.66s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-cyan"
-                d="M 70 68 L 81 53 L 92 52 L 101 44 L 114 44 L 122 36"
-                style={{ animationDelay: "-0.77s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-pink"
-                d="M 71 70 L 83 61 L 94 61 L 102 56 L 113 56 L 123 52"
-                style={{ animationDelay: "-0.88s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-cyan"
-                d="M 72 72 L 85 68 L 95 70 L 105 70 L 116 70 L 125 70"
-                style={{ animationDelay: "-0.99s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-pink"
-                d="M 72 74 L 85 77 L 96 82 L 106 84 L 116 88 L 124 94"
-                style={{ animationDelay: "-1.10s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-cyan"
-                d="M 70 76 L 83 85 L 92 92 L 101 98 L 110 104 L 118 113"
-                style={{ animationDelay: "-1.21s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-pink"
-                d="M 68 67 L 61 54 L 59 43 L 54 32 L 53 22"
-                style={{ animationDelay: "-1.32s" }}
-              />
-              <path
-                className="home-brain-electric-path home-brain-electric-cyan"
-                d="M 72 67 L 79 54 L 81 43 L 86 32 L 87 22"
-                style={{ animationDelay: "-1.43s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 70 68 L 59 53 L 48 52 L 39 44 L 26 44 L 18 36"
-                style={{ animationDelay: "-0.000s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 69 70 L 57 61 L 46 61 L 38 56 L 27 56 L 17 52"
-                style={{ animationDelay: "-0.075s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 68 72 L 55 68 L 45 70 L 35 70 L 24 70 L 15 70"
-                style={{ animationDelay: "-0.150s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 68 74 L 55 77 L 44 82 L 34 84 L 24 88 L 16 94"
-                style={{ animationDelay: "-0.225s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 70 76 L 57 85 L 48 92 L 39 98 L 30 104 L 22 113"
-                style={{ animationDelay: "-0.300s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 72 77 L 64 91 L 61 102 L 55 112 L 50 122"
-                style={{ animationDelay: "-0.375s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 74 76 L 78 90 L 82 101 L 87 112 L 90 123"
-                style={{ animationDelay: "-0.450s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 70 68 L 81 53 L 92 52 L 101 44 L 114 44 L 122 36"
-                style={{ animationDelay: "-0.525s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 71 70 L 83 61 L 94 61 L 102 56 L 113 56 L 123 52"
-                style={{ animationDelay: "-0.600s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 72 72 L 85 68 L 95 70 L 105 70 L 116 70 L 125 70"
-                style={{ animationDelay: "-0.675s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 72 74 L 85 77 L 96 82 L 106 84 L 116 88 L 124 94"
-                style={{ animationDelay: "-0.750s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 70 76 L 83 85 L 92 92 L 101 98 L 110 104 L 118 113"
-                style={{ animationDelay: "-0.825s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 68 67 L 61 54 L 59 43 L 54 32 L 53 22"
-                style={{ animationDelay: "-0.900s" }}
-              />
-              <path
-                className="home-brain-current-path"
-                d="M 72 67 L 79 54 L 81 43 L 86 32 L 87 22"
-                style={{ animationDelay: "-0.975s" }}
-              />
-              <circle r="1.75" fill="#fff3a8" opacity="0.98">
-                <animateMotion
-                  dur="1.18s"
-                  begin="-0.00s"
-                  repeatCount="indefinite"
-                  path="M 70 68 L 59 53 L 48 52 L 39 44 L 26 44 L 18 36"
-                />
-              </circle>
-              <circle r="1.75" fill="#95f6ff" opacity="0.98">
-                <animateMotion
-                  dur="1.26s"
-                  begin="-0.09s"
-                  repeatCount="indefinite"
-                  path="M 69 70 L 57 61 L 46 61 L 38 56 L 27 56 L 17 52"
-                />
-              </circle>
-              <circle r="1.75" fill="#ff9bea" opacity="0.98">
-                <animateMotion
-                  dur="1.34s"
-                  begin="-0.18s"
-                  repeatCount="indefinite"
-                  path="M 68 72 L 55 68 L 45 70 L 35 70 L 24 70 L 15 70"
-                />
-              </circle>
-              <circle r="1.75" fill="#fff3a8" opacity="0.98">
-                <animateMotion
-                  dur="1.42s"
-                  begin="-0.27s"
-                  repeatCount="indefinite"
-                  path="M 68 74 L 55 77 L 44 82 L 34 84 L 24 88 L 16 94"
-                />
-              </circle>
-              <circle r="1.75" fill="#95f6ff" opacity="0.98">
-                <animateMotion
-                  dur="1.18s"
-                  begin="-0.36s"
-                  repeatCount="indefinite"
-                  path="M 70 76 L 57 85 L 48 92 L 39 98 L 30 104 L 22 113"
-                />
-              </circle>
-              <circle r="1.75" fill="#ff9bea" opacity="0.98">
-                <animateMotion
-                  dur="1.26s"
-                  begin="-0.45s"
-                  repeatCount="indefinite"
-                  path="M 72 77 L 64 91 L 61 102 L 55 112 L 50 122"
-                />
-              </circle>
-              <circle r="1.75" fill="#fff3a8" opacity="0.98">
-                <animateMotion
-                  dur="1.34s"
-                  begin="-0.54s"
-                  repeatCount="indefinite"
-                  path="M 74 76 L 78 90 L 82 101 L 87 112 L 90 123"
-                />
-              </circle>
-              <circle r="1.75" fill="#95f6ff" opacity="0.98">
-                <animateMotion
-                  dur="1.42s"
-                  begin="-0.63s"
-                  repeatCount="indefinite"
-                  path="M 70 68 L 81 53 L 92 52 L 101 44 L 114 44 L 122 36"
-                />
-              </circle>
-              <circle r="1.75" fill="#ff9bea" opacity="0.98">
-                <animateMotion
-                  dur="1.18s"
-                  begin="-0.72s"
-                  repeatCount="indefinite"
-                  path="M 71 70 L 83 61 L 94 61 L 102 56 L 113 56 L 123 52"
-                />
-              </circle>
-              <circle r="1.75" fill="#fff3a8" opacity="0.98">
-                <animateMotion
-                  dur="1.26s"
-                  begin="-0.81s"
-                  repeatCount="indefinite"
-                  path="M 72 72 L 85 68 L 95 70 L 105 70 L 116 70 L 125 70"
-                />
-              </circle>
-              <circle r="1.75" fill="#95f6ff" opacity="0.98">
-                <animateMotion
-                  dur="1.34s"
-                  begin="-0.90s"
-                  repeatCount="indefinite"
-                  path="M 72 74 L 85 77 L 96 82 L 106 84 L 116 88 L 124 94"
-                />
-              </circle>
-              <circle r="1.75" fill="#ff9bea" opacity="0.98">
-                <animateMotion
-                  dur="1.42s"
-                  begin="-0.99s"
-                  repeatCount="indefinite"
-                  path="M 70 76 L 83 85 L 92 92 L 101 98 L 110 104 L 118 113"
-                />
-              </circle>
-              <circle r="1.75" fill="#fff3a8" opacity="0.98">
-                <animateMotion
-                  dur="1.18s"
-                  begin="-1.08s"
-                  repeatCount="indefinite"
-                  path="M 68 67 L 61 54 L 59 43 L 54 32 L 53 22"
-                />
-              </circle>
-              <circle r="1.75" fill="#95f6ff" opacity="0.98">
-                <animateMotion
-                  dur="1.26s"
-                  begin="-1.17s"
-                  repeatCount="indefinite"
-                  path="M 72 67 L 79 54 L 81 43 L 86 32 L 87 22"
-                />
-              </circle>
-            </svg>
-            <img
-              src="/neon_brain_circuit_emblem.png"
-              alt=""
-              aria-hidden="true"
-              className="home-brain-art"
-              draggable={false}
-            />
-            <span className="home-brain-art-cover" aria-hidden="true" />
-            <span className="home-brain-art-follower" aria-hidden="true" />
-          </span>
-        </a>
-
-        <div className="home-brain-caption">
-          {t("Explora AxiomOS Brain", "Explore AxiomOS Brain")}
-          <span className="home-brain-caption-arrow" aria-hidden="true">
-            →
-          </span>
-        </div>
-
-        <p
-          style={{
-            marginTop: "24px",
-            fontSize: "15px",
-            color: "#7f91aa",
-          }}
-        >
-          {t("Evaluación inicial gratuita • Servicio 24/7", "Free initial assessment • 24/7 service")}
-        </p>
-
-        <div
-          style={{
-            marginTop: "78px",
-            width: "100%",
-            maxWidth: "1100px",
-          }}
-        >
-          <p className="home-solutions-kicker">{t("SOLUCIONES AXIOM", "AXIOM SOLUTIONS")}</p>
-
-          <h2
-            style={{
-              fontSize: "clamp(30px, 5vw, 42px)",
-              margin: "0 0 12px",
-            }}
-          >
-            {t("Soluciones para hacer crecer tu negocio", "Solutions to Grow Your Business")}
-          </h2>
-
-          <p
-            style={{
-              maxWidth: "760px",
-              margin: "0 auto 38px",
-              color: "#9fb0c7",
-              fontSize: "17px",
-              lineHeight: 1.7,
-            }}
-          >
-            {t(
-              "Tecnología inteligente diseñada para ahorrar tiempo, reducir costos y mejorar la atención a tus clientes.",
-              "Intelligent technology designed to save time, reduce costs, and improve customer service."
-            )}
-          </p>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(250px, 1fr))",
-              gap: "20px",
-            }}
-          >
-            <div className="home-service-card" style={serviceCardStyle}>
-              <div className="home-service-icon" aria-hidden="true">
-                ⚙️
-              </div>
-              <h3 className="home-service-title">{t("Automatización", "Automation")}</h3>
-              <p className="home-service-copy">
-                {t(
-                  "Automatizamos tareas y procesos repetitivos para que tu equipo trabaje con más velocidad, orden y eficiencia.",
-                  "We automate repetitive tasks and processes so your team can work faster, with greater organization and efficiency."
-                )}
-              </p>
-              <div className="home-service-meta">
-                {t("Procesos • Tiempo • Eficiencia", "Processes • Time • Efficiency")}
-              </div>
-            </div>
-
-            <div className="home-service-card" style={serviceCardStyle}>
-              <div className="home-service-icon" aria-hidden="true">
-                ✦
-              </div>
-              <h3 className="home-service-title">{t("Inteligencia Artificial", "Artificial Intelligence")}</h3>
-              <p className="home-service-copy">
-                {t(
-                  "Creamos soluciones de IA adaptadas a tu operación para atender, analizar y apoyar decisiones de negocio.",
-                  "We create AI solutions tailored to your operation to serve customers, analyze information, and support business decisions."
-                )}
-              </p>
-              <div className="home-service-meta">
-                {t("IA • Atención • Análisis", "AI • Service • Analysis")}
-              </div>
-            </div>
-
-            <div className="home-service-card" style={serviceCardStyle}>
-              <div className="home-service-icon" aria-hidden="true">
-                💻
-              </div>
-              <h3 className="home-service-title">{t("Software Empresarial", "Business Software")}</h3>
-              <p className="home-service-copy">
-                {t(
-                  "Desarrollamos herramientas digitales e integraciones diseñadas alrededor de la forma real en que funciona tu empresa.",
-                  "We develop digital tools and integrations designed around the way your company actually operates."
-                )}
-              </p>
-              <div className="home-service-meta">
-                {t("Web • Sistemas • Integraciones", "Web • Systems • Integrations")}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            marginTop: "90px",
-            width: "100%",
-            maxWidth: "1100px",
-          }}
-        >
-          <p
-            style={{
-              marginBottom: "8px",
-              fontSize: "14px",
-              letterSpacing: "3px",
-              color: "#53b7ff",
-              fontWeight: 700,
-            }}
-          >
-            AXIOM AUTOMATION
-          </p>
-
-          <h2
-            style={{
-              fontSize: "clamp(30px, 5vw, 44px)",
-              marginBottom: "14px",
-            }}
-          >
-            {t("¿Qué podemos automatizar?", "What Can We Automate?")}
-          </h2>
-
-          <p
-            style={{
-              maxWidth: "760px",
-              margin: "0 auto 40px",
-              color: "#9fb0c7",
-              fontSize: "17px",
-              lineHeight: 1.7,
-            }}
-          >
-            {t(
-              "Analizamos cómo funciona tu empresa y creamos soluciones que trabajan automáticamente para que puedas concentrarte en hacer crecer el negocio.",
-              "We analyze how your company operates and create solutions that work automatically so you can focus on growing your business."
-            )}
-          </p>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "18px",
-            }}
-          >
-            <div className="home-automation-card" style={automationCardStyle}>
-              <div className="home-automation-head">
-                <div className="home-automation-icon" aria-hidden="true">💬</div>
-                <h3 className="home-automation-title">{t("Atención al cliente", "Customer Service")}</h3>
-              </div>
-              <p className="home-automation-copy">
-                {t(
-                  "Respuestas automáticas a preguntas frecuentes, solicitudes, horarios, servicios y consultas de clientes.",
-                  "Automated responses to frequently asked questions, requests, business hours, services, and customer inquiries."
-                )}
-              </p>
-            </div>
-
-            <div className="home-automation-card" style={automationCardStyle}>
-              <div className="home-automation-head">
-                <div className="home-automation-icon" aria-hidden="true">✉️</div>
-                <h3 className="home-automation-title">{t("WhatsApp y mensajería", "WhatsApp & Messaging")}</h3>
-              </div>
-              <p className="home-automation-copy">
-                {t(
-                  "Sistemas para responder mensajes, recopilar información y dirigir cada cliente al servicio correcto.",
-                  "Systems that respond to messages, collect information, and route each customer to the right service."
-                )}
-              </p>
-            </div>
-
-            <div className="home-automation-card" style={automationCardStyle}>
-              <div className="home-automation-head">
-                <div className="home-automation-icon" aria-hidden="true">📋</div>
-                <h3 className="home-automation-title">{t("Órdenes y solicitudes", "Orders & Requests")}</h3>
-              </div>
-              <p className="home-automation-copy">
-                {t(
-                  "Recibe pedidos, solicitudes de servicios y datos de clientes desde tu página web de forma organizada.",
-                  "Receive orders, service requests, and customer information from your website in an organized way."
-                )}
-              </p>
-            </div>
-
-            <div className="home-automation-card" style={automationCardStyle}>
-              <div className="home-automation-head">
-                <div className="home-automation-icon" aria-hidden="true">🔁</div>
-                <h3 className="home-automation-title">{t("Seguimiento de clientes", "Customer Follow-Up")}</h3>
-              </div>
-              <p className="home-automation-copy">
-                {t(
-                  "Automatiza recordatorios, seguimiento de prospectos y comunicaciones posteriores a una venta o servicio.",
-                  "Automate reminders, lead follow-up, and communications after a sale or service."
-                )}
-              </p>
-            </div>
-
-            <div className="home-automation-card" style={automationCardStyle}>
-              <div className="home-automation-head">
-                <div className="home-automation-icon" aria-hidden="true">🗂️</div>
-                <h3 className="home-automation-title">{t("Tareas administrativas", "Administrative Tasks")}</h3>
-              </div>
-              <p className="home-automation-copy">
-                {t(
-                  "Reduce trabajo manual en procesos internos, organización de información y tareas repetitivas.",
-                  "Reduce manual work in internal processes, information organization, and repetitive tasks."
-                )}
-              </p>
-            </div>
-
-            <div className="home-automation-card" style={automationCardStyle}>
-              <div className="home-automation-head">
-                <div className="home-automation-icon" aria-hidden="true">⚡</div>
-                <h3 className="home-automation-title">{t("Soluciones personalizadas", "Custom Solutions")}</h3>
-              </div>
-              <p className="home-automation-copy">
-                {t(
-                  "Si tu negocio tiene un proceso particular, podemos diseñar una solución tecnológica específicamente para él.",
-                  "If your business has a unique process, we can design a technology solution specifically for it."
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="home-smart-cta"
-          style={{
-            marginTop: "82px",
-            width: "100%",
-            maxWidth: "900px",
-            padding: "44px 28px",
-            borderRadius: "24px",
-            border: "1px solid rgba(83, 183, 255, 0.34)",
-            background:
-              "linear-gradient(145deg, rgba(10, 49, 102, 0.9), rgba(4, 15, 33, 0.96))",
-            boxShadow:
-              "0 20px 52px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255,255,255,0.03)",
-          }}
-        >
-          <div className="home-smart-cta-icon" aria-hidden="true">
-            ✦
-          </div>
-
-          <div className="home-smart-cta-label">
-            {t("PRÓXIMO PASO", "NEXT STEP")}
-          </div>
-
-          <h2 className="home-smart-cta-title">
-            {t("Tu negocio puede trabajar de forma más inteligente", "Your Business Can Work Smarter")}
-          </h2>
-
-          <p className="home-smart-cta-copy">
-            {t(
-              "Cuéntanos qué tareas consumen más tiempo en tu empresa. AxiomAI Solutions puede ayudarte a identificar qué procesos se pueden automatizar y qué solución tecnológica tiene más sentido para tu negocio.",
-              "Tell us which tasks take the most time in your company. AxiomAI Solutions can help you identify which processes can be automated and which technology solution makes the most sense for your business."
-            )}
-          </p>
-
-          <a className="home-smart-cta-link" href="#evaluacion">
-            {t("Continúa con tu evaluación gratuita", "Continue with Your Free Assessment")}
-            <span aria-hidden="true">↓</span>
+      <header className="topbar">
+        <div className="shell nav">
+          <a className="brand" href="#inicio">
+            <span className="brand-mark">A</span>
+            <span>
+              AxiomOS
+              <small>AxiomAI Solutions</small>
+            </span>
           </a>
+
+          <nav className="nav-links" aria-label={t("Navegación principal", "Main navigation")}>
+            <a href="#soluciones">{t("Soluciones", "Solutions")}</a>
+            <a href="#proceso">{t("Cómo funciona", "How it works")}</a>
+            <a href="/brain">Brain</a>
+            <a href="#evaluacion">{t("Contacto", "Contact")}</a>
+          </nav>
+
+          <div className="nav-actions">
+            <div className="lang" role="group" aria-label={t("Selector de idioma", "Language selector")}>
+              <button
+                type="button"
+                className={language === "es" ? "active" : ""}
+                onClick={() => changeLanguage("es")}
+                aria-pressed={language === "es"}
+              >
+                ES
+              </button>
+              <button
+                type="button"
+                className={language === "en" ? "active" : ""}
+                onClick={() => changeLanguage("en")}
+                aria-pressed={language === "en"}
+              >
+                EN
+              </button>
+            </div>
+            <a className="nav-cta" href="#evaluacion">
+              {t("Comenzar", "Get started")}
+            </a>
+          </div>
         </div>
+      </header>
 
-        <div
-          id="evaluacion"
-          style={{
-            marginTop: "90px",
-            width: "100%",
-            maxWidth: "760px",
-            scrollMarginTop: "30px",
-          }}
-        >
-          <p
-            style={{
-              color: "#53b7ff",
-              fontWeight: 700,
-              letterSpacing: "3px",
-              fontSize: "14px",
-            }}
-          >
-            {t("COMIENZA AQUÍ", "START HERE")}
-          </p>
+      <div className="shell">
+        <section className="hero" id="inicio">
+          <div className="hero-copy">
+            <div className="eyebrow">
+              <span className="pulse" />
+              {t("Automatización • IA • Software", "Automation • AI • Software")}
+            </div>
 
-          <h2
-            style={{
-              fontSize: "clamp(30px, 5vw, 44px)",
-              marginBottom: "12px",
-            }}
-          >
-            {t("Solicita tu evaluación gratuita", "Request Your Free Assessment")}
-          </h2>
+            <h1>
+              {t("Tu negocio, operando como un ", "Your business, running like an ")}
+              <span>{t("sistema inteligente.", "intelligent system.")}</span>
+            </h1>
 
-          <p
-            style={{
-              color: "#9fb0c7",
-              fontSize: "17px",
-              lineHeight: 1.7,
-              marginBottom: cameFromBrain ? "20px" : "35px",
-            }}
-          >
-            {t(
-              "Cuéntanos brevemente sobre tu negocio y qué necesitas mejorar. Evaluaremos tu caso para identificar oportunidades de automatización e inteligencia artificial.",
-              "Tell us briefly about your business and what you need to improve. We will evaluate your case to identify opportunities for automation and artificial intelligence."
-            )}
-          </p>
+            <p className="hero-lead">
+              {t(
+                "AxiomOS conecta conversaciones, oportunidades y tareas para que tu equipo responda más rápido, dé seguimiento con consistencia y tenga claridad sobre qué hacer después.",
+                "AxiomOS connects conversations, opportunities, and tasks so your team can respond faster, follow up consistently, and always know what comes next."
+              )}
+            </p>
 
-          {cameFromBrain && (
+            <div className="hero-actions">
+              <a className="primary" href="/brain">
+                {t("Probar Brain gratis →", "Try Brain free →")}
+              </a>
+              <a className="secondary" href="#evaluacion">
+                {t("Solicitar evaluación", "Request an assessment")}
+              </a>
+            </div>
+
+            <div className="micro-proof">
+              <span>{t("Atención y seguimiento", "Customer care & follow-up")}</span>
+              <span>{t("Flujos automatizados", "Automated workflows")}</span>
+              <span>{t("Integraciones", "Integrations")}</span>
+            </div>
+          </div>
+
+          <div className="hero-visual">
             <div
-              style={{
-                marginBottom: "22px",
-                padding: "18px 20px",
-                borderRadius: "16px",
-                border:
-                  "1px solid rgba(71, 210, 255, 0.38)",
-                background:
-                  "linear-gradient(135deg, rgba(17, 73, 125, 0.52), rgba(5, 27, 52, 0.72))",
-                textAlign: "left",
-                boxShadow:
-                  "0 0 28px rgba(39, 171, 255, 0.1)",
+              className="console"
+              onPointerMove={(event) => {
+                if (event.pointerType === "touch") return;
+                const rect = event.currentTarget.getBoundingClientRect();
+                const x = (event.clientX - rect.left) / rect.width;
+                const y = (event.clientY - rect.top) / rect.height;
+                const ry = (x - 0.5) * 7;
+                const rx = (0.5 - y) * 6;
+                event.currentTarget.style.setProperty("--ry", `${ry.toFixed(2)}deg`);
+                event.currentTarget.style.setProperty("--rx", `${rx.toFixed(2)}deg`);
+                event.currentTarget.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
+                event.currentTarget.style.setProperty("--my", `${(y * 100).toFixed(1)}%`);
+              }}
+              onPointerLeave={(event) => {
+                event.currentTarget.style.setProperty("--ry", "0deg");
+                event.currentTarget.style.setProperty("--rx", "0deg");
+                event.currentTarget.style.setProperty("--mx", "50%");
+                event.currentTarget.style.setProperty("--my", "50%");
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                }}
-              >
-                <div
-                  style={{
-                    width: "34px",
-                    height: "34px",
-                    borderRadius: "50%",
-                    display: "grid",
-                    placeItems: "center",
-                    background:
-                      "linear-gradient(135deg, #147df5, #35d4ff)",
-                    fontSize: "17px",
-                  }}
-                >
-                  🧠
+              <div className="console-cursor-light" aria-hidden="true" />
+              <div className="console-scan" aria-hidden="true" />
+              <div className="console-orbit" aria-hidden="true" />
+              <div className="console-top">
+                <div className="console-title">
+                  <span>AXIOMOS</span>
+                  <span style={{ color: "#55708f" }}>CONTROL CENTER</span>
                 </div>
-
-                <div>
-                  <div
-                    style={{
-                      color: "#62cbff",
-                      fontSize: "11px",
-                      letterSpacing: "2px",
-                      fontWeight: 800,
-                    }}
-                  >
-                    {t("CASO RECIBIDO DE AXIOMOS BRAIN", "CASE RECEIVED FROM AXIOMOS BRAIN")}
-                  </div>
-
-                  <div
-                    style={{
-                      color: "#ffffff",
-                      fontWeight: 800,
-                      marginTop: "3px",
-                    }}
-                  >
-                    {t("Tu análisis ya está conectado con esta evaluación.", "Your analysis is already connected to this assessment.")}
-                  </div>
+                <div className="status">
+                  <i />
+                  {t("Sistema activo", "System active")}
                 </div>
               </div>
 
-              <p
-                style={{
-                  color: "#aac3d7",
-                  fontSize: "13px",
-                  lineHeight: 1.6,
-                  margin: "12px 0 0",
-                }}
-              >
+              <div className="brand-panel">
+                        <div
+                          className="home-logo-wrap"
+                          aria-label="AxiomAI Solutions"
+                          onPointerDown={(event) => {
+                            if (event.pointerType === "touch") {
+                              event.currentTarget.setPointerCapture?.(event.pointerId);
+                            }
+                          }}
+                          onPointerMove={(event) => {
+                            const rect = event.currentTarget.getBoundingClientRect();
+                            const x = (event.clientX - rect.left) / rect.width;
+                            const y = (event.clientY - rect.top) / rect.height;
+                            const nx = Math.max(-1, Math.min(1, (x - 0.5) * 2));
+                            const ny = Math.max(-1, Math.min(1, (y - 0.5) * 2));
+
+                            const strengthX = event.pointerType === "touch" ? 13 : 7.5;
+                            const strengthY = event.pointerType === "touch" ? 11 : 6.5;
+                            const glowX = event.pointerType === "touch" ? 19 : 13;
+                            const glowY = event.pointerType === "touch" ? 17 : 11;
+
+                            event.currentTarget.style.setProperty(
+                              "--logo-brain-x",
+                              `${(nx * strengthX).toFixed(2)}px`
+                            );
+                            event.currentTarget.style.setProperty(
+                              "--logo-brain-y",
+                              `${(ny * strengthY).toFixed(2)}px`
+                            );
+                            event.currentTarget.style.setProperty(
+                              "--logo-brain-glow-x",
+                              `${(nx * glowX).toFixed(2)}px`
+                            );
+                            event.currentTarget.style.setProperty(
+                              "--logo-brain-glow-y",
+                              `${(ny * glowY).toFixed(2)}px`
+                            );
+                          }}
+                          onPointerUp={(event) => {
+                            if (
+                              event.pointerType === "touch" &&
+                              event.currentTarget.hasPointerCapture?.(event.pointerId)
+                            ) {
+                              event.currentTarget.releasePointerCapture?.(event.pointerId);
+                            }
+                            event.currentTarget.style.setProperty("--logo-brain-x", "0px");
+                            event.currentTarget.style.setProperty("--logo-brain-y", "0px");
+                            event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
+                            event.currentTarget.style.setProperty("--logo-brain-glow-y", "0px");
+                          }}
+                          onPointerCancel={(event) => {
+                            event.currentTarget.style.setProperty("--logo-brain-x", "0px");
+                            event.currentTarget.style.setProperty("--logo-brain-y", "0px");
+                            event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
+                            event.currentTarget.style.setProperty("--logo-brain-glow-y", "0px");
+                          }}
+                          onPointerLeave={(event) => {
+                            if (event.pointerType === "touch") return;
+                            event.currentTarget.style.setProperty("--logo-brain-x", "0px");
+                            event.currentTarget.style.setProperty("--logo-brain-y", "0px");
+                            event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
+                            event.currentTarget.style.setProperty("--logo-brain-glow-y", "0px");
+                          }}
+                        >
+                          <img
+                            src={FINAL_LOGO_DATA}
+                            alt="AxiomAI Solutions"
+                            width={1448}
+                            height={1086}
+                            className="home-logo-image"
+                            draggable={false}
+                          />
+
+                          <span className="home-logo-electric-bloom" aria-hidden="true" />
+                          <span className="home-logo-halo" aria-hidden="true" />
+                          <span className="home-logo-brain-cover" aria-hidden="true" />
+                          <span className="home-logo-brain-glow" aria-hidden="true" />
+                          <span
+                            className="home-logo-brain-follower"
+                            aria-hidden="true"
+                            style={{ backgroundImage: `url("${FINAL_LOGO_DATA}")` }}
+                          />
+                          <span className="home-logo-letter-shine" aria-hidden="true" />
+
+                          <svg
+                            className="home-logo-overlay"
+                            viewBox="0 0 1448 1086"
+                            aria-hidden="true"
+                          >
+                            <g opacity="0.94">
+                              {/* Corriente por la A grande */}
+                              <path
+                                className="home-logo-current-line home-logo-current-cyan"
+                                d="M 690 95 L 667 170 L 646 235 L 615 304 L 586 369 L 548 438 L 508 512 L 465 583 L 419 655"
+                              />
+                              <path
+                                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-1"
+                                d="M 744 119 L 731 186 L 720 248 L 704 306 L 690 357"
+                              />
+                              <path
+                                className="home-logo-current-line home-logo-current-violet home-logo-current-delay-2"
+                                d="M 425 658 L 503 614 L 585 563 L 675 509 L 772 452 L 879 395 L 993 337 L 1123 287"
+                              />
+                              <path
+                                className="home-logo-current-line home-logo-current-cyan home-logo-current-delay-3"
+                                d="M 459 699 L 549 638 L 652 581 L 760 528 L 879 472 L 1007 420 L 1130 383"
+                              />
+                              <path
+                                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-2"
+                                d="M 953 425 L 966 493 L 982 558 L 1000 623 L 1021 687"
+                              />
+
+                              {/* Corriente saliendo del cerebro */}
+                              <path
+                                className="home-logo-current-line home-logo-current-violet"
+                                d="M 724 561 L 672 548 L 622 531 L 574 510 L 531 483 L 488 451"
+                              />
+                              <path
+                                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-1"
+                                d="M 720 595 L 656 593 L 599 586 L 541 573 L 486 553 L 433 529"
+                              />
+                              <path
+                                className="home-logo-current-line home-logo-current-cyan home-logo-current-delay-2"
+                                d="M 724 561 L 781 548 L 835 528 L 892 501 L 948 467 L 1003 429"
+                              />
+                              <path
+                                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-3"
+                                d="M 723 601 L 790 597 L 854 588 L 916 573 L 981 549 L 1043 519"
+                              />
+                              <path
+                                className="home-logo-current-line home-logo-current-violet home-logo-current-delay-1"
+                                d="M 722 632 L 671 646 L 620 667 L 577 694"
+                              />
+                              <path
+                                className="home-logo-current-line home-logo-current-cyan home-logo-current-delay-2"
+                                d="M 724 632 L 779 647 L 830 669 L 871 697"
+                              />
+                            </g>
+
+                            {/* Nodos que pulsan */}
+                            <g>
+                              <circle className="home-logo-node" cx="419" cy="655" r="7" fill="#75efff" />
+                              <circle className="home-logo-node home-logo-node-delay-1" cx="1123" cy="287" r="7" fill="#ffe494" />
+                              <circle className="home-logo-node home-logo-node-delay-2" cx="1130" cy="383" r="7" fill="#76eaff" />
+                              <circle className="home-logo-node home-logo-node-delay-3" cx="1021" cy="687" r="6.5" fill="#ffe494" />
+                            </g>
+
+                            {/* Bolitas de energía que viajan por los circuitos */}
+                            <g>
+                              <circle r="5.2" fill="#fff2a8" opacity="0.98">
+                                <animateMotion
+                                  dur="2.15s"
+                                  repeatCount="indefinite"
+                                  path="M 690 95 L 667 170 L 646 235 L 615 304 L 586 369 L 548 438 L 508 512 L 465 583 L 419 655"
+                                />
+                              </circle>
+                              <circle r="4.7" fill="#87f3ff" opacity="0.98">
+                                <animateMotion
+                                  dur="2.55s"
+                                  begin="-0.8s"
+                                  repeatCount="indefinite"
+                                  path="M 425 658 L 503 614 L 585 563 L 675 509 L 772 452 L 879 395 L 993 337 L 1123 287"
+                                />
+                              </circle>
+                              <circle r="4.5" fill="#ffd97a" opacity="0.98">
+                                <animateMotion
+                                  dur="2.35s"
+                                  begin="-1.25s"
+                                  repeatCount="indefinite"
+                                  path="M 459 699 L 549 638 L 652 581 L 760 528 L 879 472 L 1007 420 L 1130 383"
+                                />
+                              </circle>
+
+                              <circle r="4.4" fill="#ffdda0" opacity="0.98">
+                                <animateMotion
+                                  dur="1.7s"
+                                  repeatCount="indefinite"
+                                  path="M 724 561 L 672 548 L 622 531 L 574 510 L 531 483 L 488 451"
+                                />
+                              </circle>
+                              <circle r="4.2" fill="#96efff" opacity="0.98">
+                                <animateMotion
+                                  dur="1.9s"
+                                  begin="-0.5s"
+                                  repeatCount="indefinite"
+                                  path="M 724 561 L 781 548 L 835 528 L 892 501 L 948 467 L 1003 429"
+                                />
+                              </circle>
+                              <circle r="4.1" fill="#ffd77b" opacity="0.98">
+                                <animateMotion
+                                  dur="2.0s"
+                                  begin="-1.05s"
+                                  repeatCount="indefinite"
+                                  path="M 720 595 L 656 593 L 599 586 L 541 573 L 486 553 L 433 529"
+                                />
+                              </circle>
+                              <circle r="4.1" fill="#e9b3ff" opacity="0.98">
+                                <animateMotion
+                                  dur="2.1s"
+                                  begin="-1.35s"
+                                  repeatCount="indefinite"
+                                  path="M 723 601 L 790 597 L 854 588 L 916 573 L 981 549 L 1043 519"
+                                />
+                              </circle>
+                            </g>
+                          </svg>
+                        </div>
+              </div>
+
+              <div className="workflow">
+                <div className="workflow-row">
+                  <div className="workflow-icon">☎</div>
+                  <div>
+                    <strong>{t("Nueva oportunidad", "New opportunity")}</strong>
+                    <small>{t("Captura el contacto y organiza la solicitud.", "Capture the contact and organize the request.")}</small>
+                  </div>
+                  <b>{t("Captura", "Capture")}</b>
+                </div>
+
+                <div className="workflow-row">
+                  <div className="workflow-icon">✦</div>
+                  <div>
+                    <strong>{t("AxiomAI clasifica", "AxiomAI classifies")}</strong>
+                    <small>{t("Identifica intención, prioridad y próxima acción.", "Identifies intent, priority and next action.")}</small>
+                  </div>
+                  <b>{t("Analiza", "Analyze")}</b>
+                </div>
+
+                <div className="workflow-row">
+                  <div className="workflow-icon">↗</div>
+                  <div>
+                    <strong>{t("Seguimiento automático", "Automated follow-up")}</strong>
+                    <small>{t("Mantiene la oportunidad en movimiento.", "Keeps the opportunity moving forward.")}</small>
+                  </div>
+                  <b>{t("Actúa", "Act")}</b>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="signal-strip" aria-label={t("Capacidades de AxiomOS", "AxiomOS capabilities")}>
+          <div className="signal-track">
+            {[0, 1].map((loop) => (
+              <div key={loop} style={{ display: "flex", gap: "22px", alignItems: "center" }}>
+                {[
+                  t("Automatización", "Automation"),
+                  t("Recepción IA", "AI Reception"),
+                  "WhatsApp",
+                  t("Seguimiento", "Follow-up"),
+                  "AxiomOS Brain",
+                  "CRM",
+                  t("Software a la medida", "Custom Software"),
+                  t("Integraciones", "Integrations"),
+                ].map((item) => (
+                  <span className="signal-item" key={`${loop}-${item}`}>
+                    <i /> {item}
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <section className="section section-border reveal" id="soluciones">
+          <div className="section-kicker">{t("Soluciones Axiom", "Axiom Solutions")}</div>
+          <h2>{t("Menos tareas sueltas. Más operación conectada.", "Fewer disconnected tasks. More connected operations.")}</h2>
+          <p className="section-copy">
+            {t(
+              "Diseñamos sistemas alrededor de cómo realmente trabaja tu empresa: llamadas, WhatsApp, formularios, seguimiento, datos y procesos internos.",
+              "We design systems around how your business actually works: calls, WhatsApp, forms, follow-up, data, and internal processes."
+            )}
+          </p>
+
+          <div className="bento">
+            <article className="card wide">
+              <div className="solution-top">
+                <div className="solution-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M4 12h5l2-6 3 12 2-6h4" />
+                    <circle cx="4" cy="12" r="1.5" />
+                    <circle cx="20" cy="12" r="1.5" />
+                  </svg>
+                </div>
+                <div className="solution-label">
+                  {t("Automatización", "Automation")}
+                  <small>{t("Flujos que trabajan por ti", "Workflows that work for you")}</small>
+                </div>
+              </div>
+              <h3>{t("Automatización que mueve el trabajo", "Automation that moves work forward")}</h3>
+              <p>
                 {t(
-                  "No necesitas volver a explicar todo desde cero. Revisa el mensaje precargado, añade tus datos y envía la solicitud.",
-                  "You do not need to explain everything again from scratch. Review the prefilled message, add your information, and submit the request."
+                  "Conecta entradas, clasificaciones, responsables y próximas acciones para reducir tareas repetitivas y evitar oportunidades olvidadas.",
+                  "Connect intake, classification, ownership, and next actions to reduce repetitive work and prevent missed opportunities."
                 )}
               </p>
-            </div>
-          )}
-
-          <form
-            action="https://formsubmit.co/axiomaisolutionspr@gmail.com"
-            method="POST"
-            onSubmit={handleEvaluationSubmit}
-            style={{
-              display: "grid",
-              gap: "18px",
-              padding: "32px",
-              borderRadius: "22px",
-              border: "1px solid rgba(83, 183, 255, 0.3)",
-              background: "rgba(5, 15, 30, 0.88)",
-              textAlign: "left",
-            }}
-          >
-            <input
-              type="hidden"
-              name="_subject"
-              value={
-                cameFromBrain
-                  ? t(
-                      "Nuevo caso desde AxiomOS Brain - AxiomAI Solutions",
-                      "New case from AxiomOS Brain - AxiomAI Solutions"
-                    )
-                  : t(
-                      "Nueva solicitud - AxiomAI Solutions",
-                      "New request - AxiomAI Solutions"
-                    )
-              }
-            />
-
-            <input
-              type="hidden"
-              name="_template"
-              value="table"
-            />
-
-            <input
-              type="hidden"
-              name="_next"
-              value="https://www.axiomaisolutions.org/gracias"
-            />
-
-            <input
-              type="hidden"
-              name="_url"
-              value="https://www.axiomaisolutions.org/"
-            />
-
-            <input
-              type="text"
-              name="_honey"
-              style={{
-                display: "none",
-              }}
-              tabIndex={-1}
-              autoComplete="off"
-            />
-
-            {cameFromBrain && (
-              <>
-                <input
-                  type="hidden"
-                  name="origen"
-                  value="AxiomOS Brain"
-                />
-
-                <input
-                  type="hidden"
-                  name="consulta_brain"
-                  value={safeBrainQuery}
-                />
-
-                <input
-                  type="hidden"
-                  name="tipo_de_negocio_brain"
-                  value={effectiveBusinessType}
-                />
-
-                <input
-                  type="hidden"
-                  name="foco_brain"
-                  value={effectiveFocus}
-                />
-
-                <input
-                  type="hidden"
-                  name="canales_mencionados_brain"
-                  value={brainChannels}
-                />
-
-                <input
-                  type="hidden"
-                  name="prioridad_brain"
-                  value={effectivePriority}
-                />
-
-                <input
-                  type="hidden"
-                  name="complejidad_brain"
-                  value={effectiveComplexity}
-                />
-
-                <input
-                  type="hidden"
-                  name="lectura_principal_brain"
-                  value={safeBrainSummary}
-                />
-
-                <input
-                  type="hidden"
-                  name="estado_del_perfil_brain"
-                  value={brainProfileStatus}
-                />
-
-                <input
-                  type="hidden"
-                  name="interacciones_brain"
-                  value={String(effectiveInteractionCount)}
-                />
-
-                <input
-                  type="hidden"
-                  name="contexto_del_cliente_brain"
-                  value={safeBrainUserContext}
-                />
-
-                <input
-                  type="hidden"
-                  name="analisis_brain"
-                  value={safeBrainAnalysis}
-                />
-
-                <input
-                  type="hidden"
-                  name="fecha_del_analisis_brain"
-                  value={brainCreatedAt}
-                />
-              </>
-            )}
-
-            <div>
-              <label>{t("Nombre", "Name")}</label>
-
-              <input
-                required
-                name="nombre"
-                type="text"
-                placeholder={t("Tu nombre", "Your name")}
-                style={{
-                  ...inputStyle,
-                  marginTop: "8px",
-                }}
-              />
-            </div>
-
-            <div>
-              <label>{t("Nombre del negocio", "Business name")}</label>
-
-              <input
-                name="negocio"
-                type="text"
-                placeholder={t("Nombre de tu empresa o negocio", "Your company or business name")}
-                style={{
-                  ...inputStyle,
-                  marginTop: "8px",
-                }}
-              />
-            </div>
-
-            <div>
-              <label>{t("Teléfono / WhatsApp", "Phone / WhatsApp")}</label>
-
-              <input
-                required
-                name="telefono"
-                type="tel"
-                placeholder={t("Tu número de contacto", "Your contact number")}
-                style={{
-                  ...inputStyle,
-                  marginTop: "8px",
-                }}
-              />
-            </div>
-
-            <div>
-              <label>{t("Correo electrónico", "Email address")}</label>
-
-              <input
-                required
-                name="email"
-                type="email"
-                placeholder={t("correo@ejemplo.com", "email@example.com")}
-                style={{
-                  ...inputStyle,
-                  marginTop: "8px",
-                }}
-              />
-            </div>
-
-            <div>
-              <label>
-                {t("¿Qué necesitas automatizar o mejorar?", "What do you need to automate or improve?")}
-              </label>
-
-              <textarea
-                required
-                name="mensaje"
-                rows={7}
-                value={evaluationMessage}
-                onChange={(event) =>
-                  setEvaluationMessage(event.target.value)
-                }
-                placeholder={t("Explícanos brevemente qué necesitas...", "Briefly tell us what you need...")}
-                style={{
-                  ...inputStyle,
-                  marginTop: "8px",
-                  resize: "vertical",
-                  fontFamily: "Arial, sans-serif",
-                  lineHeight: 1.6,
-                }}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={formSubmitting}
-              style={{
-                marginTop: "8px",
-                padding: "16px 24px",
-                border: "none",
-                borderRadius: "12px",
-                background:
-                  "linear-gradient(135deg, #1d7fff 0%, #42dfff 100%)",
-                color: "white",
-                fontSize: "17px",
-                fontWeight: 700,
-                cursor: formSubmitting ? "wait" : "pointer",
-                opacity: formSubmitting ? 0.72 : 1,
-                boxShadow:
-                  "0 0 25px rgba(45, 151, 255, 0.35)",
-              }}
-            >
-              {formSubmitting
-                ? t("Enviando y confirmando...", "Sending and confirming...")
-                : cameFromBrain
-                  ? t("Enviar caso para evaluación", "Submit case for assessment")
-                  : t("Solicitar evaluación gratuita", "Request free assessment")}
-            </button>
-
-            {formError && (
-              <div
-                role="alert"
-                style={{
-                  padding: "13px 15px",
-                  borderRadius: "12px",
-                  border: "1px solid rgba(255, 112, 112, 0.42)",
-                  background: "rgba(112, 22, 35, 0.34)",
-                  color: "#ffd2d2",
-                  fontSize: "13.5px",
-                  lineHeight: 1.55,
-                  textAlign: "center",
-                }}
-              >
-                {t("No se pudo confirmar el envío:", "We could not confirm the submission:")} {formError}
+              <div className="card-tags">
+                <span>WhatsApp</span><span>{t("Seguimiento", "Follow-up")}</span><span>{t("Alertas", "Alerts")}</span><span>{t("Flujos", "Flows")}</span>
               </div>
+              <div className="solution-signal" aria-hidden="true">
+                <span /><span /><span /><span /><span /><span />
+              </div>
+            </article>
+
+            <article className="card medium">
+              <div className="solution-top">
+                <div className="solution-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="5" r="2" />
+                    <circle cx="5" cy="12" r="2" />
+                    <circle cx="19" cy="12" r="2" />
+                    <circle cx="12" cy="19" r="2" />
+                    <path d="M10.5 6.5 6.5 10.5M13.5 6.5l4 4M6.5 13.5l4 4M17.5 13.5l-4 4" />
+                    <circle cx="12" cy="12" r="2.5" />
+                  </svg>
+                </div>
+                <div className="solution-label">
+                  {t("Inteligencia Artificial", "Artificial Intelligence")}
+                  <small>{t("IA aplicada a procesos reales", "AI applied to real workflows")}</small>
+                </div>
+              </div>
+              <h3>{t("IA aplicada al negocio", "AI applied to business")}</h3>
+              <p>
+                {t(
+                  "Asistentes y análisis diseñados para atender, orientar, resumir y apoyar decisiones dentro de procesos reales.",
+                  "Assistants and analysis designed to serve, guide, summarize, and support decisions inside real workflows."
+                )}
+              </p>
+              <div className="card-tags">
+                <span>Brain</span><span>{t("Asistentes", "Assistants")}</span><span>{t("Análisis", "Analysis")}</span>
+              </div>
+            </article>
+
+            <article className="card third">
+              <div className="solution-top">
+                <div className="solution-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M7 4h3l2 5-2 2c1.3 2.5 3.5 4.7 6 6l2-2 5 2v3c0 1.1-.9 2-2 2C11.6 22 2 12.4 2 3c0-1.1.9-2 2-2h3" />
+                  </svg>
+                </div>
+                <div className="solution-label">
+                  {t("Recepción IA", "AI Reception")}
+                  <small>{t("Atiende y clasifica", "Answers and classifies")}</small>
+                </div>
+              </div>
+              <h3>{t("Recepción inteligente", "Intelligent reception")}</h3>
+              <p>{t("Atención telefónica, recopilación de datos, clasificación y transferencia cuando el caso necesita una persona.", "Phone handling, data capture, classification, and transfer when a case needs a person.")}</p>
+            </article>
+
+            <article className="card third">
+              <div className="solution-top">
+                <div className="solution-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="8" cy="8" r="3" />
+                    <circle cx="17" cy="7" r="2.5" />
+                    <path d="M3 20c0-3.2 2.2-5.5 5-5.5s5 2.3 5 5.5M13 18c.4-2.4 2-4 4.2-4 2.3 0 3.8 1.7 3.8 4" />
+                    <path d="m15.5 10 1.2 1.2 2.4-2.7" />
+                  </svg>
+                </div>
+                <div className="solution-label">
+                  CRM
+                  <small>{t("Prospectos con próxima acción", "Prospects with next actions")}</small>
+                </div>
+              </div>
+              <h3>{t("Seguimiento comercial", "Sales follow-up")}</h3>
+              <p>{t("Organiza prospectos, etapas, próxima acción y contexto para que el equipo sepa qué oportunidad atender.", "Organize prospects, stages, next action, and context so the team knows which opportunity to work.")}</p>
+            </article>
+
+            <article className="card third">
+              <div className="solution-top">
+                <div className="solution-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="m8 9-4 3 4 3M16 9l4 3-4 3M14 5l-4 14" />
+                  </svg>
+                </div>
+                <div className="solution-label">
+                  {t("Software", "Software")}
+                  <small>{t("Construido alrededor de tu negocio", "Built around your business")}</small>
+                </div>
+              </div>
+              <h3>{t("Software a la medida", "Custom software")}</h3>
+              <p>{t("Paneles, integraciones y herramientas construidas alrededor del proceso específico de tu empresa.", "Dashboards, integrations, and tools built around your company's specific process.")}</p>
+            </article>
+          </div>
+
+          <div className="experience">
+            <div className="experience-line" aria-hidden="true" />
+            <div className="experience-grid">
+              <div className="experience-node">
+                <b style={{
+  width: "42px",
+  height: "42px",
+  minWidth: "42px",
+  borderRadius: "12px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
+  border: "1px solid rgba(73, 202, 255, 0.28)",
+  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
+  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
+  color: "#69E1FF",
+  fontSize: "13px",
+  fontWeight: 800,
+  lineHeight: 1,
+  letterSpacing: "0.02em",
+  textShadow: "none",
+  flexShrink: 0,
+}}>01</b>
+                <strong>{t("Entra una conversación", "A conversation arrives")}</strong>
+                <span>{t("Llamada, WhatsApp, formulario o contacto digital.", "Call, WhatsApp, form, or digital contact.")}</span>
+              </div>
+              <div className="experience-node">
+                <b style={{
+  width: "42px",
+  height: "42px",
+  minWidth: "42px",
+  borderRadius: "12px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
+  border: "1px solid rgba(73, 202, 255, 0.28)",
+  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
+  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
+  color: "#69E1FF",
+  fontSize: "13px",
+  fontWeight: 800,
+  lineHeight: 1,
+  letterSpacing: "0.02em",
+  textShadow: "none",
+  flexShrink: 0,
+}}>02</b>
+                <strong>{t("AxiomOS entiende", "AxiomOS understands")}</strong>
+                <span>{t("Clasifica intención, prioridad y contexto.", "Classifies intent, priority, and context.")}</span>
+              </div>
+              <div className="experience-node">
+                <b style={{
+  width: "42px",
+  height: "42px",
+  minWidth: "42px",
+  borderRadius: "12px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
+  border: "1px solid rgba(73, 202, 255, 0.28)",
+  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
+  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
+  color: "#69E1FF",
+  fontSize: "13px",
+  fontWeight: 800,
+  lineHeight: 1,
+  letterSpacing: "0.02em",
+  textShadow: "none",
+  flexShrink: 0,
+}}>03</b>
+                <strong>{t("El sistema actúa", "The system acts")}</strong>
+                <span>{t("Responde, asigna, registra o inicia seguimiento.", "Responds, assigns, logs, or starts follow-up.")}</span>
+              </div>
+              <div className="experience-node">
+                <b style={{
+  width: "42px",
+  height: "42px",
+  minWidth: "42px",
+  borderRadius: "12px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
+  border: "1px solid rgba(73, 202, 255, 0.28)",
+  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
+  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
+  color: "#69E1FF",
+  fontSize: "13px",
+  fontWeight: 800,
+  lineHeight: 1,
+  letterSpacing: "0.02em",
+  textShadow: "none",
+  flexShrink: 0,
+}}>04</b>
+                <strong>{t("La oportunidad continúa", "The opportunity keeps moving")}</strong>
+                <span>{t("El equipo ve la próxima acción y conserva el contexto.", "The team sees the next action and keeps the context.")}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section section-border reveal" id="proceso">
+          <div className="section-kicker">{t("Cómo trabajamos", "How we work")}</div>
+          <h2>{t("Primero entendemos el proceso. Después automatizamos.", "We understand the process first. Then we automate.")}</h2>
+
+          <div className="process-grid">
+            <div className="process-list">
+              <div className="process-item">
+                <div className="step" style={{
+  width: "42px",
+  height: "42px",
+  minWidth: "42px",
+  borderRadius: "12px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
+  border: "1px solid rgba(73, 202, 255, 0.28)",
+  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
+  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
+  color: "#69E1FF",
+  fontSize: "13px",
+  fontWeight: 800,
+  lineHeight: 1,
+  letterSpacing: "0.02em",
+  textShadow: "none",
+  flexShrink: 0,
+}}>01</div>
+                <div>
+                  <h3>{t("Diagnóstico", "Diagnosis")}</h3>
+                  <p>{t("Identificamos dónde se pierde tiempo, información u oportunidades.", "We identify where time, information, or opportunities are being lost.")}</p>
+                </div>
+              </div>
+              <div className="process-item">
+                <div className="step" style={{
+  width: "42px",
+  height: "42px",
+  minWidth: "42px",
+  borderRadius: "12px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
+  border: "1px solid rgba(73, 202, 255, 0.28)",
+  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
+  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
+  color: "#69E1FF",
+  fontSize: "13px",
+  fontWeight: 800,
+  lineHeight: 1,
+  letterSpacing: "0.02em",
+  textShadow: "none",
+  flexShrink: 0,
+}}>02</div>
+                <div>
+                  <h3>{t("Diseño del flujo", "Workflow design")}</h3>
+                  <p>{t("Definimos etapas, datos, responsables, reglas y próximas acciones.", "We define stages, data, owners, rules, and next actions.")}</p>
+                </div>
+              </div>
+              <div className="process-item">
+                <div className="step" style={{
+  width: "42px",
+  height: "42px",
+  minWidth: "42px",
+  borderRadius: "12px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
+  border: "1px solid rgba(73, 202, 255, 0.28)",
+  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
+  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
+  color: "#69E1FF",
+  fontSize: "13px",
+  fontWeight: 800,
+  lineHeight: 1,
+  letterSpacing: "0.02em",
+  textShadow: "none",
+  flexShrink: 0,
+}}>03</div>
+                <div>
+                  <h3>{t("Implementación", "Implementation")}</h3>
+                  <p>{t("Conectamos IA, automatizaciones, comunicaciones e integraciones.", "We connect AI, automation, communications, and integrations.")}</p>
+                </div>
+              </div>
+              <div className="process-item">
+                <div className="step" style={{
+  width: "42px",
+  height: "42px",
+  minWidth: "42px",
+  borderRadius: "12px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
+  border: "1px solid rgba(73, 202, 255, 0.28)",
+  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
+  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
+  color: "#69E1FF",
+  fontSize: "13px",
+  fontWeight: 800,
+  lineHeight: 1,
+  letterSpacing: "0.02em",
+  textShadow: "none",
+  flexShrink: 0,
+}}>04</div>
+                <div>
+                  <h3>{t("Mejora continua", "Continuous improvement")}</h3>
+                  <p>{t("Ajustamos el sistema según el uso real y las necesidades del negocio.", "We refine the system based on real usage and business needs.")}</p>
+                </div>
+              </div>
+            </div>
+
+            <aside className="brain-spotlight">
+              <div className="premium-original-brain">
+                        <a
+                          href="/brain"
+                          className="home-brain-shell"
+                          aria-label={t("Abrir AxiomOS Brain", "Open AxiomOS Brain")}
+                          onClick={(event) => {
+                            if (event.currentTarget.dataset.touchDragged === "1") {
+                              event.preventDefault();
+                            }
+                          }}
+                          onPointerDown={(event) => {
+                            if (event.pointerType === "touch") {
+                              event.currentTarget.dataset.touchStartX = String(event.clientX);
+                              event.currentTarget.dataset.touchStartY = String(event.clientY);
+                              event.currentTarget.dataset.touchDragged = "0";
+                              event.currentTarget.setPointerCapture?.(event.pointerId);
+                            }
+                          }}
+                          onPointerMove={(event) => {
+                            if (event.pointerType === "touch") {
+                              const startX = Number(event.currentTarget.dataset.touchStartX ?? event.clientX);
+                              const startY = Number(event.currentTarget.dataset.touchStartY ?? event.clientY);
+                              const distance = Math.hypot(event.clientX - startX, event.clientY - startY);
+
+                              if (distance > 8) {
+                                event.currentTarget.dataset.touchDragged = "1";
+                              }
+                            }
+
+                            const rect = event.currentTarget.getBoundingClientRect();
+                            const x = (event.clientX - rect.left) / rect.width;
+                            const y = (event.clientY - rect.top) / rect.height;
+                            const nx = Math.max(-1, Math.min(1, (x - 0.5) * 2));
+                            const ny = Math.max(-1, Math.min(1, (y - 0.5) * 2));
+
+                            event.currentTarget.style.setProperty(
+                              "--orb-x",
+                              `${Math.round(x * 100)}%`
+                            );
+                            event.currentTarget.style.setProperty(
+                              "--orb-y",
+                              `${Math.round(y * 100)}%`
+                            );
+                            const brainStrengthX = event.pointerType === "touch" ? 18 : 15;
+                            const brainStrengthY = event.pointerType === "touch" ? 16 : 13;
+
+                            event.currentTarget.style.setProperty(
+                              "--brain-x",
+                              `${(nx * brainStrengthX).toFixed(2)}px`
+                            );
+                            event.currentTarget.style.setProperty(
+                              "--brain-y",
+                              `${(ny * brainStrengthY).toFixed(2)}px`
+                            );
+                            event.currentTarget.style.setProperty(
+                              "--shadow-x",
+                              `${(-nx * 7).toFixed(2)}px`
+                            );
+                            event.currentTarget.style.setProperty(
+                              "--shadow-y",
+                              `${(18 - ny * 3).toFixed(2)}px`
+                            );
+                            event.currentTarget.style.setProperty("--orb-scale", "1.025");
+                          }}
+                          onPointerEnter={(event) => {
+                            event.currentTarget.style.setProperty("--orb-scale", "1.025");
+                          }}
+                          onPointerUp={(event) => {
+                            const shell = event.currentTarget;
+
+                            if (
+                              event.pointerType === "touch" &&
+                              shell.hasPointerCapture?.(event.pointerId)
+                            ) {
+                              shell.releasePointerCapture?.(event.pointerId);
+                            }
+
+                            shell.style.setProperty("--orb-x", "35%");
+                            shell.style.setProperty("--orb-y", "30%");
+                            shell.style.setProperty("--brain-x", "0px");
+                            shell.style.setProperty("--brain-y", "0px");
+                            shell.style.setProperty("--shadow-x", "0px");
+                            shell.style.setProperty("--shadow-y", "18px");
+                            shell.style.setProperty("--orb-scale", "1");
+
+                            if (event.pointerType === "touch") {
+                              window.setTimeout(() => {
+                                shell.dataset.touchDragged = "0";
+                              }, 80);
+                            }
+                          }}
+                          onPointerCancel={(event) => {
+                            const shell = event.currentTarget;
+                            shell.style.setProperty("--orb-x", "35%");
+                            shell.style.setProperty("--orb-y", "30%");
+                            shell.style.setProperty("--brain-x", "0px");
+                            shell.style.setProperty("--brain-y", "0px");
+                            shell.style.setProperty("--shadow-x", "0px");
+                            shell.style.setProperty("--shadow-y", "18px");
+                            shell.style.setProperty("--orb-scale", "1");
+                            shell.dataset.touchDragged = "0";
+                          }}
+                          onPointerLeave={(event) => {
+                            if (event.pointerType === "touch") return;
+
+                            const shell = event.currentTarget;
+                            shell.style.setProperty("--orb-x", "35%");
+                            shell.style.setProperty("--orb-y", "30%");
+                            shell.style.setProperty("--brain-x", "0px");
+                            shell.style.setProperty("--brain-y", "0px");
+                            shell.style.setProperty("--shadow-x", "0px");
+                            shell.style.setProperty("--shadow-y", "18px");
+                            shell.style.setProperty("--orb-scale", "1");
+                          }}
+                        >
+                          <span className="home-brain-ring home-brain-ring-one" />
+                          <span className="home-brain-ring home-brain-ring-two" />
+                          <span className="home-brain-aura" />
+
+                          <span className="home-brain-launcher">
+                            <span className="home-brain-grid" />
+                            <span className="home-brain-electric-halo" aria-hidden="true" />
+                            <svg
+                              className="home-brain-electric-overlay"
+                              viewBox="0 0 140 140"
+                              aria-hidden="true"
+                            >
+                              <path
+                                className="home-brain-electric-path home-brain-electric-cyan"
+                                d="M 70 68 L 59 53 L 48 52 L 39 44 L 26 44 L 18 36"
+                                style={{ animationDelay: "-0.00s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-pink"
+                                d="M 69 70 L 57 61 L 46 61 L 38 56 L 27 56 L 17 52"
+                                style={{ animationDelay: "-0.11s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-cyan"
+                                d="M 68 72 L 55 68 L 45 70 L 35 70 L 24 70 L 15 70"
+                                style={{ animationDelay: "-0.22s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-pink"
+                                d="M 68 74 L 55 77 L 44 82 L 34 84 L 24 88 L 16 94"
+                                style={{ animationDelay: "-0.33s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-cyan"
+                                d="M 70 76 L 57 85 L 48 92 L 39 98 L 30 104 L 22 113"
+                                style={{ animationDelay: "-0.44s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-pink"
+                                d="M 72 77 L 64 91 L 61 102 L 55 112 L 50 122"
+                                style={{ animationDelay: "-0.55s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-cyan"
+                                d="M 74 76 L 78 90 L 82 101 L 87 112 L 90 123"
+                                style={{ animationDelay: "-0.66s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-cyan"
+                                d="M 70 68 L 81 53 L 92 52 L 101 44 L 114 44 L 122 36"
+                                style={{ animationDelay: "-0.77s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-pink"
+                                d="M 71 70 L 83 61 L 94 61 L 102 56 L 113 56 L 123 52"
+                                style={{ animationDelay: "-0.88s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-cyan"
+                                d="M 72 72 L 85 68 L 95 70 L 105 70 L 116 70 L 125 70"
+                                style={{ animationDelay: "-0.99s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-pink"
+                                d="M 72 74 L 85 77 L 96 82 L 106 84 L 116 88 L 124 94"
+                                style={{ animationDelay: "-1.10s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-cyan"
+                                d="M 70 76 L 83 85 L 92 92 L 101 98 L 110 104 L 118 113"
+                                style={{ animationDelay: "-1.21s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-pink"
+                                d="M 68 67 L 61 54 L 59 43 L 54 32 L 53 22"
+                                style={{ animationDelay: "-1.32s" }}
+                              />
+                              <path
+                                className="home-brain-electric-path home-brain-electric-cyan"
+                                d="M 72 67 L 79 54 L 81 43 L 86 32 L 87 22"
+                                style={{ animationDelay: "-1.43s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 70 68 L 59 53 L 48 52 L 39 44 L 26 44 L 18 36"
+                                style={{ animationDelay: "-0.000s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 69 70 L 57 61 L 46 61 L 38 56 L 27 56 L 17 52"
+                                style={{ animationDelay: "-0.075s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 68 72 L 55 68 L 45 70 L 35 70 L 24 70 L 15 70"
+                                style={{ animationDelay: "-0.150s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 68 74 L 55 77 L 44 82 L 34 84 L 24 88 L 16 94"
+                                style={{ animationDelay: "-0.225s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 70 76 L 57 85 L 48 92 L 39 98 L 30 104 L 22 113"
+                                style={{ animationDelay: "-0.300s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 72 77 L 64 91 L 61 102 L 55 112 L 50 122"
+                                style={{ animationDelay: "-0.375s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 74 76 L 78 90 L 82 101 L 87 112 L 90 123"
+                                style={{ animationDelay: "-0.450s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 70 68 L 81 53 L 92 52 L 101 44 L 114 44 L 122 36"
+                                style={{ animationDelay: "-0.525s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 71 70 L 83 61 L 94 61 L 102 56 L 113 56 L 123 52"
+                                style={{ animationDelay: "-0.600s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 72 72 L 85 68 L 95 70 L 105 70 L 116 70 L 125 70"
+                                style={{ animationDelay: "-0.675s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 72 74 L 85 77 L 96 82 L 106 84 L 116 88 L 124 94"
+                                style={{ animationDelay: "-0.750s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 70 76 L 83 85 L 92 92 L 101 98 L 110 104 L 118 113"
+                                style={{ animationDelay: "-0.825s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 68 67 L 61 54 L 59 43 L 54 32 L 53 22"
+                                style={{ animationDelay: "-0.900s" }}
+                              />
+                              <path
+                                className="home-brain-current-path"
+                                d="M 72 67 L 79 54 L 81 43 L 86 32 L 87 22"
+                                style={{ animationDelay: "-0.975s" }}
+                              />
+                              <circle r="1.75" fill="#fff3a8" opacity="0.98">
+                                <animateMotion
+                                  dur="1.18s"
+                                  begin="-0.00s"
+                                  repeatCount="indefinite"
+                                  path="M 70 68 L 59 53 L 48 52 L 39 44 L 26 44 L 18 36"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#95f6ff" opacity="0.98">
+                                <animateMotion
+                                  dur="1.26s"
+                                  begin="-0.09s"
+                                  repeatCount="indefinite"
+                                  path="M 69 70 L 57 61 L 46 61 L 38 56 L 27 56 L 17 52"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#ff9bea" opacity="0.98">
+                                <animateMotion
+                                  dur="1.34s"
+                                  begin="-0.18s"
+                                  repeatCount="indefinite"
+                                  path="M 68 72 L 55 68 L 45 70 L 35 70 L 24 70 L 15 70"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#fff3a8" opacity="0.98">
+                                <animateMotion
+                                  dur="1.42s"
+                                  begin="-0.27s"
+                                  repeatCount="indefinite"
+                                  path="M 68 74 L 55 77 L 44 82 L 34 84 L 24 88 L 16 94"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#95f6ff" opacity="0.98">
+                                <animateMotion
+                                  dur="1.18s"
+                                  begin="-0.36s"
+                                  repeatCount="indefinite"
+                                  path="M 70 76 L 57 85 L 48 92 L 39 98 L 30 104 L 22 113"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#ff9bea" opacity="0.98">
+                                <animateMotion
+                                  dur="1.26s"
+                                  begin="-0.45s"
+                                  repeatCount="indefinite"
+                                  path="M 72 77 L 64 91 L 61 102 L 55 112 L 50 122"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#fff3a8" opacity="0.98">
+                                <animateMotion
+                                  dur="1.34s"
+                                  begin="-0.54s"
+                                  repeatCount="indefinite"
+                                  path="M 74 76 L 78 90 L 82 101 L 87 112 L 90 123"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#95f6ff" opacity="0.98">
+                                <animateMotion
+                                  dur="1.42s"
+                                  begin="-0.63s"
+                                  repeatCount="indefinite"
+                                  path="M 70 68 L 81 53 L 92 52 L 101 44 L 114 44 L 122 36"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#ff9bea" opacity="0.98">
+                                <animateMotion
+                                  dur="1.18s"
+                                  begin="-0.72s"
+                                  repeatCount="indefinite"
+                                  path="M 71 70 L 83 61 L 94 61 L 102 56 L 113 56 L 123 52"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#fff3a8" opacity="0.98">
+                                <animateMotion
+                                  dur="1.26s"
+                                  begin="-0.81s"
+                                  repeatCount="indefinite"
+                                  path="M 72 72 L 85 68 L 95 70 L 105 70 L 116 70 L 125 70"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#95f6ff" opacity="0.98">
+                                <animateMotion
+                                  dur="1.34s"
+                                  begin="-0.90s"
+                                  repeatCount="indefinite"
+                                  path="M 72 74 L 85 77 L 96 82 L 106 84 L 116 88 L 124 94"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#ff9bea" opacity="0.98">
+                                <animateMotion
+                                  dur="1.42s"
+                                  begin="-0.99s"
+                                  repeatCount="indefinite"
+                                  path="M 70 76 L 83 85 L 92 92 L 101 98 L 110 104 L 118 113"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#fff3a8" opacity="0.98">
+                                <animateMotion
+                                  dur="1.18s"
+                                  begin="-1.08s"
+                                  repeatCount="indefinite"
+                                  path="M 68 67 L 61 54 L 59 43 L 54 32 L 53 22"
+                                />
+                              </circle>
+                              <circle r="1.75" fill="#95f6ff" opacity="0.98">
+                                <animateMotion
+                                  dur="1.26s"
+                                  begin="-1.17s"
+                                  repeatCount="indefinite"
+                                  path="M 72 67 L 79 54 L 81 43 L 86 32 L 87 22"
+                                />
+                              </circle>
+                            </svg>
+                            <img
+                              src="/axiomos-brain-neon.png"
+                              alt=""
+                              aria-hidden="true"
+                              className="home-brain-art"
+                          style={{
+                            filter: "saturate(1.34) contrast(1.16) brightness(0.97)",
+                          }}
+                              draggable={false}
+                            />
+                            <span className="home-brain-art-cover" aria-hidden="true" style={{ opacity: 0.04 }} />
+                            <span className="home-brain-art-follower" aria-hidden="true" style={{ opacity: 0.01 }} />
+                          </span>
+                        </a>
+
+                        <div className="home-brain-caption">
+                          {t("Explora AxiomOS Brain", "Explore AxiomOS Brain")}
+                          <span className="home-brain-caption-arrow" aria-hidden="true">
+                            →
+                          </span>
+                        </div>
+              </div>
+              <div className="section-kicker" style={{ marginTop: "8px" }}>AXIOMOS BRAIN</div>
+              <h3>{t("Empieza con un diagnóstico inteligente.", "Start with an intelligent diagnosis.")}</h3>
+              <p>
+                {t(
+                  "Describe cómo funciona tu negocio y Brain te ayuda a identificar qué áreas pueden beneficiarse de automatización, IA o software.",
+                  "Describe how your business works and Brain helps identify which areas could benefit from automation, AI, or software."
+                )}
+              </p>
+              <a className="primary" href="/brain">{t("Abrir Brain gratis →", "Open Brain free →")}</a>
+            </aside>
+          </div>
+        </section>
+
+        <section className="section section-border reveal">
+          <div className="cta-band">
+            <div>
+              <h3>{t("Tu operación no necesita más herramientas. Necesita un sistema.", "Your operation doesn't need more tools. It needs a system.")}</h3>
+              <p>{t("Cuéntanos qué parte del negocio consume más tiempo y evaluamos cómo convertirla en un flujo más rápido, organizado y medible.", "Tell us which part of the business consumes the most time and we'll assess how to turn it into a faster, more organized, measurable workflow.")}</p>
+            </div>
+            <a className="primary" href="#evaluacion">{t("Evaluación gratuita →", "Free assessment →")}</a>
+          </div>
+        </section>
+
+        <section className="section section-border reveal" id="evaluacion">
+          <div className="section-kicker">{t("Comienza aquí", "Start here")}</div>
+          <h2>{t("Hablemos de tu operación.", "Let's talk about your operation.")}</h2>
+          <p className="section-copy">
+            {t(
+              "Cuéntanos qué quieres mejorar. Revisamos el caso y te orientamos sobre una solución adecuada para tu negocio.",
+              "Tell us what you want to improve. We'll review the case and guide you toward a solution that fits your business."
             )}
+          </p>
 
-            <p
-              style={{
-                textAlign: "center",
-                color: "#71839c",
-                fontSize: "13px",
-                margin: 0,
-              }}
+          <div className="contact-grid">
+            <div className="contact-copy">
+              <h3>{t("Evaluación inicial gratuita", "Free initial assessment")}</h3>
+              <p>{t("No necesitas saber qué tecnología utilizar. Empieza explicándonos el problema, el proceso o la oportunidad.", "You don't need to know which technology to use. Start by explaining the problem, process, or opportunity.")}</p>
+
+              <div className="contact-lines">
+                <div className="contact-line">📞 +1 (787) 450-3679</div>
+                <div className="contact-line">🌐 axiomaisolutions.org</div>
+                <div className="contact-line">✉ axiomaisolutionspr@gmail.com</div>
+              </div>
+
+              {cameFromBrain && (
+                <div className="brain-return">
+                  <strong>{t("Caso recibido desde AxiomOS Brain", "Case received from AxiomOS Brain")}</strong>
+                  <p>
+                    {t(
+                      "El formulario conserva el contexto útil de tu análisis para que no tengas que empezar desde cero.",
+                      "The form keeps the useful context from your analysis so you don't have to start from scratch."
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <form
+              action="https://formsubmit.co/axiomaisolutionspr@gmail.com"
+              method="POST"
+              onSubmit={handleEvaluationSubmit}
+              className="form-card"
             >
-              {t("Sin compromiso • Evaluación inicial gratuita", "No commitment • Free initial assessment")}
-            </p>
-          </form>
-        </div>
+              <input
+                type="hidden"
+                name="_subject"
+                value={
+                  cameFromBrain
+                    ? t(
+                        "Nuevo caso desde AxiomOS Brain - AxiomAI Solutions",
+                        "New case from AxiomOS Brain - AxiomAI Solutions"
+                      )
+                    : t(
+                        "Nueva solicitud - AxiomAI Solutions",
+                        "New request - AxiomAI Solutions"
+                      )
+                }
+              />
+              <input type="hidden" name="_template" value="table" />
+              <input type="hidden" name="_next" value="https://www.axiomaisolutions.org/gracias" />
+              <input type="hidden" name="_url" value="https://www.axiomaisolutions.org/" />
+              <input type="text" name="_honey" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
 
-        <footer
-          style={{
-            marginTop: "80px",
-            paddingTop: "30px",
-            borderTop:
-              "1px solid rgba(255,255,255,0.08)",
-            width: "100%",
-            maxWidth: "1100px",
-            color: "#71839c",
-            fontSize: "14px",
-          }}
-        >
-          © 2026 AxiomAI Solutions
-        </footer>
-      </section>
+              {cameFromBrain && (
+                <>
+                  <input type="hidden" name="origen" value="AxiomOS Brain" />
+                  <input type="hidden" name="consulta_brain" value={safeBrainQuery} />
+                  <input type="hidden" name="tipo_de_negocio_brain" value={effectiveBusinessType} />
+                  <input type="hidden" name="foco_brain" value={effectiveFocus} />
+                  <input type="hidden" name="canales_mencionados_brain" value={brainChannels} />
+                  <input type="hidden" name="prioridad_brain" value={effectivePriority} />
+                  <input type="hidden" name="complejidad_brain" value={effectiveComplexity} />
+                  <input type="hidden" name="lectura_principal_brain" value={safeBrainSummary} />
+                  <input type="hidden" name="estado_del_perfil_brain" value={brainProfileStatus} />
+                  <input type="hidden" name="interacciones_brain" value={String(effectiveInteractionCount)} />
+                  <input type="hidden" name="contexto_del_cliente_brain" value={safeBrainUserContext} />
+                  <input type="hidden" name="analisis_brain" value={safeBrainAnalysis} />
+                  <input type="hidden" name="fecha_del_analisis_brain" value={brainCreatedAt} />
+                </>
+              )}
+
+              <div className="form-row">
+                <div className="field">
+                  <label>{t("Nombre", "Name")}</label>
+                  <input required name="nombre" type="text" placeholder={t("Tu nombre", "Your name")} />
+                </div>
+
+                <div className="field">
+                  <label>{t("Nombre del negocio", "Business name")}</label>
+                  <input name="negocio" type="text" placeholder={t("Tu empresa o negocio", "Your company or business")} />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="field">
+                  <label>{t("Teléfono / WhatsApp", "Phone / WhatsApp")}</label>
+                  <input required name="telefono" type="tel" placeholder={t("Tu número de contacto", "Your contact number")} />
+                </div>
+
+                <div className="field">
+                  <label>{t("Correo electrónico", "Email address")}</label>
+                  <input required name="email" type="email" placeholder={t("correo@ejemplo.com", "email@example.com")} />
+                </div>
+              </div>
+
+              <div className="field">
+                <label>{t("¿Qué necesitas automatizar o mejorar?", "What do you need to automate or improve?")}</label>
+                <textarea
+                  required
+                  name="mensaje"
+                  value={evaluationMessage}
+                  onChange={(event) => setEvaluationMessage(event.target.value)}
+                  placeholder={t("Explícanos brevemente qué necesitas...", "Briefly tell us what you need...")}
+                />
+              </div>
+
+              <button className="submit" type="submit" disabled={formSubmitting}>
+                {formSubmitting
+                  ? t("Enviando y confirmando...", "Sending and confirming...")
+                  : cameFromBrain
+                    ? t("Enviar caso para evaluación", "Submit case for assessment")
+                    : t("Solicitar evaluación gratuita", "Request free assessment")}
+              </button>
+
+              {formError && (
+                <div className="error" role="alert">
+                  {t("No se pudo confirmar el envío:", "We could not confirm the submission:")} {formError}
+                </div>
+              )}
+
+              <p className="form-note">
+                {t("Sin compromiso • Evaluación inicial gratuita", "No commitment • Free initial assessment")}
+              </p>
+            </form>
+          </div>
+        </section>
+      </div>
+
+      <footer className="footer">
+        <div className="shell footer-inner">
+          <div>© 2026 AxiomAI Solutions</div>
+          <div>{t("Automatización • Inteligencia Artificial • Software", "Automation • Artificial Intelligence • Software")}</div>
+        </div>
+      </footer>
     </main>
   );
 }
