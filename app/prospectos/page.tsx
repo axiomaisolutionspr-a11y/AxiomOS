@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
+import CerrarSesionButton from "./CerrarSesionButton";
 
 export const dynamic = "force-dynamic";
 
@@ -945,6 +946,16 @@ export default async function ProspectosPage({
       `}</style>
 
       <div className="shell">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: "14px",
+          }}
+        >
+          <CerrarSesionButton />
+        </div>
+
         <p className="eyebrow">AXIOMAI SOLUTIONS</p>
         <h1 className="title">Prospectos</h1>
         <p className="subtitle">
