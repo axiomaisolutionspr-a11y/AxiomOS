@@ -1055,38 +1055,7 @@ export default async function ProspectosPage({
 
             <div className="company">
               {texto(prospecto.caller_company)}
-              {(() => {
-                const notasOrigen = String(prospecto.crm_notes ?? "");
-
-                const etiquetaOrigen =
-                  notasOrigen.includes("Origen: AxiomOS Brain")
-                    ? "?? BRAIN"
-                    : notasOrigen.includes("Origen: Formulario web AxiomAI")
-                      ? "?? WEB"
-                      : "?? TELNYX";
-
-                return (
-                  <span
-                    title="Origen del prospecto"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      marginLeft: "7px",
-                      padding: "2px 7px",
-                      border: "1px solid rgba(45, 212, 255, 0.65)",
-                      borderRadius: "999px",
-                      fontSize: "9px",
-                      fontWeight: 800,
-                      letterSpacing: "0.05em",
-                      color: "#67e8f9",
-                      background: "rgba(8, 47, 73, 0.55)",
-                      verticalAlign: "middle",
-                    }}
-                  >
-                    {etiquetaOrigen}
-                  </span>
-                );
-              })()}
+              
             </div>
                     <div className="phone">
                       {prospecto.caller_phone ? (
