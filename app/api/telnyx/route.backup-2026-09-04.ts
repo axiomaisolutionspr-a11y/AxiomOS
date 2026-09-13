@@ -166,41 +166,6 @@ function buildProspectKey(
   return `conversation:${conversationId}`;
 }
 
-/*
-  Determina si la llamada debe entrar al flujo
-  comercial de seguimiento.
-
-  Por ahora usamos una regla sencilla y controlada:
-
-  - Follow-up Required
-  - Human Follow-up
-  - Call Back
-  - Follow-up
-
-  No automatizamos todavía mensajes al cliente.
-*/
-function requiresHumanFollowUp(
-  callOutcome: string | null,
-  nextAction: string | null
-): boolean {
-  const outcome = (callOutcome ?? "").toLowerCase().trim();
-  const action = (nextAction ?? "").toLowerCase().trim();
-
-  if (outcome.includes("follow-up required")) {
-    return true;
-  }
-
-  if (
-    action === "human follow-up" ||
-    action === "call back" ||
-    action === "follow-up"
-  ) {
-    return true;
-  }
-
-  return false;
-}
-
 /* =========================================================
    HEALTH CHECK
    ========================================================= */
@@ -211,7 +176,6 @@ export async function GET() {
     service: "AxiomAI Telnyx Webhook",
     database: "Neon",
     crm: "Prospect Master",
-    crm_follow_up: "enabled",
     sms:
       process.env.SMS_ENABLED === "true"
         ? "enabled"
@@ -453,67 +417,7 @@ export async function POST(request: NextRequest) {
 
     /*
       ======================================================
-      3. AUTOMATIZACIÓN CRM
-      ======================================================
-
-      Solamente se ejecuta para una llamada NUEVA.
-
-      Si requiere seguimiento:
-      - Estado = Seguimiento
-      - Responsable = Rolando si todavía no existe responsable
-      - Seguimiento = +1 día si no existe una fecha futura
-
-      Importante:
-      - NO borra crm_notes.
-      - NO reemplaza una fecha futura programada manualmente.
-      - NO mueve la fecha si Telnyx reintenta el webhook,
-        porque solo ejecutamos esto cuando saved === true.
-    */
-
-    let crmFollowUp = false;
-
-    if (
-      saved &&
-      requiresHumanFollowUp(
-        callOutcome,
-        nextAction
-      )
-    ) {
-      await sql`
-        UPDATE prospects
-        SET
-          crm_stage = 'Seguimiento',
-
-          assigned_to = CASE
-            WHEN assigned_to IS NULL
-              OR BTRIM(assigned_to) = ''
-            THEN 'Rolando'
-            ELSE assigned_to
-          END,
-
-          follow_up_at = CASE
-            WHEN follow_up_at IS NULL
-              OR follow_up_at < NOW()
-            THEN NOW() + INTERVAL '1 day'
-            ELSE follow_up_at
-          END,
-
-          updated_at = NOW()
-
-        WHERE id = ${prospectId}
-      `;
-
-      crmFollowUp = true;
-
-      console.log(
-        "=== AXIOMAI CRM FOLLOW-UP SCHEDULED ===",
-        prospectId
-      );
-    }
-
-    /*
-      ======================================================
-      4. ALERTAS SMS + EMAIL
+      3. ALERTAS SMS + EMAIL
       ======================================================
 
       Solo intentamos crear alertas cuando realmente
@@ -628,7 +532,7 @@ export async function POST(request: NextRequest) {
 
     /*
       ======================================================
-      5. RESPUESTA A TELNYX
+      4. RESPUESTA A TELNYX
       ======================================================
     */
 
@@ -641,7 +545,6 @@ export async function POST(request: NextRequest) {
         prospect_id: prospectId,
         call_id:
           insertedRows[0]?.id ?? null,
-        crm_follow_up: crmFollowUp,
         sms_alert: smsAlert,
         email_alert: emailAlert,
       },
