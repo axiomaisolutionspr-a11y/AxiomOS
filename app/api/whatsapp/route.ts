@@ -3,32 +3,44 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 /*
-  ============================================================
-  AXIOMAI WHATSAPP WEBHOOK
-  ============================================================
-
-  GET
-  Meta utiliza esta ruta para verificar el webhook.
-
-  POST
-  Meta / Dualhook enviará aquí los eventos de WhatsApp.
+========================================================
+AXIOMAI WHATSAPP WEBHOOK
+========================================================
 */
 
-/* =========================================================
-   VERIFICACIÓN DE META
-   ========================================================= */
+const VERIFY_TOKEN =
+  process.env.WHATSAPP_VERIFY_TOKEN;
+
+const PHONE_NUMBER_ID =
+  process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+const DUALHOOK_API_KEY =
+  process.env.DUALHOOK_API_KEY;
+
+
+/*
+========================================================
+GET - VERIFICACIÓN DEL WEBHOOK
+========================================================
+*/
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  const mode = searchParams.get("hub.mode");
-  const token = searchParams.get("hub.verify_token");
-  const challenge = searchParams.get("hub.challenge");
+  const mode =
+    searchParams.get("hub.mode");
 
-  const verifyToken =
-    process.env.WHATSAPP_VERIFY_TOKEN;
+  const token =
+    searchParams.get("hub.verify_token");
 
-  if (!verifyToken) {
+  const challenge =
+    searchParams.get("hub.challenge");
+
+  console.log(
+    "=== AXIOMAI WHATSAPP VERIFICATION ==="
+  );
+
+  if (!VERIFY_TOKEN) {
     console.error(
       "WHATSAPP_VERIFY_TOKEN is not configured"
     );
@@ -36,49 +48,151 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: "Webhook verify token not configured",
+        error:
+          "WHATSAPP_VERIFY_TOKEN is not configured",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 
   if (
     mode === "subscribe" &&
-    token === verifyToken &&
+    token === VERIFY_TOKEN &&
     challenge
   ) {
     console.log(
-      "=== AXIOMAI WHATSAPP WEBHOOK VERIFIED ==="
+      "WhatsApp webhook verified successfully"
     );
 
-    return new NextResponse(challenge, {
-      status: 200,
-      headers: {
-        "Content-Type": "text/plain",
-      },
-    });
+    return new NextResponse(
+      challenge,
+      {
+        status: 200,
+        headers: {
+          "Content-Type":
+            "text/plain; charset=utf-8",
+        },
+      }
+    );
   }
 
   console.warn(
-    "=== AXIOMAI WHATSAPP VERIFICATION FAILED ==="
+    "WhatsApp webhook verification rejected"
   );
 
   return NextResponse.json(
     {
       ok: false,
-      error: "Verification failed",
+      error:
+        "Webhook verification failed",
     },
-    { status: 403 }
+    {
+      status: 403,
+    }
   );
 }
 
-/* =========================================================
-   EVENTOS DE WHATSAPP
-   ========================================================= */
 
-export async function POST(request: NextRequest) {
+/*
+========================================================
+ENVIAR MENSAJE POR DUALHOOK
+========================================================
+*/
+
+async function sendWhatsAppMessage(
+  to: string,
+  text: string
+) {
+  if (!PHONE_NUMBER_ID) {
+    throw new Error(
+      "WHATSAPP_PHONE_NUMBER_ID is not configured"
+    );
+  }
+
+  if (!DUALHOOK_API_KEY) {
+    throw new Error(
+      "DUALHOOK_API_KEY is not configured"
+    );
+  }
+
+  const endpoint =
+    `https://api.dualhook.com/v25.0/${PHONE_NUMBER_ID}/messages`;
+
+  console.log(
+    "Sending WhatsApp message to:",
+    to
+  );
+
+  const response = await fetch(
+    endpoint,
+    {
+      method: "POST",
+
+      headers: {
+        Authorization:
+          `Bearer ${DUALHOOK_API_KEY}`,
+
+        "Content-Type":
+          "application/json",
+      },
+
+      body: JSON.stringify({
+        messaging_product:
+          "whatsapp",
+
+        recipient_type:
+          "individual",
+
+        to,
+
+        type:
+          "text",
+
+        text: {
+          preview_url: false,
+          body: text,
+        },
+      }),
+    }
+  );
+
+  const responseBody =
+    await response.text();
+
+  console.log(
+    "Dualhook status:",
+    response.status
+  );
+
+  console.log(
+    "Dualhook response:",
+    responseBody
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Dualhook error ${response.status}: ${responseBody}`
+    );
+  }
+
+  return responseBody;
+}
+
+
+/*
+========================================================
+POST - EVENTOS ENTRANTES DE WHATSAPP
+========================================================
+*/
+
+export async function POST(
+  request: NextRequest
+) {
   try {
-    const body = await request.json();
+    const body =
+      await request.json();
 
     console.log(
       "=== AXIOMAI WHATSAPP EVENT RECEIVED ==="
@@ -89,25 +203,150 @@ export async function POST(request: NextRequest) {
       body?.object ?? "unknown"
     );
 
+    const entries =
+      Array.isArray(body?.entry)
+        ? body.entry
+        : [];
+
+    let messagesProcessed = 0;
+
+    for (const entry of entries) {
+
+      const changes =
+        Array.isArray(entry?.changes)
+          ? entry.changes
+          : [];
+
+      for (const change of changes) {
+
+        const value =
+          change?.value;
+
+        const messages =
+          Array.isArray(
+            value?.messages
+          )
+            ? value.messages
+            : [];
+
+        for (
+          const message of messages
+        ) {
+
+          const from =
+            message?.from;
+
+          const type =
+            message?.type;
+
+          if (!from) {
+            continue;
+          }
+
+          /*
+          ================================================
+          POR AHORA CONTESTAMOS SOLAMENTE TEXTO
+          ================================================
+          */
+
+          if (type !== "text") {
+            console.log(
+              "Ignoring non-text WhatsApp message:",
+              type
+            );
+
+            continue;
+          }
+
+          const incomingText =
+            message?.text?.body
+              ?.trim();
+
+          if (!incomingText) {
+            continue;
+          }
+
+          console.log(
+            "WhatsApp sender:",
+            from
+          );
+
+          console.log(
+            "WhatsApp message:",
+            incomingText
+          );
+
+
+          /*
+          ================================================
+          RESPUESTA AUTOMÁTICA DE PRUEBA
+          ================================================
+
+          Una vez comprobemos que esto funciona,
+          conectaremos aquí la IA de AxiomAI.
+          */
+
+          const reply =
+            "¡Hola! 👋 Gracias por comunicarte con AxiomAI Solutions.\n\n" +
+            "Soy el asistente virtual de AxiomAI. Podemos ayudarte a automatizar llamadas, WhatsApp, seguimiento de clientes, prospectos y otros procesos de tu negocio utilizando inteligencia artificial.\n\n" +
+            "Cuéntame brevemente qué tipo de negocio tienes y qué te gustaría automatizar.";
+
+          await sendWhatsAppMessage(
+            from,
+            reply
+          );
+
+          messagesProcessed++;
+
+          console.log(
+            "AxiomAI WhatsApp reply sent successfully"
+          );
+        }
+      }
+    }
+
+
+    /*
+    ======================================================
+    META NECESITA RESPUESTA RÁPIDA 200
+    ======================================================
+    */
+
     return NextResponse.json(
       {
         ok: true,
         received: true,
+        messagesProcessed,
       },
-      { status: 200 }
+      {
+        status: 200,
+      }
     );
+
   } catch (error) {
+
     console.error(
       "AxiomAI WhatsApp webhook error:",
       error
     );
 
+    /*
+    Durante las pruebas devolvemos 200 para evitar
+    reintentos repetidos del mismo webhook.
+    */
+
     return NextResponse.json(
       {
         ok: false,
-        error: "Invalid webhook payload",
+        received: true,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unknown webhook error",
       },
-      { status: 400 }
+      {
+        status: 200,
+      }
     );
   }
 }
