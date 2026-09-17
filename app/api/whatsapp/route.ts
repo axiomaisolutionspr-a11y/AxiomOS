@@ -1,4 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -24,8 +27,11 @@ GET - VERIFICACIÓN DEL WEBHOOK
 ========================================================
 */
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
+export async function GET(
+  request: NextRequest
+) {
+  const { searchParams } =
+    new URL(request.url);
 
   const mode =
     searchParams.get("hub.mode");
@@ -208,6 +214,11 @@ export async function POST(
         ? body.entry
         : [];
 
+    console.log(
+      "Entries count:",
+      entries.length
+    );
+
     let messagesProcessed = 0;
 
     for (const entry of entries) {
@@ -217,10 +228,52 @@ export async function POST(
           ? entry.changes
           : [];
 
+      console.log(
+        "Changes count:",
+        changes.length
+      );
+
       for (const change of changes) {
+
+        /*
+        ========================================================
+        DIAGNÓSTICO TEMPORAL DEL EVENTO DE META
+        ========================================================
+
+        Esto nos permite identificar si Meta está enviando:
+        - messages
+        - statuses
+        - smb_message_echoes
+        - history
+        - smb_app_state_sync
+        - u otro evento
+
+        No imprimimos tokens ni API keys.
+        */
+
+        const field =
+          change?.field ??
+          "unknown";
 
         const value =
           change?.value;
+
+        console.log(
+          "Webhook field:",
+          field
+        );
+
+        const valueKeys =
+          value &&
+          typeof value === "object"
+            ? Object.keys(value)
+            : [];
+
+        console.log(
+          "Webhook value keys:",
+          valueKeys.join(", ") ||
+            "none"
+        );
 
         const messages =
           Array.isArray(
@@ -228,6 +281,34 @@ export async function POST(
           )
             ? value.messages
             : [];
+
+        const statuses =
+          Array.isArray(
+            value?.statuses
+          )
+            ? value.statuses
+            : [];
+
+        console.log(
+          "Messages count:",
+          messages.length
+        );
+
+        console.log(
+          "Statuses count:",
+          statuses.length
+        );
+
+        console.log(
+          "Has metadata:",
+          Boolean(value?.metadata)
+        );
+
+        /*
+        ========================================================
+        PROCESAR MENSAJES ENTRANTES
+        ========================================================
+        */
 
         for (
           const message of messages
@@ -239,7 +320,16 @@ export async function POST(
           const type =
             message?.type;
 
+          console.log(
+            "Incoming message type:",
+            type ?? "unknown"
+          );
+
           if (!from) {
+            console.log(
+              "Ignoring WhatsApp message without sender"
+            );
+
             continue;
           }
 
@@ -263,6 +353,10 @@ export async function POST(
               ?.trim();
 
           if (!incomingText) {
+            console.log(
+              "Ignoring empty WhatsApp text message"
+            );
+
             continue;
           }
 
@@ -311,6 +405,11 @@ export async function POST(
     META NECESITA RESPUESTA RÁPIDA 200
     ======================================================
     */
+
+    console.log(
+      "Webhook processing finished. Messages processed:",
+      messagesProcessed
+    );
 
     return NextResponse.json(
       {
