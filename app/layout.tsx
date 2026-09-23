@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     apple: "/logo.png",
   },
   other: {
-    "facebook-domain-verification": "PEGA_AQUI_EL_CONTENT_DE_META",
+    "facebook-domain-verification": "u3cqzn0y2marft1is7tbneqy02orr9",
   },
 };
 
