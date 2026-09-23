@@ -13,16 +13,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-title: "AxiomAI Solutions",
-description:
-"Automatización, inteligencia artificial y desarrollo de software para empresas.",
-icons: {
-icon: "/logo.png",
-shortcut: "/logo.png",
-apple: "/logo.png",
-},
+  title: "AxiomAI Solutions",
+  description:
+    "Automatización, inteligencia artificial y desarrollo de software para empresas.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
+  other: {
+    "facebook-domain-verification": "PEGA_AQUI_EL_CONTENT_DE_META",
+  },
 };
-
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
