@@ -18,6 +18,7 @@ type BrainHistoryItem = {
 type BrainRequestBody = {
   message?: unknown;
   messages?: unknown;
+  language?: unknown;
 };
 
 type OpenAIResponse = {
@@ -506,6 +507,14 @@ export async function POST(request: Request) {
 
     const history = cleanHistory(body.messages);
 
+    const language: "es" | "en" =
+      body.language === "en" ? "en" : "es";
+
+    const languageInstruction =
+      language === "en"
+        ? "IMPORTANT LANGUAGE RULE: Respond entirely in English. All headings, explanations, recommendations, labels, calls to action, and follow-up questions must be in English."
+        : "REGLA IMPORTANTE DE IDIOMA: Responde completamente en español. Todos los títulos, explicaciones, recomendaciones, etiquetas, llamadas a la acción y preguntas de seguimiento deben estar en español.";
+
     const singleMessage =
       typeof body.message === "string"
         ? body.message
@@ -692,3 +701,4 @@ export async function POST(request: Request) {
     clearTimeout(timeout);
   }
 }
+

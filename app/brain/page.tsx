@@ -907,6 +907,37 @@ export default function BrainPage() {
     useState<ConversationMessage[]>([]);
   const [copyStatus, setCopyStatus] = useState("");
   const [storageReady, setStorageReady] = useState(false);
+  const [language, setLanguage] =
+    useState<"es" | "en">("es");
+
+  const isEnglish = language === "en";
+
+  const t = (es: string, en: string) =>
+    isEnglish ? en : es;
+
+  useEffect(() => {
+    try {
+      const savedLanguage =
+        window.localStorage.getItem(
+          "axiomai_site_language"
+        );
+
+      const nextLanguage: "es" | "en" =
+        savedLanguage === "en" ? "en" : "es";
+
+      setLanguage(nextLanguage);
+      document.documentElement.lang =
+        nextLanguage;
+    } catch (languageError) {
+      console.error(
+        "No se pudo leer el idioma de AxiomAI:",
+        languageError
+      );
+
+      setLanguage("es");
+      document.documentElement.lang = "es";
+    }
+  }, []);
 
   const inputRef =
     useRef<HTMLTextAreaElement | null>(null);
@@ -990,6 +1021,7 @@ export default function BrainPage() {
           },
           body: JSON.stringify({
             messages: nextConversation,
+            language,
           }),
         }
       );
@@ -2860,3 +2892,5 @@ export default function BrainPage() {
     </main>
   );
 }
+
+
