@@ -136,6 +136,91 @@ function colorEtapa(etapa: string) {
   return "#67bfff";
 }
 
+type PrioridadBrain =
+  | "Alta"
+  | "Media"
+  | "Baja"
+  | null;
+
+function prioridadBrainDesdeNotas(
+  notas: string | null
+): PrioridadBrain {
+  if (!notas) return null;
+
+  const matches = Array.from(
+    notas.matchAll(
+      /Prioridad Brain:\s*([^\r\n]+)/gi
+    )
+  );
+
+  if (matches.length === 0) {
+    return null;
+  }
+
+  const raw = String(
+    matches[matches.length - 1]?.[1] ?? ""
+  )
+    .trim()
+    .toLowerCase();
+
+  if (
+    raw.includes("alta") ||
+    raw.includes("high")
+  ) {
+    return "Alta";
+  }
+
+  if (
+    raw.includes("media") ||
+    raw.includes("medium")
+  ) {
+    return "Media";
+  }
+
+  if (
+    raw.includes("baja") ||
+    raw.includes("low")
+  ) {
+    return "Baja";
+  }
+
+  return null;
+}
+
+function pesoPrioridadBrain(
+  prioridad: PrioridadBrain
+) {
+  if (prioridad === "Alta") return 3;
+  if (prioridad === "Media") return 2;
+  if (prioridad === "Baja") return 1;
+
+  return 0;
+}
+
+function etapaCerrada(
+  etapa: string | null
+) {
+  return (
+    etapa === "Vendido" ||
+    etapa === "Perdido"
+  );
+}
+
+function seguimientoTimestamp(
+  value: string | Date | null
+) {
+  if (!value) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const timestamp =
+    new Date(value).getTime();
+
+  return Number.isNaN(timestamp)
+    ? Number.POSITIVE_INFINITY
+    : timestamp;
+}
+
 async function actualizarProspecto(formData: FormData) {
   "use server";
 
@@ -544,6 +629,93 @@ export default async function ProspectosPage({
       .toLowerCase();
 
     return contenido.includes(busqueda);
+  }).sort((a, b) => {
+    const etapaA =
+      a.crm_stage || "Nuevo";
+
+    const etapaB =
+      b.crm_stage || "Nuevo";
+
+    const cerradaA =
+      etapaCerrada(etapaA);
+
+    const cerradaB =
+      etapaCerrada(etapaB);
+
+    // Los casos Vendido / Perdido quedan al final.
+    if (cerradaA !== cerradaB) {
+      return cerradaA ? 1 : -1;
+    }
+
+    const seguimientoA =
+      seguimientoTimestamp(
+        a.follow_up_at
+      );
+
+    const seguimientoB =
+      seguimientoTimestamp(
+        b.follow_up_at
+      );
+
+    const vencidoA =
+      !cerradaA &&
+      seguimientoA !==
+        Number.POSITIVE_INFINITY &&
+      seguimientoA < ahora.getTime();
+
+    const vencidoB =
+      !cerradaB &&
+      seguimientoB !==
+        Number.POSITIVE_INFINITY &&
+      seguimientoB < ahora.getTime();
+
+    // Un seguimiento vencido tiene máxima urgencia.
+    if (vencidoA !== vencidoB) {
+      return vencidoA ? -1 : 1;
+    }
+
+    const prioridadA =
+      prioridadBrainDesdeNotas(
+        a.crm_notes
+      );
+
+    const prioridadB =
+      prioridadBrainDesdeNotas(
+        b.crm_notes
+      );
+
+    const pesoA =
+      pesoPrioridadBrain(
+        prioridadA
+      );
+
+    const pesoB =
+      pesoPrioridadBrain(
+        prioridadB
+      );
+
+    // Alta → Media → Baja → sin prioridad.
+    if (pesoA !== pesoB) {
+      return pesoB - pesoA;
+    }
+
+    // Dentro de la misma prioridad,
+    // mostrar primero el seguimiento más cercano.
+    if (
+      seguimientoA !== seguimientoB
+    ) {
+      return seguimientoA - seguimientoB;
+    }
+
+    // Como último criterio, el contacto más reciente.
+    return (
+      new Date(
+        b.last_seen_at
+      ).getTime() -
+      new Date(
+        a.last_seen_at
+      ).getTime()
+    );
   });
 
   return (
@@ -778,6 +950,30 @@ export default async function ProspectosPage({
           border-color: #bd525c;
           background: #35151c;
           color: #ff9a9a;
+        }
+
+        .badge.priority {
+          letter-spacing: .5px;
+          font-weight: 950;
+        }
+
+        .badge.priority-alta {
+          border-color: #ff646f;
+          background: rgba(125, 25, 37, 0.34);
+          color: #ff9aa2;
+          box-shadow: 0 0 16px rgba(255, 75, 90, 0.12);
+        }
+
+        .badge.priority-media {
+          border-color: #e7b84f;
+          background: rgba(108, 77, 15, 0.30);
+          color: #ffd978;
+        }
+
+        .badge.priority-baja {
+          border-color: #56c99a;
+          background: rgba(16, 88, 62, 0.26);
+          color: #8ce8bf;
         }
 
         .card-body {
@@ -1050,6 +1246,11 @@ export default async function ProspectosPage({
 
             const etapa = prospecto.crm_stage || "Nuevo";
 
+            const prioridadBrain =
+              prioridadBrainDesdeNotas(
+                prospecto.crm_notes
+              );
+
             return (
               <details
                 key={prospecto.id}
@@ -1110,6 +1311,15 @@ export default async function ProspectosPage({
 
                     {vencido && (
                       <span className="badge overdue">Vencido</span>
+                    )}
+
+                    {prioridadBrain && (
+                      <span
+                        className={`badge priority priority-${prioridadBrain.toLowerCase()}`}
+                        title={`Prioridad Brain: ${prioridadBrain}`}
+                      >
+                        {prioridadBrain.toUpperCase()}
+                      </span>
                     )}
 
                     <span
