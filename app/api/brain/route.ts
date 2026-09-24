@@ -584,7 +584,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           model: MODEL,
           instructions:
-            BRAIN_INSTRUCTIONS,
+            `${BRAIN_INSTRUCTIONS}` + "`n`n" + languageInstruction,
           input,
           reasoning: {
             effort: "low",
@@ -701,4 +701,5 @@ export async function POST(request: Request) {
     clearTimeout(timeout);
   }
 }
+
 
