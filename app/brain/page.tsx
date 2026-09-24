@@ -1038,7 +1038,7 @@ export default function BrainPage() {
 
       const answer =
         data.result ||
-        "AxiomOS Brain no devolvió una respuesta.";
+        t("AxiomOS Brain no devolvió una respuesta.", "AxiomOS Brain did not return a response.");
 
       const completedConversation: ConversationMessage[] = [
         ...nextConversation,
@@ -1066,7 +1066,7 @@ export default function BrainPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Ocurrió un error al conectar con AxiomOS Brain."
+          : t("Ocurrió un error al conectar con AxiomOS Brain.", "An error occurred while connecting to AxiomOS Brain.")
       );
     } finally {
       setLoading(false);
@@ -1109,7 +1109,7 @@ export default function BrainPage() {
     }
 
     const confirmed = window.confirm(
-      "¿Quieres iniciar una conversación nueva? Se borrará el contexto guardado de esta conversación."
+      t("¿Quieres iniciar una conversación nueva? Se borrará el contexto guardado de esta conversación.", "Do you want to start a new conversation? The saved context for this conversation will be deleted.")
     );
 
     if (!confirmed) {
@@ -1857,7 +1857,7 @@ export default function BrainPage() {
               rows={6}
               maxLength={4000}
               disabled={loading}
-              placeholder="Ejemplo: Recibo muchas consultas por WhatsApp y se me pierden algunos seguimientos. ¿Qué debería automatizar primero?"
+              placeholder={t("Ejemplo: Recibo muchas consultas por WhatsApp y se me pierden algunos seguimientos. ¿Qué debería automatizar primero?", "Example: I receive many inquiries through WhatsApp and some follow-ups get lost. What should I automate first?")}
               style={{
                 width: "100%",
                 boxSizing:
@@ -1939,8 +1939,8 @@ export default function BrainPage() {
                 }}
               >
                 {loading
-                  ? "Brain está analizando..."
-                  : "Consultar a Brain"}
+                  ? t("Brain está analizando...", "Brain is analyzing...")
+                  : t("Consultar a Brain", "Ask Brain")}
               </button>
             </div>
           </form>
@@ -2126,7 +2126,7 @@ export default function BrainPage() {
                     }}
                   >
                     {copyStatus ||
-                      "Copiar análisis"}
+                      t("Copiar análisis", "Copy analysis")}
                   </button>
 
                   <button
@@ -2712,8 +2712,8 @@ export default function BrainPage() {
                             ? "Plan por fases"
                             : index ===
                                 1
-                              ? "Qué necesito"
-                              : "Qué hacer primero"}
+                              ? t("Qué necesito", "What I need")
+                              : t("Qué hacer primero", "What to do first")}
                         </button>
                       )
                     )}
@@ -2892,5 +2892,8 @@ export default function BrainPage() {
     </main>
   );
 }
+
+
+
 
 
