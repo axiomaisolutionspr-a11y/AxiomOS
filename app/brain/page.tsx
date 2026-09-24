@@ -323,6 +323,65 @@ function extractDiagnosticSummary(text: string) {
     : summary;
 }
 
+const profileEnglishValues: Record<string, string> = {
+  "Dealer de autos": "Auto dealership",
+  "Barbería": "Barbershop",
+  "Salón de belleza": "Beauty salon",
+  "Restaurante / alimentos": "Restaurant / food",
+  "Panadería / repostería": "Bakery / pastries",
+  "Cuidado de adultos mayores": "Senior care",
+  "Oficina dental": "Dental office",
+  "Servicios de salud": "Healthcare services",
+  "Taller automotriz": "Auto repair shop",
+  "Construcción / maquinaria pesada": "Construction / heavy equipment",
+  "Plomería": "Plumbing",
+  "Servicios eléctricos": "Electrical services",
+  "Jardinería / paisajismo": "Landscaping",
+  "Limpieza / mantenimiento": "Cleaning / maintenance",
+  "Transporte / logística": "Transportation / logistics",
+  "Bienes raíces": "Real estate",
+  "Comercio": "Retail",
+  "Gimnasio / fitness": "Gym / fitness",
+  "Hospitalidad": "Hospitality",
+  "Servicios profesionales": "Professional services",
+
+  "Captación y ventas": "Lead generation and sales",
+  "Atención y citas": "Customer service and appointments",
+  "Inventario y seguimiento": "Inventory and follow-up",
+  "Atención al cliente": "Customer service",
+  "Órdenes y solicitudes": "Orders and requests",
+  "Operación administrativa": "Administrative operations",
+
+  "Llamadas": "Calls",
+  "Página web": "Website",
+  "Correo": "Email",
+  "Formularios": "Forms",
+  "Calendario": "Calendar",
+  "Redes sociales": "Social media",
+
+  "Por identificar": "To be identified",
+  "Por definir": "To be determined",
+  "Alta": "High",
+  "Media": "Medium",
+  "Baja": "Low",
+  "Media a alta": "Medium to high",
+  "Media a baja": "Medium to low",
+
+  "Brain seguirá refinando este perfil a medida que avance la conversación.":
+    "Brain will continue refining this profile as the conversation progresses.",
+};
+
+function translateProfileValue(
+  value: string,
+  isEnglish: boolean
+) {
+  if (!isEnglish) {
+    return value;
+  }
+
+  return profileEnglishValues[value] ?? value;
+}
+
 function buildBusinessProfile(
   conversation: ConversationMessage[],
   result: string
@@ -1569,7 +1628,7 @@ export default function BrainPage() {
               fontSize: "15px",
             }}
           >
-            ← Volver a AxiomAI
+            {t("← Volver a AxiomAI", "← Back to AxiomAI")}
           </Link>
 
           <div
@@ -1607,7 +1666,7 @@ export default function BrainPage() {
 
             <button
               type="button"
-              aria-label="Activar AxiomOS Brain"
+              aria-label={t("Activar AxiomOS Brain", "Activate AxiomOS Brain")}
               onClick={() =>
                 inputRef.current?.focus()
               }
@@ -1739,7 +1798,7 @@ export default function BrainPage() {
               marginBottom: "10px",
             }}
           >
-            INTELIGENCIA OPERATIVA
+            {t("INTELIGENCIA OPERATIVA", "OPERATIONAL INTELLIGENCE")}
           </p>
 
           <h1
@@ -1761,11 +1820,10 @@ export default function BrainPage() {
               lineHeight: 1.7,
               fontSize: "17px",
             }}
-          >
-            Describe un problema de tu negocio.
-            Brain identificará qué conviene
-            mejorar primero y cómo convertirlo
-            en una solución práctica.
+          >            {t(
+              "Describe un problema de tu negocio. Brain identificará qué conviene mejorar primero y cómo convertirlo en una solución práctica.",
+              "Describe a problem in your business. Brain will identify what should be improved first and how to turn it into a practical solution."
+            )}
           </p>
         </section>
 
@@ -1790,22 +1848,29 @@ export default function BrainPage() {
               marginBottom: "22px",
             }}
           >
-            {quickPrompts.map(
-              (prompt) => (
+            {quickPrompts.map((prompt, index) => {
+              const englishPrompt = [
+                "What tasks in my business can I automate?",
+                "Help me improve customer service.",
+                "How can I use AI to get more leads?",
+              ][index];
+
+              const displayedPrompt =
+                isEnglish ? englishPrompt : prompt;
+
+              return (
                 <button
                   key={prompt}
                   type="button"
                   onClick={() => {
-                    setMessage(prompt);
-                    void askBrain(prompt);
+                    setMessage(displayedPrompt);
+                    void askBrain(displayedPrompt);
                   }}
                   disabled={loading}
                   className="brain-chip"
                   style={{
-                    padding:
-                      "10px 13px",
-                    borderRadius:
-                      "999px",
+                    padding: "10px 13px",
+                    borderRadius: "999px",
                     border:
                       "1px solid rgba(83, 183, 255, 0.28)",
                     background:
@@ -1815,17 +1880,15 @@ export default function BrainPage() {
                       ? "not-allowed"
                       : "pointer",
                     fontSize: "13px",
-                    opacity: loading
-                      ? 0.6
-                      : 1,
+                    opacity: loading ? 0.6 : 1,
                   }}
                 >
-                  {prompt}
+                  {displayedPrompt}
                 </button>
-              )
-            )}
-          </div>
+              );
+            })}
 
+          </div>
           <form
             onSubmit={handleSubmit}
           >
@@ -1837,9 +1900,10 @@ export default function BrainPage() {
                 marginBottom: "10px",
                 color: "#dcecff",
               }}
-            >
-              ¿En qué quieres que Brain
-              te ayude?
+            >              {t(
+                "¿En qué quieres que Brain te ayude?",
+                "What would you like Brain to help you with?"
+              )}
             </label>
 
             <textarea
@@ -1899,10 +1963,10 @@ export default function BrainPage() {
                   color: "#7186a0",
                   fontSize: "12px",
                 }}
-              >
-                Enter para enviar •
-                Shift + Enter para nueva
-                línea
+              >                {t(
+                  "Enter para enviar • Shift + Enter para nueva línea",
+                  "Enter to send • Shift + Enter for a new line"
+                )}
               </span>
 
               <button
@@ -1968,7 +2032,7 @@ export default function BrainPage() {
                   color: "#dff6ff",
                 }}
               >
-                Brain está trabajando en tu análisis
+                {t("Brain está trabajando en tu análisis", "Brain is working on your analysis")}
               </div>
 
               <div
@@ -1981,7 +2045,7 @@ export default function BrainPage() {
               >
                 <div>
                   <span style={{ color: "#55e6a5" }}>✓</span>{" "}
-                  Consulta recibida
+                  {t("Consulta recibida", "Request received")}
                 </div>
 
                 <div>
@@ -1996,7 +2060,7 @@ export default function BrainPage() {
                   >
                     ●
                   </span>
-                  Analizando tu operación
+                  {t("Analizando tu operación", "Analyzing your operation")}
                 </div>
 
                 <div
@@ -2004,7 +2068,7 @@ export default function BrainPage() {
                     color: "#7896ad",
                   }}
                 >
-                  ○ Preparando recomendación
+                  {t("○ Preparando recomendación", "○ Preparing recommendation")}
                 </div>
               </div>
             </div>
@@ -2032,7 +2096,7 @@ export default function BrainPage() {
                   marginBottom: "10px",
                 }}
               >
-                Brain no pudo completar el análisis.
+                {t("Brain no pudo completar el análisis.", "Brain could not complete the analysis.")}
               </div>
 
               <div
@@ -2157,7 +2221,7 @@ export default function BrainPage() {
                         "pointer",
                     }}
                   >
-                    Ver análisis ↓
+                    {t("Ver análisis ↓", "View analysis ↓")}
                   </button>
                 </div>
               </div>
@@ -2246,8 +2310,7 @@ export default function BrainPage() {
                           "3px",
                       }}
                     >
-                      Diagnóstico de
-                      inteligencia operativa
+                      {t("Diagnóstico de inteligencia operativa", "Operational intelligence diagnosis")}
                     </div>
                   </div>
                 </div>
@@ -2292,7 +2355,7 @@ export default function BrainPage() {
                         }}
                       >
                         <span className="brain-profile-dot" />
-                        Perfil del negocio • actualización en vivo
+                        {t("Perfil del negocio • actualización en vivo", "Business profile • live update")}
                       </div>
 
                       <h3
@@ -2304,7 +2367,7 @@ export default function BrainPage() {
                           fontWeight: 900,
                         }}
                       >
-                        Brain está construyendo contexto operativo
+                        {t("Brain está construyendo contexto operativo", "Brain is building operational context")}
                       </h3>
 
                       <p
@@ -2316,7 +2379,7 @@ export default function BrainPage() {
                           maxWidth: "650px",
                         }}
                       >
-                        Este perfil se refina con cada respuesta. Los datos del negocio se confirman con lo que el cliente realmente menciona.
+                        {t("Este perfil se refina con cada respuesta. Los datos del negocio se confirman con lo que el cliente realmente menciona.", "This profile is refined with each response. Business data is confirmed from what the client actually mentions.")}
                       </p>
                     </div>
 
@@ -2338,7 +2401,7 @@ export default function BrainPage() {
                           letterSpacing: "1.6px",
                         }}
                       >
-                        CONTEXTO
+                        {t("CONTEXTO", "CONTEXT")}
                       </div>
                       <div
                         style={{
@@ -2348,7 +2411,7 @@ export default function BrainPage() {
                           fontWeight: 900,
                         }}
                       >
-                        {businessProfile.confirmedCount}/3 datos
+                        {businessProfile.confirmedCount}/3 {t("datos", "data points")}
                       </div>
                       <div
                         style={{
@@ -2358,7 +2421,7 @@ export default function BrainPage() {
                           fontWeight: 750,
                         }}
                       >
-                        {businessProfile.assessmentCount}/2 evaluaciones Brain
+                        {businessProfile.assessmentCount}/2 {t("evaluaciones Brain", "Brain assessments")}
                       </div>
                     </div>
                   </div>
@@ -2395,10 +2458,10 @@ export default function BrainPage() {
                     }}
                   >
                     {[
-                      ["Tipo de negocio", businessProfile.businessType],
-                      ["Foco", businessProfile.focus],
-                      ["Prioridad Brain", businessProfile.priority],
-                      ["Complejidad Brain", businessProfile.complexity],
+                      [t("Tipo de negocio", "Business type"), translateProfileValue(businessProfile.businessType, isEnglish)],
+                      [t("Foco", "Focus"), translateProfileValue(businessProfile.focus, isEnglish)],
+                      [t("Prioridad Brain", "Brain priority"), translateProfileValue(businessProfile.priority, isEnglish)],
+                      [t("Complejidad Brain", "Brain complexity"), translateProfileValue(businessProfile.complexity, isEnglish)],
                     ].map(([label, value]) => (
                       <div
                         key={label}
@@ -2463,7 +2526,7 @@ export default function BrainPage() {
                           marginBottom: "8px",
                         }}
                       >
-                        Canales mencionados
+                        {t("Canales mencionados", "Mentioned channels")}
                       </div>
 
                       <div
@@ -2475,7 +2538,7 @@ export default function BrainPage() {
                       >
                         {(businessProfile.channels.length > 0
                           ? businessProfile.channels
-                          : ["Por confirmar"]
+                          : [t("Por confirmar", "To be confirmed")]
                         ).map((channel) => (
                           <span
                             key={channel}
@@ -2491,7 +2554,7 @@ export default function BrainPage() {
                               fontWeight: 750,
                             }}
                           >
-                            {channel}
+                            {translateProfileValue(channel, isEnglish)}
                           </span>
                         ))}
                       </div>
@@ -2515,7 +2578,7 @@ export default function BrainPage() {
                           marginBottom: "7px",
                         }}
                       >
-                        Lectura principal de Brain
+                        {t("Lectura principal de Brain", "Brain main assessment")}
                       </div>
                       <p
                         style={{
@@ -2525,7 +2588,7 @@ export default function BrainPage() {
                           lineHeight: 1.55,
                         }}
                       >
-                        {businessProfile.summary}
+                        {translateProfileValue(businessProfile.summary, isEnglish)}
                       </p>
                     </div>
                   </div>
@@ -2538,7 +2601,7 @@ export default function BrainPage() {
                       lineHeight: 1.45,
                     }}
                   >
-                    Contexto confirmado a partir de {businessProfile.interactionCount || 1} {(businessProfile.interactionCount || 1) === 1 ? "interacción" : "interacciones"}. Los datos del negocio se toman de lo que el cliente ha mencionado; prioridad y complejidad son evaluaciones de Brain.
+                    {isEnglish ? <>Context confirmed from {businessProfile.interactionCount || 1} {(businessProfile.interactionCount || 1) === 1 ? "interaction" : "interactions"}. Business data is based on what the client has mentioned; priority and complexity are Brain assessments.</> : <>Contexto confirmado a partir de {businessProfile.interactionCount || 1} {(businessProfile.interactionCount || 1) === 1 ? "interacción" : "interacciones"}. Los datos del negocio se toman de lo que el cliente ha mencionado; prioridad y complejidad son evaluaciones de Brain.</>}
                   </div>
 
 
@@ -2568,7 +2631,7 @@ export default function BrainPage() {
                             textTransform: "uppercase",
                           }}
                         >
-                          Siguiente dato útil • {profileNextQuestion.label}
+                          {t("Siguiente dato útil", "Next useful detail")} • {isEnglish ? (profileNextQuestion.label === "Tipo de negocio" ? "Business type" : profileNextQuestion.label === "Objetivo principal" ? "Main objective" : profileNextQuestion.label === "Canales actuales" ? "Current channels" : profileNextQuestion.label) : profileNextQuestion.label}
                         </div>
                         <div
                           style={{
@@ -2579,7 +2642,7 @@ export default function BrainPage() {
                             fontWeight: 780,
                           }}
                         >
-                          {profileNextQuestion.question}
+                          {isEnglish ? (profileNextQuestion.question === "¿Qué tipo de negocio tienes y qué servicios o productos ofreces?" ? "What type of business do you have and what services or products do you offer?" : profileNextQuestion.question === "¿Cuál es el problema principal que quieres resolver o qué resultado quieres mejorar?" ? "What is the main problem you want to solve or what result do you want to improve?" : profileNextQuestion.question === "¿Por qué canales te contactan hoy tus clientes: llamadas, WhatsApp, redes sociales, página web u otros?" ? "Which channels do your customers use to contact you today: calls, WhatsApp, social media, website, or others?" : profileNextQuestion.question) : profileNextQuestion.question}
                         </div>
                       </div>
 
@@ -2647,7 +2710,7 @@ export default function BrainPage() {
                         "7px",
                     }}
                   >
-                    ¿Quieres profundizar?
+                    {t("¿Quieres profundizar?", "Would you like to go deeper?")}
                   </div>
 
                   <p
@@ -2659,10 +2722,7 @@ export default function BrainPage() {
                       fontSize: "13px",
                     }}
                   >
-                    Brain conserva el
-                    contexto de este análisis.
-                    Elige una dirección y
-                    continuará desde aquí.
+                    {t("Brain conserva el contexto de este análisis. Elige una dirección y continuará desde aquí.", "Brain keeps the context of this analysis. Choose a direction and it will continue from here.")}
                   </p>
 
                   <div
@@ -2672,51 +2732,46 @@ export default function BrainPage() {
                       flexWrap: "wrap",
                     }}
                   >
-                    {followUpPrompts.map(
-                      (
-                        prompt,
-                        index
-                      ) => (
+                    {followUpPrompts.map((prompt, index) => {
+                      const englishPrompt = [
+                        "Turn this recommendation into a phased implementation plan.",
+                        "What information and tools would I need to implement this solution?",
+                        "Which automation should I implement first and why?",
+                      ][index];
+
+                      const displayedPrompt =
+                        isEnglish ? englishPrompt : prompt;
+
+                      return (
                         <button
                           key={prompt}
                           type="button"
                           className="brain-follow-button"
-                          disabled={
-                            loading
-                          }
+                          disabled={loading}
                           onClick={() =>
-                            void askBrain(
-                              prompt
-                            )
+                            void askBrain(displayedPrompt)
                           }
                           style={{
-                            padding:
-                              "10px 13px",
-                            borderRadius:
-                              "12px",
+                            padding: "10px 13px",
+                            borderRadius: "12px",
                             border:
                               "1px solid rgba(83,183,255,0.24)",
                             background:
                               "rgba(14,48,83,0.62)",
-                            color:
-                              "#cbeeff",
-                            cursor:
-                              "pointer",
-                            fontSize:
-                              "13px",
-                            fontWeight:
-                              750,
+                            color: "#cbeeff",
+                            cursor: "pointer",
+                            fontSize: "13px",
+                            fontWeight: 750,
                           }}
                         >
                           {index === 0
-                            ? "Plan por fases"
-                            : index ===
-                                1
+                            ? t("Plan por fases", "Phased plan")
+                            : index === 1
                               ? t("Qué necesito", "What I need")
                               : t("Qué hacer primero", "What to do first")}
                         </button>
-                      )
-                    )}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -2739,9 +2794,7 @@ export default function BrainPage() {
                         "8px",
                     }}
                   >
-                    ¿Quieres convertir este
-                    análisis en una solución
-                    real?
+                    {t("¿Quieres convertir este análisis en una solución real?", "Would you like to turn this analysis into a real solution?")}
                   </div>
 
                   <p
@@ -2753,11 +2806,7 @@ export default function BrainPage() {
                       fontSize: "14px",
                     }}
                   >
-                    AxiomAI Solutions puede
-                    estudiar tu proceso,
-                    definir la arquitectura
-                    adecuada y ayudarte a
-                    llevarla a implementación.
+                    {t("AxiomAI Solutions puede estudiar tu proceso, definir la arquitectura adecuada y ayudarte a llevarla a implementación.", "AxiomAI Solutions can study your process, define the right architecture, and help you bring it to implementation.")}
                   </p>
 
                   <div
@@ -2803,8 +2852,7 @@ export default function BrainPage() {
                           "0 0 28px rgba(53,189,255,0.3)",
                       }}
                     >
-                      Quiero implementar esta
-                      solución →
+                      {t("Quiero implementar esta solución →", "I want to implement this solution →")}
                     </a>
 
                     <button
@@ -2832,7 +2880,7 @@ export default function BrainPage() {
                           "pointer",
                       }}
                     >
-                      Hacer otra pregunta
+                      {t("Hacer otra pregunta", "Ask another question")}
                     </button>
 
                     <button
@@ -2850,7 +2898,7 @@ export default function BrainPage() {
                         cursor: "pointer",
                       }}
                     >
-                      Nueva conversación
+                      {t("Nueva conversación", "New conversation")}
                     </button>
                   </div>
 
@@ -2864,8 +2912,7 @@ export default function BrainPage() {
                         "12px",
                     }}
                   >
-                    Evaluación inicial gratuita
-                    • Sin compromiso
+                    {t("Evaluación inicial gratuita • Sin compromiso", "Free initial evaluation • No obligation")}
                   </div>
                 </div>
               </div>
@@ -2882,18 +2929,9 @@ export default function BrainPage() {
             lineHeight: 1.6,
           }}
         >
-          AxiomOS Brain ofrece orientación
-          tecnológica inicial. Las decisiones
-          importantes de negocio deben
-          validarse con información específica
-          de cada caso.
+          {t("AxiomOS Brain ofrece orientación tecnológica inicial. Las decisiones importantes de negocio deben validarse con información específica de cada caso.", "AxiomOS Brain provides initial technology guidance. Important business decisions should be validated with information specific to each case.")}
         </p>
       </div>
     </main>
   );
 }
-
-
-
-
-
