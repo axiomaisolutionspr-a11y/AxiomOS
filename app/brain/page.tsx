@@ -969,6 +969,30 @@ export default function BrainPage() {
   const [language, setLanguage] =
     useState<"es" | "en">("es");
 
+  const [leadOpen, setLeadOpen] =
+    useState(false);
+
+  const [leadName, setLeadName] =
+    useState("");
+
+  const [leadPhone, setLeadPhone] =
+    useState("");
+
+  const [leadCompany, setLeadCompany] =
+    useState("");
+
+  const [leadContactTime, setLeadContactTime] =
+    useState("");
+
+  const [leadSubmitting, setLeadSubmitting] =
+    useState(false);
+
+  const [leadError, setLeadError] =
+    useState("");
+
+  const [leadSaved, setLeadSaved] =
+    useState(false);
+
   const isEnglish = language === "en";
 
   const t = (es: string, en: string) =>
@@ -1311,7 +1335,147 @@ export default function BrainPage() {
         storageError
       );
     }
+  }
 
+  async function submitBrainLead(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+
+    if (leadSubmitting) {
+      return;
+    }
+
+    const cleanName = leadName.trim();
+    const cleanPhone = leadPhone.trim();
+
+    if (!cleanName) {
+      setLeadError(
+        t(
+          "Escribe tu nombre.",
+          "Enter your name."
+        )
+      );
+      return;
+    }
+
+    if (!cleanPhone) {
+      setLeadError(
+        t(
+          "Escribe tu número de WhatsApp o teléfono.",
+          "Enter your WhatsApp or phone number."
+        )
+      );
+      return;
+    }
+
+    const firstUserMessage = conversation.find(
+      (item) => item.role === "user"
+    );
+
+    const userContext = conversation
+      .filter(
+        (item) => item.role === "user"
+      )
+      .map(
+        (item, index) =>
+          `${index + 1}. ${item.text}`
+      )
+      .join("\n");
+
+    const contactTimeLabel =
+      leadContactTime === "morning"
+        ? t("Mañana", "Morning")
+        : leadContactTime === "afternoon"
+          ? t("Tarde", "Afternoon")
+          : leadContactTime === "evening"
+            ? t("Noche", "Evening")
+            : t(
+                "Cualquier hora",
+                "Any time"
+              );
+
+    setLeadSubmitting(true);
+    setLeadError("");
+
+    try {
+      const response = await fetch(
+        "/api/prospectos-web",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            nombre: cleanName,
+            telefono: cleanPhone,
+            negocio: leadCompany.trim(),
+            origen: "AxiomOS Brain",
+            id_solicitud:
+              `BRAIN-${Date.now()}`,
+            mensaje: t(
+              `El prospecto solicitó una evaluación gratuita directamente desde AxiomOS Brain. Mejor hora para contactar: ${contactTimeLabel}.`,
+              `The prospect requested a free evaluation directly from AxiomOS Brain. Best time to contact: ${contactTimeLabel}.`
+            ),
+            consulta_brain:
+              firstUserMessage?.text || "",
+            tipo_de_negocio_brain:
+              businessProfile.businessType,
+            foco_brain:
+              businessProfile.focus,
+            canales_mencionados_brain:
+              businessProfile.channels.join(
+                ", "
+              ),
+            prioridad_brain:
+              businessProfile.priority,
+            complejidad_brain:
+              businessProfile.complexity,
+            lectura_principal_brain:
+              businessProfile.summary,
+            contexto_del_cliente_brain:
+              userContext,
+            analisis_brain: result,
+          }),
+        }
+      );
+
+      const data = (await response
+        .json()
+        .catch(() => null)) as
+        | {
+            ok?: boolean;
+            error?: string;
+            prospectId?: string;
+          }
+        | null;
+
+      if (!response.ok || !data?.ok) {
+        throw new Error(
+          data?.error ||
+            t(
+              "No se pudo registrar la solicitud.",
+              "The request could not be registered."
+            )
+        );
+      }
+
+      setLeadSaved(true);
+      setLeadError("");
+    } catch (error) {
+      setLeadError(
+        error instanceof Error
+          ? error.message
+          : t(
+              "No se pudo registrar la solicitud. Intenta nuevamente.",
+              "The request could not be registered. Please try again."
+            )
+      );
+    } finally {
+      setLeadSubmitting(false);
+    }
   }
 
   return (
@@ -2957,9 +3121,14 @@ export default function BrainPage() {
                       flexWrap: "wrap",
                     }}
                   >
-                    <a
-                      href="/#evaluacion"
-                      onClick={implementSolution}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        implementSolution();
+                        setLeadOpen(true);
+                        setLeadSaved(false);
+                        setLeadError("");
+                      }}
                       className="brain-cta-button"
                       style={{
                         display:
@@ -2991,8 +3160,11 @@ export default function BrainPage() {
                           "0 0 28px rgba(53,189,255,0.3)",
                       }}
                     >
-                      {t("Quiero implementar esta solución →", "I want to implement this solution →")}
-                    </a>
+                      {t(
+                        "Solicitar evaluación gratuita →",
+                        "Request a free evaluation →"
+                      )}
+                    </button>
 
                     <button
                       type="button"
@@ -3040,6 +3212,291 @@ export default function BrainPage() {
                       {t("Nueva conversación", "New conversation")}
                     </button>
                   </div>
+
+                  {leadOpen && (
+                    <div
+                      style={{
+                        marginTop: "20px",
+                        padding: "18px",
+                        borderRadius: "16px",
+                        border:
+                          "1px solid rgba(85,205,255,0.24)",
+                        background:
+                          "rgba(3,18,34,0.72)",
+                      }}
+                    >
+                      {leadSaved ? (
+                        <div
+                          style={{
+                            padding: "16px",
+                            borderRadius: "13px",
+                            border:
+                              "1px solid rgba(83,225,164,0.28)",
+                            background:
+                              "rgba(18,91,67,0.22)",
+                            color: "#b9f7db",
+                            lineHeight: 1.6,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {t(
+                            "✓ Solicitud registrada. Tu análisis de Brain fue enviado a AxiomOS CRM y el equipo de AxiomAI podrá continuar desde este mismo contexto.",
+                            "✓ Request registered. Your Brain analysis was sent to AxiomOS CRM and the AxiomAI team can continue from this same context."
+                          )}
+                        </div>
+                      ) : (
+                        <form
+                          onSubmit={submitBrainLead}
+                        >
+                          <div
+                            style={{
+                              color: "#ffffff",
+                              fontSize: "15px",
+                              fontWeight: 900,
+                              marginBottom: "5px",
+                            }}
+                          >
+                            {t(
+                              "Recibe una evaluación basada en este análisis",
+                              "Get an evaluation based on this analysis"
+                            )}
+                          </div>
+
+                          <div
+                            style={{
+                              color: "#8fa8bf",
+                              fontSize: "12px",
+                              lineHeight: 1.55,
+                              marginBottom: "16px",
+                            }}
+                          >
+                            {t(
+                              "Solo necesitamos tus datos de contacto. Brain enviará automáticamente el contexto de este análisis.",
+                              "We only need your contact details. Brain will automatically send the context of this analysis."
+                            )}
+                          </div>
+
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns:
+                                "repeat(auto-fit, minmax(210px, 1fr))",
+                              gap: "11px",
+                            }}
+                          >
+                            <input
+                              value={leadName}
+                              onChange={(event) =>
+                                setLeadName(
+                                  event.target.value
+                                )
+                              }
+                              placeholder={t(
+                                "Nombre",
+                                "Name"
+                              )}
+                              autoComplete="name"
+                              style={{
+                                width: "100%",
+                                minHeight: "46px",
+                                padding: "0 13px",
+                                borderRadius: "11px",
+                                border:
+                                  "1px solid rgba(94,180,232,0.24)",
+                                background:
+                                  "rgba(0,8,18,0.70)",
+                                color: "#ffffff",
+                                outline: "none",
+                              }}
+                            />
+
+                            <input
+                              value={leadPhone}
+                              onChange={(event) =>
+                                setLeadPhone(
+                                  event.target.value
+                                )
+                              }
+                              placeholder={t(
+                                "WhatsApp o teléfono",
+                                "WhatsApp or phone"
+                              )}
+                              type="tel"
+                              autoComplete="tel"
+                              style={{
+                                width: "100%",
+                                minHeight: "46px",
+                                padding: "0 13px",
+                                borderRadius: "11px",
+                                border:
+                                  "1px solid rgba(94,180,232,0.24)",
+                                background:
+                                  "rgba(0,8,18,0.70)",
+                                color: "#ffffff",
+                                outline: "none",
+                              }}
+                            />
+
+                            <input
+                              value={leadCompany}
+                              onChange={(event) =>
+                                setLeadCompany(
+                                  event.target.value
+                                )
+                              }
+                              placeholder={t(
+                                "Empresa o negocio",
+                                "Company or business"
+                              )}
+                              autoComplete="organization"
+                              style={{
+                                width: "100%",
+                                minHeight: "46px",
+                                padding: "0 13px",
+                                borderRadius: "11px",
+                                border:
+                                  "1px solid rgba(94,180,232,0.24)",
+                                background:
+                                  "rgba(0,8,18,0.70)",
+                                color: "#ffffff",
+                                outline: "none",
+                              }}
+                            />
+
+                            <select
+                              value={leadContactTime}
+                              onChange={(event) =>
+                                setLeadContactTime(
+                                  event.target.value
+                                )
+                              }
+                              style={{
+                                width: "100%",
+                                minHeight: "46px",
+                                padding: "0 13px",
+                                borderRadius: "11px",
+                                border:
+                                  "1px solid rgba(94,180,232,0.24)",
+                                background: "#061426",
+                                color: "#dcecff",
+                                outline: "none",
+                              }}
+                            >
+                              <option value="">
+                                {t(
+                                  "Mejor hora para contactar",
+                                  "Best time to contact"
+                                )}
+                              </option>
+                              <option value="morning">
+                                {t(
+                                  "Mañana",
+                                  "Morning"
+                                )}
+                              </option>
+                              <option value="afternoon">
+                                {t(
+                                  "Tarde",
+                                  "Afternoon"
+                                )}
+                              </option>
+                              <option value="evening">
+                                {t(
+                                  "Noche",
+                                  "Evening"
+                                )}
+                              </option>
+                              <option value="any">
+                                {t(
+                                  "Cualquier hora",
+                                  "Any time"
+                                )}
+                              </option>
+                            </select>
+                          </div>
+
+                          {leadError && (
+                            <div
+                              style={{
+                                marginTop: "11px",
+                                color: "#ff9b9b",
+                                fontSize: "12px",
+                                fontWeight: 750,
+                              }}
+                            >
+                              {leadError}
+                            </div>
+                          )}
+
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "10px",
+                              flexWrap: "wrap",
+                              marginTop: "15px",
+                            }}
+                          >
+                            <button
+                              type="submit"
+                              disabled={leadSubmitting}
+                              style={{
+                                minHeight: "44px",
+                                padding: "0 17px",
+                                border: "none",
+                                borderRadius: "11px",
+                                background:
+                                  "linear-gradient(135deg, #147df5, #35d4ff)",
+                                color: "#ffffff",
+                                fontWeight: 900,
+                                cursor:
+                                  leadSubmitting
+                                    ? "wait"
+                                    : "pointer",
+                                opacity:
+                                  leadSubmitting
+                                    ? 0.7
+                                    : 1,
+                              }}
+                            >
+                              {leadSubmitting
+                                ? t(
+                                    "Registrando...",
+                                    "Registering..."
+                                  )
+                                : t(
+                                    "Enviar a AxiomOS →",
+                                    "Send to AxiomOS →"
+                                  )}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setLeadOpen(false)
+                              }
+                              style={{
+                                minHeight: "44px",
+                                padding: "0 15px",
+                                borderRadius: "11px",
+                                border:
+                                  "1px solid rgba(110,160,200,0.24)",
+                                background:
+                                  "rgba(7,22,38,0.72)",
+                                color: "#9db4c8",
+                                fontWeight: 800,
+                                cursor: "pointer",
+                              }}
+                            >
+                              {t(
+                                "Ahora no",
+                                "Not now"
+                              )}
+                            </button>
+                          </div>
+                        </form>
+                      )}
+                    </div>
+                  )}
 
                   <div
                     style={{
