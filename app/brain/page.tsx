@@ -1915,34 +1915,77 @@ export default function BrainPage() {
 
           {loading && (
             <div
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
               style={{
                 marginTop: "22px",
-                padding:
-                  "17px 18px",
-                borderRadius:
-                  "14px",
+                padding: "18px",
+                borderRadius: "14px",
                 border:
-                  "1px solid rgba(83, 183, 255, 0.24)",
+                  "1px solid rgba(83, 183, 255, 0.28)",
                 background:
                   "rgba(10, 38, 68, 0.48)",
                 color: "#bfe7ff",
-                fontWeight: 700,
               }}
             >
-              🧠 Brain está
-              priorizando oportunidades y
-              preparando una recomendación
-              ejecutiva...
+              <div
+                style={{
+                  fontWeight: 850,
+                  marginBottom: "14px",
+                  color: "#dff6ff",
+                }}
+              >
+                Brain está trabajando en tu análisis
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gap: "10px",
+                  fontSize: "14px",
+                  lineHeight: 1.45,
+                }}
+              >
+                <div>
+                  <span style={{ color: "#55e6a5" }}>✓</span>{" "}
+                  Consulta recibida
+                </div>
+
+                <div>
+                  <span
+                    className="brain-loading-dot"
+                    aria-hidden="true"
+                    style={{
+                      display: "inline-block",
+                      marginRight: "7px",
+                      color: "#54c8ff",
+                    }}
+                  >
+                    ●
+                  </span>
+                  Analizando tu operación
+                </div>
+
+                <div
+                  style={{
+                    color: "#7896ad",
+                  }}
+                >
+                  ○ Preparando recomendación
+                </div>
+              </div>
             </div>
           )}
 
-          {error && (
+          {error && !loading && (
             <div
+              role="alert"
+              aria-live="assertive"
               style={{
                 marginTop: "24px",
                 padding: "18px",
-                borderRadius:
-                  "15px",
+                borderRadius: "15px",
                 border:
                   "1px solid rgba(255, 111, 111, 0.45)",
                 background:
@@ -1951,7 +1994,50 @@ export default function BrainPage() {
                 lineHeight: 1.6,
               }}
             >
-              {error}
+              <div
+                style={{
+                  fontWeight: 800,
+                  marginBottom: "10px",
+                }}
+              >
+                Brain no pudo completar el análisis.
+              </div>
+
+              <div
+                style={{
+                  marginBottom: "16px",
+                }}
+              >
+                {error}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => void askBrain()}
+                disabled={loading || !message.trim()}
+                className="brain-primary-button"
+                style={{
+                  minHeight: "44px",
+                  padding: "0 17px",
+                  borderRadius: "12px",
+                  border:
+                    "1px solid rgba(255, 150, 150, 0.48)",
+                  background:
+                    "rgba(122, 28, 38, 0.52)",
+                  color: "#ffffff",
+                  fontWeight: 800,
+                  cursor:
+                    loading || !message.trim()
+                      ? "not-allowed"
+                      : "pointer",
+                  opacity:
+                    loading || !message.trim()
+                      ? 0.6
+                      : 1,
+                }}
+              >
+                Intentar nuevamente
+              </button>
             </div>
           )}
 
