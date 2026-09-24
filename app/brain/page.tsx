@@ -974,27 +974,86 @@ export default function BrainPage() {
   const t = (es: string, en: string) =>
     isEnglish ? en : es;
 
-  useEffect(() => {
+  function changeBrainLanguage(
+    nextLanguage: "es" | "en"
+  ) {
+    setLanguage(nextLanguage);
+    document.documentElement.lang =
+      nextLanguage;
+
     try {
-      const savedLanguage =
-        window.localStorage.getItem(
-          "axiomai_site_language"
-        );
-
-      const nextLanguage: "es" | "en" =
-        savedLanguage === "en" ? "en" : "es";
-
-      setLanguage(nextLanguage);
-      document.documentElement.lang =
-        nextLanguage;
+      window.localStorage.setItem(
+        "axiomai_site_language",
+        nextLanguage
+      );
     } catch (languageError) {
       console.error(
-        "No se pudo leer el idioma de AxiomAI:",
+        "No se pudo guardar el idioma de AxiomAI:",
         languageError
       );
+    }
 
-      setLanguage("es");
-      document.documentElement.lang = "es";
+    const url = new URL(
+      window.location.href
+    );
+
+    url.searchParams.set(
+      "lang",
+      nextLanguage
+    );
+
+    window.history.replaceState(
+      null,
+      "",
+      `${url.pathname}${url.search}${url.hash}`
+    );
+  }
+
+  useEffect(() => {
+    const urlLanguage =
+      new URLSearchParams(
+        window.location.search
+      ).get("lang");
+
+    let nextLanguage: "es" | "en" =
+      urlLanguage === "en" ||
+      urlLanguage === "es"
+        ? urlLanguage
+        : "es";
+
+    if (
+      urlLanguage !== "en" &&
+      urlLanguage !== "es"
+    ) {
+      try {
+        nextLanguage =
+          window.localStorage.getItem(
+            "axiomai_site_language"
+          ) === "en"
+            ? "en"
+            : "es";
+      } catch (languageError) {
+        console.error(
+          "No se pudo leer el idioma de AxiomAI:",
+          languageError
+        );
+      }
+    }
+
+    setLanguage(nextLanguage);
+    document.documentElement.lang =
+      nextLanguage;
+
+    try {
+      window.localStorage.setItem(
+        "axiomai_site_language",
+        nextLanguage
+      );
+    } catch (languageError) {
+      console.error(
+        "No se pudo guardar el idioma de AxiomAI:",
+        languageError
+      );
     }
   }, []);
 
@@ -1633,13 +1692,93 @@ export default function BrainPage() {
 
           <div
             style={{
-              color: "#53b7ff",
-              letterSpacing: "3px",
-              fontSize: "12px",
-              fontWeight: 800,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: "12px",
+              flexWrap: "wrap",
             }}
           >
-            AXIOMOS • BRAIN 2.2
+            <div
+              style={{
+                color: "#53b7ff",
+                letterSpacing: "3px",
+                fontSize: "12px",
+                fontWeight: 800,
+              }}
+            >
+              AXIOMOS • BRAIN 2.2
+            </div>
+
+            <div
+              role="group"
+              aria-label={t(
+                "Selector de idioma",
+                "Language selector"
+              )}
+              style={{
+                display: "flex",
+                gap: "3px",
+                padding: "3px",
+                border:
+                  "1px solid rgba(83,183,255,0.28)",
+                borderRadius: "999px",
+                background:
+                  "rgba(6,20,38,0.82)",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  changeBrainLanguage("es")
+                }
+                aria-pressed={language === "es"}
+                style={{
+                  border: 0,
+                  borderRadius: "999px",
+                  padding: "6px 9px",
+                  cursor: "pointer",
+                  fontSize: "11px",
+                  fontWeight: 900,
+                  background:
+                    language === "es"
+                      ? "rgba(83,183,255,0.28)"
+                      : "transparent",
+                  color:
+                    language === "es"
+                      ? "#ffffff"
+                      : "#7fa4c8",
+                }}
+              >
+                ES
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  changeBrainLanguage("en")
+                }
+                aria-pressed={language === "en"}
+                style={{
+                  border: 0,
+                  borderRadius: "999px",
+                  padding: "6px 9px",
+                  cursor: "pointer",
+                  fontSize: "11px",
+                  fontWeight: 900,
+                  background:
+                    language === "en"
+                      ? "rgba(83,183,255,0.28)"
+                      : "transparent",
+                  color:
+                    language === "en"
+                      ? "#ffffff"
+                      : "#7fa4c8",
+                }}
+              >
+                EN
+              </button>
+            </div>
           </div>
         </header>
 

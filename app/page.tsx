@@ -3302,7 +3302,7 @@ export default function Home() {
           <nav className="nav-links" aria-label={t("Navegación principal", "Main navigation")}>
             <a href="#soluciones">{t("Soluciones", "Solutions")}</a>
             <a href="#proceso">{t("Cómo funciona", "How it works")}</a>
-            <a href="/brain">Brain</a>
+            <a href={`/brain?lang=${language}`}>Brain</a>
             <a href="#evaluacion">{t("Contacto", "Contact")}</a>
           </nav>
 
@@ -3353,7 +3353,7 @@ export default function Home() {
             </p>
 
             <div className="hero-actions">
-              <a className="primary" href="/brain">
+              <a className="primary" href={`/brain?lang=${language}`}>
                 {t("Probar Brain gratis →", "Try Brain free →")}
               </a>
               <a className="secondary" href="#evaluacion">
@@ -4015,7 +4015,7 @@ export default function Home() {
             <aside className="brain-spotlight">
               <div className="premium-original-brain">
                         <a
-                          href="/brain"
+                          href={`/brain?lang=${language}`}
                           className="home-brain-shell"
                           aria-label={t("Abrir AxiomOS Brain", "Open AxiomOS Brain")}
                           onClick={(event) => {
@@ -4423,7 +4423,7 @@ export default function Home() {
                   "Describe how your business works and Brain helps identify which areas could benefit from automation, AI, or software."
                 )}
               </p>
-              <a className="primary" href="/brain">{t("Abrir Brain gratis →", "Open Brain free →")}</a>
+              <a className="primary" href={`/brain?lang=${language}`}>{t("Abrir Brain gratis →", "Open Brain free →")}</a>
             </aside>
           </div>
         </section>
