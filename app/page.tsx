@@ -3287,6 +3287,2420 @@ export default function Home() {
             align-items: flex-start;
           }
         }
+
+        /* ===== AXIOM HERO V6 BALANCED ===== */
+
+        .axiom-v6-hero {
+          display: grid !important;
+
+          grid-template-columns:
+            minmax(0, 1.02fr)
+            minmax(470px, .98fr) !important;
+
+          align-items: start !important;
+
+          gap: clamp(48px, 6vw, 86px) !important;
+
+          padding:
+            64px 0 82px !important;
+        }
+
+        .axiom-v6-copy {
+          position: relative !important;
+          z-index: 2 !important;
+          min-width: 0 !important;
+        }
+
+        /* LARGE BRAND */
+
+        .axiom-v6-brand {
+          display: flex !important;
+          align-items: center !important;
+
+          gap: 20px !important;
+
+          margin:
+            22px 0 24px !important;
+
+          width: fit-content !important;
+          max-width: 100% !important;
+        }
+
+        .axiom-v6-brand img {
+          display: block !important;
+
+          width: 205px !important;
+          height: 118px !important;
+          flex: 0 0 205px !important;
+
+          object-fit: contain !important;
+
+          filter:
+            drop-shadow(
+              0 0 22px
+              rgba(49, 201, 255, .32)
+            ) !important;
+        }
+
+        .axiom-v6-brand > div {
+          display: grid !important;
+          gap: 6px !important;
+        }
+
+        .axiom-v6-brand strong {
+          color: #f8fbff !important;
+
+          font-size: 23px !important;
+          font-weight: 900 !important;
+
+          line-height: 1 !important;
+          letter-spacing: -.6px !important;
+
+          white-space: nowrap !important;
+        }
+
+        .axiom-v6-brand small {
+          max-width: 230px !important;
+
+          color: #6e9cbd !important;
+
+          font-size: 10px !important;
+          font-weight: 700 !important;
+
+          line-height: 1.45 !important;
+        }
+
+        /* COPY */
+
+        .axiom-v6-title {
+          max-width: 690px !important;
+
+          margin:
+            0 0 24px !important;
+
+          font-size:
+            clamp(58px, 5.2vw, 82px) !important;
+
+          line-height: .97 !important;
+
+          letter-spacing:
+            -4.4px !important;
+        }
+
+        .axiom-v6-title span {
+          background:
+            linear-gradient(
+              100deg,
+              #dffbff 0%,
+              #68dcff 48%,
+              #267dff 100%
+            ) !important;
+
+          -webkit-background-clip:
+            text !important;
+
+          background-clip:
+            text !important;
+
+          color:
+            transparent !important;
+        }
+
+        .axiom-v6-lead {
+          max-width: 650px !important;
+
+          margin-bottom:
+            28px !important;
+
+          font-size:
+            17px !important;
+
+          line-height:
+            1.7 !important;
+        }
+
+        .axiom-v6-actions {
+          margin-top:
+            0 !important;
+        }
+
+        .axiom-v6-proof {
+          display: flex !important;
+          flex-wrap: wrap !important;
+
+          gap:
+            9px !important;
+
+          margin-top:
+            22px !important;
+        }
+
+        .axiom-v6-proof span {
+          padding:
+            7px 10px !important;
+
+          border-radius:
+            999px !important;
+
+          border:
+            1px solid
+            rgba(77, 190, 255, .13) !important;
+
+          background:
+            rgba(16, 83, 128, .08) !important;
+
+          color:
+            #7197b5 !important;
+
+          font-size:
+            8px !important;
+
+          font-weight:
+            800 !important;
+
+          letter-spacing:
+            .6px !important;
+        }
+
+        /* RIGHT SIDE */
+
+        .axiom-v6-visual {
+          position: relative !important;
+
+          min-width: 0 !important;
+
+          padding-top:
+            42px !important;
+
+          align-self:
+            start !important;
+        }
+
+        .axiom-v6-video-shell {
+          width:
+            100% !important;
+
+          max-width:
+            610px !important;
+
+          margin-left:
+            auto !important;
+        }
+
+        /* VIDEO PANEL */
+
+        .axiom-v6-video-stage {
+          position:
+            relative !important;
+
+          height:
+            500px !important;
+
+          overflow:
+            hidden !important;
+
+          border-radius:
+            28px !important;
+
+          border:
+            1px solid
+            rgba(84, 198, 255, .21) !important;
+
+          background:
+            #020712 !important;
+
+          box-shadow:
+            0 38px 100px
+            rgba(0, 0, 0, .42),
+            0 0 75px
+            rgba(35, 141, 255, .10) !important;
+        }
+
+        /* BLURRED BACKGROUND COPY */
+
+        .axiom-v6-video-bg {
+          position:
+            absolute !important;
+
+          inset:
+            -36px !important;
+
+          width:
+            calc(100% + 72px) !important;
+
+          height:
+            calc(100% + 72px) !important;
+
+          object-fit:
+            cover !important;
+
+          filter:
+            blur(28px)
+            saturate(1.18)
+            brightness(.48) !important;
+
+          transform:
+            scale(1.12) !important;
+
+          opacity:
+            .72 !important;
+
+          pointer-events:
+            none !important;
+        }
+
+        .axiom-v6-video-shade {
+          position:
+            absolute !important;
+
+          inset:
+            0 !important;
+
+          z-index:
+            2 !important;
+
+          background:
+            radial-gradient(
+              circle at 50% 42%,
+              transparent 0 28%,
+              rgba(0, 5, 12, .24) 72%,
+              rgba(0, 5, 12, .52) 100%
+            ) !important;
+
+          pointer-events:
+            none !important;
+        }
+
+        /* COMPLETE VERTICAL VIDEO */
+
+        .axiom-v6-video-main {
+          position:
+            absolute !important;
+
+          z-index:
+            4 !important;
+
+          top:
+            0 !important;
+
+          bottom:
+            0 !important;
+
+          left:
+            50% !important;
+
+          width:
+            auto !important;
+
+          height:
+            100% !important;
+
+          max-width:
+            100% !important;
+
+          object-fit:
+            contain !important;
+
+          transform:
+            translateX(-50%) !important;
+
+          background:
+            transparent !important;
+
+          box-shadow:
+            0 0 55px
+            rgba(0, 0, 0, .50) !important;
+        }
+
+        /* STATUS */
+
+        .axiom-v6-online {
+          position:
+            absolute !important;
+
+          z-index:
+            8 !important;
+
+          top:
+            15px !important;
+
+          right:
+            15px !important;
+
+          display:
+            inline-flex !important;
+
+          align-items:
+            center !important;
+
+          gap:
+            7px !important;
+
+          padding:
+            8px 11px !important;
+
+          border-radius:
+            999px !important;
+
+          border:
+            1px solid
+            rgba(83, 232, 184, .24) !important;
+
+          background:
+            rgba(3, 31, 27, .77) !important;
+
+          backdrop-filter:
+            blur(12px) !important;
+
+          color:
+            #7bf1c3 !important;
+
+          font-size:
+            8px !important;
+
+          font-weight:
+            900 !important;
+
+          letter-spacing:
+            1.2px !important;
+        }
+
+        .axiom-v6-online i {
+          width:
+            7px !important;
+
+          height:
+            7px !important;
+
+          border-radius:
+            50% !important;
+
+          background:
+            #64ebb7 !important;
+
+          box-shadow:
+            0 0 12px
+            rgba(100, 235, 183, .8) !important;
+        }
+
+        /* CAPABILITIES */
+
+        .axiom-v6-cards {
+          display:
+            grid !important;
+
+          grid-template-columns:
+            repeat(2, minmax(0, 1fr)) !important;
+
+          gap:
+            10px !important;
+
+          margin-top:
+            12px !important;
+        }
+
+        .axiom-v6-card {
+          min-height:
+            68px !important;
+
+          display:
+            grid !important;
+
+          grid-template-columns:
+            42px minmax(0, 1fr) !important;
+
+          align-items:
+            center !important;
+
+          gap:
+            11px !important;
+
+          padding:
+            10px 12px !important;
+
+          border-radius:
+            14px !important;
+
+          border:
+            1px solid
+            rgba(83, 190, 255, .14) !important;
+
+          background:
+            linear-gradient(
+              135deg,
+              rgba(7, 26, 45, .90),
+              rgba(3, 15, 29, .94)
+            ) !important;
+        }
+
+        .axiom-v6-card b {
+          width:
+            40px !important;
+
+          height:
+            40px !important;
+
+          display:
+            grid !important;
+
+          place-items:
+            center !important;
+
+          margin:
+            0 !important;
+
+          padding:
+            0 !important;
+
+          border-radius:
+            11px !important;
+
+          border:
+            1px solid
+            rgba(82, 204, 255, .20) !important;
+
+          background:
+            rgba(27, 124, 207, .14) !important;
+
+          color:
+            #67dcff !important;
+
+          font-size:
+            10px !important;
+
+          font-weight:
+            900 !important;
+        }
+
+        .axiom-v6-card small {
+          display:
+            block !important;
+
+          margin-bottom:
+            3px !important;
+
+          color:
+            #5d86a8 !important;
+
+          font-size:
+            7px !important;
+
+          font-weight:
+            900 !important;
+
+          letter-spacing:
+            1px !important;
+        }
+
+        .axiom-v6-card strong {
+          display:
+            block !important;
+
+          color:
+            #f0f7ff !important;
+
+          font-size:
+            10px !important;
+
+          line-height:
+            1.2 !important;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1050px) {
+
+          .axiom-v6-hero {
+            grid-template-columns:
+              1fr !important;
+          }
+
+          .axiom-v6-visual {
+            padding-top:
+              8px !important;
+          }
+
+          .axiom-v6-video-shell {
+            width:
+              min(680px, 100%) !important;
+
+            max-width:
+              none !important;
+
+            margin:
+              0 auto !important;
+          }
+
+          .axiom-v6-title {
+            max-width:
+              780px !important;
+          }
+        }
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-hero {
+            padding:
+              46px 0 62px !important;
+          }
+
+          .axiom-v6-brand {
+            gap:
+              12px !important;
+          }
+
+          .axiom-v6-brand img {
+            width:
+              125px !important;
+
+            height:
+              76px !important;
+
+            flex-basis:
+              125px !important;
+          }
+
+          .axiom-v6-brand strong {
+            font-size:
+              16px !important;
+          }
+
+          .axiom-v6-brand small {
+            font-size:
+              8px !important;
+          }
+
+          .axiom-v6-title {
+            font-size:
+              clamp(43px, 13vw, 62px) !important;
+
+            letter-spacing:
+              -3px !important;
+          }
+
+          .axiom-v6-video-stage {
+            height:
+              460px !important;
+
+            border-radius:
+              22px !important;
+          }
+
+          .axiom-v6-cards {
+            grid-template-columns:
+              1fr !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI V6 BRAND MOVE FINAL ===== */
+
+        /* LOGO PRINCIPAL IZQUIERDO MAS GRANDE */
+
+        .axiom-v6-brand {
+          gap:
+            22px !important;
+
+          margin:
+            4px 0 26px !important;
+        }
+
+        .axiom-v6-brand img {
+          width:
+            275px !important;
+
+          height:
+            155px !important;
+
+          flex:
+            0 0 275px !important;
+
+          object-fit:
+            contain !important;
+
+          transform:
+            none !important;
+
+          filter:
+            drop-shadow(
+              0 0 28px
+              rgba(49, 201, 255, .42)
+            ) !important;
+        }
+
+        .axiom-v6-brand strong {
+          font-size:
+            24px !important;
+
+          line-height:
+            1.02 !important;
+        }
+
+        .axiom-v6-brand small {
+          font-size:
+            10px !important;
+        }
+
+        /* SUBIR UN POCO EL LADO DEL VIDEO */
+
+        .axiom-v6-visual {
+          padding-top:
+            8px !important;
+        }
+
+        /* CUADRO AUTOMATIZACION ENCIMA DEL FRAME */
+
+        .axiom-v6-video-eyebrow {
+          display:
+            inline-flex !important;
+
+          width:
+            fit-content !important;
+
+          margin:
+            0 0 14px 2px !important;
+
+          position:
+            relative !important;
+
+          z-index:
+            12 !important;
+
+          box-shadow:
+            0 10px 30px
+            rgba(0, 0, 0, .18),
+            0 0 24px
+            rgba(48, 181, 255, .08) !important;
+        }
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-brand {
+            gap:
+              12px !important;
+          }
+
+          .axiom-v6-brand img {
+            width:
+              170px !important;
+
+            height:
+              100px !important;
+
+            flex:
+              0 0 170px !important;
+          }
+
+          .axiom-v6-brand strong {
+            font-size:
+              17px !important;
+          }
+
+          .axiom-v6-video-eyebrow {
+            margin:
+              0 0 12px 0 !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI V6 LOGO SOLO GRANDE ===== */
+
+        /* quitar nombre y descripcion al lado del logo */
+        .axiom-v6-brand > div {
+          display: none !important;
+        }
+
+        /* dejar solo el logo y darle mas presencia */
+        .axiom-v6-brand {
+          display: flex !important;
+          align-items: center !important;
+
+          width: 100% !important;
+
+          margin:
+            0 0 28px !important;
+
+          padding:
+            0 !important;
+
+          overflow:
+            visible !important;
+        }
+
+        .axiom-v6-brand img {
+          display: block !important;
+
+          width:
+            360px !important;
+
+          height:
+            195px !important;
+
+          max-width:
+            none !important;
+
+          flex:
+            0 0 360px !important;
+
+          object-fit:
+            contain !important;
+
+          object-position:
+            left center !important;
+
+          transform:
+            scale(1.16) !important;
+
+          transform-origin:
+            left center !important;
+
+          filter:
+            drop-shadow(
+              0 0 34px
+              rgba(49, 201, 255, .48)
+            ) !important;
+        }
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-brand {
+            margin:
+              0 0 22px !important;
+          }
+
+          .axiom-v6-brand img {
+            width:
+              230px !important;
+
+            height:
+              125px !important;
+
+            flex:
+              0 0 230px !important;
+
+            transform:
+              scale(1.05) !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI V6 CENTRADO FINAL ===== */
+
+        /* CENTRAR EL CUADRO ENCIMA DEL FRAME DEL VIDEO */
+
+        .axiom-v6-video-eyebrow {
+          display: flex !important;
+          width: fit-content !important;
+
+          margin:
+            0 auto 14px auto !important;
+
+          justify-content:
+            center !important;
+
+          align-items:
+            center !important;
+
+          text-align:
+            center !important;
+        }
+
+
+        /* CENTRAR EL LOGO GRANDE DE LA IZQUIERDA */
+
+        .axiom-v6-brand {
+          width:
+            100% !important;
+
+          display:
+            flex !important;
+
+          justify-content:
+            center !important;
+
+          align-items:
+            center !important;
+
+          margin:
+            0 auto 28px auto !important;
+        }
+
+        .axiom-v6-brand img {
+          display:
+            block !important;
+
+          margin:
+            0 auto !important;
+
+          object-position:
+            center center !important;
+
+          transform-origin:
+            center center !important;
+        }
+
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-video-eyebrow {
+            margin:
+              0 auto 12px auto !important;
+          }
+
+          .axiom-v6-brand {
+            justify-content:
+              center !important;
+          }
+
+          .axiom-v6-brand img {
+            margin:
+              0 auto !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI V6 LOGO CENTER EXACT ===== */
+
+        .axiom-v6-brand {
+          position: relative !important;
+
+          display: block !important;
+
+          width: 100% !important;
+          height: 200px !important;
+
+          margin: 0 0 28px 0 !important;
+
+          padding: 0 !important;
+
+          overflow: visible !important;
+        }
+
+        .axiom-v6-brand > div {
+          display: none !important;
+        }
+
+        .axiom-v6-brand img {
+          position: absolute !important;
+
+          left: 50% !important;
+          top: 50% !important;
+
+          width: 360px !important;
+          height: 195px !important;
+
+          max-width: none !important;
+
+          margin: 0 !important;
+
+          flex: none !important;
+
+          object-fit: contain !important;
+          object-position: center center !important;
+
+          transform:
+            translate(-50%, -50%) !important;
+
+          transform-origin:
+            center center !important;
+        }
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-brand {
+            height: 135px !important;
+          }
+
+          .axiom-v6-brand img {
+            width: 235px !important;
+            height: 125px !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI LOGO AXIS CORRECTION ===== */
+
+        .axiom-v6-brand img {
+          left: 50% !important;
+
+          transform:
+            translate(
+              calc(-50% - 65px),
+              -50%
+            ) !important;
+        }
+
+        @media (max-width: 680px) {
+          .axiom-v6-brand img {
+            transform:
+              translate(
+                calc(-50% - 28px),
+                -50%
+              ) !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI V6 MOVE BRAND + TITLE RIGHT ===== */
+
+        @media (min-width: 681px) and (max-width: 1050px) {
+
+          .axiom-v6-brand,
+          .axiom-v6-title {
+            transform:
+              translateX(45px) !important;
+          }
+
+        }
+
+
+        /* ===== AXIOMAI FINAL ALIGNMENT RIGHT ===== */
+
+        .axiom-v6-brand {
+          transform: translateX(20px) !important;
+        }
+
+        .axiom-v6-title {
+          transform: translateX(20px) !important;
+        }
+
+
+        /* ===== AXIOMAI LOGO + TITULO RIGHT 32 ===== */
+
+        .axiom-v6-brand {
+          position: relative !important;
+          left: 32px !important;
+        }
+
+        .axiom-v6-title {
+          position: relative !important;
+          left: 32px !important;
+        }
+
+        @media (max-width: 680px) {
+          .axiom-v6-brand,
+          .axiom-v6-title {
+            left: 14px !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI V6 TITULO EDITORIAL BALANCEADO ===== */
+
+        .axiom-v6-title-balanced {
+          display: block !important;
+
+          width: 100% !important;
+          max-width: 650px !important;
+
+          margin-top: 0 !important;
+          margin-bottom: 26px !important;
+
+          text-align: center !important;
+
+          line-height: .90 !important;
+        }
+
+        .axiom-v6-title-balanced .axiom-v6-title-line {
+          display: block !important;
+
+          width: 100% !important;
+
+          margin:
+            0 auto !important;
+
+          text-align:
+            center !important;
+
+          white-space:
+            nowrap !important;
+
+          background:
+            none !important;
+
+          -webkit-background-clip:
+            initial !important;
+
+          background-clip:
+            initial !important;
+
+          color:
+            #f7fbff !important;
+        }
+
+
+        /* TU NEGOCIO */
+
+        .axiom-v6-title-line-1 {
+          letter-spacing:
+            -4px !important;
+        }
+
+
+        /* OPERANDO - un poco mas abierta */
+
+        .axiom-v6-title-line-2 {
+          letter-spacing:
+            6px !important;
+        }
+
+
+        /* COMO UN - expandimos letras y espacio */
+
+        .axiom-v6-title-line-3 {
+          letter-spacing:
+            4px !important;
+
+          word-spacing:
+            18px !important;
+        }
+
+
+        /* SISTEMA */
+
+        .axiom-v6-title-line-4 {
+          letter-spacing:
+            7px !important;
+        }
+
+
+        /* INTELIGENTE */
+
+        .axiom-v6-title-line-5 {
+          letter-spacing:
+            -3px !important;
+        }
+
+
+        /* DEGRADADO AZUL SOLO EN LAS DOS ULTIMAS */
+
+        .axiom-v6-title-balanced .axiom-v6-title-accent {
+          background:
+            linear-gradient(
+              100deg,
+              #c7fbff 0%,
+              #62dcff 45%,
+              #257cff 100%
+            ) !important;
+
+          -webkit-background-clip:
+            text !important;
+
+          background-clip:
+            text !important;
+
+          color:
+            transparent !important;
+        }
+
+
+        /* SEPARACION VERTICAL MUY CONTROLADA */
+
+        .axiom-v6-title-line + .axiom-v6-title-line {
+          margin-top:
+            4px !important;
+        }
+
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-title-balanced {
+            width:
+              100% !important;
+
+            max-width:
+              100% !important;
+
+            text-align:
+              center !important;
+          }
+
+          .axiom-v6-title-line-1 {
+            letter-spacing:
+              -2.5px !important;
+          }
+
+          .axiom-v6-title-line-2 {
+            letter-spacing:
+              3px !important;
+          }
+
+          .axiom-v6-title-line-3 {
+            letter-spacing:
+              2px !important;
+
+            word-spacing:
+              10px !important;
+          }
+
+          .axiom-v6-title-line-4 {
+            letter-spacing:
+              4px !important;
+          }
+
+          .axiom-v6-title-line-5 {
+            letter-spacing:
+              -2px !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI TITULO BLOQUE ANCHO V2 ===== */
+
+        .axiom-v6-title-balanced .axiom-v6-title-line {
+          letter-spacing: 0 !important;
+          word-spacing: normal !important;
+          transform-origin: center center !important;
+        }
+
+        /* Tu negocio, */
+        .axiom-v6-title-line-1 {
+          transform: scaleX(1.06) !important;
+        }
+
+        /* operando */
+        .axiom-v6-title-line-2 {
+          transform: scaleX(1.23) !important;
+        }
+
+        /* como un */
+        .axiom-v6-title-line-3 {
+          transform: scaleX(1.34) !important;
+        }
+
+        /* sistema */
+        .axiom-v6-title-line-4 {
+          transform: scaleX(1.34) !important;
+        }
+
+        /* inteligente. - referencia del ancho */
+        .axiom-v6-title-line-5 {
+          transform: scaleX(1.00) !important;
+        }
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-title-line-1 {
+            transform: scaleX(1.03) !important;
+          }
+
+          .axiom-v6-title-line-2 {
+            transform: scaleX(1.16) !important;
+          }
+
+          .axiom-v6-title-line-3 {
+            transform: scaleX(1.23) !important;
+          }
+
+          .axiom-v6-title-line-4 {
+            transform: scaleX(1.23) !important;
+          }
+
+          .axiom-v6-title-line-5 {
+            transform: scaleX(1.00) !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI HERO CONVERSION 2026 ===== */
+
+        .axiom-hero-conversion-title {
+          display: block !important;
+
+          width: 100% !important;
+          max-width: 650px !important;
+
+          margin: 0 auto 26px auto !important;
+
+          text-align: center !important;
+
+          line-height: .88 !important;
+
+          transform: none !important;
+        }
+
+        .axiom-hero-conversion-title span {
+          background: transparent !important;
+
+          -webkit-background-clip:
+            border-box !important;
+
+          background-clip:
+            border-box !important;
+
+          transform: none !important;
+
+          box-shadow: none !important;
+
+          text-shadow: none !important;
+        }
+
+        .axiom-hero-conversion-line {
+          display: block !important;
+
+          width: 100% !important;
+
+          padding: 0 !important;
+          margin: 0 auto !important;
+
+          white-space: nowrap !important;
+
+          text-align: center !important;
+
+          font-weight: 850 !important;
+
+          font-size:
+            clamp(54px, 5.5vw, 86px) !important;
+        }
+
+        .axiom-hero-line-white {
+          color: #f7fbff !important;
+
+          letter-spacing:
+            -4px !important;
+        }
+
+        .axiom-hero-line-blue {
+          margin-top:
+            10px !important;
+
+          letter-spacing:
+            -5px !important;
+
+          background:
+            linear-gradient(
+              100deg,
+              #c9f8ff 0%,
+              #58d9ff 44%,
+              #267cff 100%
+            ) !important;
+
+          -webkit-background-clip:
+            text !important;
+
+          background-clip:
+            text !important;
+
+          color:
+            transparent !important;
+        }
+
+        @media (max-width: 680px) {
+
+          .axiom-hero-conversion-title {
+            left: 14px !important;
+
+            max-width:
+              calc(100% - 28px) !important;
+          }
+
+          .axiom-hero-conversion-line {
+            font-size:
+              clamp(44px, 12.8vw, 65px) !important;
+          }
+
+          .axiom-hero-line-white {
+            letter-spacing:
+              -2.5px !important;
+          }
+
+          .axiom-hero-line-blue {
+            letter-spacing:
+              -3.5px !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI PROCESO BALANCEADO CON BRAIN ===== */
+
+        #proceso .process-grid {
+          align-items: stretch !important;
+        }
+
+        #proceso .process-list {
+          display: grid !important;
+          grid-template-rows: repeat(4, 1fr) !important;
+          gap: 14px !important;
+
+          height: 100% !important;
+          align-self: stretch !important;
+        }
+
+        #proceso .process-item {
+          display: flex !important;
+          align-items: center !important;
+
+          width: 100% !important;
+          height: 100% !important;
+          min-height: 0 !important;
+
+          padding: 22px 22px !important;
+
+          border-radius: 20px !important;
+        }
+
+        #proceso .process-item .step {
+          width: 48px !important;
+          height: 48px !important;
+          min-width: 48px !important;
+
+          border-radius: 13px !important;
+
+          font-size: 14px !important;
+        }
+
+        #proceso .process-item > div:last-child {
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: center !important;
+
+          min-width: 0 !important;
+        }
+
+        #proceso .process-item h3 {
+          margin: 0 0 9px 0 !important;
+
+          font-size: 18px !important;
+          line-height: 1.2 !important;
+
+          font-weight: 700 !important;
+        }
+
+        #proceso .process-item p {
+          margin: 0 !important;
+
+          font-size: 14px !important;
+          line-height: 1.55 !important;
+        }
+
+        #proceso .brain-spotlight {
+          height: 100% !important;
+          align-self: stretch !important;
+        }
+
+
+        /* MOVIL / TABLET: VOLVER A ALTURA NATURAL */
+
+        @media (max-width: 900px) {
+
+          #proceso .process-list {
+            grid-template-rows: none !important;
+            height: auto !important;
+          }
+
+          #proceso .process-item {
+            height: auto !important;
+            min-height: 120px !important;
+          }
+
+          #proceso .brain-spotlight {
+            height: auto !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI HERO LOGO + TITULO GRANDE FINAL ===== */
+
+        /* CONTENEDOR DEL LOGO */
+        .axiom-v6-brand {
+          position: relative !important;
+
+          width: 100% !important;
+          height: 245px !important;
+
+          margin: 0 auto 8px auto !important;
+
+          left: 0 !important;
+          transform: none !important;
+
+          display: block !important;
+          overflow: visible !important;
+        }
+
+        /* LOGO MAS GRANDE Y CENTRADO */
+        .axiom-v6-brand img {
+          position: absolute !important;
+
+          left: 50% !important;
+          top: 50% !important;
+
+          width: 410px !important;
+          height: 235px !important;
+
+          max-width: none !important;
+
+          margin: 0 !important;
+
+          object-fit: contain !important;
+          object-position: center center !important;
+
+          transform:
+            translate(-50%, -50%) !important;
+
+          filter:
+            drop-shadow(0 0 22px rgba(41, 167, 255, 0.18)) !important;
+        }
+
+
+        /* ====================================================
+           TITULO PRINCIPAL DEBAJO DEL LOGO
+           ==================================================== */
+
+        .axiom-hero-conversion-title,
+        .axiom-v6-title-balanced {
+          display: block !important;
+
+          visibility: visible !important;
+          opacity: 1 !important;
+
+          position: relative !important;
+
+          width: 100% !important;
+          max-width: 680px !important;
+
+          left: 0 !important;
+
+          margin:
+            0 auto 24px auto !important;
+
+          transform:
+            none !important;
+
+          text-align:
+            center !important;
+
+          line-height:
+            .90 !important;
+        }
+
+
+        /* TODAS LAS LINEAS DEL TITULO */
+        .axiom-hero-conversion-title span,
+        .axiom-v6-title-balanced span {
+          display: block !important;
+
+          visibility: visible !important;
+          opacity: 1 !important;
+
+          width: 100% !important;
+
+          padding:
+            0 !important;
+
+          margin:
+            0 auto !important;
+
+          transform:
+            none !important;
+
+          box-shadow:
+            none !important;
+
+          text-align:
+            center !important;
+
+          white-space:
+            nowrap !important;
+
+          font-size:
+            clamp(64px, 5.3vw, 84px) !important;
+
+          font-weight:
+            850 !important;
+
+          line-height:
+            .92 !important;
+        }
+
+
+        /* PRIMERA LINEA BLANCA */
+        .axiom-hero-line-white {
+          background:
+            none !important;
+
+          -webkit-background-clip:
+            initial !important;
+
+          background-clip:
+            initial !important;
+
+          color:
+            #f7fbff !important;
+
+          letter-spacing:
+            -3.5px !important;
+        }
+
+
+        /* SEGUNDA LINEA AZUL */
+        .axiom-hero-line-blue {
+          margin-top:
+            8px !important;
+
+          background:
+            linear-gradient(
+              100deg,
+              #d9fbff 0%,
+              #66ddff 45%,
+              #247cff 100%
+            ) !important;
+
+          -webkit-background-clip:
+            text !important;
+
+          background-clip:
+            text !important;
+
+          color:
+            transparent !important;
+
+          letter-spacing:
+            -4px !important;
+        }
+
+
+        /* SI TODAVIA ESTAN LAS 5 LINEAS ANTERIORES */
+        .axiom-v6-title-balanced
+        .axiom-v6-title-line {
+          font-size:
+            clamp(58px, 5vw, 78px) !important;
+
+          color:
+            #f7fbff !important;
+
+          background:
+            none !important;
+
+          -webkit-background-clip:
+            initial !important;
+
+          background-clip:
+            initial !important;
+        }
+
+        .axiom-v6-title-balanced
+        .axiom-v6-title-accent {
+          background:
+            linear-gradient(
+              100deg,
+              #d9fbff 0%,
+              #63dcff 45%,
+              #247cff 100%
+            ) !important;
+
+          -webkit-background-clip:
+            text !important;
+
+          background-clip:
+            text !important;
+
+          color:
+            transparent !important;
+        }
+
+
+        /* PARRAFO DEBAJO DEL TITULO */
+        .axiom-v6-lead {
+          max-width:
+            650px !important;
+
+          margin:
+            0 auto 28px auto !important;
+
+          font-size:
+            18px !important;
+
+          line-height:
+            1.65 !important;
+
+          text-align:
+            left !important;
+        }
+
+
+        /* ====================================================
+           MOBILE
+           ==================================================== */
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-brand {
+            height:
+              195px !important;
+
+            margin-bottom:
+              6px !important;
+          }
+
+          .axiom-v6-brand img {
+            width:
+              320px !important;
+
+            height:
+              185px !important;
+          }
+
+          .axiom-hero-conversion-title,
+          .axiom-v6-title-balanced {
+            width:
+              calc(100% - 20px) !important;
+
+            max-width:
+              100% !important;
+          }
+
+          .axiom-hero-conversion-title span,
+          .axiom-v6-title-balanced span {
+            font-size:
+              clamp(46px, 12vw, 62px) !important;
+          }
+
+          .axiom-v6-lead {
+            font-size:
+              17px !important;
+
+            padding:
+              0 8px !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI HERO AJUSTE LOGO + VIDEO ===== */
+
+        /* SUBIR EL BLOQUE DEL VIDEO */
+        .axiom-v6-media,
+        .axiom-v6-video-wrap,
+        .axiom-v6-video-shell,
+        .axiom-v6-video-frame,
+        .axiom-v6-video-bg,
+        .axiom-v6-video-main {
+          margin-top: -42px !important;
+        }
+
+        /* ALINEAR LA COLUMNA IZQUIERDA ARRIBA */
+        .axiom-v6-copy,
+        .axiom-v6-copy-col,
+        .axiom-v6-left,
+        .axiom-v6-text {
+          align-self: start !important;
+        }
+
+        /* CUADRO DEL LOGO */
+        .axiom-v6-brand {
+          width: 100% !important;
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          margin: 0 auto 18px auto !important;
+        }
+
+        /* LOGO MAS GRANDE */
+        .axiom-v6-brand img {
+          display: block !important;
+          width: 470px !important;
+          max-width: 94% !important;
+          height: auto !important;
+          margin: 0 auto !important;
+          object-fit: contain !important;
+          object-position: center center !important;
+        }
+
+        /* ACERCA UN POCO EL TEXTO AL LOGO */
+        .axiom-v6-lead,
+        .axiom-v6-description,
+        .axiom-v6-copy p {
+          margin-top: 6px !important;
+        }
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-media,
+          .axiom-v6-video-wrap,
+          .axiom-v6-video-shell,
+          .axiom-v6-video-frame,
+          .axiom-v6-video-bg,
+          .axiom-v6-video-main {
+            margin-top: -16px !important;
+          }
+
+          .axiom-v6-brand img {
+            width: 330px !important;
+            max-width: 94% !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI ALIGN TOP LOGO + VIDEO ===== */
+
+        @media (min-width: 1051px) {
+
+          .axiom-v6-brand {
+            transform:
+              translateY(120px) !important;
+          }
+
+        }
+
+
+        /* ===== AXIOMAI ALINEACION EXACTA LOGO + VIDEO ===== */
+
+        /*
+          El ajuste anterior bajaba el logo 120px.
+          68px lo sube 52px y alinea su borde superior
+          con el frame principal del video.
+        */
+
+        @media (min-width: 1051px) {
+          .axiom-v6-brand {
+            transform: translateY(68px) !important;
+          }
+        }
+
+
+        /*
+          CENTRAR VIDEO DENTRO DEL FRAME
+          No mover el frame, solo el contenido.
+        */
+
+        .axiom-v6-video-main {
+          position: absolute !important;
+
+          top: 50% !important;
+          left: 50% !important;
+
+          margin: 0 !important;
+
+          height: 100% !important;
+          width: auto !important;
+
+          max-height: 100% !important;
+          max-width: 100% !important;
+
+          object-fit: contain !important;
+          object-position: center center !important;
+
+          transform:
+            translate(-50%, -50%) !important;
+        }
+
+
+        /*
+          El fondo borroso sí debe llenar todo el frame.
+        */
+
+        .axiom-v6-video-bg {
+          position: absolute !important;
+
+          top: 0 !important;
+          left: 0 !important;
+
+          margin: 0 !important;
+
+          width: 100% !important;
+          height: 100% !important;
+
+          object-fit: cover !important;
+          object-position: center center !important;
+
+          transform: none !important;
+        }
+
+
+        /* ===== AXIOMAI VIDEO CENTRADO DENTRO DEL FRAME ===== */
+
+        .axiom-v6-video-stage > .axiom-v6-video-main {
+          position: absolute !important;
+
+          left: 50% !important;
+          top: calc(50% + 6px) !important;
+
+          width: auto !important;
+          height: calc(100% - 28px) !important;
+
+          max-width: 100% !important;
+          max-height: none !important;
+
+          margin: 0 !important;
+
+          object-fit: contain !important;
+          object-position: center center !important;
+
+          transform: translate(-50%, -50%) !important;
+        }
+
+
+        /* ===== AXIOMAI VIDEO FRAME COMPACTO ===== */
+
+        .axiom-v6-video-stage {
+          position: relative !important;
+
+          width: 360px !important;
+          max-width: 100% !important;
+          height: 530px !important;
+
+          margin-left: auto !important;
+          margin-right: auto !important;
+
+          border-radius: 28px !important;
+
+          background:
+            rgba(3, 8, 14, 0.92) !important;
+
+          border:
+            1px solid rgba(95, 191, 255, 0.20) !important;
+
+          box-shadow:
+            0 24px 70px rgba(0, 0, 0, 0.34),
+            inset 0 0 35px rgba(34, 143, 255, 0.04) !important;
+
+          overflow: hidden !important;
+        }
+
+        .axiom-v6-video-stage > .axiom-v6-video-main {
+          position: absolute !important;
+
+          left: 50% !important;
+          top: 50% !important;
+
+          width: auto !important;
+          height: calc(100% - 16px) !important;
+
+          max-width: calc(100% - 16px) !important;
+          max-height: none !important;
+
+          margin: 0 !important;
+
+          object-fit: contain !important;
+          object-position: center center !important;
+
+          transform:
+            translate(-50%, -50%) !important;
+        }
+
+        .axiom-v6-video-stage > .axiom-v6-video-bg {
+          position: absolute !important;
+
+          inset: 0 !important;
+
+          width: 100% !important;
+          height: 100% !important;
+
+          object-fit: cover !important;
+
+          opacity: .16 !important;
+
+          filter:
+            blur(22px) brightness(.55) !important;
+
+          transform:
+            scale(1.08) !important;
+        }
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-video-stage {
+            width:
+              min(100%, 340px) !important;
+
+            height:
+              510px !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI VIDEO FULL FRAME FIX ===== */
+
+        .axiom-v6-video-stage {
+          width: 340px !important;
+          max-width: 100% !important;
+          height: 570px !important;
+
+          margin-left: auto !important;
+          margin-right: auto !important;
+
+          padding: 8px !important;
+
+          border-radius: 28px !important;
+
+          overflow: hidden !important;
+        }
+
+        .axiom-v6-video-stage .axiom-v6-video-main {
+          position: absolute !important;
+
+          inset: 8px !important;
+
+          top: 8px !important;
+          left: 8px !important;
+
+          width: calc(100% - 16px) !important;
+          height: calc(100% - 16px) !important;
+
+          max-width: none !important;
+          max-height: none !important;
+
+          margin: 0 !important;
+
+          object-fit: contain !important;
+          object-position: center center !important;
+
+          transform: none !important;
+
+          display: block !important;
+        }
+
+        .axiom-v6-video-stage .axiom-v6-video-bg {
+          position: absolute !important;
+
+          inset: 0 !important;
+
+          width: 100% !important;
+          height: 100% !important;
+
+          object-fit: cover !important;
+
+          transform: none !important;
+        }
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-video-stage {
+            width: min(94vw, 340px) !important;
+            height: 570px !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI VIDEO PLAYBACK COVER FIX ===== */
+
+        .axiom-v6-video-stage {
+          overflow: hidden !important;
+        }
+
+        .axiom-v6-video-stage > video.axiom-v6-video-main {
+          position: absolute !important;
+
+          top: 8px !important;
+          left: 8px !important;
+
+          width: calc(100% - 16px) !important;
+          height: calc(100% - 16px) !important;
+
+          max-width: none !important;
+          max-height: none !important;
+
+          margin: 0 !important;
+
+          object-fit: cover !important;
+          object-position: center center !important;
+
+          transform: none !important;
+
+          display: block !important;
+        }
+
+
+        /* ===== AXIOMAI VIDEO REAL COVER FIX ===== */
+
+        .axiom-v6-video-stage > video.axiom-v6-video-main {
+          position: absolute !important;
+
+          top: 8px !important;
+          right: 8px !important;
+          bottom: 8px !important;
+          left: 8px !important;
+
+          width: calc(100% - 16px) !important;
+          height: calc(100% - 16px) !important;
+
+          max-width: none !important;
+          max-height: none !important;
+
+          margin: 0 !important;
+
+          object-fit: cover !important;
+          object-position: center center !important;
+
+          transform: none !important;
+
+          display: block !important;
+        }
+
+
+        /* ===== AXIOMAI HERO PUNCH TITLE V3 ===== */
+
+        .axiom-hero-punch-title-v3 {
+          display: block !important;
+
+          width: 100% !important;
+          max-width: 650px !important;
+
+          margin:
+            4px auto 24px auto !important;
+
+          padding:
+            0 !important;
+
+          text-align:
+            center !important;
+
+          line-height:
+            .88 !important;
+
+          transform:
+            none !important;
+
+          background:
+            none !important;
+
+          box-shadow:
+            none !important;
+        }
+
+        .axiom-hero-punch-title-v3 > span {
+          display: block !important;
+
+          width: 100% !important;
+
+          margin:
+            0 auto !important;
+
+          padding:
+            0 !important;
+
+          border:
+            0 !important;
+
+          box-shadow:
+            none !important;
+
+          text-shadow:
+            none !important;
+
+          transform:
+            none !important;
+
+          white-space:
+            nowrap !important;
+
+          text-align:
+            center !important;
+
+          font-size:
+            clamp(56px, 4.7vw, 76px) !important;
+
+          font-weight:
+            900 !important;
+
+          line-height:
+            .90 !important;
+        }
+
+        .axiom-hero-punch-white-v3 {
+          color:
+            #f8fbff !important;
+
+          background:
+            transparent !important;
+
+          -webkit-background-clip:
+            initial !important;
+
+          background-clip:
+            initial !important;
+
+          letter-spacing:
+            -3px !important;
+        }
+
+        .axiom-hero-punch-blue-v3 {
+          margin-top:
+            8px !important;
+
+          background:
+            linear-gradient(
+              100deg,
+              #d7fbff 0%,
+              #60ddff 45%,
+              #247cff 100%
+            ) !important;
+
+          -webkit-background-clip:
+            text !important;
+
+          background-clip:
+            text !important;
+
+          color:
+            transparent !important;
+
+          letter-spacing:
+            -4px !important;
+        }
+
+        .axiom-hero-punch-title-v3 + .axiom-v6-lead {
+          margin-top:
+            0 !important;
+        }
+
+        @media (max-width: 680px) {
+
+          .axiom-hero-punch-title-v3 {
+            width:
+              calc(100% - 16px) !important;
+
+            margin-bottom:
+              20px !important;
+          }
+
+          .axiom-hero-punch-title-v3 > span {
+            font-size:
+              clamp(42px, 11.5vw, 58px) !important;
+          }
+
+          .axiom-hero-punch-white-v3 {
+            letter-spacing:
+              -2px !important;
+          }
+
+          .axiom-hero-punch-blue-v3 {
+            letter-spacing:
+              -2.5px !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI FIX ESPACIO LOGO + TITULO ===== */
+
+        @media (min-width: 1051px) {
+
+          .axiom-v6-brand {
+            margin-bottom: 92px !important;
+          }
+
+          .axiom-hero-punch-title-v3 {
+            position: relative !important;
+            z-index: 5 !important;
+
+            margin-top: 0 !important;
+            margin-bottom: 26px !important;
+          }
+
+        }
+
+        @media (max-width: 1050px) {
+
+          .axiom-v6-brand {
+            margin-bottom: 28px !important;
+          }
+
+        }
+
+
+        /* ===== AXIOMAI BAJAR TITULO HERO ===== */
+
+        @media (min-width: 1051px) {
+
+          .axiom-hero-punch-title-v3 {
+            position: relative !important;
+            z-index: 5 !important;
+            margin-top: 72px !important;
+            margin-bottom: 20px !important;
+            transform: none !important;
+          }
+
+        }
+
+        @media (max-width: 1050px) {
+
+          .axiom-hero-punch-title-v3 {
+            margin-top: 28px !important;
+            transform: none !important;
+          }
+
+        }
+
+
+        /* ===== AXIOMAI TITULO DOWN REAL FIX ===== */
+
+        @media (min-width: 1051px) {
+
+          .axiom-v6-copy > .axiom-hero-punch-title-v3 {
+            position: relative !important;
+
+            top: 100px !important;
+
+            margin-top: 0 !important;
+            margin-bottom: 120px !important;
+
+            transform: none !important;
+
+            z-index: 10 !important;
+          }
+
+        }
+
+        @media (max-width: 1050px) {
+
+          .axiom-v6-copy > .axiom-hero-punch-title-v3 {
+            position: relative !important;
+
+            top: 45px !important;
+
+            margin-top: 0 !important;
+            margin-bottom: 65px !important;
+
+            transform: none !important;
+          }
+
+        }
+
+
+        /* ===== AXIOMAI ALIGN TWO HERO LINES ===== */
+
+        .axiom-hero-punch-white-v3 {
+          letter-spacing: 8px !important;
+          text-align: center !important;
+        }
+
+        .axiom-hero-punch-blue-v3 {
+          text-align: center !important;
+        }
+
+
+        /* ===== AXIOMAI LOGO WIDTH MATCH TITLE ===== */
+
+        @media (min-width: 1051px) {
+
+          .axiom-v6-brand img {
+            width: 600px !important;
+            max-width: none !important;
+            height: auto !important;
+          }
+
+        }
+
+        @media (max-width: 1050px) {
+
+          .axiom-v6-brand img {
+            width: min(92vw, 600px) !important;
+            height: auto !important;
+          }
+
+        }
+
+
+        /* ===== AXIOMAI LOGO + TITLE VISUAL ALIGN FINAL ===== */
+
+        /* LOGO: bajar de 600 a 540 */
+        .axiom-v6-brand img {
+          width: 540px !important;
+          max-width: 540px !important;
+          height: auto !important;
+        }
+
+
+        /* CONTENEDOR COMUN DEL TITULO */
+        .axiom-hero-punch-title-v3 {
+          width: 540px !important;
+          max-width: 540px !important;
+
+          margin-left: auto !important;
+          margin-right: auto !important;
+
+          text-align: center !important;
+
+          overflow: visible !important;
+        }
+
+
+        /* NO PIERDAS */
+        .axiom-hero-punch-title-v3
+        .axiom-hero-punch-white-v3 {
+          width: 100% !important;
+
+          font-size: 72px !important;
+          line-height: .92 !important;
+
+          letter-spacing: 1px !important;
+
+          text-align: center !important;
+
+          transform: none !important;
+        }
+
+
+        /* OTRO CLIENTE. */
+        .axiom-hero-punch-title-v3
+        .axiom-hero-punch-blue-v3 {
+          width: 100% !important;
+
+          font-size: 64px !important;
+          line-height: .94 !important;
+
+          letter-spacing: -1px !important;
+
+          text-align: center !important;
+
+          transform: none !important;
+        }
+
+
+        @media (max-width: 680px) {
+
+          .axiom-v6-brand img {
+            width: 92vw !important;
+            max-width: 500px !important;
+          }
+
+          .axiom-hero-punch-title-v3 {
+            width: 92vw !important;
+            max-width: 540px !important;
+          }
+
+          .axiom-hero-punch-title-v3
+          .axiom-hero-punch-white-v3 {
+            font-size: clamp(46px, 11vw, 68px) !important;
+            letter-spacing: 0 !important;
+          }
+
+          .axiom-hero-punch-title-v3
+          .axiom-hero-punch-blue-v3 {
+            font-size: clamp(40px, 9.8vw, 60px) !important;
+            letter-spacing: -1px !important;
+          }
+        }
+
+
+        /* ===== AXIOMAI CTA MICROCOPY FINAL ===== */
+
+        .axiom-v6-cta-note {
+          margin: 9px 0 14px 0 !important;
+
+          font-size: 11px !important;
+          line-height: 1.45 !important;
+
+          font-weight: 650 !important;
+
+          letter-spacing: .025em !important;
+
+          color:
+            rgba(176, 211, 235, .78) !important;
+        }
+
+
+        /* ===== AXIOMAI PROCESS COPY ===== */
+
+        #proceso .axiom-process-copy {
+          max-width: 720px !important;
+          margin: 16px 0 34px 0 !important;
+
+          font-size: 16px !important;
+          line-height: 1.7 !important;
+
+          color: rgba(183, 211, 232, .82) !important;
+        }
+
       `}</style>
 
       <header className="topbar">
@@ -3333,316 +5747,212 @@ export default function Home() {
       </header>
 
       <div className="shell">
-        <section className="hero" id="inicio">
-          <div className="hero-copy">
-            <div className="eyebrow">
-              <span className="pulse" />
-              {t("Automatización • IA • Software", "Automation • AI • Software")}
+        <section className="hero axiom-v6-hero" id="inicio">
+
+          <div className="axiom-v6-copy">
+
+            <div className="axiom-v6-brand">
+              <img
+                src={FINAL_LOGO_DATA}
+                alt="AxiomAI Solutions"
+              />
+
+              <div>
+                <strong>AxiomAI Solutions</strong>
+                <small>
+                  {t(
+                    "Automatizaci\u00F3n e inteligencia artificial para tu negocio",
+                    "Automation and artificial intelligence for your business"
+                  )}
+                </small>
+              </div>
             </div>
 
-            <h1>
-              {t("Tu negocio, operando como un ", "Your business, running like an ")}
-              <span>{t("sistema inteligente.", "intelligent system.")}</span>
+            <h1 className="axiom-hero-punch-title-v3">
+
+              <span className="axiom-hero-punch-white-v3">
+                {t(
+                  "NO PIERDAS",
+                  "DON'T LOSE"
+                )}
+              </span>
+
+              <span className="axiom-hero-punch-blue-v3">
+                {t(
+                  "OTRO CLIENTE.",
+                  "ANOTHER CUSTOMER."
+                )}
+              </span>
+
             </h1>
 
-            <p className="hero-lead">
+            <p className="hero-lead axiom-v6-lead">
               {t(
-                "AxiomOS conecta conversaciones, oportunidades y tareas para que tu equipo responda más rápido, dé seguimiento con consistencia y tenga claridad sobre qué hacer después.",
-                "AxiomOS connects conversations, opportunities, and tasks so your team can respond faster, follow up consistently, and always know what comes next."
+                "AxiomAI responde, organiza y da seguimiento a tus oportunidades 24/7 desde WhatsApp, llamadas y web, para que ningún prospecto se quede sin respuesta.",
+                "AxiomAI responds, organizes, and follows up on your opportunities 24/7 across WhatsApp, calls, and the web, so no lead goes unanswered."
               )}
             </p>
 
-            <div className="hero-actions">
-              <a className="primary" href={`/brain?lang=${language}`}>
-                {t("Probar Brain gratis →", "Try Brain free →")}
+            <div className="hero-actions axiom-v6-actions">
+              <a
+                className="primary"
+                href={`/brain?lang=${language}`}
+              >
+                {t(
+                  "Descubre qué estás perdiendo \u2192",
+                  "Find your missed opportunities \u2192"
+                )}
               </a>
-              <a className="secondary" href="#evaluacion">
-                {t("Solicitar evaluación", "Request an assessment")}
+
+              <a
+                className="secondary"
+                href="#evaluacion"
+              >
+                {t(
+                  "Solicitar evaluaci\u00F3n",
+                  "Request an assessment"
+                )}
               </a>
             </div>
 
-            <div className="micro-proof">
-              <span>{t("Atención y seguimiento", "Customer care & follow-up")}</span>
-              <span>{t("Flujos automatizados", "Automated workflows")}</span>
-              <span>{t("Integraciones", "Integrations")}</span>
+            <div className="axiom-v6-cta-note">
+              {t(
+                "Diagnóstico inicial gratis. Sin compromiso.",
+                "Free initial diagnosis. No commitment."
+              )}
             </div>
+
+            <div className="axiom-v6-proof">
+              <span>{t("Atenci\u00F3n 24/7", "24/7 service")}</span>
+              <span>{t("Prospectos organizados", "Organized leads")}</span>
+              <span>Brain</span>
+              <span>CRM</span>
+            </div>
+
           </div>
 
-          <div className="hero-visual">
-            <div
-              className="console"
-              onPointerMove={(event) => {
-                if (event.pointerType === "touch") return;
-                const rect = event.currentTarget.getBoundingClientRect();
-                const x = (event.clientX - rect.left) / rect.width;
-                const y = (event.clientY - rect.top) / rect.height;
-                const ry = (x - 0.5) * 7;
-                const rx = (0.5 - y) * 6;
-                event.currentTarget.style.setProperty("--ry", `${ry.toFixed(2)}deg`);
-                event.currentTarget.style.setProperty("--rx", `${rx.toFixed(2)}deg`);
-                event.currentTarget.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
-                event.currentTarget.style.setProperty("--my", `${(y * 100).toFixed(1)}%`);
-              }}
-              onPointerLeave={(event) => {
-                event.currentTarget.style.setProperty("--ry", "0deg");
-                event.currentTarget.style.setProperty("--rx", "0deg");
-                event.currentTarget.style.setProperty("--mx", "50%");
-                event.currentTarget.style.setProperty("--my", "50%");
-              }}
-            >
-              <div className="console-cursor-light" aria-hidden="true" />
-              <div className="console-scan" aria-hidden="true" />
-              <div className="console-orbit" aria-hidden="true" />
-              <div className="console-top">
-                <div className="console-title">
-                  <span>AXIOMOS</span>
-                  <span style={{ color: "#55708f" }}>CONTROL CENTER</span>
-                </div>
-                <div className="status">
+          <div className="axiom-v6-visual">
+
+            <div className="axiom-v6-video-shell">
+
+              <div className="eyebrow axiom-v6-video-eyebrow">
+                <span className="pulse" />
+                {t(
+                  "AUTOMATIZACI\u00D3N \u2022 IA \u2022 SOFTWARE",
+                  "AUTOMATION \u2022 AI \u2022 SOFTWARE"
+                )}
+              </div>
+<div className="axiom-v6-video-stage">
+
+                <video
+                  className="axiom-v6-video-bg"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  aria-hidden="true"
+                >
+                  <source
+                    src="/videos/axiomai-avatar.mp4"
+                    type="video/mp4"
+                  />
+                </video>
+
+                <div
+                  className="axiom-v6-video-shade"
+                  aria-hidden="true"
+                />
+
+                <video
+                  className="axiom-v6-video-main"
+                  controls
+                  playsInline
+                  preload="metadata"
+                  poster="/images/axiomai-presenter.png"
+                >
+                  <source
+                    src="/videos/axiomai-avatar.mp4"
+                    type="video/mp4"
+                  />
+                </video>
+
+                <div className="axiom-v6-online">
                   <i />
-                  {t("Sistema activo", "System active")}
+                  {t("EN L\u00CDNEA", "ONLINE")}
                 </div>
+
               </div>
 
-              <div className="brand-panel">
-                        <div
-                          className="home-logo-wrap"
-                          aria-label="AxiomAI Solutions"
-                          onPointerDown={(event) => {
-                            if (event.pointerType === "touch") {
-                              event.currentTarget.setPointerCapture?.(event.pointerId);
-                            }
-                          }}
-                          onPointerMove={(event) => {
-                            const rect = event.currentTarget.getBoundingClientRect();
-                            const x = (event.clientX - rect.left) / rect.width;
-                            const y = (event.clientY - rect.top) / rect.height;
-                            const nx = Math.max(-1, Math.min(1, (x - 0.5) * 2));
-                            const ny = Math.max(-1, Math.min(1, (y - 0.5) * 2));
+              <div className="axiom-v6-cards">
 
-                            const strengthX = event.pointerType === "touch" ? 13 : 7.5;
-                            const strengthY = event.pointerType === "touch" ? 11 : 6.5;
-                            const glowX = event.pointerType === "touch" ? 19 : 13;
-                            const glowY = event.pointerType === "touch" ? 17 : 11;
+                <div className="axiom-v6-card">
+                  <b>24/7</b>
+                  <div>
+                    <small>
+                      {t(
+                        "ATENCI\u00D3N",
+                        "SERVICE"
+                      )}
+                    </small>
+                    <strong>
+                      {t(
+                        "Siempre disponible",
+                        "Always available"
+                      )}
+                    </strong>
+                  </div>
+                </div>
 
-                            event.currentTarget.style.setProperty(
-                              "--logo-brain-x",
-                              `${(nx * strengthX).toFixed(2)}px`
-                            );
-                            event.currentTarget.style.setProperty(
-                              "--logo-brain-y",
-                              `${(ny * strengthY).toFixed(2)}px`
-                            );
-                            event.currentTarget.style.setProperty(
-                              "--logo-brain-glow-x",
-                              `${(nx * glowX).toFixed(2)}px`
-                            );
-                            event.currentTarget.style.setProperty(
-                              "--logo-brain-glow-y",
-                              `${(ny * glowY).toFixed(2)}px`
-                            );
-                          }}
-                          onPointerUp={(event) => {
-                            if (
-                              event.pointerType === "touch" &&
-                              event.currentTarget.hasPointerCapture?.(event.pointerId)
-                            ) {
-                              event.currentTarget.releasePointerCapture?.(event.pointerId);
-                            }
-                            event.currentTarget.style.setProperty("--logo-brain-x", "0px");
-                            event.currentTarget.style.setProperty("--logo-brain-y", "0px");
-                            event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
-                            event.currentTarget.style.setProperty("--logo-brain-glow-y", "0px");
-                          }}
-                          onPointerCancel={(event) => {
-                            event.currentTarget.style.setProperty("--logo-brain-x", "0px");
-                            event.currentTarget.style.setProperty("--logo-brain-y", "0px");
-                            event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
-                            event.currentTarget.style.setProperty("--logo-brain-glow-y", "0px");
-                          }}
-                          onPointerLeave={(event) => {
-                            if (event.pointerType === "touch") return;
-                            event.currentTarget.style.setProperty("--logo-brain-x", "0px");
-                            event.currentTarget.style.setProperty("--logo-brain-y", "0px");
-                            event.currentTarget.style.setProperty("--logo-brain-glow-x", "0px");
-                            event.currentTarget.style.setProperty("--logo-brain-glow-y", "0px");
-                          }}
-                        >
-                          <img
-                            src={FINAL_LOGO_DATA}
-                            alt="AxiomAI Solutions"
-                            width={1448}
-                            height={1086}
-                            className="home-logo-image"
-                            draggable={false}
-                          />
+                <div className="axiom-v6-card">
+                  <b>P</b>
+                  <div>
+                    <small>
+                      {t(
+                        "PROSPECTOS",
+                        "LEADS"
+                      )}
+                    </small>
+                    <strong>
+                      {t(
+                        "Captura y organiza",
+                        "Capture and organize"
+                      )}
+                    </strong>
+                  </div>
+                </div>
 
-                          <span className="home-logo-electric-bloom" aria-hidden="true" />
-                          <span className="home-logo-halo" aria-hidden="true" />
-                          <span className="home-logo-brain-cover" aria-hidden="true" />
-                          <span className="home-logo-brain-glow" aria-hidden="true" />
-                          <span
-                            className="home-logo-brain-follower"
-                            aria-hidden="true"
-                            style={{ backgroundImage: `url("${FINAL_LOGO_DATA}")` }}
-                          />
-                          <span className="home-logo-letter-shine" aria-hidden="true" />
+                <div className="axiom-v6-card">
+                  <b>AI</b>
+                  <div>
+                    <small>BRAIN</small>
+                    <strong>
+                      {t(
+                        "Diagn\u00F3stico inteligente",
+                        "Intelligent assessment"
+                      )}
+                    </strong>
+                  </div>
+                </div>
 
-                          <svg
-                            className="home-logo-overlay"
-                            viewBox="0 0 1448 1086"
-                            aria-hidden="true"
-                          >
-                            <g opacity="0.94">
-                              {/* Corriente por la A grande */}
-                              <path
-                                className="home-logo-current-line home-logo-current-cyan"
-                                d="M 690 95 L 667 170 L 646 235 L 615 304 L 586 369 L 548 438 L 508 512 L 465 583 L 419 655"
-                              />
-                              <path
-                                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-1"
-                                d="M 744 119 L 731 186 L 720 248 L 704 306 L 690 357"
-                              />
-                              <path
-                                className="home-logo-current-line home-logo-current-violet home-logo-current-delay-2"
-                                d="M 425 658 L 503 614 L 585 563 L 675 509 L 772 452 L 879 395 L 993 337 L 1123 287"
-                              />
-                              <path
-                                className="home-logo-current-line home-logo-current-cyan home-logo-current-delay-3"
-                                d="M 459 699 L 549 638 L 652 581 L 760 528 L 879 472 L 1007 420 L 1130 383"
-                              />
-                              <path
-                                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-2"
-                                d="M 953 425 L 966 493 L 982 558 L 1000 623 L 1021 687"
-                              />
+                <div className="axiom-v6-card">
+                  <b>CRM</b>
+                  <div>
+                    <small>CRM</small>
+                    <strong>
+                      {t(
+                        "Seguimiento autom\u00E1tico",
+                        "Automated follow-up"
+                      )}
+                    </strong>
+                  </div>
+                </div>
 
-                              {/* Corriente saliendo del cerebro */}
-                              <path
-                                className="home-logo-current-line home-logo-current-violet"
-                                d="M 724 561 L 672 548 L 622 531 L 574 510 L 531 483 L 488 451"
-                              />
-                              <path
-                                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-1"
-                                d="M 720 595 L 656 593 L 599 586 L 541 573 L 486 553 L 433 529"
-                              />
-                              <path
-                                className="home-logo-current-line home-logo-current-cyan home-logo-current-delay-2"
-                                d="M 724 561 L 781 548 L 835 528 L 892 501 L 948 467 L 1003 429"
-                              />
-                              <path
-                                className="home-logo-current-line home-logo-current-gold home-logo-current-delay-3"
-                                d="M 723 601 L 790 597 L 854 588 L 916 573 L 981 549 L 1043 519"
-                              />
-                              <path
-                                className="home-logo-current-line home-logo-current-violet home-logo-current-delay-1"
-                                d="M 722 632 L 671 646 L 620 667 L 577 694"
-                              />
-                              <path
-                                className="home-logo-current-line home-logo-current-cyan home-logo-current-delay-2"
-                                d="M 724 632 L 779 647 L 830 669 L 871 697"
-                              />
-                            </g>
-
-                            {/* Nodos que pulsan */}
-                            <g>
-                              <circle className="home-logo-node" cx="419" cy="655" r="7" fill="#75efff" />
-                              <circle className="home-logo-node home-logo-node-delay-1" cx="1123" cy="287" r="7" fill="#ffe494" />
-                              <circle className="home-logo-node home-logo-node-delay-2" cx="1130" cy="383" r="7" fill="#76eaff" />
-                              <circle className="home-logo-node home-logo-node-delay-3" cx="1021" cy="687" r="6.5" fill="#ffe494" />
-                            </g>
-
-                            {/* Bolitas de energía que viajan por los circuitos */}
-                            <g>
-                              <circle r="5.2" fill="#fff2a8" opacity="0.98">
-                                <animateMotion
-                                  dur="2.15s"
-                                  repeatCount="indefinite"
-                                  path="M 690 95 L 667 170 L 646 235 L 615 304 L 586 369 L 548 438 L 508 512 L 465 583 L 419 655"
-                                />
-                              </circle>
-                              <circle r="4.7" fill="#87f3ff" opacity="0.98">
-                                <animateMotion
-                                  dur="2.55s"
-                                  begin="-0.8s"
-                                  repeatCount="indefinite"
-                                  path="M 425 658 L 503 614 L 585 563 L 675 509 L 772 452 L 879 395 L 993 337 L 1123 287"
-                                />
-                              </circle>
-                              <circle r="4.5" fill="#ffd97a" opacity="0.98">
-                                <animateMotion
-                                  dur="2.35s"
-                                  begin="-1.25s"
-                                  repeatCount="indefinite"
-                                  path="M 459 699 L 549 638 L 652 581 L 760 528 L 879 472 L 1007 420 L 1130 383"
-                                />
-                              </circle>
-
-                              <circle r="4.4" fill="#ffdda0" opacity="0.98">
-                                <animateMotion
-                                  dur="1.7s"
-                                  repeatCount="indefinite"
-                                  path="M 724 561 L 672 548 L 622 531 L 574 510 L 531 483 L 488 451"
-                                />
-                              </circle>
-                              <circle r="4.2" fill="#96efff" opacity="0.98">
-                                <animateMotion
-                                  dur="1.9s"
-                                  begin="-0.5s"
-                                  repeatCount="indefinite"
-                                  path="M 724 561 L 781 548 L 835 528 L 892 501 L 948 467 L 1003 429"
-                                />
-                              </circle>
-                              <circle r="4.1" fill="#ffd77b" opacity="0.98">
-                                <animateMotion
-                                  dur="2.0s"
-                                  begin="-1.05s"
-                                  repeatCount="indefinite"
-                                  path="M 720 595 L 656 593 L 599 586 L 541 573 L 486 553 L 433 529"
-                                />
-                              </circle>
-                              <circle r="4.1" fill="#e9b3ff" opacity="0.98">
-                                <animateMotion
-                                  dur="2.1s"
-                                  begin="-1.35s"
-                                  repeatCount="indefinite"
-                                  path="M 723 601 L 790 597 L 854 588 L 916 573 L 981 549 L 1043 519"
-                                />
-                              </circle>
-                            </g>
-                          </svg>
-                        </div>
               </div>
 
-              <div className="workflow">
-                <div className="workflow-row">
-                  <div className="workflow-icon">☎</div>
-                  <div>
-                    <strong>{t("Nueva oportunidad", "New opportunity")}</strong>
-                    <small>{t("Captura el contacto y organiza la solicitud.", "Capture the contact and organize the request.")}</small>
-                  </div>
-                  <b>{t("Captura", "Capture")}</b>
-                </div>
-
-                <div className="workflow-row">
-                  <div className="workflow-icon">✦</div>
-                  <div>
-                    <strong>{t("AxiomAI clasifica", "AxiomAI classifies")}</strong>
-                    <small>{t("Identifica intención, prioridad y próxima acción.", "Identifies intent, priority and next action.")}</small>
-                  </div>
-                  <b>{t("Analiza", "Analyze")}</b>
-                </div>
-
-                <div className="workflow-row">
-                  <div className="workflow-icon">↗</div>
-                  <div>
-                    <strong>{t("Seguimiento automático", "Automated follow-up")}</strong>
-                    <small>{t("Mantiene la oportunidad en movimiento.", "Keeps the opportunity moving forward.")}</small>
-                  </div>
-                  <b>{t("Actúa", "Act")}</b>
-                </div>
-              </div>
             </div>
+
           </div>
+
         </section>
 
         <div className="signal-strip" aria-label={t("Capacidades de AxiomOS", "AxiomOS capabilities")}>
@@ -3670,13 +5980,16 @@ export default function Home() {
 
         <section className="section section-border reveal" id="soluciones">
           <div className="section-kicker">{t("Soluciones Axiom", "Axiom Solutions")}</div>
-          <h2>{t("Menos tareas sueltas. Más operación conectada.", "Fewer disconnected tasks. More connected operations.")}</h2>
+          <h2>{t(
+              "Menos tareas sueltas. Más negocio conectado.",
+              "Fewer disconnected tasks. More connected business."
+            )}</h2>
           <p className="section-copy">
-            {t(
-              "Diseñamos sistemas alrededor de cómo realmente trabaja tu empresa: llamadas, WhatsApp, formularios, seguimiento, datos y procesos internos.",
-              "We design systems around how your business actually works: calls, WhatsApp, forms, follow-up, data, and internal processes."
-            )}
-          </p>
+              {t(
+                "AxiomAI conecta llamadas, WhatsApp, formularios, seguimiento y datos en un solo flujo para que tu equipo responda más rápido, no pierda oportunidades y siempre sepa qué hacer después.",
+                "AxiomAI connects calls, WhatsApp, forms, follow-up, and data into one workflow so your team responds faster, misses fewer opportunities, and always knows what to do next."
+              )}
+            </p>
 
           <div className="bento">
             <article className="card wide">
@@ -3898,7 +6211,17 @@ export default function Home() {
 
         <section className="section section-border reveal" id="proceso">
           <div className="section-kicker">{t("Cómo trabajamos", "How we work")}</div>
-          <h2>{t("Primero entendemos el proceso. Después automatizamos.", "We understand the process first. Then we automate.")}</h2>
+          <h2>{t(
+            "Antes de automatizar, encontramos dónde estás perdiendo tiempo y oportunidades.",
+            "Before we automate, we find where you are losing time and opportunities."
+          )}</h2>
+
+          <p className="section-copy axiom-process-copy">
+            {t(
+              "Luego diseñamos un sistema que responde, organiza, da seguimiento y mejora contigo.",
+              "Then we design a system that responds, organizes, follows up, and improves with you."
+            )}
+          </p>
 
           <div className="process-grid">
             <div className="process-list">
@@ -4431,8 +6754,18 @@ export default function Home() {
         <section className="section section-border reveal">
           <div className="cta-band">
             <div>
-              <h3>{t("Tu operación no necesita más herramientas. Necesita un sistema.", "Your operation doesn't need more tools. It needs a system.")}</h3>
-              <p>{t("Cuéntanos qué parte del negocio consume más tiempo y evaluamos cómo convertirla en un flujo más rápido, organizado y medible.", "Tell us which part of the business consumes the most time and we'll assess how to turn it into a faster, more organized, measurable workflow.")}</p>
+              <h3>
+              {t(
+                "Deja de sumar herramientas. Empieza a conectar tu operación.",
+                "Stop adding more tools. Start connecting your operation."
+              )}
+            </h3>
+            <p>
+              {t(
+                "Te mostramos dónde automatizar primero y qué impacto puede tener en tu negocio.",
+                "We show you where to automate first and what impact it can have on your business."
+              )}
+            </p>
             </div>
             <a className="primary" href="#evaluacion">{t("Evaluación gratuita →", "Free assessment →")}</a>
           </div>
@@ -4440,18 +6773,18 @@ export default function Home() {
 
         <section className="section section-border reveal" id="evaluacion">
           <div className="section-kicker">{t("Comienza aquí", "Start here")}</div>
-          <h2>{t("Hablemos de tu operación.", "Let's talk about your operation.")}</h2>
+          <h2>{t("Cuéntanos qué está frenando tu operación.", "Tell us what's holding your operation back.")}</h2>
           <p className="section-copy">
             {t(
-              "Cuéntanos qué quieres mejorar. Revisamos el caso y te orientamos sobre una solución adecuada para tu negocio.",
-              "Tell us what you want to improve. We'll review the case and guide you toward a solution that fits your business."
+              "Explícanos qué quieres mejorar o dónde sientes que se pierden tiempo, clientes u oportunidades. Revisamos tu caso y te orientamos sobre el mejor próximo paso.",
+              "Tell us what you want to improve or where you feel time, customers, or opportunities are being lost. We'll review your case and guide you toward the best next step."
             )}
           </p>
 
           <div className="contact-grid">
             <div className="contact-copy">
               <h3>{t("Evaluación inicial gratuita", "Free initial assessment")}</h3>
-              <p>{t("No necesitas saber qué tecnología utilizar. Empieza explicándonos el problema, el proceso o la oportunidad.", "You don't need to know which technology to use. Start by explaining the problem, process, or opportunity.")}</p>
+              <p>{t("No necesitas saber qué tecnología usar. Cuéntanos qué está pasando y te ayudamos a identificar por dónde empezar.", "You don't need to know which technology to use. Tell us what's happening and we'll help you identify where to start.")}</p>
 
               <div className="contact-lines">
                 <div className="contact-line">📞 +1 (787) 450-3679</div>
