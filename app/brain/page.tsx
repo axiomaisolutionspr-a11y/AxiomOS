@@ -1369,18 +1369,30 @@ export default function BrainPage() {
       return;
     }
 
-    const firstUserMessage = conversation.find(
-      (item) => item.role === "user"
-    );
-
-    const userContext = conversation
-      .filter(
+    const latestUserMessage = [...conversation]
+      .reverse()
+      .find(
         (item) => item.role === "user"
-      )
-      .map(
-        (item, index) =>
-          `${index + 1}. ${item.text}`
-      )
+      );
+
+    const currentBrainContext = [
+      latestUserMessage?.text
+        ? `Consulta actual: ${latestUserMessage.text}`
+        : "",
+      businessProfile.businessType
+        ? `Tipo de negocio: ${businessProfile.businessType}`
+        : "",
+      businessProfile.focus
+        ? `Foco: ${businessProfile.focus}`
+        : "",
+      businessProfile.channels.length > 0
+        ? `Canales: ${businessProfile.channels.join(", ")}`
+        : "",
+      businessProfile.summary
+        ? `Lectura principal: ${businessProfile.summary}`
+        : "",
+    ]
+      .filter(Boolean)
       .join("\n");
 
     const contactTimeLabel =
@@ -1420,7 +1432,7 @@ export default function BrainPage() {
               `The prospect requested a free evaluation directly from AxiomOS Brain. Best time to contact: ${contactTimeLabel}.`
             ),
             consulta_brain:
-              firstUserMessage?.text || "",
+              latestUserMessage?.text || "",
             tipo_de_negocio_brain:
               businessProfile.businessType,
             foco_brain:
@@ -1436,7 +1448,7 @@ export default function BrainPage() {
             lectura_principal_brain:
               businessProfile.summary,
             contexto_del_cliente_brain:
-              userContext,
+              currentBrainContext,
             analisis_brain: result,
           }),
         }
