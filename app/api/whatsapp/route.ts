@@ -3,6 +3,9 @@ import {
   NextResponse,
 } from "next/server";
 
+import { neon } from "@neondatabase/serverless";
+
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const VERIFY_TOKEN =
@@ -13,6 +16,21 @@ const PHONE_NUMBER_ID =
 
 const DUALHOOK_API_KEY =
   process.env.DUALHOOK_API_KEY;
+
+type BrainMessage = {
+  role: "user" | "assistant";
+  text: string;
+};
+
+function normalizePhone(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+/*
+========================================================
+ENVIAR MENSAJE POR DUALHOOK
+========================================================
+*/
 
 async function sendWhatsAppMessage(
   to: string,
@@ -30,7 +48,7 @@ async function sendWhatsAppMessage(
     );
   }
 
-  const destination = to.replace(/\D/g, "");
+  const destination = normalizePhone(to);
 
   const response = await fetch(
     `https://api.dualhook.com/v25.0/${PHONE_NUMBER_ID}/messages`,
@@ -47,10 +65,7 @@ async function sendWhatsAppMessage(
         type: "text",
         text: {
           preview_url: false,
-          body:
-            "¡Hola! 👋 Gracias por comunicarte con AxiomAI Solutions.\n\n" +
-            "Soy el asistente virtual de AxiomAI. Podemos ayudarte a automatizar llamadas, WhatsApp, seguimiento de clientes y prospectos.\n\n" +
-            "Cuéntame qué tipo de negocio tienes y qué te gustaría automatizar.",
+          body: text,
         },
       }),
     }
@@ -58,8 +73,15 @@ async function sendWhatsAppMessage(
 
   const responseBody = await response.text();
 
-  console.log("DUALHOOK_OUTBOUND_STATUS:", response.status);
-  console.log("DUALHOOK_OUTBOUND_RESPONSE:", responseBody);
+  console.log(
+    "DUALHOOK_OUTBOUND_STATUS:",
+    response.status
+  );
+
+  console.log(
+    "DUALHOOK_OUTBOUND_RESPONSE:",
+    responseBody
+  );
 
   if (!response.ok) {
     throw new Error(
@@ -70,14 +92,81 @@ async function sendWhatsAppMessage(
   return responseBody;
 }
 
+/*
+========================================================
+CONSULTAR AXIOMOS BRAIN
+========================================================
+*/
+
+async function askBrain(
+  request: NextRequest,
+  messages: BrainMessage[]
+) {
+  const brainUrl = new URL(
+    "/api/brain",
+    request.url
+  );
+
+  const response = await fetch(brainUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messages,
+      language: "es",
+    }),
+    cache: "no-store",
+  });
+
+  const data = (await response.json()) as {
+    result?: unknown;
+    error?: unknown;
+  };
+
+  if (!response.ok) {
+    const errorText =
+      typeof data.error === "string"
+        ? data.error
+        : "Brain no pudo responder.";
+
+    throw new Error(
+      `Brain error ${response.status}: ${errorText}`
+    );
+  }
+
+  if (
+    typeof data.result !== "string" ||
+    !data.result.trim()
+  ) {
+    throw new Error(
+      "Brain respondió sin texto utilizable."
+    );
+  }
+
+  return data.result.trim();
+}
+
+/*
+========================================================
+VERIFICACIÓN DEL WEBHOOK
+========================================================
+*/
+
 export async function GET(
   request: NextRequest
 ) {
-  const { searchParams } = new URL(request.url);
+  const { searchParams } =
+    new URL(request.url);
 
-  const mode = searchParams.get("hub.mode");
-  const token = searchParams.get("hub.verify_token");
-  const challenge = searchParams.get("hub.challenge");
+  const mode =
+    searchParams.get("hub.mode");
+
+  const token =
+    searchParams.get("hub.verify_token");
+
+  const challenge =
+    searchParams.get("hub.challenge");
 
   if (
     mode === "subscribe" &&
@@ -87,44 +176,74 @@ export async function GET(
     return new NextResponse(challenge, {
       status: 200,
       headers: {
-        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Type":
+          "text/plain; charset=utf-8",
       },
     });
   }
 
   return NextResponse.json(
-    { ok: false, error: "Webhook verification failed" },
-    { status: 403 }
+    {
+      ok: false,
+      error: "Webhook verification failed",
+    },
+    {
+      status: 403,
+    }
   );
 }
+
+/*
+========================================================
+RECIBIR MENSAJES DE WHATSAPP
+========================================================
+*/
 
 export async function POST(
   request: NextRequest
 ) {
   try {
+    const databaseUrl =
+      process.env.DATABASE_URL;
+
+    if (!databaseUrl) {
+      throw new Error(
+        "DATABASE_URL is not configured"
+      );
+    }
+
+    const sql = neon(databaseUrl);
+
     const body = await request.json();
 
-    const entries = Array.isArray(body?.entry)
-      ? body.entry
-      : [];
+    const entries =
+      Array.isArray(body?.entry)
+        ? body.entry
+        : [];
 
     let messagesReceived = 0;
     let repliesSent = 0;
+
     const errors: string[] = [];
 
-    console.log("WHATSAPP_ENTRIES:", entries.length);
+    console.log(
+      "WHATSAPP_ENTRIES:",
+      entries.length
+    );
 
     for (const entry of entries) {
-      const changes = Array.isArray(entry?.changes)
-        ? entry.changes
-        : [];
+      const changes =
+        Array.isArray(entry?.changes)
+          ? entry.changes
+          : [];
 
       for (const change of changes) {
-        const messages = Array.isArray(
-          change?.value?.messages
-        )
-          ? change.value.messages
-          : [];
+        const messages =
+          Array.isArray(
+            change?.value?.messages
+          )
+            ? change.value.messages
+            : [];
 
         console.log(
           "WHATSAPP_MESSAGES_IN_EVENT:",
@@ -132,31 +251,205 @@ export async function POST(
         );
 
         for (const message of messages) {
-          const from = message?.from;
-          const text = message?.text?.body?.trim();
+          const from =
+            typeof message?.from === "string"
+              ? message.from
+              : "";
 
-          if (!from || message?.type !== "text" || !text) {
+          const text =
+            typeof message?.text?.body ===
+            "string"
+              ? message.text.body.trim()
+              : "";
+
+          const whatsappMessageId =
+            typeof message?.id === "string"
+              ? message.id
+              : null;
+
+          if (
+            !from ||
+            message?.type !== "text" ||
+            !text
+          ) {
             continue;
           }
 
           messagesReceived++;
 
-          console.log("WHATSAPP_INCOMING_FROM:", from);
-          console.log("WHATSAPP_INCOMING_TEXT:", text);
+          const phone =
+            normalizePhone(from);
+
+          const conversationKey =
+            `whatsapp:${phone}`;
+
+          console.log(
+            "WHATSAPP_INCOMING_FROM:",
+            phone
+          );
+
+          console.log(
+            "WHATSAPP_INCOMING_TEXT:",
+            text
+          );
 
           try {
-            await sendWhatsAppMessage(from, text);
+            /*
+            ================================================
+            EVITAR MENSAJES DUPLICADOS
+            ================================================
+            */
+
+            if (whatsappMessageId) {
+              const duplicate =
+                await sql`
+                  SELECT id
+                  FROM whatsapp_messages
+                  WHERE whatsapp_message_id =
+                    ${whatsappMessageId}
+                  LIMIT 1
+                `;
+
+              if (duplicate.length > 0) {
+                console.log(
+                  "WHATSAPP_DUPLICATE_SKIPPED:",
+                  whatsappMessageId
+                );
+
+                continue;
+              }
+            }
+
+            /*
+            ================================================
+            GUARDAR MENSAJE DEL CLIENTE
+            ================================================
+            */
+
+            await sql`
+              INSERT INTO whatsapp_messages (
+                conversation_key,
+                phone,
+                role,
+                message,
+                whatsapp_message_id
+              )
+              VALUES (
+                ${conversationKey},
+                ${phone},
+                ${"user"},
+                ${text},
+                ${whatsappMessageId}
+              )
+            `;
+
+            /*
+            ================================================
+            RECUPERAR HISTORIAL
+            ================================================
+            */
+
+            const historyRows =
+              await sql`
+                SELECT
+                  role,
+                  message
+                FROM whatsapp_messages
+                WHERE conversation_key =
+                  ${conversationKey}
+                ORDER BY created_at DESC, id DESC
+                LIMIT 12
+              `;
+
+            const history: BrainMessage[] =
+              historyRows
+                .slice()
+                .reverse()
+                .filter(
+                  (row) =>
+                    (row.role === "user" ||
+                      row.role ===
+                        "assistant") &&
+                    typeof row.message ===
+                      "string"
+                )
+                .map((row) => ({
+                  role:
+                    row.role as
+                      | "user"
+                      | "assistant",
+                  text: row.message,
+                }));
+
+            console.log(
+              "WHATSAPP_HISTORY_ITEMS:",
+              history.length
+            );
+
+            /*
+            ================================================
+            CONSULTAR BRAIN
+            ================================================
+            */
+
+            const brainReply =
+              await askBrain(
+                request,
+                history
+              );
+
+            console.log(
+              "WHATSAPP_BRAIN_REPLY:",
+              brainReply
+            );
+
+            /*
+            ================================================
+            ENVIAR RESPUESTA POR WHATSAPP
+            ================================================
+            */
+
+            await sendWhatsAppMessage(
+              phone,
+              brainReply
+            );
+
+            /*
+            ================================================
+            GUARDAR RESPUESTA DE BRAIN
+            ================================================
+            */
+
+            await sql`
+              INSERT INTO whatsapp_messages (
+                conversation_key,
+                phone,
+                role,
+                message
+              )
+              VALUES (
+                ${conversationKey},
+                ${phone},
+                ${"assistant"},
+                ${brainReply}
+              )
+            `;
+
             repliesSent++;
-            console.log("AXIOMAI_REPLY_SENT");
+
+            console.log(
+              "AXIOMAI_BRAIN_REPLY_SENT"
+            );
           } catch (error) {
             const messageError =
               error instanceof Error
                 ? error.message
-                : "Unknown outbound error";
+                : "Unknown processing error";
 
             errors.push(messageError);
+
             console.error(
-              "AXIOMAI_AUTO_REPLY_ERROR:",
+              "AXIOMAI_WHATSAPP_PROCESSING_ERROR:",
               messageError
             );
           }
@@ -171,7 +464,9 @@ export async function POST(
         repliesSent,
         errors,
       },
-      { status: 200 }
+      {
+        status: 200,
+      }
     );
   } catch (error) {
     const messageError =
@@ -189,7 +484,9 @@ export async function POST(
         ok: false,
         error: messageError,
       },
-      { status: 200 }
+      {
+        status: 200,
+      }
     );
   }
 }
