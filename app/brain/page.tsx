@@ -387,16 +387,39 @@ function buildBusinessProfile(
   result: string
 ): BusinessProfile {
   const userMessages = conversation.filter((item) => item.role === "user");
-  const userText = userMessages
+
+  let currentCaseStartIndex = 0;
+
+  // El caso vigente comienza en el mensaje más reciente donde el usuario
+  // identifica claramente un tipo de negocio. Los mensajes posteriores
+  // continúan perteneciendo a ese mismo caso.
+  for (
+    let index = userMessages.length - 1;
+    index >= 0;
+    index -= 1
+  ) {
+    if (
+      detectBusinessType(userMessages[index].text) !==
+      "Por identificar"
+    ) {
+      currentCaseStartIndex = index;
+      break;
+    }
+  }
+
+  const currentCaseText = userMessages
+    .slice(currentCaseStartIndex)
     .map((item) => item.text)
     .join("\n");
 
-  // Datos del negocio: solo se toman de lo que el cliente realmente ha dicho.
-  // Así evitamos convertir recomendaciones de Brain en hechos confirmados.
-  const businessType = detectBusinessType(userText);
-  const focus = detectFocus(userText);
-  const channels = detectChannels(userText);
+  const businessType =
+    detectBusinessType(currentCaseText);
 
+  const focus =
+    detectFocus(currentCaseText);
+
+  const channels =
+    detectChannels(currentCaseText);
   // Prioridad y complejidad sí son evaluaciones de Brain sobre el caso actual.
   const priority = extractLevel(result, "Prioridad");
   const complexity = extractLevel(result, "Complejidad");
