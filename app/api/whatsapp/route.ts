@@ -65,7 +65,7 @@ async function sendWhatsAppMessage(
         type: "text",
         text: {
           preview_url: false,
-          body: text,
+          body: text.slice(0, 4000),
         },
       }),
     }
