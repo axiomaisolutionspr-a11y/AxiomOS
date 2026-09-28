@@ -17,6 +17,8 @@ const PHONE_NUMBER_ID =
 const DUALHOOK_API_KEY =
   process.env.DUALHOOK_API_KEY;
 
+const WHATSAPP_MAX_TEXT_LENGTH = 4000;
+
 type BrainMessage = {
   role: "user" | "assistant";
   text: string;
@@ -28,11 +30,79 @@ function normalizePhone(value: string) {
 
 /*
 ========================================================
-ENVIAR MENSAJE POR DUALHOOK
+DIVIDIR RESPUESTAS LARGAS DE WHATSAPP
 ========================================================
 */
 
-async function sendWhatsAppMessage(
+function splitWhatsAppMessage(
+  text: string,
+  maxLength = WHATSAPP_MAX_TEXT_LENGTH
+): string[] {
+  const normalized = text
+    .replace(/\r/g, "")
+    .trim();
+
+  if (!normalized) {
+    return [];
+  }
+
+  if (normalized.length <= maxLength) {
+    return [normalized];
+  }
+
+  const chunks: string[] = [];
+  let remaining = normalized;
+
+  while (remaining.length > maxLength) {
+    const candidate =
+      remaining.slice(0, maxLength + 1);
+
+    let splitAt =
+      candidate.lastIndexOf("\n\n");
+
+    if (splitAt < Math.floor(maxLength * 0.5)) {
+      splitAt =
+        candidate.lastIndexOf("\n");
+    }
+
+    if (splitAt < Math.floor(maxLength * 0.5)) {
+      splitAt =
+        candidate.lastIndexOf(" ");
+    }
+
+    if (splitAt <= 0) {
+      splitAt = maxLength;
+    }
+
+    const chunk =
+      remaining
+        .slice(0, splitAt)
+        .trim();
+
+    if (chunk) {
+      chunks.push(chunk);
+    }
+
+    remaining =
+      remaining
+        .slice(splitAt)
+        .trim();
+  }
+
+  if (remaining) {
+    chunks.push(remaining);
+  }
+
+  return chunks;
+}
+
+/*
+========================================================
+ENVIAR UN MENSAJE POR DUALHOOK
+========================================================
+*/
+
+async function sendSingleWhatsAppMessage(
   to: string,
   text: string
 ) {
@@ -55,8 +125,10 @@ async function sendWhatsAppMessage(
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${DUALHOOK_API_KEY}`,
-        "Content-Type": "application/json",
+        Authorization:
+          `Bearer ${DUALHOOK_API_KEY}`,
+        "Content-Type":
+          "application/json",
       },
       body: JSON.stringify({
         messaging_product: "whatsapp",
@@ -65,13 +137,14 @@ async function sendWhatsAppMessage(
         type: "text",
         text: {
           preview_url: false,
-          body: text.slice(0, 4000),
+          body: text,
         },
       }),
     }
   );
 
-  const responseBody = await response.text();
+  const responseBody =
+    await response.text();
 
   console.log(
     "DUALHOOK_OUTBOUND_STATUS:",
@@ -94,6 +167,54 @@ async function sendWhatsAppMessage(
 
 /*
 ========================================================
+ENVIAR RESPUESTA COMPLETA POR WHATSAPP
+========================================================
+*/
+
+async function sendWhatsAppMessage(
+  to: string,
+  text: string
+) {
+  const chunks =
+    splitWhatsAppMessage(text);
+
+  if (chunks.length === 0) {
+    throw new Error(
+      "No hay texto utilizable para enviar por WhatsApp."
+    );
+  }
+
+  console.log(
+    "WHATSAPP_OUTBOUND_PARTS:",
+    chunks.length
+  );
+
+  const responses: string[] = [];
+
+  for (
+    let index = 0;
+    index < chunks.length;
+    index += 1
+  ) {
+    console.log(
+      "WHATSAPP_OUTBOUND_PART:",
+      `${index + 1}/${chunks.length}`
+    );
+
+    const response =
+      await sendSingleWhatsAppMessage(
+        to,
+        chunks[index]
+      );
+
+    responses.push(response);
+  }
+
+  return responses;
+}
+
+/*
+========================================================
 CONSULTAR AXIOMOS BRAIN
 ========================================================
 */
@@ -107,22 +228,27 @@ async function askBrain(
     request.url
   );
 
-  const response = await fetch(brainUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      messages,
-      language: "es",
-    }),
-    cache: "no-store",
-  });
+  const response = await fetch(
+    brainUrl,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        messages,
+        channel: "whatsapp",
+      }),
+      cache: "no-store",
+    }
+  );
 
-  const data = (await response.json()) as {
-    result?: unknown;
-    error?: unknown;
-  };
+  const data =
+    (await response.json()) as {
+      result?: unknown;
+      error?: unknown;
+    };
 
   if (!response.ok) {
     const errorText =
@@ -163,29 +289,37 @@ export async function GET(
     searchParams.get("hub.mode");
 
   const token =
-    searchParams.get("hub.verify_token");
+    searchParams.get(
+      "hub.verify_token"
+    );
 
   const challenge =
-    searchParams.get("hub.challenge");
+    searchParams.get(
+      "hub.challenge"
+    );
 
   if (
     mode === "subscribe" &&
     token === VERIFY_TOKEN &&
     challenge
   ) {
-    return new NextResponse(challenge, {
-      status: 200,
-      headers: {
-        "Content-Type":
-          "text/plain; charset=utf-8",
-      },
-    });
+    return new NextResponse(
+      challenge,
+      {
+        status: 200,
+        headers: {
+          "Content-Type":
+            "text/plain; charset=utf-8",
+        },
+      }
+    );
   }
 
   return NextResponse.json(
     {
       ok: false,
-      error: "Webhook verification failed",
+      error:
+        "Webhook verification failed",
     },
     {
       status: 403,
@@ -214,7 +348,8 @@ export async function POST(
 
     const sql = neon(databaseUrl);
 
-    const body = await request.json();
+    const body =
+      await request.json();
 
     const entries =
       Array.isArray(body?.entry)
@@ -252,7 +387,8 @@ export async function POST(
 
         for (const message of messages) {
           const from =
-            typeof message?.from === "string"
+            typeof message?.from ===
+            "string"
               ? message.from
               : "";
 
@@ -263,7 +399,8 @@ export async function POST(
               : "";
 
           const whatsappMessageId =
-            typeof message?.id === "string"
+            typeof message?.id ===
+            "string"
               ? message.id
               : null;
 
@@ -310,7 +447,9 @@ export async function POST(
                   LIMIT 1
                 `;
 
-              if (duplicate.length > 0) {
+              if (
+                duplicate.length > 0
+              ) {
                 console.log(
                   "WHATSAPP_DUPLICATE_SKIPPED:",
                   whatsappMessageId
@@ -357,29 +496,35 @@ export async function POST(
                 FROM whatsapp_messages
                 WHERE conversation_key =
                   ${conversationKey}
-                ORDER BY created_at DESC, id DESC
+                ORDER BY
+                  created_at DESC,
+                  id DESC
                 LIMIT 12
               `;
 
-            const history: BrainMessage[] =
-              historyRows
-                .slice()
-                .reverse()
-                .filter(
-                  (row) =>
-                    (row.role === "user" ||
-                      row.role ===
-                        "assistant") &&
-                    typeof row.message ===
-                      "string"
-                )
-                .map((row) => ({
-                  role:
-                    row.role as
-                      | "user"
-                      | "assistant",
-                  text: row.message,
-                }));
+            const history:
+              BrainMessage[] =
+                historyRows
+                  .slice()
+                  .reverse()
+                  .filter(
+                    (row) =>
+                      (
+                        row.role ===
+                          "user" ||
+                        row.role ===
+                          "assistant"
+                      ) &&
+                      typeof row.message ===
+                        "string"
+                  )
+                  .map((row) => ({
+                    role:
+                      row.role as
+                        | "user"
+                        | "assistant",
+                    text: row.message,
+                  }));
 
             console.log(
               "WHATSAPP_HISTORY_ITEMS:",
@@ -416,7 +561,7 @@ export async function POST(
 
             /*
             ================================================
-            GUARDAR RESPUESTA DE BRAIN
+            GUARDAR RESPUESTA COMPLETA DE BRAIN
             ================================================
             */
 
@@ -446,7 +591,9 @@ export async function POST(
                 ? error.message
                 : "Unknown processing error";
 
-            errors.push(messageError);
+            errors.push(
+              messageError
+            );
 
             console.error(
               "AXIOMAI_WHATSAPP_PROCESSING_ERROR:",
