@@ -648,7 +648,7 @@ Para conversaciones normales de WhatsApp:
         body: JSON.stringify({
           model: MODEL,
           instructions:
-            `${BRAIN_INSTRUCTIONS}` + "`n`n" + languageInstruction,
+            `${BRAIN_INSTRUCTIONS}\n\n${languageInstruction}\n\n${channelInstruction}`,
           input,
           reasoning: {
             effort: "low",
