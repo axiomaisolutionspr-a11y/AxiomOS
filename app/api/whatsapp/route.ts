@@ -4,6 +4,7 @@ import {
 } from "next/server";
 
 import { neon } from "@neondatabase/serverless";
+import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -455,6 +456,16 @@ export async function POST(
                   whatsappMessageId
                 );
 
+                const retryRows = await sql`
+                  SELECT role, message FROM whatsapp_messages
+                  WHERE conversation_key = ${conversationKey}
+                  ORDER BY created_at DESC, id DESC LIMIT 12
+                `;
+                const retryHistory: BrainMessage[] = retryRows.slice().reverse()
+                  .filter(row => (row.role === "user" || row.role === "assistant") && typeof row.message === "string")
+                  .map(row => ({ role: row.role as "user" | "assistant", text: row.message }));
+                await registerWhatsAppContact({ phone, text,
+                  messageId: whatsappMessageId, history: retryHistory });
                 continue;
               }
             }
@@ -537,11 +548,15 @@ export async function POST(
             ================================================
             */
 
-            const brainReply =
-              await askBrain(
-                request,
-                history
-              );
+            const contacts = Array.isArray(change?.value?.contacts)
+              ? change.value.contacts : [];
+            const profileName = contacts.find(
+              (contact: { wa_id?: unknown }) => contact.wa_id === from
+            )?.profile?.name;
+            const contactReply = await registerWhatsAppContact({
+              phone, text, messageId: whatsappMessageId, profileName, history,
+            });
+            const brainReply = contactReply ?? await askBrain(request, history);
 
             console.log(
               "WHATSAPP_BRAIN_REPLY:",
