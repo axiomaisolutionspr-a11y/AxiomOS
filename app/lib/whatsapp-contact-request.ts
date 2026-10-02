@@ -107,6 +107,74 @@ export async function registerWhatsAppContact(input: {
       }
     }
   }
+  // Destino de alertas autorizado por Rolando. No es el teléfono del prospecto.
+  const smsTo = "+17872320132";
+  const smsAttemptMarker = `[WA_SMS_ATTEMPT:${token}]`;
+  const smsAcceptedMarker = `[WA_SMS_ACCEPTED:${token}]`;
+  if (String(process.env.SMS_ENABLED || "").trim().toLowerCase() !== "true") {
+    console.log("WHATSAPP_CONTACT_SMS_DISABLED", { prospectId: row.id });
+  } else if (!process.env.TELNYX_API_KEY?.trim() || !process.env.TELNYX_SMS_FROM?.trim()) {
+    console.error("WHATSAPP_CONTACT_SMS_CONFIG_MISSING", { prospectId: row.id });
+  } else {
+    try {
+      // Reserva atómica: dos entregas simultáneas no deben enviar dos SMS.
+      // Conservamos el intento incluso si hay timeout: Telnyx podría haberlo aceptado.
+      // Los intentos fallidos requieren revisión; no hay reintento automático.
+      const claimed = await sql`
+        UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${smsAttemptMarker}),
+          updated_at = NOW()
+        WHERE prospect_key = ${key}
+          AND STRPOS(COALESCE(crm_notes, ''), ${smsAttemptMarker}) = 0
+          AND STRPOS(COALESCE(crm_notes, ''), ${smsAcceptedMarker}) = 0
+        RETURNING id
+      `;
+      if (claimed.length > 0) {
+        const label = kind === "evaluation" ? "Evaluacion gratuita"
+          : kind === "preference" ? "Horario para evaluacion" : "Solicitud de asesor";
+        const smsText = `AxiomAI: WhatsApp. ${label}. Cliente: +${phone}. CRM: ${row.id}. Revisar axiomaisolutions.org/prospectos`;
+        const response = await fetch("https://api.telnyx.com/v2/messages", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.TELNYX_API_KEY.trim()}`,
+            "Content-Type": "application/json",
+          },
+          signal: AbortSignal.timeout(10000),
+          body: JSON.stringify({
+            from: process.env.TELNYX_SMS_FROM.trim(),
+            to: smsTo,
+            text: smsText,
+            type: "SMS",
+          }),
+        });
+        const result = await response.json() as {
+          data?: { id?: unknown; errors?: unknown[]; to?: { status?: string }[] };
+          errors?: { code?: unknown }[];
+        };
+        if (!response.ok || typeof result?.data?.id !== "string" || !result.data.id
+          || result.errors?.length || result.data.errors?.length
+          || result.data.to?.some(recipient => ["sending_failed", "delivery_failed"].includes(recipient.status || ""))) {
+          console.error("WHATSAPP_CONTACT_SMS_REJECTED", {
+            prospectId: row.id, status: response.status,
+            codes: Array.isArray(result?.errors) ? result.errors.map(error => error.code) : [],
+          });
+        } else {
+          // Aceptado por Telnyx; esto todavía no confirma entrega al teléfono.
+          console.log("WHATSAPP_CONTACT_SMS_ACCEPTED", {
+            prospectId: row.id, messageId: result.data.id,
+          });
+          const receipt = `${smsAcceptedMarker} Telnyx: ${result.data.id}`;
+          await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${receipt}),
+            updated_at = NOW() WHERE prospect_key = ${key}
+            AND STRPOS(COALESCE(crm_notes, ''), ${smsAcceptedMarker}) = 0`;
+        }
+      }
+    } catch {
+      // El CRM y el correo siguen disponibles aunque el SMS falle.
+      console.error("WHATSAPP_CONTACT_SMS_FAILED_OR_UNKNOWN", { prospectId: row.id });
+    }
+  }
+
+
   if (kind === "preference") return "Registramos tu preferencia de horario en la solicitud. Un asesor de AxiomAI Solutions debe confirmar la disponibilidad; la cita todavía no está reservada.";
   if (kind === "evaluation") return "Registramos tu solicitud de evaluación gratuita para seguimiento con un asesor de AxiomAI Solutions. La disponibilidad queda pendiente de confirmación; todavía no hay una cita reservada. ¿Qué día y horario prefieres?";
   return "Registramos tu solicitud de contacto para seguimiento con un asesor de AxiomAI Solutions. Si necesitas atención inmediata, puedes llamar al 1 (787) 450-3679.";
