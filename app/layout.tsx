@@ -4,6 +4,8 @@ import "./globals.css";
 import "./home-cinematic.css";
 import "./home-cinematic-v2.css";
 import "./home-cinematic-v3.css";
+import "./home-cinematic-v4.css";
+import HomeBackgroundVideo from "./home-background-video";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <HomeBackgroundVideo />
         {children}
 
         <a
