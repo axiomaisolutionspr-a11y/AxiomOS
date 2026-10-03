@@ -1,32 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-
-const sectors = [
-  { key: "serve", title: "Axiom Serve", eyebrow: "RESTAURANTES + HOSPITALITY", text: "Robots de servicio para delivery, bussing, apoyo al salón y operaciones de alto volumen.", accent: "SERVICE" },
-  { key: "host", title: "Axiom Host", eyebrow: "RECEPCIÓN + EXPERIENCIA", text: "Recepción, orientación, promociones, telepresencia y atención guiada para clientes y visitantes.", accent: "HOST" },
-  { key: "clean", title: "Axiom Clean", eyebrow: "LIMPIEZA COMERCIAL", text: "Autonomous floor care para hoteles, hospitales, malls, oficinas, warehouses y contratistas.", accent: "CLEAN" },
-  { key: "turf", title: "Axiom Turf", eyebrow: "GROUNDS + MOWING", text: "Mantenimiento autónomo de terrenos para resorts, golf, deportes, municipios y grandes propiedades.", accent: "TURF" },
-  { key: "move", title: "Axiom Move", eyebrow: "WAREHOUSE + LOGÍSTICA", text: "AMRs para mover materiales, carts, suministros y trabajo en proceso dentro de la operación.", accent: "MOVE" },
-  { key: "industrial", title: "Axiom Industrial", eyebrow: "COBOTS + AUTOMATION", text: "Palletizing, machine tending, pick-and-place, welding y procesos repetitivos de manufactura.", accent: "INDUSTRIAL" },
-  { key: "connect", title: "Axiom Connect", eyebrow: "TELEPRESENCE + HEALTHCARE", text: "Telepresencia, orientación, delivery interno y conexión remota para salud y atención especializada.", accent: "CONNECT" },
-  { key: "future", title: "Future Robotics", eyebrow: "EMERGING PLATFORMS", text: "Humanoids, inspection, security y tecnologías emergentes bajo pilotos controlados y casos de uso reales.", accent: "FUTURE" },
-];
-
-const prototypes = [
-  { name: "GreetingBot Nova", maker: "OrionStar", fit: "Recepción + guidance", sector: "host", note: "Showrooms, retail, lobby y orientación multilingüe." },
-  { name: "Cruzr 1S", maker: "UBTECH", fit: "Premium customer experience", sector: "host", note: "Experiencias de marca, showrooms y smart demos." },
-  { name: "BellaBot Pro", maker: "PUDU", fit: "Service delivery", sector: "serve", note: "Restaurantes, hospitality y delivery interno." },
-  { name: "Phantas", maker: "Gausium", fit: "Compact 4-in-1 cleaning", sector: "clean", note: "Mixed floors, healthcare, retail, offices y hoteles." },
-  { name: "Scrubber 75", maker: "Gausium", fit: "Heavy-duty cleaning", sector: "clean", note: "Warehouses, parking, manufacturing y grandes superficies." },
-  { name: "MiR250", maker: "MiR", fit: "Flexible AMR", sector: "move", note: "Material flow, WIP, bins, carts y line-side replenishment." },
-  { name: "PUDU T300", maker: "PUDU", fit: "Industrial delivery", sector: "move", note: "Carga interna, logística industrial y operación 24/7." },
-  { name: "Elite Robots CS", maker: "Elite Robots", fit: "Cobot automation", sector: "industrial", note: "Palletizing, machine tending, welding y packaging." },
-  { name: "temi V3", maker: "temi", fit: "Telepresence + custom apps", sector: "connect", note: "Healthcare, senior living, remote specialists y concierge." },
-  { name: "Kress RTKn", maker: "Kress", fit: "Autonomous turf care", sector: "turf", note: "Grounds maintenance para grandes propiedades y hospitality." },
-  { name: "FireFly AMP", maker: "FireFly", fit: "Large-scale mowing", sector: "turf", note: "Golf, sports, municipal y large grounds." },
-  { name: "Scythe M.52", maker: "Scythe", fit: "Commercial mowing", sector: "turf", note: "Landscaping contractors y operaciones comerciales." },
-];
+import { useRoboticsLanguage } from "./robotics-language";
 
 type Match = {
   sector: string;
@@ -38,28 +13,232 @@ type Match = {
 
 const initialMatch: Match = { sector: "", task: "", environment: "", scale: "", priority: "" };
 
+const content = {
+  es: {
+    nav: { solutions: "Soluciones", match: "Robot Match", brain: "Brain", contact: "Contacto" },
+    sectors: [
+      { key: "serve", title: "Axiom Serve", eyebrow: "RESTAURANTES + HOSPITALIDAD", text: "Robots de servicio para entrega, recogido de mesas, apoyo al salón y operaciones de alto volumen.", accent: "SERVICIO" },
+      { key: "host", title: "Axiom Host", eyebrow: "RECEPCIÓN + EXPERIENCIA", text: "Recepción, orientación, promociones, telepresencia y atención guiada para clientes y visitantes.", accent: "RECEPCIÓN" },
+      { key: "clean", title: "Axiom Clean", eyebrow: "LIMPIEZA COMERCIAL", text: "Limpieza autónoma de pisos para hoteles, hospitales, centros comerciales, oficinas, almacenes y contratistas.", accent: "LIMPIEZA" },
+      { key: "turf", title: "Axiom Turf", eyebrow: "TERRENOS + CORTE", text: "Mantenimiento autónomo de terrenos para resorts, golf, deportes, municipios y grandes propiedades.", accent: "TERRENOS" },
+      { key: "move", title: "Axiom Move", eyebrow: "ALMACÉN + LOGÍSTICA", text: "AMRs para mover materiales, carros, suministros y trabajo en proceso dentro de la operación.", accent: "LOGÍSTICA" },
+      { key: "industrial", title: "Axiom Industrial", eyebrow: "COBOTS + AUTOMATIZACIÓN", text: "Paletizado, atención de máquinas, pick-and-place, soldadura y procesos repetitivos de manufactura.", accent: "INDUSTRIAL" },
+      { key: "connect", title: "Axiom Connect", eyebrow: "TELEPRESENCIA + SALUD", text: "Telepresencia, orientación, entrega interna y conexión remota para salud y atención especializada.", accent: "CONECTAR" },
+      { key: "future", title: "Future Robotics", eyebrow: "PLATAFORMAS EMERGENTES", text: "Humanoides, inspección, seguridad y tecnologías emergentes bajo pilotos controlados y casos de uso reales.", accent: "FUTURO" },
+    ],
+    prototypes: [
+      { name: "GreetingBot Nova", maker: "OrionStar", fit: "Recepción + orientación", sector: "host", note: "Salas de exhibición, tiendas, vestíbulos y orientación multilingüe." },
+      { name: "Cruzr 1S", maker: "UBTECH", fit: "Experiencia premium", sector: "host", note: "Experiencias de marca, salas de exhibición y demostraciones inteligentes." },
+      { name: "BellaBot Pro", maker: "PUDU", fit: "Entrega de servicio", sector: "serve", note: "Restaurantes, hospitalidad y entrega interna." },
+      { name: "Phantas", maker: "Gausium", fit: "Limpieza compacta 4-en-1", sector: "clean", note: "Pisos mixtos, salud, tiendas, oficinas y hoteles." },
+      { name: "Scrubber 75", maker: "Gausium", fit: "Limpieza de trabajo pesado", sector: "clean", note: "Almacenes, estacionamientos, manufactura y grandes superficies." },
+      { name: "MiR250", maker: "MiR", fit: "AMR flexible", sector: "move", note: "Flujo de materiales, WIP, contenedores, carros y abastecimiento de línea." },
+      { name: "PUDU T300", maker: "PUDU", fit: "Entrega industrial", sector: "move", note: "Carga interna, logística industrial y operación continua." },
+      { name: "Elite Robots CS", maker: "Elite Robots", fit: "Automatización con cobot", sector: "industrial", note: "Paletizado, atención de máquinas, soldadura y empaque." },
+      { name: "temi V3", maker: "temi", fit: "Telepresencia + apps", sector: "connect", note: "Salud, senior living, especialistas remotos y concierge." },
+      { name: "Kress RTKn", maker: "Kress", fit: "Cuidado autónomo de terrenos", sector: "turf", note: "Mantenimiento de terrenos para grandes propiedades y hospitalidad." },
+      { name: "FireFly AMP", maker: "FireFly", fit: "Corte a gran escala", sector: "turf", note: "Golf, deportes, municipios y grandes terrenos." },
+      { name: "Scythe M.52", maker: "Scythe", fit: "Corte comercial", sector: "turf", note: "Contratistas de paisajismo y operaciones comerciales." },
+    ],
+    hero: {
+      kicker: "INTEGRACIÓN ROBÓTICA • PUERTO RICO",
+      titleA: "EL ROBOT CORRECTO",
+      titleB: "PARA TU NEGOCIO.",
+      text: "Analizamos tu operación, comparamos tecnologías y diseñamos la solución robótica correcta. No comenzamos con un catálogo. Comenzamos con tu problema.",
+      find: "Encuentra tu robot",
+      explore: "Explorar soluciones",
+      assess: "EVALUAR",
+      compare: "COMPARAR",
+      deploy: "IMPLEMENTAR",
+      footer: ["Brain piensa.", "La robótica ejecuta.", "Tu operación mejora."],
+    },
+    solutions: {
+      kicker: "UN INTEGRADOR • MÚLTIPLES TECNOLOGÍAS",
+      titleA: "No vendemos un robot.",
+      titleB: "Diseñamos una solución.",
+      text: "Ocho divisiones para cubrir operaciones reales, desde la recepción hasta el almacén y el terreno exterior.",
+    },
+    method: {
+      kicker: "EL MÉTODO AXIOMAI",
+      titleA: "Del problema operativo",
+      titleB: "a una implementación medible.",
+      steps: [
+        ["01", "EVALUAR", "Medimos flujo, espacio, tareas, carga, tráfico, infraestructura y restricciones."],
+        ["02", "COMPARAR", "Comparamos fabricantes, modelos, soporte, integración, costo y disponibilidad."],
+        ["03", "DISEÑAR", "Diseñamos Robot Match, integración con Brain, SOPs, piloto y KPIs."],
+        ["04", "IMPLEMENTAR", "Implementamos, entrenamos, medimos y escalamos solo si los datos lo justifican."],
+      ],
+    },
+    match: {
+      kicker: "ROBOT MATCH • EVALUACIÓN PRELIMINAR",
+      titleA: "¿Qué robot necesita",
+      titleB: "tu operación?",
+      text: "Responde cinco preguntas. El resultado es una orientación inicial; el Robot Match final requiere evaluación del sitio.",
+      labels: ["1. Industria / operación", "2. Tarea repetitiva principal", "3. Ambiente", "4. Escala", "5. Prioridad"],
+      select: "Selecciona",
+      sectors: [["serve","Restaurante / Hospitalidad"],["host","Retail / Sala de exhibición"],["connect","Salud / Senior Living"],["move","Almacén / Logística"],["industrial","Manufactura / Industrial"],["clean","Limpieza comercial"],["turf","Terrenos / Corte"]],
+      tasks: [["host","Recibir / orientar clientes"],["serve","Entrega / mover artículos"],["clean","Limpieza de pisos"],["move","Mover materiales / carros"],["industrial","Paletizado / atención de máquinas"],["connect","Telepresencia / atención remota"],["turf","Cortar grama / mantener terreno"]],
+      environments: [["public","Público / clientes presentes"],["back","Área de servicio / back of house"],["industrial","Almacén / industrial"],["health","Salud"],["outdoor","Exterior / terreno"]],
+      scales: [["small","Pequeña / una zona"],["medium","Mediana / múltiples zonas"],["large","Grande / campus o instalación"],["multi","Multi-sitio / cadena"]],
+      priorities: [["experience","Experiencia del cliente"],["labor","Reducir trabajo repetitivo"],["capacity","Aumentar cobertura / capacidad"],["safety","Seguridad / consistencia"],["data","Integración / datos / reportes"]],
+      button: "Generar recomendación preliminar",
+      placeholderTag: "BRAIN + ROBOT MATCH",
+      placeholderTitle: "Tu operación primero.",
+      placeholderText: "Selecciona la industria y la tarea. Luego comparamos la tecnología alrededor del caso de uso.",
+      resultTag: "COINCIDENCIA PRELIMINAR",
+      customTitle: "Robot Match personalizado",
+      customSub: "Comparación multi-fabricante",
+      customText: "Seleccionaremos plataformas según la evaluación técnica y comercial.",
+      note: "Resultado orientativo. Validamos dimensiones, rutas, carga útil, red, seguridad, soporte, garantía y precio antes de recomendar una plataforma al cliente.",
+    },
+    brain: {
+      kicker: "LA CAPA DE INTELIGENCIA",
+      titleA: "Brain piensa.",
+      titleB: "La robótica ejecuta.",
+      text: "Brain puede conectar la interacción física con tareas, prospectos, alertas, seguimiento, CRM, WhatsApp y reportes. El robot deja de ser una demostración aislada y se convierte en parte de la operación.",
+      points: ["Orquestación de tareas", "Captura de prospectos e intención", "Alertas y transferencia a humanos", "KPIs y reportes operacionales"],
+    },
+    prototypesSection: {
+      kicker: "ENFOQUE MULTI-FABRICANTE",
+      titleA: "La plataforma correcta",
+      titleB: "para cada misión.",
+      text: "Estos son ejemplos de tecnologías evaluadas dentro de nuestro Robot Match. La disponibilidad y relación comercial se confirma antes de una propuesta final.",
+    },
+    cta: {
+      kicker: "COMIENZA CON LA OPERACIÓN",
+      titleA: "Antes de comprar un robot,",
+      titleB: "descubre cuál necesitas.",
+      text: "Evaluación inicial para empresas en Puerto Rico. Analizamos el caso de uso, comparamos tecnologías y diseñamos un piloto medible.",
+      evaluation: "Solicitar evaluación",
+    },
+    footerSub: "AxiomAI Robotics • Puerto Rico",
+    languageButton: "EN",
+    languageLabel: "Cambiar a inglés",
+  },
+  en: {
+    nav: { solutions: "Solutions", match: "Robot Match", brain: "Brain", contact: "Contact" },
+    sectors: [
+      { key: "serve", title: "Axiom Serve", eyebrow: "RESTAURANTS + HOSPITALITY", text: "Service robots for delivery, bussing, dining-room support and high-volume operations.", accent: "SERVICE" },
+      { key: "host", title: "Axiom Host", eyebrow: "RECEPTION + EXPERIENCE", text: "Reception, guidance, promotions, telepresence and guided customer or visitor experiences.", accent: "HOST" },
+      { key: "clean", title: "Axiom Clean", eyebrow: "COMMERCIAL CLEANING", text: "Autonomous floor care for hotels, hospitals, malls, offices, warehouses and contractors.", accent: "CLEAN" },
+      { key: "turf", title: "Axiom Turf", eyebrow: "GROUNDS + MOWING", text: "Autonomous grounds maintenance for resorts, golf, sports, municipalities and large properties.", accent: "TURF" },
+      { key: "move", title: "Axiom Move", eyebrow: "WAREHOUSE + LOGISTICS", text: "AMRs for moving materials, carts, supplies and work in process across the operation.", accent: "MOVE" },
+      { key: "industrial", title: "Axiom Industrial", eyebrow: "COBOTS + AUTOMATION", text: "Palletizing, machine tending, pick-and-place, welding and repetitive manufacturing processes.", accent: "INDUSTRIAL" },
+      { key: "connect", title: "Axiom Connect", eyebrow: "TELEPRESENCE + HEALTHCARE", text: "Telepresence, guidance, internal delivery and remote connection for healthcare and specialized service.", accent: "CONNECT" },
+      { key: "future", title: "Future Robotics", eyebrow: "EMERGING PLATFORMS", text: "Humanoids, inspection, security and emerging technologies under controlled pilots and real use cases.", accent: "FUTURE" },
+    ],
+    prototypes: [
+      { name: "GreetingBot Nova", maker: "OrionStar", fit: "Reception + guidance", sector: "host", note: "Showrooms, retail, lobbies and multilingual guidance." },
+      { name: "Cruzr 1S", maker: "UBTECH", fit: "Premium customer experience", sector: "host", note: "Brand experiences, showrooms and smart demos." },
+      { name: "BellaBot Pro", maker: "PUDU", fit: "Service delivery", sector: "serve", note: "Restaurants, hospitality and internal delivery." },
+      { name: "Phantas", maker: "Gausium", fit: "Compact 4-in-1 cleaning", sector: "clean", note: "Mixed floors, healthcare, retail, offices and hotels." },
+      { name: "Scrubber 75", maker: "Gausium", fit: "Heavy-duty cleaning", sector: "clean", note: "Warehouses, parking, manufacturing and large floor areas." },
+      { name: "MiR250", maker: "MiR", fit: "Flexible AMR", sector: "move", note: "Material flow, WIP, bins, carts and line-side replenishment." },
+      { name: "PUDU T300", maker: "PUDU", fit: "Industrial delivery", sector: "move", note: "Internal transport, industrial logistics and continuous operation." },
+      { name: "Elite Robots CS", maker: "Elite Robots", fit: "Cobot automation", sector: "industrial", note: "Palletizing, machine tending, welding and packaging." },
+      { name: "temi V3", maker: "temi", fit: "Telepresence + apps", sector: "connect", note: "Healthcare, senior living, remote specialists and concierge." },
+      { name: "Kress RTKn", maker: "Kress", fit: "Autonomous turf care", sector: "turf", note: "Grounds maintenance for large properties and hospitality." },
+      { name: "FireFly AMP", maker: "FireFly", fit: "Large-scale mowing", sector: "turf", note: "Golf, sports, municipal and large grounds." },
+      { name: "Scythe M.52", maker: "Scythe", fit: "Commercial mowing", sector: "turf", note: "Landscaping contractors and commercial operations." },
+    ],
+    hero: {
+      kicker: "ROBOTICS INTEGRATION • PUERTO RICO",
+      titleA: "THE RIGHT ROBOT",
+      titleB: "FOR YOUR BUSINESS.",
+      text: "We analyze your operation, compare technologies and design the right robotics solution. We do not start with a catalog. We start with your problem.",
+      find: "Find your robot",
+      explore: "Explore solutions",
+      assess: "ASSESS",
+      compare: "COMPARE",
+      deploy: "DEPLOY",
+      footer: ["Brain thinks.", "Robotics executes.", "Your operation improves."],
+    },
+    solutions: {
+      kicker: "ONE INTEGRATOR • MULTIPLE TECHNOLOGIES",
+      titleA: "We do not sell a robot.",
+      titleB: "We design a solution.",
+      text: "Eight divisions covering real operations, from the front desk to the warehouse and outdoor grounds.",
+    },
+    method: {
+      kicker: "THE AXIOMAI METHOD",
+      titleA: "From operational problem",
+      titleB: "to measurable deployment.",
+      steps: [
+        ["01", "ASSESS", "We measure flow, space, tasks, load, traffic, infrastructure and constraints."],
+        ["02", "COMPARE", "We compare manufacturers, models, support, integration, cost and availability."],
+        ["03", "DESIGN", "We design the Robot Match, Brain integration, SOPs, pilot and KPIs."],
+        ["04", "DEPLOY", "We deploy, train, measure and scale only when the data supports it."],
+      ],
+    },
+    match: {
+      kicker: "ROBOT MATCH • PRELIMINARY ASSESSMENT",
+      titleA: "What robot does",
+      titleB: "your operation need?",
+      text: "Answer five questions. The result is an initial direction; final Robot Match requires a site assessment.",
+      labels: ["1. Industry / operation", "2. Main repetitive task", "3. Environment", "4. Scale", "5. Priority"],
+      select: "Select",
+      sectors: [["serve","Restaurant / Hospitality"],["host","Retail / Showroom"],["connect","Healthcare / Senior Living"],["move","Warehouse / Logistics"],["industrial","Manufacturing / Industrial"],["clean","Commercial Cleaning"],["turf","Grounds / Turf"]],
+      tasks: [["host","Receive / guide customers"],["serve","Delivery / move items"],["clean","Floor cleaning"],["move","Move materials / carts"],["industrial","Palletizing / machine tending"],["connect","Telepresence / remote service"],["turf","Mowing / grounds maintenance"]],
+      environments: [["public","Public / customers present"],["back","Back of house"],["industrial","Warehouse / industrial"],["health","Healthcare"],["outdoor","Outdoor / grounds"]],
+      scales: [["small","Small / one zone"],["medium","Medium / multiple zones"],["large","Large / campus or facility"],["multi","Multi-site / chain"]],
+      priorities: [["experience","Customer experience"],["labor","Reduce repetitive work"],["capacity","Increase coverage / capacity"],["safety","Safety / consistency"],["data","Integration / data / reporting"]],
+      button: "Generate preliminary recommendation",
+      placeholderTag: "BRAIN + ROBOT MATCH",
+      placeholderTitle: "Your operation comes first.",
+      placeholderText: "Select the industry and task. Then we compare the technology around the use case.",
+      resultTag: "PRELIMINARY MATCH",
+      customTitle: "Custom Robot Match",
+      customSub: "Multi-manufacturer comparison",
+      customText: "We will select platforms based on the technical and commercial assessment.",
+      note: "Directional result. We validate dimensions, routes, payload, network, safety, support, warranty and pricing before recommending a platform to the client.",
+    },
+    brain: {
+      kicker: "THE INTELLIGENCE LAYER",
+      titleA: "Brain thinks.",
+      titleB: "Robotics executes.",
+      text: "Brain can connect physical interaction with tasks, leads, alerts, follow-up, CRM, WhatsApp and reporting. The robot stops being an isolated demo and becomes part of the operation.",
+      points: ["Task orchestration", "Lead & intent capture", "Alerts & human handoff", "KPI & operational reporting"],
+    },
+    prototypesSection: {
+      kicker: "MULTI-MANUFACTURER APPROACH",
+      titleA: "The right platform",
+      titleB: "for every mission.",
+      text: "These are examples of technologies evaluated within our Robot Match. Availability and commercial relationship are confirmed before a final proposal.",
+    },
+    cta: {
+      kicker: "START WITH THE OPERATION",
+      titleA: "Before buying a robot,",
+      titleB: "discover which one you need.",
+      text: "Initial assessment for companies in Puerto Rico. We analyze the use case, compare technologies and design a measurable pilot.",
+      evaluation: "Request assessment",
+    },
+    footerSub: "AxiomAI Robotics • Puerto Rico",
+    languageButton: "ES",
+    languageLabel: "Cambiar a español",
+  },
+};
+
 function recommendedKey(match: Match) {
-  const blob = `${match.sector} ${match.task} ${match.environment} ${match.priority}`.toLowerCase();
-  if (blob.includes("clean") || blob.includes("limpieza") || blob.includes("piso")) return "clean";
-  if (blob.includes("turf") || blob.includes("terreno") || blob.includes("grama") || blob.includes("mowing")) return "turf";
-  if (blob.includes("warehouse") || blob.includes("logística") || blob.includes("material") || blob.includes("almacén")) return "move";
-  if (blob.includes("manufact") || blob.includes("pallet") || blob.includes("machine") || blob.includes("industrial")) return "industrial";
-  if (blob.includes("health") || blob.includes("telepres") || blob.includes("hospital") || blob.includes("clínica")) return "connect";
-  if (blob.includes("rest") || blob.includes("hotel") || blob.includes("delivery") || blob.includes("mesas")) return "serve";
+  if (match.task) return match.task;
+  if (match.sector) return match.sector;
   return "host";
 }
 
 export default function RoboticsExperience() {
+  const { language, toggleLanguage } = useRoboticsLanguage();
+  const copy = content[language];
   const [match, setMatch] = useState<Match>(initialMatch);
   const [showResult, setShowResult] = useState(false);
   const resultKey = useMemo(() => recommendedKey(match), [match]);
-  const result = sectors.find((s) => s.key === resultKey) ?? sectors[1];
-  const resultBots = prototypes.filter((p) => p.sector === resultKey).slice(0, 3);
+  const result = copy.sectors.find((s) => s.key === resultKey) ?? copy.sectors[1];
+  const resultBots = copy.prototypes.filter((p) => p.sector === resultKey).slice(0, 3);
 
   function setField(field: keyof Match, value: string) {
     setMatch((current) => ({ ...current, [field]: value }));
     setShowResult(false);
   }
+
+  const optionList = (items: string[][]) => items.map(([value, label]) => <option key={value} value={value}>{label}</option>);
 
   return (
     <main className="robotics-page">
@@ -69,11 +248,14 @@ export default function RoboticsExperience() {
           <span>AxiomAI Robotics</span>
         </a>
         <div className="robotics-nav-links">
-          <a href="#solutions">Soluciones</a>
-          <a href="#match">Robot Match</a>
-          <a href="#brain">Brain</a>
-          <a href="#contact">Contacto</a>
+          <a href="#solutions">{copy.nav.solutions}</a>
+          <a href="#match">{copy.nav.match}</a>
+          <a href="#brain">{copy.nav.brain}</a>
+          <a href="#contact">{copy.nav.contact}</a>
         </div>
+        <button className="robotics-lang-toggle" type="button" onClick={toggleLanguage} aria-label={copy.languageLabel} title={copy.languageLabel}>
+          {copy.languageButton}
+        </button>
       </nav>
 
       <section className="robotics-hero">
@@ -81,14 +263,12 @@ export default function RoboticsExperience() {
         <div className="robotics-orb robotics-orb-two" />
         <div className="robotics-grid-glow" />
         <div className="robotics-hero-copy">
-          <span className="robotics-kicker">ROBOTICS INTEGRATION • PUERTO RICO</span>
-          <h1>THE RIGHT ROBOT<br /><span>FOR YOUR BUSINESS.</span></h1>
-          <p>
-            Analizamos tu operación, comparamos tecnologías y diseñamos la solución robótica correcta. No comenzamos con un catálogo. Comenzamos con tu problema.
-          </p>
+          <span className="robotics-kicker">{copy.hero.kicker}</span>
+          <h1>{copy.hero.titleA}<br /><span>{copy.hero.titleB}</span></h1>
+          <p>{copy.hero.text}</p>
           <div className="robotics-actions">
-            <a className="robotics-btn robotics-btn-primary" href="#match">Encuentra tu robot</a>
-            <a className="robotics-btn robotics-btn-secondary" href="#solutions">Explorar soluciones</a>
+            <a className="robotics-btn robotics-btn-primary" href="#match">{copy.hero.find}</a>
+            <a className="robotics-btn robotics-btn-secondary" href="#solutions">{copy.hero.explore}</a>
           </div>
         </div>
         <div className="robotics-hero-visual" aria-hidden="true">
@@ -96,25 +276,23 @@ export default function RoboticsExperience() {
           <div className="robotics-core-ring ring-b" />
           <div className="robotics-core-ring ring-c" />
           <img src="/axiomos-brain-neon.png" alt="" />
-          <div className="robotics-signal signal-one">ASSESS</div>
-          <div className="robotics-signal signal-two">MATCH</div>
-          <div className="robotics-signal signal-three">DEPLOY</div>
+          <div className="robotics-signal signal-one">{copy.hero.assess}</div>
+          <div className="robotics-signal signal-two">{copy.hero.compare}</div>
+          <div className="robotics-signal signal-three">{copy.hero.deploy}</div>
         </div>
         <div className="robotics-hero-footer">
-          <span>Brain piensa.</span>
-          <span>La robótica ejecuta.</span>
-          <span>Tu operación mejora.</span>
+          {copy.hero.footer.map((item) => <span key={item}>{item}</span>)}
         </div>
       </section>
 
       <section id="solutions" className="robotics-section robotics-solutions">
         <div className="robotics-section-heading">
-          <span className="robotics-kicker">ONE INTEGRATOR • MULTIPLE TECHNOLOGIES</span>
-          <h2>No vendemos un robot.<br /><span>Diseñamos una solución.</span></h2>
-          <p>Ocho divisiones para cubrir operaciones reales, desde el front desk hasta el warehouse y el terreno exterior.</p>
+          <span className="robotics-kicker">{copy.solutions.kicker}</span>
+          <h2>{copy.solutions.titleA}<br /><span>{copy.solutions.titleB}</span></h2>
+          <p>{copy.solutions.text}</p>
         </div>
         <div className="robotics-sector-grid">
-          {sectors.map((sector, index) => (
+          {copy.sectors.map((sector, index) => (
             <article className="robotics-sector-card" key={sector.key}>
               <div className="robotics-sector-number">0{index + 1}</div>
               <div className="robotics-sector-accent">{sector.accent}</div>
@@ -128,16 +306,11 @@ export default function RoboticsExperience() {
 
       <section className="robotics-section robotics-method">
         <div className="robotics-section-heading robotics-heading-left">
-          <span className="robotics-kicker">THE AXIOMAI METHOD</span>
-          <h2>Del problema operativo<br /><span>a una implementación medible.</span></h2>
+          <span className="robotics-kicker">{copy.method.kicker}</span>
+          <h2>{copy.method.titleA}<br /><span>{copy.method.titleB}</span></h2>
         </div>
         <div className="robotics-method-line">
-          {[
-            ["01", "ASSESS", "Medimos flujo, espacio, tareas, carga, tráfico, infraestructura y restricciones."],
-            ["02", "COMPARE", "Comparamos fabricantes, modelos, soporte, integración, costo y disponibilidad."],
-            ["03", "DESIGN", "Diseñamos Robot Match, integración con Brain, SOPs, pilot y KPIs."],
-            ["04", "DEPLOY", "Implementamos, entrenamos, medimos y escalamos solo si los datos lo justifican."],
-          ].map(([n, title, text]) => (
+          {copy.method.steps.map(([n, title, text]) => (
             <div className="robotics-method-step" key={n}>
               <span>{n}</span><h3>{title}</h3><p>{text}</p>
             </div>
@@ -147,104 +320,42 @@ export default function RoboticsExperience() {
 
       <section id="match" className="robotics-section robotics-match">
         <div className="robotics-section-heading">
-          <span className="robotics-kicker">ROBOT MATCH • PRELIMINARY ASSESSMENT</span>
-          <h2>¿Qué robot necesita<br /><span>tu operación?</span></h2>
-          <p>Responde cinco preguntas. El resultado es una orientación inicial; el Robot Match final requiere assessment del sitio.</p>
+          <span className="robotics-kicker">{copy.match.kicker}</span>
+          <h2>{copy.match.titleA}<br /><span>{copy.match.titleB}</span></h2>
+          <p>{copy.match.text}</p>
         </div>
 
         <div className="robotics-match-shell">
           <div className="robotics-match-form">
-            <label>
-              <span>1. Industria / operación</span>
-              <select value={match.sector} onChange={(e) => setField("sector", e.target.value)}>
-                <option value="">Selecciona</option>
-                <option>Restaurante / Hospitality</option>
-                <option>Retail / Showroom</option>
-                <option>Healthcare / Senior Living</option>
-                <option>Warehouse / Logistics</option>
-                <option>Manufacturing / Industrial</option>
-                <option>Commercial Cleaning</option>
-                <option>Grounds / Turf</option>
-              </select>
-            </label>
-            <label>
-              <span>2. Tarea repetitiva principal</span>
-              <select value={match.task} onChange={(e) => setField("task", e.target.value)}>
-                <option value="">Selecciona</option>
-                <option>Recibir / orientar clientes</option>
-                <option>Delivery / mover artículos</option>
-                <option>Limpieza de pisos</option>
-                <option>Mover materiales / carts</option>
-                <option>Palletizing / machine tending</option>
-                <option>Telepresencia / atención remota</option>
-                <option>Cortar grama / mantener terreno</option>
-              </select>
-            </label>
-            <label>
-              <span>3. Ambiente</span>
-              <select value={match.environment} onChange={(e) => setField("environment", e.target.value)}>
-                <option value="">Selecciona</option>
-                <option>Público / clientes presentes</option>
-                <option>Back of house</option>
-                <option>Warehouse / industrial</option>
-                <option>Healthcare</option>
-                <option>Exterior / terreno</option>
-              </select>
-            </label>
-            <label>
-              <span>4. Escala</span>
-              <select value={match.scale} onChange={(e) => setField("scale", e.target.value)}>
-                <option value="">Selecciona</option>
-                <option>Pequeña / una zona</option>
-                <option>Mediana / múltiples zonas</option>
-                <option>Grande / campus o facility</option>
-                <option>Multi-site / cadena</option>
-              </select>
-            </label>
-            <label>
-              <span>5. Prioridad</span>
-              <select value={match.priority} onChange={(e) => setField("priority", e.target.value)}>
-                <option value="">Selecciona</option>
-                <option>Experiencia del cliente</option>
-                <option>Reducir trabajo repetitivo</option>
-                <option>Aumentar cobertura / capacidad</option>
-                <option>Seguridad / consistencia</option>
-                <option>Integración / datos / reporting</option>
-              </select>
-            </label>
-            <button className="robotics-btn robotics-btn-primary robotics-match-button" onClick={() => setShowResult(true)} disabled={!match.sector || !match.task}>
-              Generar recomendación preliminar
-            </button>
+            <label><span>{copy.match.labels[0]}</span><select value={match.sector} onChange={(e) => setField("sector", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.sectors)}</select></label>
+            <label><span>{copy.match.labels[1]}</span><select value={match.task} onChange={(e) => setField("task", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.tasks)}</select></label>
+            <label><span>{copy.match.labels[2]}</span><select value={match.environment} onChange={(e) => setField("environment", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.environments)}</select></label>
+            <label><span>{copy.match.labels[3]}</span><select value={match.scale} onChange={(e) => setField("scale", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.scales)}</select></label>
+            <label><span>{copy.match.labels[4]}</span><select value={match.priority} onChange={(e) => setField("priority", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.priorities)}</select></label>
+            <button className="robotics-btn robotics-btn-primary robotics-match-button" onClick={() => setShowResult(true)} disabled={!match.sector || !match.task}>{copy.match.button}</button>
           </div>
 
           <div className={`robotics-match-result ${showResult ? "is-visible" : ""}`}>
             {!showResult ? (
               <div className="robotics-placeholder">
                 <img src="/axiomos-brain-neon.png" alt="Brain" />
-                <span>BRAIN + ROBOT MATCH</span>
-                <h3>Tu operación primero.</h3>
-                <p>Selecciona la industria y la tarea. Luego comparamos la tecnología alrededor del caso de uso.</p>
+                <span>{copy.match.placeholderTag}</span>
+                <h3>{copy.match.placeholderTitle}</h3>
+                <p>{copy.match.placeholderText}</p>
               </div>
             ) : (
               <div>
-                <span className="robotics-result-tag">PRELIMINARY MATCH</span>
+                <span className="robotics-result-tag">{copy.match.resultTag}</span>
                 <h3>{result.title}</h3>
                 <p>{result.text}</p>
                 <div className="robotics-result-bots">
                   {resultBots.length ? resultBots.map((bot) => (
-                    <div key={bot.name}>
-                      <small>{bot.maker}</small>
-                      <strong>{bot.name}</strong>
-                      <span>{bot.fit}</span>
-                      <p>{bot.note}</p>
-                    </div>
+                    <div key={bot.name}><small>{bot.maker}</small><strong>{bot.name}</strong><span>{bot.fit}</span><p>{bot.note}</p></div>
                   )) : (
-                    <div>
-                      <small>AXIOMAI</small><strong>Custom Robot Match</strong><span>Multi-manufacturer comparison</span><p>Seleccionaremos plataformas según el assessment técnico y comercial.</p>
-                    </div>
+                    <div><small>AXIOMAI</small><strong>{copy.match.customTitle}</strong><span>{copy.match.customSub}</span><p>{copy.match.customText}</p></div>
                   )}
                 </div>
-                <p className="robotics-result-note">Resultado orientativo. Validamos dimensiones, rutas, payload, red, safety, soporte, warranty y pricing antes de recomendar una plataforma al cliente.</p>
+                <p className="robotics-result-note">{copy.match.note}</p>
               </div>
             )}
           </div>
@@ -252,49 +363,32 @@ export default function RoboticsExperience() {
       </section>
 
       <section id="brain" className="robotics-section robotics-brain">
-        <div className="robotics-brain-visual">
-          <div className="robotics-brain-halo" />
-          <img src="/axiomos-brain-neon.png" alt="AxiomAI Brain" />
-        </div>
+        <div className="robotics-brain-visual"><div className="robotics-brain-halo" /><img src="/axiomos-brain-neon.png" alt="AxiomAI Brain" /></div>
         <div className="robotics-brain-copy">
-          <span className="robotics-kicker">THE INTELLIGENCE LAYER</span>
-          <h2>Brain piensa.<br /><span>La robótica ejecuta.</span></h2>
-          <p>Brain puede conectar la interacción física con tareas, prospectos, alertas, seguimiento, CRM, WhatsApp y reporting. El robot deja de ser una demostración aislada y se convierte en parte de la operación.</p>
+          <span className="robotics-kicker">{copy.brain.kicker}</span>
+          <h2>{copy.brain.titleA}<br /><span>{copy.brain.titleB}</span></h2>
+          <p>{copy.brain.text}</p>
           <div className="robotics-brain-points">
-            <div><strong>01</strong><span>Task orchestration</span></div>
-            <div><strong>02</strong><span>Lead & intent capture</span></div>
-            <div><strong>03</strong><span>Alerts & human handoff</span></div>
-            <div><strong>04</strong><span>KPI & operational reporting</span></div>
+            {copy.brain.points.map((point, index) => <div key={point}><strong>0{index + 1}</strong><span>{point}</span></div>)}
           </div>
         </div>
       </section>
 
       <section className="robotics-section robotics-prototypes">
         <div className="robotics-section-heading robotics-heading-left">
-          <span className="robotics-kicker">MULTI-MANUFACTURER APPROACH</span>
-          <h2>La plataforma correcta<br /><span>para cada misión.</span></h2>
-          <p>Estos son ejemplos de tecnologías evaluadas dentro de nuestro Robot Match. La disponibilidad y relación comercial se confirma antes de una propuesta final.</p>
+          <span className="robotics-kicker">{copy.prototypesSection.kicker}</span>
+          <h2>{copy.prototypesSection.titleA}<br /><span>{copy.prototypesSection.titleB}</span></h2>
+          <p>{copy.prototypesSection.text}</p>
         </div>
         <div className="robotics-prototype-strip">
-          {prototypes.slice(0, 8).map((bot) => (
-            <article key={bot.name}>
-              <span>{bot.maker}</span>
-              <h3>{bot.name}</h3>
-              <strong>{bot.fit}</strong>
-              <p>{bot.note}</p>
-            </article>
-          ))}
+          {copy.prototypes.slice(0, 8).map((bot) => <article key={bot.name}><span>{bot.maker}</span><h3>{bot.name}</h3><strong>{bot.fit}</strong><p>{bot.note}</p></article>)}
         </div>
       </section>
 
       <section id="contact" className="robotics-cta">
-        <div>
-          <span className="robotics-kicker">START WITH THE OPERATION</span>
-          <h2>Antes de comprar un robot,<br /><span>descubre cuál necesitas.</span></h2>
-          <p>Evaluación inicial para empresas en Puerto Rico. Analizamos el caso de uso, comparamos tecnologías y diseñamos un pilot medible.</p>
-        </div>
+        <div><span className="robotics-kicker">{copy.cta.kicker}</span><h2>{copy.cta.titleA}<br /><span>{copy.cta.titleB}</span></h2><p>{copy.cta.text}</p></div>
         <div className="robotics-cta-actions">
-          <a className="robotics-btn robotics-btn-primary" href="/solicitud">Solicitar evaluación</a>
+          <a className="robotics-btn robotics-btn-primary" href="/solicitud">{copy.cta.evaluation}</a>
           <a className="robotics-btn robotics-btn-secondary" href="https://wa.me/17874503679">WhatsApp</a>
           <a className="robotics-email" href="mailto:contacto@axiomaisolutions.org">contacto@axiomaisolutions.org</a>
         </div>
@@ -302,7 +396,7 @@ export default function RoboticsExperience() {
 
       <footer className="robotics-footer">
         <img src="/logo.png" alt="AxiomAI Solutions" />
-        <div><strong>AxiomAI Solutions LLC</strong><span>AxiomAI Robotics • Puerto Rico</span></div>
+        <div><strong>AxiomAI Solutions LLC</strong><span>{copy.footerSub}</span></div>
         <div className="robotics-footer-right"><span>1 (787) 450-3679</span><span>axiomaisolutions.org</span></div>
       </footer>
     </main>
