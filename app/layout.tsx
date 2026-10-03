@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./home-cinematic.css";
+import "./home-cinematic-v2.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,10 +36,27 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         {children}
-        <a className="axiom-robotics-entry" href="/robotics" aria-label="Explorar AxiomAI Robotics">
-          <span className="axiom-robotics-entry-dot" />
-          <span><strong>NUEVO</strong> AxiomAI Robotics</span>
-          <b>→</b>
+
+        <a
+          className="axiom-robotics-portal"
+          href="/robotics"
+          aria-label="Explorar AxiomAI Robotics"
+          title="Explorar AxiomAI Robotics"
+        >
+          <span className="axiom-robot-avatar" aria-hidden="true">
+            <span className="axiom-robot-antenna"><i /></span>
+            <span className="axiom-robot-face">
+              <i className="axiom-robot-eye axiom-robot-eye-left" />
+              <i className="axiom-robot-eye axiom-robot-eye-right" />
+              <i className="axiom-robot-mouth" />
+            </span>
+            <span className="axiom-robot-neck" />
+          </span>
+          <span className="axiom-robotics-copy">
+            <small>NUEVO</small>
+            <strong>AxiomAI Robotics</strong>
+            <em>Explorar robots →</em>
+          </span>
         </a>
       </body>
     </html>
