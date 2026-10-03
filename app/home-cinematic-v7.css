@@ -1,0 +1,90 @@
+/* AxiomAI Solutions — phase 7: brighter cinematic homepage */
+
+/* Make the persistent motion background visibly present without washing out the UI. */
+.axiom-home-bg-video-primary{
+  opacity:.46!important;
+  filter:saturate(1.02) contrast(1.06) brightness(.88) blur(.45px)!important;
+}
+
+.axiom-home-bg-video-secondary{
+  opacity:.16!important;
+  filter:saturate(1.20) hue-rotate(5deg) contrast(1.05) brightness(.82) blur(2.6px)!important;
+}
+
+.axiom-home-video-vignette{
+  background:
+    radial-gradient(circle at 78% 14%,rgba(0,196,255,.16),transparent 27%),
+    radial-gradient(circle at 14% 46%,rgba(70,84,255,.09),transparent 29%),
+    linear-gradient(90deg,rgba(1,5,12,.46) 0%,rgba(2,9,17,.28) 36%,rgba(2,8,16,.18) 60%,rgba(1,5,11,.42) 100%),
+    linear-gradient(180deg,rgba(1,4,10,.30),rgba(1,6,13,.40) 54%,rgba(1,3,8,.56))!important;
+}
+
+.axiom-home-video-vignette::after{
+  box-shadow:inset 0 0 150px rgba(0,0,0,.44),inset 0 -150px 190px rgba(0,0,0,.30)!important;
+}
+
+.axiom-home-video-aurora{opacity:.66!important}
+.axiom-home-video-grid{opacity:.26!important}
+.axiom-home-video-scan{opacity:.07!important}
+
+/* Lift the homepage surfaces from near-black to translucent deep blue glass. */
+.axiom-site .axiom-v6-copy{
+  background:linear-gradient(145deg,rgba(5,26,43,.60),rgba(2,12,23,.34))!important;
+  border-color:rgba(96,220,255,.24)!important;
+  box-shadow:0 34px 100px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+
+.axiom-site .bento .card,
+.axiom-site .experience,
+.axiom-site .brain-spotlight,
+.axiom-site .cta-band,
+.axiom-site .form-card,
+.axiom-site .signal-strip{
+  background:
+    radial-gradient(circle at 88% 8%,rgba(75,208,255,.08),transparent 28%),
+    linear-gradient(155deg,rgba(7,31,50,.78),rgba(2,13,25,.68))!important;
+  border-color:rgba(86,210,255,.18)!important;
+}
+
+.axiom-site .experience-node,
+.axiom-site .process-item,
+.axiom-site .contact-line{
+  background:rgba(4,24,39,.66)!important;
+  border-color:rgba(85,220,255,.15)!important;
+}
+
+/* Reduce the large dark masks between sections so the video remains visible. */
+.axiom-site .section::after{
+  opacity:.42!important;
+  background:radial-gradient(ellipse at center,rgba(1,9,18,.16),rgba(1,8,17,.04) 58%,transparent 80%)!important;
+}
+
+.axiom-site .ambient-layer{opacity:.38!important}
+
+/* Slightly brighter cyan hierarchy so the page feels luminous rather than black. */
+.axiom-site .section-kicker,
+.axiom-site .eyebrow{color:#79e9ff!important}
+.axiom-site .section h2{color:#f6fbff!important}
+.axiom-site p{color:#c8dbe7}
+
+/* Hero should feel like a lit command center rather than a black card. */
+.axiom-site .axiom-v6-hero{
+  background:linear-gradient(180deg,rgba(0,11,21,.10),rgba(0,8,17,.04))!important;
+}
+.axiom-site .axiom-v6-video-stage{
+  background:rgba(2,14,26,.52)!important;
+  border-color:rgba(100,224,255,.54)!important;
+  box-shadow:0 44px 120px rgba(0,0,0,.34),0 0 95px rgba(0,174,239,.23),inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+
+/* Mobile: still brighter, but preserve battery/data/readability. */
+@media(max-width:900px){
+  .axiom-home-bg-video-primary{
+    opacity:.34!important;
+    filter:saturate(.98) contrast(1.03) brightness(.72) blur(1px)!important;
+  }
+  .axiom-home-bg-video-secondary{opacity:.08!important}
+  .axiom-home-video-vignette{
+    background:linear-gradient(180deg,rgba(1,5,11,.44),rgba(1,7,14,.52) 55%,rgba(1,3,8,.66))!important;
+  }
+}
