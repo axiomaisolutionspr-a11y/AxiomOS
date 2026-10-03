@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./home-cinematic.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,14 +30,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}
-        <a className="axiom-robotics-entry" href="/robotics" aria-label="Explore AxiomAI Robotics">
+        <a className="axiom-robotics-entry" href="/robotics" aria-label="Explorar AxiomAI Robotics">
           <span className="axiom-robotics-entry-dot" />
-          <span><strong>NEW</strong> AxiomAI Robotics</span>
+          <span><strong>NUEVO</strong> AxiomAI Robotics</span>
           <b>→</b>
         </a>
       </body>
