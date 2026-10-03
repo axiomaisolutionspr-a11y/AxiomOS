@@ -1,0 +1,105 @@
+/* AxiomAI Solutions — phase 8: compact integrated hero logo */
+
+/*
+   The embedded hero logo contains a black rectangular background. Screen blending
+   lets the dark pixels visually disappear into the cinematic backdrop, while the
+   white/cyan artwork stays bright. The logo is also reduced so it supports the
+   message instead of dominating the hero.
+*/
+.axiom-site .axiom-v6-copy .axiom-v6-brand{
+  position:relative!important;
+  left:auto!important;
+  top:auto!important;
+  width:min(100%, 330px)!important;
+  height:205px!important;
+  min-height:0!important;
+  margin:0 0 28px 10px!important;
+  padding:0!important;
+  transform:none!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-v6-brand > div{
+  display:none!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-v6-brand > img{
+  position:relative!important;
+  left:auto!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  display:block!important;
+  width:300px!important;
+  max-width:100%!important;
+  height:auto!important;
+  max-height:205px!important;
+  flex:0 1 auto!important;
+  margin:0!important;
+  transform:none!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  mix-blend-mode:screen!important;
+  opacity:.96!important;
+  filter:brightness(1.08) contrast(1.08) saturate(1.08)
+    drop-shadow(0 0 16px rgba(85,220,255,.24))
+    drop-shadow(0 12px 34px rgba(0,0,0,.16))!important;
+}
+
+/* Keep the headline visually connected to the smaller brand mark. */
+.axiom-site .axiom-v6-copy .axiom-hero-punch-title-v3,
+.axiom-site .axiom-v6-copy .axiom-v6-title{
+  margin-top:0!important;
+}
+
+@media (min-width:1051px){
+  .axiom-site .axiom-v6-copy .axiom-v6-brand{
+    width:310px!important;
+    height:200px!important;
+    margin:0 0 26px 10px!important;
+    transform:none!important;
+  }
+  .axiom-site .axiom-v6-copy .axiom-v6-brand > img{
+    width:295px!important;
+    max-height:200px!important;
+  }
+}
+
+@media (min-width:681px) and (max-width:1050px){
+  .axiom-site .axiom-v6-copy .axiom-v6-brand{
+    width:285px!important;
+    height:185px!important;
+    margin:0 auto 24px!important;
+    transform:none!important;
+  }
+  .axiom-site .axiom-v6-copy .axiom-v6-brand > img{
+    width:270px!important;
+    max-height:185px!important;
+    margin:0 auto!important;
+    object-position:center center!important;
+  }
+}
+
+@media (max-width:680px){
+  .axiom-site .axiom-v6-copy .axiom-v6-brand{
+    width:230px!important;
+    height:150px!important;
+    margin:0 auto 20px!important;
+    transform:none!important;
+    justify-content:center!important;
+  }
+  .axiom-site .axiom-v6-copy .axiom-v6-brand > img{
+    width:220px!important;
+    max-height:150px!important;
+    margin:0 auto!important;
+    object-position:center center!important;
+    filter:brightness(1.08) contrast(1.06) saturate(1.06)
+      drop-shadow(0 0 12px rgba(85,220,255,.20))!important;
+  }
+}
