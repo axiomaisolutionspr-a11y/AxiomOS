@@ -35,7 +35,7 @@ export default function HomeBackgroundVideo() {
         preload="metadata"
         poster="/images/axiomai-presenter.png"
       >
-        <source src="/videos/axiomai-robotics-showcase.mp4" type="video/mp4" />
+        <source src="/videos/axiomai-robotics-showcase-bg.mp4" type="video/mp4" />
         <source src="/videos/axiomai-avatar.mp4" type="video/mp4" />
       </video>
 
@@ -48,7 +48,7 @@ export default function HomeBackgroundVideo() {
         playsInline
         preload="metadata"
       >
-        <source src="/videos/axiomai-robotics-showcase.mp4" type="video/mp4" />
+        <source src="/videos/axiomai-robotics-showcase-bg.mp4" type="video/mp4" />
         <source src="/videos/axiomai-avatar.mp4" type="video/mp4" />
       </video>
 
