@@ -1,6 +1,7 @@
 import "./robotics.css";
 import "./cinematic.css";
 import "./scenes.css";
+import "./language.css";
 import CinematicShowcase from "./cinematic-showcase";
 import { RoboticsLanguageProvider } from "./robotics-language";
 
