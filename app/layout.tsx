@@ -6,6 +6,7 @@ import "./home-cinematic-v2.css";
 import "./home-cinematic-v3.css";
 import "./home-cinematic-v4.css";
 import "./home-cinematic-v5.css";
+import "./home-cinematic-v6.css";
 import HomeBackgroundVideo from "./home-background-video";
 
 const geistSans = Geist({
