@@ -11,8 +11,10 @@ import "./home-cinematic-v7.css";
 import "./home-cinematic-v8.css";
 import "./home-cinematic-v9.css";
 import "./home-cinematic-v10.css";
+import "./robot-companion.css";
 import HomeBackgroundVideo from "./home-background-video";
 import SiteExperience from "./site-experience";
+import RobotCompanion from "./robot-companion";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <HomeBackgroundVideo />
         <SiteExperience />
+        <RobotCompanion />
         {children}
 
         <a

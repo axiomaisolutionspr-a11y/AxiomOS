@@ -5917,6 +5917,7 @@ export default function Home() {
               </div>
 
 
+              <div className="axiom-v6-stage-slot">
               <div className="axiom-v6-video-stage">
 
                 <video
@@ -5938,6 +5939,8 @@ export default function Home() {
                 </div>
 
               </div>
+              </div>
+              <div className="axiom-v6-robot-slot" aria-hidden="true" />
 
             </div>
 

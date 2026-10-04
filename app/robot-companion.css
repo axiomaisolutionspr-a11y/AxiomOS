@@ -1,0 +1,79 @@
+/* Keep the existing hero slots while centering the foreground video at the scene seam. */
+.axiom-site #inicio .axiom-v6-stage-slot{grid-column:2;min-width:0;width:100%}
+.axiom-site #inicio .axiom-v6-video-stage{transform:translateX(var(--axiom-frame-shift,0px))!important}
+.axiom-site #inicio .axiom-v6-robot-slot{display:none}
+.axiom-robotics-portal[data-placement="hero"]{
+  position:absolute!important;left:var(--robot-left)!important;top:var(--robot-top)!important;
+  right:auto!important;bottom:auto!important;width:var(--robot-width)!important;height:var(--robot-height)!important;
+  min-height:0!important;transform:none!important;box-sizing:border-box;z-index:20;padding:14px!important;
+}
+.axiom-robotics-portal[data-placement="hero"] .axiom-robot-avatar{
+  height:55%!important;max-height:174px;width:auto!important;aspect-ratio:96 / 104;flex-shrink:0;
+}
+.axiom-robotics-portal[data-placement="hero"] .axiom-robotics-copy strong{font-size:18px}
+.axiom-robotics-portal[data-placement="hero"] .axiom-robot-avatar::before{top:7.7%;width:96%;height:88.5%}
+.axiom-robotics-portal[data-placement="hero"] .axiom-robot-avatar::after{bottom:-2%;width:75%;height:27%}
+.axiom-robotics-portal[data-placement="hero"] .axiom-robot-neck{bottom:6.7%!important;width:31.2%!important;height:11.5%!important}
+
+/* Brain's pink and cyan glow, with a rounded dome and a friendly dark visor. */
+.axiom-robotics-portal .axiom-robot-face{
+  left:5.2%!important;right:5.2%!important;top:18.3%!important;height:59.6%!important;
+  clip-path:none!important;border-radius:46% 46% 38% 38%!important;
+  background:url('/axiomos-brain-neon.png') center 1% / 95% auto no-repeat,
+    radial-gradient(ellipse at 22% 25%,rgba(229,79,238,.26),transparent 60%),
+    linear-gradient(145deg,#143356,#051320 75%)!important;
+  border-color:rgba(135,235,255,.85)!important;
+  box-shadow:inset 0 0 14px rgba(99,222,255,.22),-5px 0 20px rgba(216,81,242,.2),5px 0 20px rgba(50,225,255,.25)!important;
+  transform:perspective(400px) translate(var(--robot-head-x,0px),var(--robot-head-y,0px)) rotateX(var(--robot-turn-x,0deg)) rotateY(var(--robot-turn-y,0deg));
+  transform-origin:50% 80%;transition:transform 120ms ease-out;
+}
+.axiom-robotics-portal .axiom-robot-face::before{
+  left:10%;right:10%;top:36%;height:41%;clip-path:none;border-radius:40%;
+  background:linear-gradient(180deg,#020917,#07182c);border:1px solid rgba(111,211,255,.42);
+  box-shadow:inset 0 0 10px #03070e,0 0 10px rgba(63,219,255,.16);
+}
+.axiom-robotics-portal .axiom-robot-face::after{display:none}
+.axiom-robotics-portal .axiom-robot-eye{
+  top:46%!important;width:18%!important;height:20%!important;border-radius:50%!important;
+  background:radial-gradient(circle at 40% 35%,#fff 0 8%,#a4f9ff 12%,#29ddff 45%,#167fdb 95%)!important;
+  box-shadow:0 0 9px #36dfff,0 0 20px rgba(42,218,255,.75)!important;animation:none!important;
+  transform:translate(var(--robot-eye-x,0px),var(--robot-eye-y,0px))!important;transition:transform 100ms ease-out;
+}
+.axiom-robotics-portal .axiom-robot-eye-left{
+  left:23%!important;background:radial-gradient(circle at 40% 35%,#fff 0 8%,#ffd5fc 12%,#f16ee3 45%,#964ce2 95%)!important;
+  box-shadow:0 0 9px #ef70ef,0 0 20px rgba(226,82,242,.7)!important;
+}
+.axiom-robotics-portal .axiom-robot-eye-right{right:23%!important}
+.axiom-robotics-portal .axiom-robot-eye::after{content:"";position:absolute;inset:29%;border-radius:50%;background:#071827;box-shadow:inset 1px 1px 0 rgba(255,255,255,.7)}
+.axiom-robotics-portal .axiom-robot-mouth{
+  bottom:10%!important;width:27%!important;height:10%!important;border-radius:0 0 50% 50%;
+  background:transparent!important;border-bottom:2px solid #9aefff;box-shadow:0 3px 7px rgba(48,222,255,.25);
+}
+.axiom-robotics-portal .axiom-robot-antenna{
+  top:-1%!important;height:19.2%!important;
+  transform:translateX(-50%) translate(var(--robot-head-x,0px),var(--robot-head-y,0px));transition:transform 120ms ease-out;
+}
+@media(min-width:1300px) and (max-width:1739px){
+  .axiom-site #inicio .axiom-v6-visual{width:416px!important;justify-self:end}
+  .axiom-site #inicio .axiom-v6-video-shell{grid-template-columns:200px 200px!important}
+  .axiom-site #inicio .axiom-v6-video-stage{width:260px!important}
+  .axiom-site #inicio .axiom-v6-copy{max-width:min(100%,calc((100vw - 420px) / 2 / 1.08))!important}
+}
+@media(max-width:1299px){
+  .axiom-site #inicio.axiom-v6-hero{grid-template-columns:1fr!important;min-height:0!important}
+  .axiom-site #inicio .axiom-v6-video-shell{max-width:580px!important;margin:0 auto!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .axiom-site #inicio .axiom-v6-stage-slot{grid-column:1 / -1;grid-row:2;width:min(100%,260px);justify-self:center}
+  .axiom-site #inicio .axiom-v6-cards{grid-column:1;grid-row:3;grid-template-columns:1fr!important}
+  .axiom-site #inicio .axiom-v6-robot-slot{display:block;grid-column:2;grid-row:3;align-self:stretch}
+}
+@media(max-width:560px){
+  .axiom-site #inicio .axiom-v6-card{flex-wrap:nowrap!important;padding:10px 8px!important;gap:6px!important}
+  .axiom-site #inicio .axiom-v6-card strong{font-size:11px!important}
+  .axiom-site #inicio .axiom-v6-card small{font-size:10px!important}
+  .axiom-site #inicio .axiom-v6-card b{width:25px!important;height:25px!important;flex-basis:25px!important}
+  .axiom-site #inicio .axiom-v6-card svg{width:18px;height:18px}
+  .axiom-robotics-portal[data-placement="hero"] .axiom-robotics-copy strong{font-size:14px}
+}
+@media(prefers-reduced-motion:reduce){
+  .axiom-robotics-portal .axiom-robot-face,.axiom-robotics-portal .axiom-robot-eye{transform:none!important;transition:none}
+}
