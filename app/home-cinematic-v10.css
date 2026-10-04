@@ -631,7 +631,7 @@
   background:url("/neon_brain_circuit_emblem.png") 50% 46% / 440% 440% no-repeat;
   filter:drop-shadow(0 0 3px rgba(85,220,255,.35));
 }
-.axiom-site .axiom-v6-card .axiom-brain-emblem{width:24px;height:24px}
+.axiom-site .axiom-v6-card .axiom-brain-emblem{width:25px;height:25px}
 .axiom-site .experience-node > span{color:#a9c2d1}
 
 /* Keep the existing enlargement while restoring definition in the left scene. */
