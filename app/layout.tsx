@@ -55,8 +55,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a
           className="axiom-robotics-portal"
           href="/robotics"
-          aria-label="Explorar AxiomAI Robotics"
-          title="Explorar AxiomAI Robotics"
+          aria-label="Explorar BrainBot de AxiomAI Robotics"
+          title="Explorar BrainBot de AxiomAI Robotics"
         >
           <span className="axiom-robot-avatar" aria-hidden="true">
             <span className="axiom-robot-antenna"><i /></span>
@@ -75,8 +75,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </span>
           <span className="axiom-robotics-copy">
             <small>NUEVO</small>
-            <strong>AxiomAI Robotics</strong>
-            <em>Explorar robots →</em>
+            <strong>BrainBot</strong>
+            <em>Explorar BrainBot →</em>
           </span>
         </a>
       </body>

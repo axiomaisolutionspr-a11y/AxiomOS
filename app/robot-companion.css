@@ -91,3 +91,10 @@
 @media(prefers-reduced-motion:reduce){
   .axiom-robotics-portal .axiom-robot-face,.axiom-robotics-portal .axiom-robot-eye{transform:none!important;transition:none}
 }
+
+
+/* Give BrainBot's forehead brain a slightly smaller, round, undistorted window. */
+.axiom-robotics-portal .axiom-robot-brain-window{
+  left:36.5%;top:5.5%;width:27%;height:27%;
+  border-radius:50%;background-size:88% 88%;background-position:center;
+}
