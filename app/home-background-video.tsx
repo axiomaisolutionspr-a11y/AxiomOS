@@ -9,18 +9,26 @@ export default function HomeBackgroundVideo() {
   return (
     <div className="axiom-home-video-bg" aria-hidden="true">
       <video
-        className="axiom-home-scene axiom-home-automation-scene"
+        className="axiom-home-bg-video axiom-home-bg-video-primary axiom-home-solutions-scene"
         autoPlay
         muted
         loop
         playsInline
         preload="metadata"
-        poster="/images/axiomai-automation-bg.jpg"
+        poster="/images/axiomai-presenter.png"
+        onLoadedMetadata={(event) => {
+          const video = event.currentTarget;
+          if (video.duration > 5) video.currentTime = 5;
+        }}
+        onTimeUpdate={(event) => {
+          const video = event.currentTarget;
+          if (video.duration > 5 && video.currentTime < 5) video.currentTime = 5;
+        }}
       >
-        <source src="/videos/axiomai-automation-bg.mp4" type="video/mp4" />
+        <source src="/videos/axiomai-avatar.mp4" type="video/mp4" />
       </video>
       <video
-        className="axiom-home-scene axiom-home-robotics-scene"
+        className="axiom-home-bg-video axiom-home-bg-video-secondary axiom-home-robotics-scene"
         autoPlay
         muted
         loop
