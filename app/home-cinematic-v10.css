@@ -370,10 +370,12 @@
 .axiom-site #inicio .axiom-v6-brand > div{display:none!important}
 .axiom-site #inicio .axiom-v6-brand > img{
   display:block!important;
-  width:180px!important;
+  width:200px!important;
   height:auto!important;
+  max-height:none!important;
   max-width:100%!important;
   object-fit:contain!important;
+  object-position:left top!important;
   transform:none!important;
 }
 .axiom-site #inicio .axiom-hero-punch-title-v3,
@@ -440,7 +442,7 @@
   .axiom-site #inicio .axiom-v6-video-shell{grid-template-columns:1fr!important}
   .axiom-site #inicio .axiom-v6-video-stage{width:min(100%,250px)!important;margin:0 auto!important}
   .axiom-site #inicio .axiom-v6-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  .axiom-site #inicio .axiom-v6-brand > img{width:155px!important}
+  .axiom-site #inicio .axiom-v6-brand > img{width:175px!important}
   .axiom-site #inicio .axiom-v6-card{flex-wrap:wrap!important}
   .axiom-site #inicio .axiom-hero-punch-title-v3 > span{font-size:clamp(30px,8.1vw,44px)!important}
 }
