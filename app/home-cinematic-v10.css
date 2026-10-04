@@ -515,3 +515,41 @@
   .axiom-site #inicio .axiom-v6-video-stage{order:1}
   .axiom-site #inicio .axiom-v6-cards{order:2}
 }
+
+/* Two complementary scenes with a continuous veil, never a box behind the copy. */
+.axiom-home-video-bg > video.axiom-home-scene{
+  inset:0!important;
+  width:50vw!important;
+  height:100vh!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  opacity:1!important;
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+  mix-blend-mode:normal!important;
+  background:transparent!important;
+}
+.axiom-home-video-bg > video.axiom-home-robotics-scene{
+  left:50vw!important;
+}
+.axiom-home-video-bg .axiom-home-video-vignette{
+  background:linear-gradient(90deg,rgba(1,6,13,.26),rgba(1,6,13,.20) 44%,rgba(1,6,13,.30) 50%,rgba(1,6,13,.18) 58%,rgba(1,6,13,.16))!important;
+}
+.axiom-site #inicio.axiom-v6-hero,
+.axiom-site #inicio .axiom-v6-copy{
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.axiom-site #inicio.axiom-v6-hero::before,
+.axiom-site #inicio.axiom-v6-hero::after{
+  display:none!important;
+}
+.axiom-site #inicio .axiom-v6-lead{
+  text-shadow:0 1px 5px rgba(0,0,0,.85);
+}
+.axiom-home-video-bg > video.axiom-home-automation-scene{
+  opacity:.5!important;
+}
