@@ -38,6 +38,8 @@ export default function HomeBackgroundVideo() {
       >
         <source src="/videos/axiomai-robotics-showcase-bg.mp4" type="video/mp4" />
       </video>
+      <div className="axiom-home-video-edge axiom-home-video-edge-left" />
+      <div className="axiom-home-video-edge axiom-home-video-edge-right" />
       <div className="axiom-home-video-vignette" />
     </div>
   );

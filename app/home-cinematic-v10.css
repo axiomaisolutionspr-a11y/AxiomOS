@@ -554,3 +554,41 @@
 .axiom-site #inicio .axiom-v6-lead{
   text-shadow:0 1px 5px rgba(0,0,0,.85);
 }
+
+/* Widen only the desktop hero, keeping each foreground group's proportions. */
+@media(min-width:1440px){
+  .axiom-site #inicio.axiom-v6-hero{
+    --axiom-hero-width:min(1600px,calc((100vw - 112px) / 1.08));
+    width:var(--axiom-hero-width)!important;
+    margin-left:calc((100% - var(--axiom-hero-width)) / 2)!important;
+    margin-right:0!important;
+    grid-template-columns:minmax(0,590px) minmax(0,536px)!important;
+    justify-content:space-between!important;
+  }
+}
+
+/* Trim the sharp outer edges with a live, softly shaded reflection of the footage. */
+.axiom-home-video-bg .axiom-home-video-edge{
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:clamp(72px,12vw,240px);
+  z-index:2;
+  pointer-events:none;
+  background:rgba(1,7,15,.36);
+  backdrop-filter:blur(30px) saturate(.9);
+  -webkit-backdrop-filter:blur(30px) saturate(.9);
+}
+.axiom-home-video-bg .axiom-home-video-edge-left{
+  left:0;
+  mask-image:linear-gradient(90deg,#000 0%,#000 42%,transparent 100%);
+  -webkit-mask-image:linear-gradient(90deg,#000 0%,#000 42%,transparent 100%);
+}
+.axiom-home-video-bg .axiom-home-video-edge-right{
+  right:0;
+  mask-image:linear-gradient(270deg,#000 0%,#000 42%,transparent 100%);
+  -webkit-mask-image:linear-gradient(270deg,#000 0%,#000 42%,transparent 100%);
+}
+@media(max-width:1050px){
+  .axiom-home-video-bg .axiom-home-video-edge{width:48px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+}
