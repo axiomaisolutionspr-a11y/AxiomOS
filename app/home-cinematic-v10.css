@@ -628,8 +628,13 @@
 }
 .axiom-brain-emblem{
   display:block!important;width:25px;height:25px;flex:none;margin:0!important;
-  background:url("/neon_brain_circuit_emblem.png") 50.1% 44.3% / 392.2% 510.2% no-repeat;
+  background:url("/neon_brain_circuit_emblem.png") 50% 46% / 440% 440% no-repeat;
   filter:drop-shadow(0 0 3px rgba(85,220,255,.35));
 }
 .axiom-site .axiom-v6-card .axiom-brain-emblem{width:24px;height:24px}
 .axiom-site .experience-node > span{color:#a9c2d1}
+
+/* Keep the existing enlargement while restoring definition in the left scene. */
+.axiom-home-video-bg .axiom-home-solutions-scene .axiom-home-scene-main{
+  filter:saturate(1.08) contrast(1.07) brightness(1.16);
+}
