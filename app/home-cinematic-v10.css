@@ -397,7 +397,7 @@
 .axiom-site #inicio .axiom-v6-actions{justify-content:flex-start!important}
 .axiom-site #inicio .axiom-v6-video-shell{
   display:grid!important;
-  grid-template-columns:minmax(0,260px) minmax(0,1fr)!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,260px)!important;
   align-items:center!important;
   gap:16px!important;
   width:100%!important;
@@ -487,4 +487,31 @@
     transform-origin:center top!important;
     margin-bottom:54px!important;
   }
+}
+
+/* Robotics joins the message; blurred footage fills the background sides. */
+.axiom-site #inicio .axiom-v6-robotics-line{
+  display:block;
+  margin-top:10px;
+}
+.axiom-home-video-bg .axiom-home-bg-video-primary{
+  z-index:2!important;
+  background:transparent!important;
+}
+.axiom-home-video-bg .axiom-home-bg-video-secondary{
+  z-index:1!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100vh!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  opacity:.55!important;
+  filter:blur(20px) saturate(1.08) brightness(.9)!important;
+  transform:scale(1.05)!important;
+  animation:none!important;
+  mix-blend-mode:normal!important;
+}
+@media(max-width:560px){
+  .axiom-site #inicio .axiom-v6-video-stage{order:1}
+  .axiom-site #inicio .axiom-v6-cards{order:2}
 }

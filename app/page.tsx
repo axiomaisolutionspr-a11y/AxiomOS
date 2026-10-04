@@ -5791,6 +5791,12 @@ export default function Home() {
                 "AxiomAI responde, organiza y da seguimiento a tus oportunidades 24/7 desde WhatsApp, llamadas y web, para que ningún prospecto se quede sin respuesta.",
                 "AxiomAI responds, organizes, and follows up on your opportunities 24/7 across WhatsApp, calls, and the web, so no lead goes unanswered."
               )}
+              <span className="axiom-v6-robotics-line">
+                {t(
+                  "AxiomAI Robotics complementa esa automatización con soluciones robóticas para que la atención digital y la operación física trabajen juntas.",
+                  "AxiomAI Robotics complements that automation with robotic solutions, bringing digital service and physical operations together."
+                )}
+              </span>
             </p>
 
             <div className="hero-actions axiom-v6-actions">
@@ -5842,28 +5848,6 @@ export default function Home() {
                   "AUTOMATION \u2022 AI \u2022 SOFTWARE"
                 )}
               </div>
-<div className="axiom-v6-video-stage">
-
-                <video
-                  className="axiom-v6-video-main"
-                  controls
-                  playsInline
-                  preload="metadata"
-                  poster="/images/axiomai-presenter.png"
-                >
-                  <source
-                    src="/videos/axiomai-avatar.mp4"
-                    type="video/mp4"
-                  />
-                </video>
-
-                <div className="axiom-v6-online">
-                  <i />
-                  {t("EN L\u00CDNEA", "ONLINE")}
-                </div>
-
-              </div>
-
               <div className="axiom-v6-cards">
 
                 <div className="axiom-v6-card">
@@ -5926,6 +5910,29 @@ export default function Home() {
                       )}
                     </strong>
                   </div>
+                </div>
+
+              </div>
+
+
+              <div className="axiom-v6-video-stage">
+
+                <video
+                  className="axiom-v6-video-main"
+                  controls
+                  playsInline
+                  preload="metadata"
+                  poster="/images/axiomai-presenter.png"
+                >
+                  <source
+                    src="/videos/axiomai-avatar.mp4"
+                    type="video/mp4"
+                  />
+                </video>
+
+                <div className="axiom-v6-online">
+                  <i />
+                  {t("EN L\u00CDNEA", "ONLINE")}
                 </div>
 
               </div>
