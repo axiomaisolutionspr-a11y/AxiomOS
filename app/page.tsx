@@ -5845,25 +5845,6 @@ export default function Home() {
 <div className="axiom-v6-video-stage">
 
                 <video
-                  className="axiom-v6-video-bg"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  aria-hidden="true"
-                >
-                  <source
-                    src="/videos/axiomai-avatar.mp4"
-                    type="video/mp4"
-                  />
-                </video>
-
-                <div
-                  className="axiom-v6-video-shade"
-                  aria-hidden="true"
-                />
-
-                <video
                   className="axiom-v6-video-main"
                   controls
                   playsInline
@@ -5886,7 +5867,7 @@ export default function Home() {
               <div className="axiom-v6-cards">
 
                 <div className="axiom-v6-card">
-                  <b>24/7</b>
+                  <b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg></b>
                   <div>
                     <small>
                       {t(
@@ -5904,7 +5885,7 @@ export default function Home() {
                 </div>
 
                 <div className="axiom-v6-card">
-                  <b>P</b>
+                  <b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="7" r="3" /><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M19 21v-3a6 6 0 0 0-2-4" /></svg></b>
                   <div>
                     <small>
                       {t(
@@ -5922,7 +5903,7 @@ export default function Home() {
                 </div>
 
                 <div className="axiom-v6-card">
-                  <b>AI</b>
+                  <b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4a3 3 0 0 0-5-1 4 4 0 0 0-4 5 4 4 0 0 0 0 7 4 4 0 0 0 4 5 3 3 0 0 0 5-1V4Zm0 0a3 3 0 0 1 5-1 4 4 0 0 1 4 5 4 4 0 0 1 0 7 4 4 0 0 1-4 5 3 3 0 0 1-5-1M7 8l2 2M7 16l2-2M17 8l-2 2M17 16l-2-2" /></svg></b>
                   <div>
                     <small>BRAIN</small>
                     <strong>
@@ -5935,7 +5916,7 @@ export default function Home() {
                 </div>
 
                 <div className="axiom-v6-card">
-                  <b>CRM</b>
+                  <b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="m6 9 2 2 3-3M14 9h4m-12 7 2 2 3-3M14 16h4" /></svg></b>
                   <div>
                     <small>CRM</small>
                     <strong>
