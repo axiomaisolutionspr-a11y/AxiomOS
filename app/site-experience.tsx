@@ -7,6 +7,10 @@ export default function SiteExperience() {
   const pathname = usePathname();
   const publicPage = pathname === "/" || pathname === "/brain" || pathname === "/robotics";
   const music = useRef<HTMLAudioElement>(null);
+  const narration = useRef<HTMLAudioElement>(null);
+  const [narrating, setNarrating] = useState(false);
+  const [voiceStarted, setVoiceStarted] = useState(false);
+  const [voiceError, setVoiceError] = useState(false);
   const context = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
   const [enabled, setEnabled] = useState(true);
@@ -14,6 +18,7 @@ export default function SiteExperience() {
   useEffect(() => {
     if (!publicPage) return;
     const track = music.current;
+    const voice = narration.current;
     if (!track) return;
     track.volume = 0.18;
     try {
@@ -28,6 +33,7 @@ export default function SiteExperience() {
       if (context.current.state === "suspended") void context.current.resume().catch(() => {});
       const foreground = document.querySelector<HTMLVideoElement>(".axiom-v6-video-main");
       if (track.paused && (!foreground || foreground.paused || foreground.muted)) {
+        track.volume = voice && !voice.paused ? 0.045 : 0.18;
         void track.play().then(() => {
           try { sessionStorage.setItem("axiomai_sound_started", "1"); } catch {}
         }).catch(() => {});
@@ -55,19 +61,22 @@ export default function SiteExperience() {
     };
     const playAction = (target: EventTarget | null) => {
       const element = target instanceof Element ? target.closest<HTMLElement>('a[href],button,[role="button"],label:has(input[type="checkbox"]),label:has(input[type="radio"])') : null;
-      if (!element || element.matches(':disabled,[aria-disabled="true"]') || element.closest(".axiom-sound-toggle")) return;
+      if (!element || element.matches(':disabled,[aria-disabled="true"]') || element.closest(".axiom-sound-toggle,.axiom-narration-toggle")) return;
       tone(element.matches('.home-brain-shell,.brain-orb-button,a[href^="/brain"]') || pathname === "/brain");
     };
-    const pointer = (event: PointerEvent) => { if (event.button === 0) { start(); playAction(event.target); } };
+    const pointer = (event: PointerEvent) => {
+      if (event.target instanceof Element && event.target.closest(".axiom-sound-toggle,.axiom-narration-toggle")) return;
+      if (event.button === 0) { start(); playAction(event.target); }
+    };
     const keyboard = (event: KeyboardEvent) => { if (event.key === "Enter" || event.key === " ") start(); };
     const click = (event: MouseEvent) => { if (event.detail === 0) { start(); playAction(event.target); } };
     const visibility = () => {
-      if (document.hidden) { track.pause(); void context.current?.suspend(); }
+      if (document.hidden) { track.pause(); voice?.pause(); void context.current?.suspend(); }
       else start();
     };
     const foregroundChange = (event: Event) => {
       if (event.target instanceof HTMLVideoElement && event.target.classList.contains("axiom-v6-video-main")) {
-        if (!event.target.paused && !event.target.muted) track.pause();
+        if (!event.target.paused && !event.target.muted) { track.pause(); voice?.pause(); }
         else start();
       }
     };
@@ -78,6 +87,7 @@ export default function SiteExperience() {
     for (const name of ["play", "pause", "ended", "volumechange"]) document.addEventListener(name, foregroundChange, true);
     return () => {
       track.pause();
+      voice?.pause();
       void context.current?.close();
       context.current = null;
       document.removeEventListener("pointerdown", pointer, true);
@@ -144,13 +154,45 @@ export default function SiteExperience() {
       void music.current?.play().catch(() => {});
     } else {
       music.current?.pause();
+      narration.current?.pause();
       void context.current?.suspend();
     }
   };
+  const toggleNarration = () => {
+    const voice = narration.current;
+    if (!voice) return;
+    if (!voice.paused) { voice.pause(); return; }
+    document.querySelector<HTMLVideoElement>(".axiom-v6-video-main")?.pause();
+    enabledRef.current = true;
+    setEnabled(true);
+    setVoiceError(false);
+    try { localStorage.setItem("axiomai_sound", "on"); } catch {}
+    if (voice.ended) voice.currentTime = 0;
+    if (music.current) {
+      music.current.volume = 0.045;
+      void music.current.play().catch(() => {});
+    }
+    void voice.play().catch(() => {
+      setVoiceError(true);
+      if (music.current) music.current.volume = 0.18;
+    });
+  };
   return (
     <>
-      <audio ref={music} src="/audio/axiomai-future-drive.mp3" loop preload="none" />
-      <button type="button" className="axiom-sound-toggle" aria-label={enabled ? "Silenciar música y sonidos / Mute sound" : "Activar música y sonidos / Enable sound"} aria-pressed={enabled} title={enabled ? "Sonido activado" : "Sonido desactivado"} onClick={toggle}>
+      <audio ref={music} src="/audio/game-on-dopestuff.mp3" loop preload="none" />
+      {pathname === "/" && <>
+        <audio ref={narration} src="/audio/axiomai-presentacion-roger.mp3" preload="none"
+          onPlaying={() => { setNarrating(true); setVoiceStarted(true); if (music.current) music.current.volume = 0.045; }}
+          onPause={() => { setNarrating(false); if (music.current) music.current.volume = 0.18; }}
+          onEnded={() => { setNarrating(false); setVoiceStarted(false); if (music.current) music.current.volume = 0.18; }}
+          onError={() => { setNarrating(false); setVoiceError(true); if (music.current) music.current.volume = 0.18; }}
+        />
+        <button type="button" className="axiom-narration-toggle" aria-pressed={narrating} onClick={toggleNarration}>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">{narrating ? <path d="M6 4h4v16H6zm8 0h4v16h-4z" /> : <path d="m7 4 14 8-14 8z" />}</svg>
+          {narrating ? "Pausar narración" : voiceError ? "Reintentar narración" : voiceStarted ? "Continuar presentación" : "Escuchar presentación"}
+        </button>
+      </>}
+      <button type="button" className="axiom-sound-toggle" aria-label={enabled ? "Silenciar música, narración y sonidos / Mute sound" : "Activar música y sonidos / Enable sound"} aria-pressed={enabled} title={enabled ? "Sonido activado" : "Sonido desactivado"} onClick={toggle}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z" />{enabled ? <><path d="M15 8a6 6 0 0 1 0 8" /><path d="M18 5a10 10 0 0 1 0 14" /></> : <path d="m16 9 5 6m0-6-5 6" />}</svg>
       </button>
     </>
