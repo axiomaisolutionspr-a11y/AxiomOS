@@ -36,8 +36,8 @@ export default function HomeBackgroundVideo() {
 
   return (
     <div className="axiom-home-video-bg" aria-hidden="true">
-      <BackgroundScene className="axiom-home-solutions-scene" source="/videos/axiomai-avatar.mp4" start={5} />
-      <BackgroundScene className="axiom-home-robotics-scene" source="/videos/axiomai-robotics-showcase-bg.mp4" />
+      <BackgroundScene className="axiom-home-solutions-scene" source="/videos/axiomai-avatar-sharp.mp4" start={5} />
+      <BackgroundScene className="axiom-home-robotics-scene" source="/videos/axiomai-robotics-showcase-bg-light.mp4" />
       <div className="axiom-home-video-edge axiom-home-video-edge-left" />
       <div className="axiom-home-video-edge axiom-home-video-edge-right" />
       <div className="axiom-home-video-vignette" />
