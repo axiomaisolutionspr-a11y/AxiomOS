@@ -576,8 +576,8 @@
   z-index:2;
   pointer-events:none;
   background:rgba(1,7,15,.36);
-  backdrop-filter:blur(30px) saturate(.9);
   -webkit-backdrop-filter:blur(30px) saturate(.9);
+  backdrop-filter:blur(30px) saturate(.9);
 }
 .axiom-home-video-bg .axiom-home-video-edge-left{
   left:0;
@@ -590,5 +590,5 @@
   -webkit-mask-image:linear-gradient(270deg,#000 0%,#000 42%,transparent 100%);
 }
 @media(max-width:1050px){
-  .axiom-home-video-bg .axiom-home-video-edge{width:48px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+  .axiom-home-video-bg .axiom-home-video-edge{width:48px;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 }
