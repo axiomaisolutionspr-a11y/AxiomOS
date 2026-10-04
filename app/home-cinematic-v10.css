@@ -444,3 +444,15 @@
   .axiom-site #inicio .axiom-v6-card{flex-wrap:wrap!important}
   .axiom-site #inicio .axiom-hero-punch-title-v3 > span{font-size:clamp(30px,8.1vw,44px)!important}
 }
+/* Neutralize earlier absolute positioning of the original hero logo. */
+.axiom-site #inicio .axiom-v6-brand{
+  width:fit-content!important;
+  height:auto!important;
+  min-height:0!important;
+}
+.axiom-site #inicio .axiom-v6-brand > img{
+  position:static!important;
+  inset:auto!important;
+  margin:0!important;
+  flex:none!important;
+}
