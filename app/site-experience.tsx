@@ -12,8 +12,73 @@ export default function SiteExperience() {
   const [voiceStarted, setVoiceStarted] = useState(false);
   const [voiceError, setVoiceError] = useState(false);
   const context = useRef<AudioContext | null>(null);
+  const narrationSource = useRef<MediaElementAudioSourceNode | null>(null);
+  const narrationAnalyser = useRef<AnalyserNode | null>(null);
+  const narrationFrame = useRef<number>(0);
   const enabledRef = useRef(true);
   const [enabled, setEnabled] = useState(true);
+
+  const resetRobotVoiceMotion = () => {
+    cancelAnimationFrame(narrationFrame.current);
+    narrationFrame.current = 0;
+    const portal = document.querySelector<HTMLElement>(".axiom-robotics-portal");
+    if (!portal) return;
+    for (const name of ["--robot-mouth-open", "--robot-mouth-width", "--robot-speak-x", "--robot-speak-y", "--robot-speak-rot-x", "--robot-speak-rot-y", "--robot-left-y", "--robot-left-rotate", "--robot-right-y", "--robot-right-rotate", "--robot-body-y"]) {
+      portal.style.removeProperty(name);
+    }
+  };
+
+  const startRobotVoiceMotion = () => {
+    const voice = narration.current;
+    if (!voice) return;
+    const ctx = context.current ?? (context.current = new AudioContext());
+    const analyser = narrationAnalyser.current ?? (() => {
+      try {
+        const source = narrationSource.current ?? ctx.createMediaElementSource(voice);
+        const node = ctx.createAnalyser();
+        node.fftSize = 256;
+        node.smoothingTimeConstant = 0.72;
+        source.connect(node);
+        node.connect(ctx.destination);
+        narrationSource.current = source;
+        narrationAnalyser.current = node;
+        return node;
+      } catch {
+        return null;
+      }
+    })();
+    if (!analyser) return;
+    if (ctx.state === "suspended") void ctx.resume().catch(() => {});
+    cancelAnimationFrame(narrationFrame.current);
+    const samples = new Uint8Array(analyser.frequencyBinCount);
+    const tick = () => {
+      const portal = document.querySelector<HTMLElement>(".axiom-robotics-portal");
+      if (!portal || voice.paused || voice.ended) {
+        resetRobotVoiceMotion();
+        return;
+      }
+      analyser.getByteFrequencyData(samples);
+      let sum = 0;
+      for (const sample of samples) sum += sample;
+      const average = sum / samples.length / 255;
+      const level = Math.max(0, Math.min(1, (average - 0.035) * 3.6));
+      const time = voice.currentTime;
+      const pulse = Math.min(1, 0.16 + level * 1.35);
+      portal.style.setProperty("--robot-mouth-open", (0.34 + pulse * 1.12).toFixed(2));
+      portal.style.setProperty("--robot-mouth-width", (0.84 + pulse * 0.18).toFixed(2));
+      portal.style.setProperty("--robot-speak-x", `${(Math.sin(time * 1.7) * (0.6 + pulse * 1.8)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-speak-y", `${(Math.cos(time * 1.45) * (0.5 + pulse * 1.5)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-speak-rot-x", `${(Math.sin(time * 1.3) * (0.7 + pulse * 1.8)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-speak-rot-y", `${(Math.cos(time * 1.1) * (0.8 + pulse * 2.2)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-y", `${(Math.sin(time * 2.15) * (1.5 + pulse * 8)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-left-rotate", `${(Math.sin(time * 2.15 + Math.PI / 2) * (1.5 + pulse * 7)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-y", `${(Math.sin(time * 1.78 + Math.PI) * (1.1 + pulse * 6.5)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-right-rotate", `${(Math.sin(time * 1.78 + Math.PI / 2) * (1.1 + pulse * 6)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-body-y", `${(Math.sin(time * 2.1) * (0.35 + pulse * 1.7)).toFixed(2)}px`);
+      narrationFrame.current = requestAnimationFrame(tick);
+    };
+    tick();
+  };
 
   useEffect(() => {
     if (!publicPage) return;
@@ -88,8 +153,11 @@ export default function SiteExperience() {
     return () => {
       track.pause();
       voice?.pause();
+      resetRobotVoiceMotion();
       void context.current?.close();
       context.current = null;
+      narrationSource.current = null;
+      narrationAnalyser.current = null;
       document.removeEventListener("pointerdown", pointer, true);
       document.removeEventListener("keydown", keyboard, true);
       document.removeEventListener("click", click, true);
@@ -182,10 +250,10 @@ export default function SiteExperience() {
       <audio ref={music} src="/audio/game-on-dopestuff.mp3" loop preload="none" />
       {pathname === "/" && <>
         <audio ref={narration} src="/audio/axiomai-presentacion-roger.mp3" preload="none"
-          onPlaying={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.setAttribute("data-speaking", "true"); setNarrating(true); setVoiceStarted(true); if (music.current) music.current.volume = 0.045; }}
-          onPause={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); setNarrating(false); if (music.current) music.current.volume = 0.18; }}
-          onEnded={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); setNarrating(false); setVoiceStarted(false); if (music.current) music.current.volume = 0.18; }}
-          onError={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); setNarrating(false); setVoiceError(true); if (music.current) music.current.volume = 0.18; }}
+          onPlaying={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.setAttribute("data-speaking", "true"); startRobotVoiceMotion(); setNarrating(true); setVoiceStarted(true); if (music.current) music.current.volume = 0.045; }}
+          onPause={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); if (music.current) music.current.volume = 0.18; }}
+          onEnded={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); setVoiceStarted(false); if (music.current) music.current.volume = 0.18; }}
+          onError={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); setVoiceError(true); if (music.current) music.current.volume = 0.18; }}
         />
         <button type="button" className="axiom-narration-toggle" aria-pressed={narrating} onClick={toggleNarration}>
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">{narrating ? <path d="M6 4h4v16H6zm8 0h4v16h-4z" /> : <path d="m7 4 14 8-14 8z" />}</svg>
