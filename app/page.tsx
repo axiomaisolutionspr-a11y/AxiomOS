@@ -5756,6 +5756,8 @@ export default function Home() {
                 src={FINAL_LOGO_DATA}
                 alt="AxiomAI Solutions"
               />
+              <span className="axiom-logo-brain-cover" aria-hidden="true" />
+              <span className="axiom-logo-brain-motion" aria-hidden="true" />
 
               <div>
                 <strong>AxiomAI Solutions</strong>

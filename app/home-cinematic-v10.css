@@ -516,25 +516,12 @@
   .axiom-site #inicio .axiom-v6-cards{order:2}
 }
 
-/* Keep the approved hero; pair existing footage behind a continuous soft shade. */
-.axiom-home-video-bg > video.axiom-home-solutions-scene,
-.axiom-home-video-bg > video.axiom-home-robotics-scene{
-  inset:0!important;
-  width:50vw!important;
-  height:100vh!important;
-  z-index:1!important;
-  object-fit:cover!important;
-  object-position:center!important;
-  opacity:1!important;
-  filter:saturate(1.08) contrast(1.05) brightness(1.04)!important;
-  transform:none!important;
-  animation:none!important;
-  mix-blend-mode:normal!important;
-  background:transparent!important;
-}
-.axiom-home-video-bg > video.axiom-home-robotics-scene{
-  left:50vw!important;
-}
+/* Pair the same scenes with a small enlargement above their complete frame. */
+.axiom-home-video-bg .axiom-home-scene{position:absolute;inset:0 auto 0 0;width:50%;height:100%;overflow:hidden;z-index:1}
+.axiom-home-video-bg .axiom-home-robotics-scene{left:50%}
+.axiom-home-video-bg .axiom-home-scene > video{position:absolute;inset:0;width:100%;height:100%;object-position:center;pointer-events:none}
+.axiom-home-video-bg .axiom-home-scene-main{object-fit:contain;transform:scale(1.12);z-index:1;filter:saturate(1.08) contrast(1.05) brightness(1.04)}
+.axiom-home-video-bg .axiom-home-scene-reflection{object-fit:cover;transform:scale(1.08);filter:blur(28px) saturate(1.04) brightness(.8);opacity:.7}
 .axiom-home-video-bg .axiom-home-video-vignette{
   background:
     linear-gradient(90deg,rgba(1,7,15,.72),rgba(2,12,22,.66) 32%,rgba(2,11,20,.44) 54%,rgba(1,7,14,.34)),
@@ -591,4 +578,32 @@
 }
 @media(max-width:1050px){
   .axiom-home-video-bg .axiom-home-video-edge{width:48px;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+}
+
+/* Animate just the original logo's brain; the logo box and copy stay fixed. */
+.axiom-site #inicio .axiom-v6-brand{position:relative!important}
+.axiom-site #inicio .axiom-logo-brain-cover,
+.axiom-site #inicio .axiom-logo-brain-motion{
+  position:absolute;left:40.3%;top:45.5%;width:20.5%;height:23%;pointer-events:none;
+  border-radius:45%;mask-image:radial-gradient(ellipse,#000 60%,transparent 100%);
+}
+.axiom-site #inicio .axiom-logo-brain-cover{z-index:2;background:radial-gradient(ellipse,#02020a 65%,transparent)}
+.axiom-site #inicio .axiom-logo-brain-motion{
+  z-index:3;background-image:url('/images/axiomai-hero-logo.webp');background-repeat:no-repeat;
+  background-size:487.8% 434.78%;background-position:50.69% 59.09%;
+  transform:translate3d(var(--logo-brain-x,0px),var(--logo-brain-y,0px),0);
+  transition:transform 120ms ease-out,filter 160ms ease;
+}
+.axiom-site #inicio .axiom-v6-brand[data-brain-near="true"] .axiom-logo-brain-motion{filter:drop-shadow(0 0 3px rgba(85,220,255,.5))}
+.home-brain-shell .home-brain-art{transition:transform 120ms ease-out!important}
+.brain-orb-button > img{transform:translate3d(var(--brain-x,0px),var(--brain-y,0px),0);transition:transform 120ms ease-out}
+.axiom-sound-toggle{
+  position:fixed;left:18px;bottom:18px;z-index:100;width:38px;height:38px;display:grid;place-items:center;
+  padding:8px;border-radius:50%;border:1px solid rgba(85,220,255,.4);background:rgba(2,14,26,.9);color:#8ceaff;
+  cursor:pointer;box-shadow:0 0 16px rgba(0,174,239,.12);
+}
+.axiom-sound-toggle svg{width:21px;height:21px}
+.axiom-sound-toggle:focus-visible{outline:2px solid #8ceaff;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){
+  .axiom-logo-brain-motion,.brain-orb-button > img{transform:none!important;transition:none!important}
 }
