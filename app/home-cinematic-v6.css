@@ -1,0 +1,123 @@
+/* AxiomAI Solutions — phase 6: make cinematic background visibly present across the full homepage */
+
+/* The background was technically running, but previous dark overlays and section fills hid it.
+   This layer intentionally exposes more of the moving image while preserving readable content. */
+
+.axiom-home-bg-video-primary{
+  opacity:.48!important;
+  filter:saturate(.94) contrast(1.10) brightness(.72) blur(.65px)!important;
+}
+
+.axiom-home-bg-video-secondary{
+  opacity:.16!important;
+  filter:saturate(1.20) hue-rotate(6deg) contrast(1.12) brightness(.74) blur(3px)!important;
+}
+
+.axiom-home-video-vignette{
+  background:
+    radial-gradient(circle at 78% 15%,rgba(0,196,255,.11),transparent 27%),
+    radial-gradient(circle at 15% 47%,rgba(70,84,255,.055),transparent 29%),
+    linear-gradient(90deg,rgba(1,4,11,.48) 0%,rgba(2,8,17,.30) 37%,rgba(2,7,16,.20) 60%,rgba(1,4,10,.46) 100%),
+    linear-gradient(180deg,rgba(1,4,11,.32),rgba(1,5,12,.38) 52%,rgba(1,3,8,.58))!important;
+}
+
+.axiom-home-video-vignette::after{
+  box-shadow:inset 0 0 150px rgba(0,0,0,.48),inset 0 -140px 210px rgba(0,0,0,.28)!important;
+}
+
+.axiom-home-video-aurora{opacity:.66!important}
+.axiom-home-video-grid{opacity:.42!important}
+
+/* Let the moving background breathe through every major homepage section. */
+.axiom-site .axiom-v6-hero,
+.axiom-site .section,
+.axiom-site .section-border{
+  background:transparent!important;
+}
+
+.axiom-site .section{
+  isolation:isolate;
+}
+
+/* Soft localized dark field only behind content, instead of blacking out the whole section. */
+.axiom-site .section::after{
+  inset:6% -3vw!important;
+  background:
+    radial-gradient(ellipse at 28% 45%,rgba(1,7,15,.52),rgba(1,7,15,.20) 42%,transparent 68%),
+    radial-gradient(ellipse at 76% 54%,rgba(1,8,17,.34),transparent 62%)!important;
+  filter:blur(36px)!important;
+}
+
+.axiom-site .ambient-layer{
+  opacity:.38!important;
+  background:transparent!important;
+}
+
+/* Glass UI instead of opaque panels. */
+.axiom-site .axiom-v6-copy{
+  background:linear-gradient(145deg,rgba(2,13,24,.59),rgba(1,6,13,.26))!important;
+  backdrop-filter:blur(10px) saturate(1.08)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(1.08)!important;
+}
+
+.axiom-site .bento .card{
+  background:
+    radial-gradient(circle at 86% 10%,rgba(85,220,255,.10),transparent 28%),
+    linear-gradient(155deg,rgba(7,28,46,.82),rgba(2,8,17,.84))!important;
+  backdrop-filter:blur(14px) saturate(1.08)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.08)!important;
+}
+
+.axiom-site .experience,
+.axiom-site .brain-spotlight,
+.axiom-site .cta-band,
+.axiom-site .form-card{
+  background:linear-gradient(155deg,rgba(5,22,37,.78),rgba(2,8,17,.82))!important;
+}
+
+.axiom-site .experience-node,
+.axiom-site .process-item,
+.axiom-site .contact-line,
+.axiom-site .signal-strip{
+  background:rgba(3,16,28,.70)!important;
+}
+
+/* Create visible cinematic lanes between content blocks. */
+.axiom-site .section-border{
+  border-top-color:rgba(85,220,255,.16)!important;
+  box-shadow:inset 0 70px 100px rgba(1,5,12,.12),inset 0 -70px 100px rgba(1,5,12,.12);
+}
+
+.axiom-site footer,
+.axiom-site .footer{
+  background:rgba(1,4,10,.72)!important;
+  backdrop-filter:blur(14px)!important;
+  -webkit-backdrop-filter:blur(14px)!important;
+}
+
+/* Subtle luminous veil makes motion visible even in darker source frames. */
+.axiom-home-video-bg::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:7;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 70% 22%,rgba(61,204,255,.055),transparent 27%),
+    linear-gradient(115deg,transparent 22%,rgba(46,160,220,.028) 48%,transparent 70%);
+  mix-blend-mode:screen;
+}
+
+@media(max-width:900px){
+  .axiom-home-bg-video-primary{
+    opacity:.34!important;
+    filter:saturate(.94) contrast(1.08) brightness(.62) blur(1.2px)!important;
+  }
+  .axiom-home-bg-video-secondary{opacity:.08!important}
+  .axiom-home-video-vignette{
+    background:linear-gradient(180deg,rgba(1,4,10,.48),rgba(1,6,13,.54) 56%,rgba(1,3,8,.70))!important;
+  }
+  .axiom-site .section::after{
+    background:radial-gradient(ellipse at center,rgba(1,7,15,.48),rgba(1,7,15,.17) 58%,transparent 82%)!important;
+  }
+}
