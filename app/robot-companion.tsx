@@ -44,6 +44,7 @@ export default function RobotCompanion() {
     const stage = hero?.querySelector<HTMLElement>(".axiom-v6-video-stage");
     const cards = hero?.querySelector<HTMLElement>(".axiom-v6-cards");
     let layoutFrame = 0;
+    let disposed = false;
     const align = () => {
       if (!hero || !slot || !stage || !cards || !mobileSlot) return;
       const desktop = matchMedia("(min-width:1300px)").matches;
@@ -61,6 +62,7 @@ export default function RobotCompanion() {
       portal.style.setProperty("--robot-height", `${cardRect.height}px`);
     };
     const schedule = () => {
+      if (disposed) return;
       cancelAnimationFrame(layoutFrame);
       layoutFrame = requestAnimationFrame(align);
     };
@@ -72,6 +74,7 @@ export default function RobotCompanion() {
     }
     window.addEventListener("resize", schedule);
     return () => {
+      disposed = true;
       cancelAnimationFrame(motionFrame);
       cancelAnimationFrame(layoutFrame);
       observer.disconnect();

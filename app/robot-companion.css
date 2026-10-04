@@ -1,6 +1,6 @@
 /* Keep the existing hero slots while centering the foreground video at the scene seam. */
 .axiom-site #inicio .axiom-v6-stage-slot{grid-column:2;min-width:0;width:100%}
-.axiom-site #inicio .axiom-v6-video-stage{transform:translateX(var(--axiom-frame-shift,0px))!important}
+.axiom-site #inicio .axiom-v6-video-stage{transform:translateX(var(--axiom-frame-shift,0px))!important;max-width:none!important}
 .axiom-site #inicio .axiom-v6-robot-slot{display:none}
 .axiom-robotics-portal[data-placement="hero"]{
   position:absolute!important;left:var(--robot-left)!important;top:var(--robot-top)!important;
