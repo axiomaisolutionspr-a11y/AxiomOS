@@ -519,8 +519,8 @@
 /* Pair the same scenes with a small enlargement above their complete frame. */
 .axiom-home-video-bg .axiom-home-scene{position:absolute;inset:0 auto 0 0;width:50%;height:100%;overflow:hidden;z-index:1}
 .axiom-home-video-bg .axiom-home-robotics-scene{left:50%}
-.axiom-home-video-bg .axiom-home-scene > video{position:absolute;inset:0;width:100%;height:100%;object-position:center;pointer-events:none}
-.axiom-home-video-bg .axiom-home-scene-main{object-fit:contain;transform:scale(1.12);z-index:1;filter:saturate(1.08) contrast(1.05) brightness(1.04)}
+.axiom-home-video-bg .axiom-home-scene > video{position:absolute;inset:0;width:100%;height:100%;object-position:center;pointer-events:none;animation:none!important}
+.axiom-home-video-bg .axiom-home-scene-main{object-fit:contain;transform:scale(1.12);opacity:1;z-index:1;filter:saturate(1.08) contrast(1.05) brightness(1.04)}
 .axiom-home-video-bg .axiom-home-scene-reflection{object-fit:cover;transform:scale(1.08);filter:blur(28px) saturate(1.04) brightness(.8);opacity:.7}
 .axiom-home-video-bg .axiom-home-video-vignette{
   background:
