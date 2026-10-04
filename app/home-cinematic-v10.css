@@ -462,3 +462,29 @@
   top:auto!important;
   margin:0 0 24px!important;
 }
+
+/* Clearer source footage; keep the approved foreground composition. */
+.axiom-home-video-bg .axiom-home-bg-video-primary{
+  inset:0!important;
+  opacity:1!important;
+  filter:saturate(1.08) contrast(1.05) brightness(1.04)!important;
+  animation:none!important;
+}
+.axiom-home-video-bg .axiom-home-video-vignette{
+  background:
+    linear-gradient(90deg,rgba(1,6,13,.24),rgba(2,10,18,.08) 35%,rgba(2,10,18,.06) 65%,rgba(1,6,13,.20)),
+    linear-gradient(180deg,rgba(1,5,11,.08),rgba(1,6,13,.04) 55%,rgba(1,4,9,.16))!important;
+}
+.axiom-home-video-bg .axiom-home-video-vignette::after{
+  box-shadow:inset 0 0 100px rgba(0,0,0,.12)!important;
+}
+.axiom-site #inicio.axiom-v6-hero{
+  background:linear-gradient(90deg,rgba(1,7,15,.58),rgba(2,12,22,.36) 39%,rgba(2,11,20,.14) 66%,rgba(1,7,14,.08))!important;
+}
+@media(min-width:1300px){
+  .axiom-site #inicio.axiom-v6-hero{
+    transform:scale(1.08)!important;
+    transform-origin:center top!important;
+    margin-bottom:54px!important;
+  }
+}
