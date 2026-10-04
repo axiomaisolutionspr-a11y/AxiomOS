@@ -5889,7 +5889,7 @@ export default function Home() {
                 </div>
 
                 <div className="axiom-v6-card">
-                  <b aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4a3 3 0 0 0-5-1 4 4 0 0 0-4 5 4 4 0 0 0 0 7 4 4 0 0 0 4 5 3 3 0 0 0 5-1V4Zm0 0a3 3 0 0 1 5-1 4 4 0 0 1 4 5 4 4 0 0 1 0 7 4 4 0 0 1-4 5 3 3 0 0 1-5-1M7 8l2 2M7 16l2-2M17 8l-2 2M17 16l-2-2" /></svg></b>
+                  <b aria-hidden="true"><span className="axiom-brain-emblem" /></b>
                   <div>
                     <small>BRAIN</small>
                     <strong>
@@ -6099,102 +6099,22 @@ export default function Home() {
             <div className="experience-line" aria-hidden="true" />
             <div className="experience-grid">
               <div className="experience-node">
-                <b style={{
-  width: "42px",
-  height: "42px",
-  minWidth: "42px",
-  borderRadius: "12px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
-  border: "1px solid rgba(73, 202, 255, 0.28)",
-  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
-  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
-  color: "#69E1FF",
-  fontSize: "13px",
-  fontWeight: 800,
-  lineHeight: 1,
-  letterSpacing: "0.02em",
-  textShadow: "none",
-  flexShrink: 0,
-}}>01</b>
+                <b className="axiom-illustrated-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 3v-3a2 2 0 0 1-1-2V7a2 2 0 0 1 2-2Z"/><path d="M7 10h10M7 14h7"/></svg></b>
                 <strong>{t("Entra una conversación", "A conversation arrives")}</strong>
                 <span>{t("Llamada, WhatsApp, formulario o contacto digital.", "Call, WhatsApp, form, or digital contact.")}</span>
               </div>
               <div className="experience-node">
-                <b style={{
-  width: "42px",
-  height: "42px",
-  minWidth: "42px",
-  borderRadius: "12px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
-  border: "1px solid rgba(73, 202, 255, 0.28)",
-  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
-  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
-  color: "#69E1FF",
-  fontSize: "13px",
-  fontWeight: 800,
-  lineHeight: 1,
-  letterSpacing: "0.02em",
-  textShadow: "none",
-  flexShrink: 0,
-}}>02</b>
+                <b className="axiom-illustrated-icon" aria-hidden="true"><span className="axiom-brain-emblem" aria-hidden="true" /></b>
                 <strong>{t("AxiomOS entiende", "AxiomOS understands")}</strong>
                 <span>{t("Clasifica intención, prioridad y contexto.", "Classifies intent, priority, and context.")}</span>
               </div>
               <div className="experience-node">
-                <b style={{
-  width: "42px",
-  height: "42px",
-  minWidth: "42px",
-  borderRadius: "12px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
-  border: "1px solid rgba(73, 202, 255, 0.28)",
-  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
-  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
-  color: "#69E1FF",
-  fontSize: "13px",
-  fontWeight: 800,
-  lineHeight: 1,
-  letterSpacing: "0.02em",
-  textShadow: "none",
-  flexShrink: 0,
-}}>03</b>
+                <b className="axiom-illustrated-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m13 2-8 11h6l-1 9 9-12h-6l1-8Z"/></svg></b>
                 <strong>{t("El sistema actúa", "The system acts")}</strong>
                 <span>{t("Responde, asigna, registra o inicia seguimiento.", "Responds, assigns, logs, or starts follow-up.")}</span>
               </div>
               <div className="experience-node">
-                <b style={{
-  width: "42px",
-  height: "42px",
-  minWidth: "42px",
-  borderRadius: "12px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
-  border: "1px solid rgba(73, 202, 255, 0.28)",
-  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
-  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
-  color: "#69E1FF",
-  fontSize: "13px",
-  fontWeight: 800,
-  lineHeight: 1,
-  letterSpacing: "0.02em",
-  textShadow: "none",
-  flexShrink: 0,
-}}>04</b>
+                <b className="axiom-illustrated-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 12 3 3 6-6M7 8h3"/></svg></b>
                 <strong>{t("La oportunidad continúa", "The opportunity keeps moving")}</strong>
                 <span>{t("El equipo ve la próxima acción y conserva el contexto.", "The team sees the next action and keeps the context.")}</span>
               </div>
@@ -6219,108 +6139,28 @@ export default function Home() {
           <div className="process-grid">
             <div className="process-list">
               <div className="process-item">
-                <div className="step" style={{
-  width: "42px",
-  height: "42px",
-  minWidth: "42px",
-  borderRadius: "12px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
-  border: "1px solid rgba(73, 202, 255, 0.28)",
-  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
-  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
-  color: "#69E1FF",
-  fontSize: "13px",
-  fontWeight: 800,
-  lineHeight: 1,
-  letterSpacing: "0.02em",
-  textShadow: "none",
-  flexShrink: 0,
-}}>01</div>
+                <div className="step axiom-illustrated-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5M8 10.5h5M10.5 8v5"/></svg></div>
                 <div>
                   <h3>{t("Diagnóstico", "Diagnosis")}</h3>
                   <p>{t("Identificamos dónde se pierde tiempo, información u oportunidades.", "We identify where time, information, or opportunities are being lost.")}</p>
                 </div>
               </div>
               <div className="process-item">
-                <div className="step" style={{
-  width: "42px",
-  height: "42px",
-  minWidth: "42px",
-  borderRadius: "12px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
-  border: "1px solid rgba(73, 202, 255, 0.28)",
-  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
-  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
-  color: "#69E1FF",
-  fontSize: "13px",
-  fontWeight: 800,
-  lineHeight: 1,
-  letterSpacing: "0.02em",
-  textShadow: "none",
-  flexShrink: 0,
-}}>02</div>
+                <div className="step axiom-illustrated-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2.5" y="9" width="5" height="5" rx="1"/><rect x="16.5" y="3" width="5" height="5" rx="1"/><rect x="16.5" y="16" width="5" height="5" rx="1"/><path d="M7.5 11.5H12v-6h4.5M12 11.5v7h4.5"/></svg></div>
                 <div>
                   <h3>{t("Diseño del flujo", "Workflow design")}</h3>
                   <p>{t("Definimos etapas, datos, responsables, reglas y próximas acciones.", "We define stages, data, owners, rules, and next actions.")}</p>
                 </div>
               </div>
               <div className="process-item">
-                <div className="step" style={{
-  width: "42px",
-  height: "42px",
-  minWidth: "42px",
-  borderRadius: "12px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
-  border: "1px solid rgba(73, 202, 255, 0.28)",
-  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
-  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
-  color: "#69E1FF",
-  fontSize: "13px",
-  fontWeight: 800,
-  lineHeight: 1,
-  letterSpacing: "0.02em",
-  textShadow: "none",
-  flexShrink: 0,
-}}>03</div>
+                <div className="step axiom-illustrated-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m4 12 5 5L20 6"/><path d="M4 5h7M4 20h15"/></svg></div>
                 <div>
                   <h3>{t("Implementación", "Implementation")}</h3>
                   <p>{t("Conectamos IA, automatizaciones, comunicaciones e integraciones.", "We connect AI, automation, communications, and integrations.")}</p>
                 </div>
               </div>
               <div className="process-item">
-                <div className="step" style={{
-  width: "42px",
-  height: "42px",
-  minWidth: "42px",
-  borderRadius: "12px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  background: "linear-gradient(180deg, rgba(13, 61, 101, 0.96), rgba(7, 42, 75, 0.96))",
-  border: "1px solid rgba(73, 202, 255, 0.28)",
-  borderBottom: "1px solid rgba(73, 202, 255, 0.28)",
-  boxShadow: "inset 0 0 16px rgba(45, 175, 255, 0.08)",
-  color: "#69E1FF",
-  fontSize: "13px",
-  fontWeight: 800,
-  lineHeight: 1,
-  letterSpacing: "0.02em",
-  textShadow: "none",
-  flexShrink: 0,
-}}>04</div>
+                <div className="step axiom-illustrated-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 19h18M5 15l5-5 4 3 5-7"/><path d="M16 6h3v3"/></svg></div>
                 <div>
                   <h3>{t("Mejora continua", "Continuous improvement")}</h3>
                   <p>{t("Ajustamos el sistema según el uso real y las necesidades del negocio.", "We refine the system based on real usage and business needs.")}</p>

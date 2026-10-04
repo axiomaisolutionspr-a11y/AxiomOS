@@ -1,29 +1,29 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useRef } from "react";
 
 function BackgroundScene({ source, className, start = 0 }: { source: string; className: string; start?: number }) {
-  const reflection = useRef<HTMLVideoElement>(null);
-  const scene = useRef<HTMLVideoElement>(null);
   return (
     <div className={`axiom-home-scene ${className}`}>
-      <video ref={reflection} className="axiom-home-scene-reflection" autoPlay muted loop playsInline preload="metadata" poster="/images/axiomai-presenter.png"
-        onLoadedMetadata={(event) => {
-          if (event.currentTarget.duration > start) event.currentTarget.currentTime = Math.max(start, scene.current?.currentTime ?? start);
-        }}>
-        <source src={source} type="video/mp4" />
-      </video>
-      <video ref={scene} className="axiom-home-scene-main" autoPlay muted loop playsInline preload="metadata" poster="/images/axiomai-presenter.png"
+      <video
+        className="axiom-home-scene-main"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
         onLoadedMetadata={(event) => {
           if (start && event.currentTarget.duration > start) event.currentTarget.currentTime = start;
         }}
+        onCanPlay={(event) => {
+          if (event.currentTarget.paused) void event.currentTarget.play().catch(() => {});
+        }}
         onTimeUpdate={(event) => {
-          const video = event.currentTarget;
-          if (video.duration > start && video.currentTime < start) video.currentTime = start;
-          const fill = reflection.current;
-          if (fill && fill.readyState > 0 && Math.abs(fill.currentTime - video.currentTime) > 0.6) fill.currentTime = video.currentTime;
-        }}>
+          if (start && event.currentTarget.duration > start && event.currentTarget.currentTime < start) {
+            event.currentTarget.currentTime = start;
+          }
+        }}
+      >
         <source src={source} type="video/mp4" />
       </video>
     </div>
