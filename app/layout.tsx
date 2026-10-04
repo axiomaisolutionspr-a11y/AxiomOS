@@ -61,11 +61,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <span className="axiom-robot-avatar" aria-hidden="true">
             <span className="axiom-robot-antenna"><i /></span>
             <span className="axiom-robot-face">
+              <span className="axiom-robot-brain-window" />
               <i className="axiom-robot-eye axiom-robot-eye-left" />
               <i className="axiom-robot-eye axiom-robot-eye-right" />
               <i className="axiom-robot-mouth" />
             </span>
             <span className="axiom-robot-neck" />
+            <span className="axiom-robot-body"><i /></span>
+            <span className="axiom-robot-arm axiom-robot-arm-left" />
+            <span className="axiom-robot-arm axiom-robot-arm-right" />
+            <span className="axiom-robot-leg axiom-robot-leg-left" />
+            <span className="axiom-robot-leg axiom-robot-leg-right" />
           </span>
           <span className="axiom-robotics-copy">
             <small>NUEVO</small>
