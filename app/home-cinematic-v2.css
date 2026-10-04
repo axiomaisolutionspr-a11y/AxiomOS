@@ -64,7 +64,8 @@
   border:1px solid rgba(85,220,255,.10);
   background:linear-gradient(145deg,rgba(5,20,34,.46),rgba(2,7,15,.12));
   box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 28px 100px rgba(0,0,0,.14);
-  backdrop-filter:blur(3px);
+  /* Keep the background video sharp behind the hero copy. */
+  backdrop-filter:none;
 }
 
 .axiom-site .axiom-v6-brand img{
