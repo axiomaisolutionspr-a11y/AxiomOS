@@ -182,10 +182,10 @@ export default function SiteExperience() {
       <audio ref={music} src="/audio/game-on-dopestuff.mp3" loop preload="none" />
       {pathname === "/" && <>
         <audio ref={narration} src="/audio/axiomai-presentacion-roger.mp3" preload="none"
-          onPlaying={() => { setNarrating(true); setVoiceStarted(true); if (music.current) music.current.volume = 0.045; }}
-          onPause={() => { setNarrating(false); if (music.current) music.current.volume = 0.18; }}
-          onEnded={() => { setNarrating(false); setVoiceStarted(false); if (music.current) music.current.volume = 0.18; }}
-          onError={() => { setNarrating(false); setVoiceError(true); if (music.current) music.current.volume = 0.18; }}
+          onPlaying={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.setAttribute("data-speaking", "true"); setNarrating(true); setVoiceStarted(true); if (music.current) music.current.volume = 0.045; }}
+          onPause={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); setNarrating(false); if (music.current) music.current.volume = 0.18; }}
+          onEnded={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); setNarrating(false); setVoiceStarted(false); if (music.current) music.current.volume = 0.18; }}
+          onError={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); setNarrating(false); setVoiceError(true); if (music.current) music.current.volume = 0.18; }}
         />
         <button type="button" className="axiom-narration-toggle" aria-pressed={narrating} onClick={toggleNarration}>
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">{narrating ? <path d="M6 4h4v16H6zm8 0h4v16h-4z" /> : <path d="m7 4 14 8-14 8z" />}</svg>
