@@ -31,7 +31,7 @@
   box-shadow:inset 0 0 10px #03070e,0 0 10px rgba(63,219,255,.16);
 }
 .axiom-robotics-portal .axiom-robot-face::after{display:none}
-.axiom-robotics-portal .axiom-robot-brain-window{position:absolute;left:31%;top:3%;width:38%;height:34%;border-radius:48% 48% 24% 24%;background:#0b2038 url('/axiomos-brain-neon.png') center / 95% auto no-repeat;border:1px solid #77ddf1;box-shadow:0 0 9px rgba(134,103,255,.62)}
+.axiom-robotics-portal .axiom-robot-brain-window{position:absolute;left:35%;top:5%;width:30%;height:29%;border-radius:48% 48% 24% 24%;background:#0b2038 url('/axiomos-brain-neon.png') center / 95% auto no-repeat;border:1px solid #77ddf1;box-shadow:0 0 7px rgba(134,103,255,.5)}
 .axiom-robotics-portal .axiom-robot-eye{
   top:47%!important;width:18%!important;height:24%!important;border-radius:42%!important;
   background:radial-gradient(circle at 40% 35%,#fff 0 8%,#a4f9ff 12%,#29ddff 45%,#167fdb 95%)!important;
