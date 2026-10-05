@@ -53,40 +53,6 @@ export default function BrainBotFigure() {
         <path d="M95 237 H125 L130 257 L119 268 H101 L90 257 Z" fill="#101a21" stroke="#60747e" strokeWidth="2" />
       </g>
 
-      <g className="brainbot-pro-arm brainbot-pro-arm-left">
-        <circle cx="62" cy="126" r="18" fill="url(#bbArmor)" stroke="#b9c9cf" strokeWidth="3" />
-        <circle cx="62" cy="126" r="7" fill="#101920" stroke="#71858e" strokeWidth="3" />
-        <path d="M54 139 Q43 164 46 191 L57 207 L69 194 L72 150 L66 137 Z" fill="#111b22" stroke="#657983" strokeWidth="3" />
-        <path d="M51 142 Q45 161 48 180 L61 185 L68 148 L63 141 Z" fill="url(#bbArmor)" stroke="#c1cfd4" strokeWidth="2" />
-        <g className="brainbot-pro-forearm brainbot-pro-forearm-left">
-          <circle cx="57" cy="205" r="12" fill="#111a20" stroke="#95a8b0" strokeWidth="4" />
-          <path d="M51 214 L64 211 L70 259 L61 283 L47 270 L45 229 Z" fill="#111b22" stroke="#627680" strokeWidth="3" />
-          <path d="M49 220 L62 216 L66 254 L57 268 L49 261 Z" fill="url(#bbArmor)" stroke="#c1cfd4" strokeWidth="2" />
-          <g className="brainbot-pro-hand brainbot-pro-hand-left">
-            <path d="M48 269 L63 269 L70 284 L63 301 L48 298 L42 283 Z" fill="url(#bbArmorDark)" stroke="#adbdc4" strokeWidth="2" />
-            <path d="M45 292 L42 317 M51 296 L50 323 M57 296 L58 323 M63 292 L66 316" stroke="#b7c7cd" strokeWidth="5" strokeLinecap="round" />
-            <path d="M44 282 L34 296" stroke="#a9bbc2" strokeWidth="6" strokeLinecap="round" />
-          </g>
-        </g>
-      </g>
-
-      <g className="brainbot-pro-arm brainbot-pro-arm-right">
-        <circle cx="158" cy="126" r="18" fill="url(#bbArmor)" stroke="#b9c9cf" strokeWidth="3" />
-        <circle cx="158" cy="126" r="7" fill="#101920" stroke="#71858e" strokeWidth="3" />
-        <path d="M166 139 Q177 164 174 191 L163 207 L151 194 L148 150 L154 137 Z" fill="#111b22" stroke="#657983" strokeWidth="3" />
-        <path d="M169 142 Q175 161 172 180 L159 185 L152 148 L157 141 Z" fill="url(#bbArmor)" stroke="#c1cfd4" strokeWidth="2" />
-        <g className="brainbot-pro-forearm brainbot-pro-forearm-right">
-          <circle cx="163" cy="205" r="12" fill="#111a20" stroke="#95a8b0" strokeWidth="4" />
-          <path d="M169 214 L156 211 L150 259 L159 283 L173 270 L175 229 Z" fill="#111b22" stroke="#627680" strokeWidth="3" />
-          <path d="M171 220 L158 216 L154 254 L163 268 L171 261 Z" fill="url(#bbArmor)" stroke="#c1cfd4" strokeWidth="2" />
-          <g className="brainbot-pro-hand brainbot-pro-hand-right">
-            <path d="M172 269 L157 269 L150 284 L157 301 L172 298 L178 283 Z" fill="url(#bbArmorDark)" stroke="#adbdc4" strokeWidth="2" />
-            <path d="M175 292 L178 317 M169 296 L170 323 M163 296 L162 323 M157 292 L154 316" stroke="#b7c7cd" strokeWidth="5" strokeLinecap="round" />
-            <path d="M176 282 L186 296" stroke="#a9bbc2" strokeWidth="6" strokeLinecap="round" />
-          </g>
-        </g>
-      </g>
-
       <g className="brainbot-pro-leg brainbot-pro-leg-left">
         <path d="M88 263 L105 263 L108 329 L100 347 L82 340 L78 287 Z" fill="#111a21" stroke="#5e727c" strokeWidth="3" />
         <path d="M83 270 L101 269 L102 321 L94 329 L82 322 Z" fill="url(#bbArmor)" stroke="#c0cdd2" strokeWidth="2" />
@@ -120,6 +86,41 @@ export default function BrainBotFigure() {
         <rect className="brainbot-pro-mouth" x="94" y="76" width="32" height="8" rx="4" fill="#071017" stroke="#73dbea" strokeWidth="1.5" />
         <path d="M98 80 H122" stroke="#b9f8ff" strokeWidth="1.5" opacity=".85" />
       </g>
+
+      <g className="brainbot-pro-arm brainbot-pro-arm-left">
+        <circle cx="62" cy="126" r="18" fill="url(#bbArmor)" stroke="#b9c9cf" strokeWidth="3" />
+        <circle cx="62" cy="126" r="7" fill="#101920" stroke="#71858e" strokeWidth="3" />
+        <path d="M54 139 Q43 164 46 191 L57 207 L69 194 L72 150 L66 137 Z" fill="#111b22" stroke="#657983" strokeWidth="3" />
+        <path d="M51 142 Q45 161 48 180 L61 185 L68 148 L63 141 Z" fill="url(#bbArmor)" stroke="#c1cfd4" strokeWidth="2" />
+        <g className="brainbot-pro-forearm brainbot-pro-forearm-left">
+          <circle cx="57" cy="205" r="12" fill="#111a20" stroke="#95a8b0" strokeWidth="4" />
+          <path d="M51 214 L64 211 L70 259 L61 283 L47 270 L45 229 Z" fill="#111b22" stroke="#627680" strokeWidth="3" />
+          <path d="M49 220 L62 216 L66 254 L57 268 L49 261 Z" fill="url(#bbArmor)" stroke="#c1cfd4" strokeWidth="2" />
+          <g className="brainbot-pro-hand brainbot-pro-hand-left">
+            <path d="M48 269 L63 269 L70 284 L63 301 L48 298 L42 283 Z" fill="url(#bbArmorDark)" stroke="#adbdc4" strokeWidth="2" />
+            <path d="M46 291 L44 307 M52 294 L52 311 M58 294 L59 311 M63 291 L65 306" stroke="#b7c7cd" strokeWidth="5" strokeLinecap="round" />
+            <path d="M44 282 L36 291" stroke="#a9bbc2" strokeWidth="6" strokeLinecap="round" />
+          </g>
+        </g>
+      </g>
+
+      <g className="brainbot-pro-arm brainbot-pro-arm-right">
+        <circle cx="158" cy="126" r="18" fill="url(#bbArmor)" stroke="#b9c9cf" strokeWidth="3" />
+        <circle cx="158" cy="126" r="7" fill="#101920" stroke="#71858e" strokeWidth="3" />
+        <path d="M166 139 Q177 164 174 191 L163 207 L151 194 L148 150 L154 137 Z" fill="#111b22" stroke="#657983" strokeWidth="3" />
+        <path d="M169 142 Q175 161 172 180 L159 185 L152 148 L157 141 Z" fill="url(#bbArmor)" stroke="#c1cfd4" strokeWidth="2" />
+        <g className="brainbot-pro-forearm brainbot-pro-forearm-right">
+          <circle cx="163" cy="205" r="12" fill="#111a20" stroke="#95a8b0" strokeWidth="4" />
+          <path d="M169 214 L156 211 L150 259 L159 283 L173 270 L175 229 Z" fill="#111b22" stroke="#627680" strokeWidth="3" />
+          <path d="M171 220 L158 216 L154 254 L163 268 L171 261 Z" fill="url(#bbArmor)" stroke="#c1cfd4" strokeWidth="2" />
+          <g className="brainbot-pro-hand brainbot-pro-hand-right">
+            <path d="M172 269 L157 269 L150 284 L157 301 L172 298 L178 283 Z" fill="url(#bbArmorDark)" stroke="#adbdc4" strokeWidth="2" />
+            <path d="M174 291 L176 307 M168 294 L168 311 M162 294 L161 311 M157 291 L155 306" stroke="#b7c7cd" strokeWidth="5" strokeLinecap="round" />
+            <path d="M176 282 L184 291" stroke="#a9bbc2" strokeWidth="6" strokeLinecap="round" />
+          </g>
+        </g>
+      </g>
+
     </svg>
   );
 }
