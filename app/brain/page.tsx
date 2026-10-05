@@ -1523,9 +1523,40 @@ export default function BrainPage() {
         fontFamily: "Arial, sans-serif",
         padding: "28px 18px 60px",
         overflowX: "hidden",
+        position: "relative",
+        isolation: "isolate",
       }}
     >
       <style>{`
+        .brain-page-video {
+          position: fixed;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+          pointer-events: none;
+          opacity: 0.24;
+          filter: brightness(0.55) saturate(1.12) contrast(1.06) blur(1px);
+          transform: scale(1.025);
+          z-index: 0;
+        }
+
+        .brain-page-video-overlay {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          background:
+            radial-gradient(circle at 50% 4%, rgba(13, 65, 126, 0.38), rgba(3, 13, 29, 0.82) 52%, rgba(0, 4, 10, 0.94) 100%),
+            linear-gradient(180deg, rgba(3, 18, 39, 0.3), rgba(0, 5, 13, 0.72));
+          z-index: 1;
+        }
+
+        .brain-page-content {
+          position: relative;
+          z-index: 2;
+        }
+
         @keyframes brainAuraBreath {
           0%, 100% { transform: scale(0.9); opacity: 0.38; filter: blur(10px); }
           50% { transform: scale(1.12); opacity: 0.72; filter: blur(13px); }
@@ -1835,6 +1866,10 @@ export default function BrainPage() {
         }
 
         @media (prefers-reduced-motion: reduce) {
+          .brain-page-video {
+            display: none;
+          }
+
           .brain-orb-aura,
           .brain-orbit-ring,
           .brain-orb-core,
@@ -1859,7 +1894,21 @@ export default function BrainPage() {
         }
       `}</style>
 
+      <video
+        className="brain-page-video"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        aria-hidden="true"
+      >
+        <source src="/videos/axiomai-automation-bg.mp4" type="video/mp4" />
+      </video>
+      <div className="brain-page-video-overlay" aria-hidden="true" />
+
       <div
+        className="brain-page-content"
         style={{
           width: "100%",
           maxWidth: "980px",
