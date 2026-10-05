@@ -1120,3 +1120,29 @@
   .axiom-robotics-portal .brainbot-pro-hand,
   .axiom-robotics-portal .brainbot-pro-mouth{transition:none!important}
 }
+
+
+/* Natural presenter hands: relaxed at the sides, never hanging straight like claws. */
+.axiom-robotics-portal .brainbot-pro-arm-left{
+  transform:translateY(var(--robot-left-y,0px)) rotate(calc(-4deg + var(--robot-left-rotate,0deg)))!important;
+}
+.axiom-robotics-portal .brainbot-pro-arm-right{
+  transform:translateY(var(--robot-right-y,0px)) rotate(calc(4deg + var(--robot-right-rotate,0deg)))!important;
+}
+.axiom-robotics-portal .brainbot-pro-forearm-left{
+  transform:rotate(calc(-7deg + var(--robot-left-elbow,0deg)))!important;
+}
+.axiom-robotics-portal .brainbot-pro-forearm-right{
+  transform:rotate(calc(7deg + var(--robot-right-elbow,0deg)))!important;
+}
+.axiom-robotics-portal .brainbot-pro-hand-left{
+  transform:rotate(calc(14deg + var(--robot-left-wrist,0deg)))!important;
+}
+.axiom-robotics-portal .brainbot-pro-hand-right{
+  transform:rotate(calc(-14deg + var(--robot-right-wrist,0deg)))!important;
+}
+.axiom-robotics-portal .brainbot-pro-arm,
+.axiom-robotics-portal .brainbot-pro-forearm,
+.axiom-robotics-portal .brainbot-pro-hand{
+  will-change:transform;
+}
