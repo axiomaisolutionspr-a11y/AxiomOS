@@ -52,24 +52,21 @@ export default function SiteExperience() {
     if (!analyser) return;
     if (ctx.state === "suspended") void ctx.resume().catch(() => {});
     cancelAnimationFrame(narrationFrame.current);
-    const samples = new Uint8Array(analyser.frequencyBinCount);
+    const samples = new Uint8Array(analyser.fftSize);
     const tick = () => {
       const portal = document.querySelector<HTMLElement>(".axiom-robotics-portal");
       if (!portal || voice.paused || voice.ended) {
         resetRobotVoiceMotion();
         return;
       }
-      analyser.getByteFrequencyData(samples);
-      let weighted = 0;
-      let weight = 0;
-      const speechBins = Math.min(92, samples.length);
-      for (let index = 2; index < speechBins; index += 1) {
-        const binWeight = index < 44 ? 1.35 : 0.55;
-        weighted += samples[index] * binWeight;
-        weight += binWeight;
+      analyser.getByteTimeDomainData(samples);
+      let energy = 0;
+      for (const sample of samples) {
+        const value = (sample - 128) / 128;
+        energy += value * value;
       }
-      const average = weight ? weighted / weight / 255 : 0;
-      const rawLevel = Math.max(0, Math.min(1, (average - 0.045) * 2.3));
+      const rms = Math.sqrt(energy / samples.length);
+      const rawLevel = Math.max(0, Math.min(1, (rms - 0.012) * 9));
       const previous = voiceEnvelope.current;
       const smoothing = rawLevel > previous ? 0.32 : 0.12;
       const envelope = previous + (rawLevel - previous) * smoothing;
