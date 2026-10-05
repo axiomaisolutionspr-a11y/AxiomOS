@@ -69,12 +69,12 @@ export default function SiteExperience() {
         weight += binWeight;
       }
       const average = weight ? weighted / weight / 255 : 0;
-      const rawLevel = Math.max(0, Math.min(1, (average - 0.075) * 5.2));
+      const rawLevel = Math.max(0, Math.min(1, (average - 0.045) * 2.3));
       const previous = voiceEnvelope.current;
       const smoothing = rawLevel > previous ? 0.32 : 0.12;
       const envelope = previous + (rawLevel - previous) * smoothing;
       voiceEnvelope.current = envelope;
-      portal.style.setProperty("--robot-mouth-open", (0.12 + envelope * 0.88).toFixed(2));
+      portal.style.setProperty("--robot-mouth-open", (0.05 + envelope * 0.95).toFixed(2));
       portal.style.setProperty("--robot-mouth-width", (0.9 + envelope * 0.1).toFixed(2));
       narrationFrame.current = requestAnimationFrame(tick);
     };
