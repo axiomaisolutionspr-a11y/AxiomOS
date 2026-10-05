@@ -614,3 +614,156 @@
   }
   .axiom-robotics-portal .axiom-robot-face::after{box-shadow:calc(92px * .52) 0 0 -1px #dce9ee}
 }
+
+
+/* Robot 2 reference proportions: taller adult humanoid with narrow waist and long articulated limbs. */
+.axiom-robotics-portal .axiom-robot-avatar,
+.axiom-robotics-portal[data-placement="hero"] .axiom-robot-avatar{
+  width:126px!important;
+  height:270px!important;
+}
+.axiom-robotics-portal .axiom-robot-face{
+  left:32%!important;
+  right:32%!important;
+  top:2%!important;
+  height:22%!important;
+  border-radius:44% 44% 36% 36% / 34% 34% 52% 52%!important;
+}
+.axiom-robotics-portal .axiom-robot-face::after{
+  left:-16%;
+  top:38%;
+  width:14%;
+  height:25%;
+  box-shadow:calc(126px * .36) 0 0 -1px #dce9ee;
+}
+.axiom-robotics-portal .axiom-robot-brain-window{
+  left:40%!important;
+  top:3%!important;
+  width:20%!important;
+  height:18%!important;
+}
+.axiom-robotics-portal .axiom-robot-eye{top:48%!important;width:14%!important;height:7%!important}
+.axiom-robotics-portal .axiom-robot-mouth{bottom:12%!important;width:22%!important;height:3.5%!important}
+.axiom-robotics-portal .axiom-robot-neck{
+  top:22%!important;
+  width:16%!important;
+  height:12%!important;
+  border-radius:3px!important;
+  z-index:2;
+}
+.axiom-robotics-portal .axiom-robot-body{
+  left:20%!important;
+  top:31%!important;
+  width:60%!important;
+  height:25%!important;
+  clip-path:polygon(10% 0,90% 0,100% 18%,78% 100%,22% 100%,0 18%);
+  border-radius:25% 25% 18% 18% / 18% 18% 28% 28%!important;
+  background:
+    linear-gradient(90deg,transparent 0 10%,rgba(12,20,26,.85) 11% 20%,transparent 21% 79%,rgba(12,20,26,.85) 80% 89%,transparent 90%),
+    linear-gradient(145deg,#f9fcfd 0%,#c6d2d7 42%,#54636c 70%,#edf4f6 100%)!important;
+}
+.axiom-robotics-portal .axiom-robot-body::before{
+  left:18%!important;
+  top:15%!important;
+  width:64%!important;
+  height:53%!important;
+  border-radius:18% 18% 35% 35%!important;
+}
+.axiom-robotics-portal .axiom-robot-body::after{
+  content:""!important;
+  position:absolute;
+  display:block!important;
+  left:36%!important;
+  right:36%!important;
+  bottom:8%!important;
+  height:22%!important;
+  border-radius:35%;
+  background:repeating-linear-gradient(180deg,#192833 0 3px,#718996 3px 5px);
+  box-shadow:none!important;
+}
+.axiom-robotics-portal .axiom-robot-pelvis{
+  position:absolute;
+  left:31%;
+  top:55%;
+  width:38%;
+  height:9%;
+  z-index:3;
+  clip-path:polygon(8% 0,92% 0,100% 44%,78% 100%,22% 100%,0 44%);
+  background:linear-gradient(145deg,#eef5f7,#9caeb7 58%,#41515b);
+  border:1px solid #b7c8cf;
+  box-shadow:inset 0 2px 2px #fff;
+  transform:translateY(var(--robot-body-y,0px)) rotate(var(--robot-body-rotate,0deg));
+}
+.axiom-robotics-portal .axiom-robot-arm{
+  top:31%!important;
+  width:22%!important;
+  height:36%!important;
+}
+.axiom-robotics-portal .axiom-robot-arm-left{left:3%!important}
+.axiom-robotics-portal .axiom-robot-arm-right{right:3%!important}
+.axiom-robotics-portal .axiom-robot-upper-arm{
+  left:31%;
+  width:38%;
+  height:47%;
+  border-radius:38% 38% 28% 28%;
+  background:
+    linear-gradient(90deg,#15242d 0 18%,transparent 19% 81%,#15242d 82%),
+    linear-gradient(100deg,#f5fafb,#aebdc4 55%,#53646d);
+}
+.axiom-robotics-portal .axiom-robot-elbow{left:35%;top:40%;width:30%}
+.axiom-robotics-portal .axiom-robot-forearm{
+  left:30%;
+  top:48%;
+  width:40%;
+  height:42%;
+  border-radius:26% 26% 36% 36%;
+  background:
+    linear-gradient(90deg,#24343e 0 13%,transparent 14% 86%,#24343e 87%),
+    linear-gradient(100deg,#eff5f7,#a7b8c0 55%,#52636c);
+}
+.axiom-robotics-portal .axiom-robot-hand{
+  left:10%;
+  bottom:-25%;
+  width:80%;
+  height:31%;
+  border-radius:35% 35% 28% 28%;
+  background:linear-gradient(110deg,#dfe9ed,#889ba4 55%,#263741);
+}
+.axiom-robotics-portal .axiom-robot-leg{
+  top:62%!important;
+  height:34%!important;
+  width:17%!important;
+  border-radius:26% 26% 14% 14%!important;
+  background:
+    linear-gradient(180deg,transparent 0 43%,#192832 44% 55%,transparent 56%),
+    linear-gradient(90deg,#526771,#eff5f7 48%,#788b94)!important;
+  border:1px solid #aabcc4;
+}
+.axiom-robotics-portal .axiom-robot-leg-left{left:30%!important}
+.axiom-robotics-portal .axiom-robot-leg-right{right:30%!important}
+.axiom-robotics-portal .axiom-robot-leg::before{
+  left:1%;
+  right:1%;
+  top:43%;
+  height:13%;
+  background:radial-gradient(circle at 45% 35%,#8ca2ac,#17252d 70%);
+  border:1px solid #6e858f;
+}
+.axiom-robotics-portal .axiom-robot-leg::after{
+  left:-34%!important;
+  width:168%!important;
+  height:14%!important;
+  bottom:-5%!important;
+  border-radius:36% 50% 20% 18%!important;
+  background:linear-gradient(90deg,#d9e4e8,#647984)!important;
+}
+@media(max-width:560px){
+  .axiom-robotics-portal .axiom-robot-avatar,
+  .axiom-robotics-portal[data-placement="hero"] .axiom-robot-avatar{
+    width:78px!important;
+    height:167px!important;
+  }
+  .axiom-robotics-portal .axiom-robot-face::after{
+    box-shadow:calc(78px * .36) 0 0 -1px #dce9ee;
+  }
+}
