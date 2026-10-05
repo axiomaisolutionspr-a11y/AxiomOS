@@ -10,33 +10,13 @@ export default function RobotCompanion() {
     const portal = document.querySelector<HTMLElement>(".axiom-robotics-portal");
     const avatar = portal?.querySelector<HTMLElement>(".axiom-robot-avatar");
     if (!portal || !avatar) return;
-    let motionFrame = 0;
-    const reset = () => {
-      for (const name of ["--robot-head-x", "--robot-head-y", "--robot-eye-x", "--robot-eye-y"]) avatar.style.setProperty(name, "0px");
-      for (const name of ["--robot-turn-x", "--robot-turn-y"]) avatar.style.setProperty(name, "0deg");
+    const talk = portal.querySelector<HTMLButtonElement>(".axiom-robot-talk");
+    const speak = () => {
+      const control = document.querySelector<HTMLButtonElement>(".axiom-narration-toggle");
+      if (control) control.click();
+      else window.location.assign("/#inicio");
     };
-    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-    const move = (event: PointerEvent) => {
-      if (event.pointerType === "touch" || reducedMotion.matches) return;
-      cancelAnimationFrame(motionFrame);
-      motionFrame = requestAnimationFrame(() => {
-        const rect = avatar.getBoundingClientRect();
-        const clamp = (value: number) => Math.max(-1, Math.min(1, value));
-        const x = clamp((event.clientX - rect.left - rect.width / 2) / (rect.width * .65 + 65));
-        const y = clamp((event.clientY - rect.top - rect.height / 2) / (rect.height * .65 + 65));
-        avatar.style.setProperty("--robot-head-x", `${x * 2}px`);
-        avatar.style.setProperty("--robot-head-y", `${y * 1.5}px`);
-        avatar.style.setProperty("--robot-turn-x", `${-y * 6}deg`);
-        avatar.style.setProperty("--robot-turn-y", `${x * 9}deg`);
-        avatar.style.setProperty("--robot-eye-x", `${x * 3}px`);
-        avatar.style.setProperty("--robot-eye-y", `${y * 2}px`);
-      });
-    };
-    const stop = () => { cancelAnimationFrame(motionFrame); reset(); };
-    document.addEventListener("pointermove", move, { passive: true });
-    document.documentElement.addEventListener("pointerleave", stop);
-    window.addEventListener("blur", stop);
-    reducedMotion.addEventListener("change", stop);
+    talk?.addEventListener("click", speak);
 
     const hero = pathname === "/" ? document.querySelector<HTMLElement>("#inicio") : null;
     const slot = hero?.querySelector<HTMLElement>(".axiom-v6-stage-slot");
@@ -75,15 +55,10 @@ export default function RobotCompanion() {
     window.addEventListener("resize", schedule);
     return () => {
       disposed = true;
-      cancelAnimationFrame(motionFrame);
       cancelAnimationFrame(layoutFrame);
       observer.disconnect();
-      document.removeEventListener("pointermove", move);
-      document.documentElement.removeEventListener("pointerleave", stop);
-      window.removeEventListener("blur", stop);
       window.removeEventListener("resize", schedule);
-      reducedMotion.removeEventListener("change", stop);
-      reset();
+      talk?.removeEventListener("click", speak);
       delete portal.dataset.placement;
       stage?.style.removeProperty("--axiom-frame-shift");
     };

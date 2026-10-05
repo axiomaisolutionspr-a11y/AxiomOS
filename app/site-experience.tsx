@@ -25,7 +25,7 @@ export default function SiteExperience() {
     voiceEnvelope.current = 0;
     const portal = document.querySelector<HTMLElement>(".axiom-robotics-portal");
     if (!portal) return;
-    for (const name of ["--robot-mouth-open", "--robot-mouth-width", "--robot-speak-x", "--robot-speak-y", "--robot-speak-rot-x", "--robot-speak-rot-y", "--robot-left-y", "--robot-left-rotate", "--robot-right-y", "--robot-right-rotate", "--robot-body-y"]) {
+    for (const name of ["--robot-mouth-open", "--robot-mouth-width"]) {
       portal.style.removeProperty(name);
     }
   };
@@ -74,19 +74,8 @@ export default function SiteExperience() {
       const smoothing = rawLevel > previous ? 0.32 : 0.12;
       const envelope = previous + (rawLevel - previous) * smoothing;
       voiceEnvelope.current = envelope;
-      const time = voice.currentTime;
-      const gesture = Math.min(1, envelope * 1.8);
-      portal.style.setProperty("--robot-mouth-open", (0.08 + envelope * 0.92).toFixed(2));
-      portal.style.setProperty("--robot-mouth-width", (0.90 + envelope * 0.10).toFixed(2));
-      portal.style.setProperty("--robot-speak-x", `${(Math.sin(time * 1.05) * gesture * 0.75).toFixed(2)}px`);
-      portal.style.setProperty("--robot-speak-y", `${(Math.cos(time * 0.92) * gesture * 0.55).toFixed(2)}px`);
-      portal.style.setProperty("--robot-speak-rot-x", `${(Math.sin(time * 0.78) * gesture * 1.1).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-speak-rot-y", `${(Math.cos(time * 0.68) * gesture * 1.3).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-y", `${(Math.sin(time * 1.18) * gesture * 5.5).toFixed(2)}px`);
-      portal.style.setProperty("--robot-left-rotate", `${(Math.sin(time * 1.18 + Math.PI / 2) * gesture * 4.8).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-y", `${(Math.sin(time * 1.02 + Math.PI) * gesture * 4.2).toFixed(2)}px`);
-      portal.style.setProperty("--robot-right-rotate", `${(Math.sin(time * 1.02 + Math.PI / 2) * gesture * 4.4).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-body-y", `${(Math.sin(time * 1.1) * gesture * 1.15).toFixed(2)}px`);
+      portal.style.setProperty("--robot-mouth-open", (0.12 + envelope * 0.88).toFixed(2));
+      portal.style.setProperty("--robot-mouth-width", (0.9 + envelope * 0.1).toFixed(2));
       narrationFrame.current = requestAnimationFrame(tick);
     };
     tick();
@@ -222,6 +211,10 @@ export default function SiteExperience() {
     };
   }, [pathname, publicPage]);
 
+  useEffect(() => {
+    document.querySelector(".axiom-robot-talk")?.setAttribute("aria-pressed", String(narrating));
+  }, [narrating]);
+
   if (!publicPage) return null;
   const toggle = () => {
     const next = !enabledRef.current;
@@ -260,7 +253,7 @@ export default function SiteExperience() {
   return (
     <>
       <audio ref={music} src="/audio/game-on-dopestuff.mp3" loop preload="none" />
-      {pathname === "/" && <>
+      <>
         <audio ref={narration} src="/audio/axiomai-presentacion-roger.mp3" preload="none"
           onPlaying={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.setAttribute("data-speaking", "true"); startRobotVoiceMotion(); setNarrating(true); setVoiceStarted(true); if (music.current) music.current.volume = 0.045; }}
           onPause={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); if (music.current) music.current.volume = 0.18; }}
@@ -271,7 +264,7 @@ export default function SiteExperience() {
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">{narrating ? <path d="M6 4h4v16H6zm8 0h4v16h-4z" /> : <path d="m7 4 14 8-14 8z" />}</svg>
           {narrating ? "Pausar narración" : voiceError ? "Reintentar narración" : voiceStarted ? "Continuar presentación" : "Escuchar presentación"}
         </button>
-      </>}
+      </>
       <button type="button" className="axiom-sound-toggle" aria-label={enabled ? "Silenciar música, narración y sonidos / Mute sound" : "Activar música y sonidos / Enable sound"} aria-pressed={enabled} title={enabled ? "Sonido activado" : "Sonido desactivado"} onClick={toggle}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z" />{enabled ? <><path d="M15 8a6 6 0 0 1 0 8" /><path d="M18 5a10 10 0 0 1 0 14" /></> : <path d="m16 9 5 6m0-6-5 6" />}</svg>
       </button>
