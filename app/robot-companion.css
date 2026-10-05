@@ -114,3 +114,70 @@
   .axiom-robotics-portal[data-speaking="true"] .axiom-robot-body,
   .axiom-robotics-portal[data-speaking="true"] .axiom-robot-mouth{animation:none!important;transition:none!important}
 }
+
+/* Reference-inspired finish: white humanoid shell, articulated shoulders and hands.
+   Brain remains the identity mark in the forehead; motion variables stay audio-driven. */
+.axiom-robotics-portal .axiom-robot-avatar{filter:drop-shadow(0 0 24px rgba(120,220,255,.3));}
+.axiom-robotics-portal .axiom-robot-face{
+  left:13%!important;right:13%!important;top:10%!important;height:43%!important;
+  border-radius:46% 46% 42% 42%!important;
+  background:linear-gradient(145deg,#fff 0%,#eef6fb 42%,#bfd2dd 78%,#f9fdff 100%)!important;
+  border-color:rgba(209,240,249,.98)!important;
+  box-shadow:inset 0 3px 5px rgba(255,255,255,.95),inset 0 -8px 10px rgba(79,115,137,.28),0 0 16px rgba(102,219,247,.28)!important;
+}
+.axiom-robotics-portal .axiom-robot-face::before{
+  left:18%;right:18%;top:52%;height:24%;border-radius:45% 45% 34% 34%;
+  background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(158,188,202,.24));
+  border:0;box-shadow:inset 0 -2px 4px rgba(53,94,116,.16);
+}
+.axiom-robotics-portal .axiom-robot-brain-window{
+  left:34%;top:5%;width:32%;height:27%;border-radius:50%;
+  background-color:#081e36;background-size:88% auto;
+  border:1px solid rgba(118,229,246,.95);box-shadow:0 0 10px rgba(73,218,244,.64),inset 0 0 8px rgba(8,40,70,.9);
+}
+.axiom-robotics-portal .axiom-robot-eye{
+  top:48%!important;width:15%!important;height:12%!important;border-radius:50%!important;
+  box-shadow:0 0 8px currentColor,0 0 17px rgba(35,214,244,.58)!important;
+}
+.axiom-robotics-portal .axiom-robot-eye-left{left:23%!important}
+.axiom-robotics-portal .axiom-robot-eye-right{right:23%!important}
+.axiom-robotics-portal .axiom-robot-eye::after{inset:25%}
+.axiom-robotics-portal .axiom-robot-mouth{
+  bottom:8%!important;width:22%!important;height:7%!important;border-radius:45%;
+  background:linear-gradient(180deg,#0b1b2a,#06111d 68%,#59dff0 69%,#59dff0 83%,#0b273a 84%)!important;
+}
+.axiom-robotics-portal .axiom-robot-antenna{display:none}
+.axiom-robotics-portal .axiom-robot-neck{
+  top:48%!important;width:21%!important;height:12%!important;border-radius:8px!important;
+  background:linear-gradient(90deg,#31556d,#d5eaf1 26%,#56778a 50%,#d5eaf1 74%,#31556d)!important;
+  box-shadow:inset 0 0 5px rgba(255,255,255,.72),0 0 5px rgba(55,185,214,.28);
+}
+.axiom-robotics-portal .axiom-robot-body{
+  left:22%;top:54%;width:56%;height:33%;border-radius:34% 34% 23% 23%;
+  background:linear-gradient(145deg,#fff 0%,#e7f2f6 46%,#a6bfcc 82%,#f7fcff 100%);
+  border-color:#c6e7ef;box-shadow:inset 0 3px 4px #fff,inset 0 -7px 8px rgba(55,91,112,.26),0 0 10px rgba(75,204,231,.2);
+}
+.axiom-robotics-portal .axiom-robot-body::before{
+  left:19%;top:13%;width:62%;height:48%;border-radius:24% 24% 38% 38%;
+  background:linear-gradient(160deg,#173751,#071725 78%);border-color:#5ddced;
+  box-shadow:0 0 8px rgba(57,216,241,.46),inset 0 0 10px rgba(80,220,242,.12);
+}
+.axiom-robotics-portal .axiom-robot-body i{left:40%;top:24%;width:20%;height:24%;background:#a7f8ff;box-shadow:0 0 10px #43dff3}
+.axiom-robotics-portal .axiom-robot-arm{
+  top:54%;width:18%;height:31%;border-radius:42% 42% 30% 30%;
+  background:linear-gradient(105deg,#fff 0%,#dfedf2 43%,#91afbd 100%);
+  border-color:#b9dce6;box-shadow:inset 1px 0 3px rgba(255,255,255,.95),0 0 4px rgba(44,174,205,.25);
+}
+.axiom-robotics-portal .axiom-robot-arm-left{left:4%}
+.axiom-robotics-portal .axiom-robot-arm-right{right:4%}
+.axiom-robotics-portal .axiom-robot-arm::before{
+  left:4%;right:4%;top:39%;height:17%;border-radius:50%;background:#1c3d57;border-color:#7adfed;box-shadow:0 0 6px rgba(77,221,241,.62);
+}
+.axiom-robotics-portal .axiom-robot-arm::after{
+  left:-10%;right:-10%;bottom:-8%;height:26%;border-radius:46% 46% 28% 28%;
+  background:linear-gradient(110deg,#edfaff,#a4c1cd 55%,#5b7d91);border-color:#a7d8e4;
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.86),0 1px 3px rgba(25,66,92,.45);
+}
+.axiom-robotics-portal .axiom-robot-leg{top:84%;height:15%;width:17%;border-radius:30% 30% 20% 20%;background:linear-gradient(90deg,#55778a,#e3f3f7,#7393a4)}
+.axiom-robotics-portal .axiom-robot-leg-left{left:29%}
+.axiom-robotics-portal .axiom-robot-leg-right{right:29%}
