@@ -99,10 +99,10 @@ export default function SiteExperience() {
       const phraseIndex = Math.floor((voice.currentTime || phase) / 2.35) % 4;
       const cadence = (Math.sin(phase * 2.7) + 1) / 2;
       const phrasePoses = [
-        { left: -17, right: 4, leftElbow: 10, rightElbow: -3 },
-        { left: -5, right: 17, leftElbow: 3, rightElbow: -10 },
-        { left: -12, right: 12, leftElbow: 8, rightElbow: -8 },
-        { left: -8, right: 7, leftElbow: -3, rightElbow: 5 },
+        { left: 17, right: -4, leftElbow: 10, rightElbow: -3 },
+        { left: 5, right: -17, leftElbow: 3, rightElbow: -10 },
+        { left: 12, right: -12, leftElbow: 8, rightElbow: -8 },
+        { left: 8, right: -7, leftElbow: 3, rightElbow: -5 },
       ] as const;
       const pose = phrasePoses[phraseIndex];
       const emphasis = speechGate * (0.58 + cadence * 0.42);
@@ -117,9 +117,9 @@ export default function SiteExperience() {
       portal.style.setProperty("--robot-body-y", `${(bodyBeat * gesture * 1.2).toFixed(2)}px`);
       portal.style.setProperty("--robot-body-rotate", `${(bodyBeat * gesture * 0.75).toFixed(2)}deg`);
       portal.style.setProperty("--robot-left-y", `${(-emphasis * (1.5 + leftBeat * 4.5)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-left-rotate", `${(emphasis * (pose.left - leftBeat * 4)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-rotate", `${(emphasis * (pose.left + leftBeat * 4)).toFixed(2)}deg`);
       portal.style.setProperty("--robot-right-y", `${(-emphasis * (1.5 + rightBeat * 4.5)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-right-rotate", `${(emphasis * (pose.right + rightBeat * 4)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-rotate", `${(emphasis * (pose.right - rightBeat * 4)).toFixed(2)}deg`);
       portal.style.setProperty("--robot-left-elbow", `${(emphasis * (pose.leftElbow + leftBeat * 6)).toFixed(2)}deg`);
       portal.style.setProperty("--robot-right-elbow", `${(emphasis * (pose.rightElbow - rightBeat * 6)).toFixed(2)}deg`);
       portal.style.setProperty("--robot-left-wrist", `${(emphasis * (-4 + leftBeat * 8)).toFixed(2)}deg`);
