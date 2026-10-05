@@ -1025,3 +1025,98 @@
   }
   .axiom-robotics-portal .axiom-robot-mouth{min-height:3px;width:42%!important}
 }
+
+
+/* High-detail articulated SVG figure inspired by the supplied professional humanoid reference. */
+.axiom-robotics-portal .axiom-robot-avatar,
+.axiom-robotics-portal[data-placement="hero"] .axiom-robot-avatar{
+  width:140px!important;
+  height:270px!important;
+  filter:drop-shadow(0 11px 11px rgba(0,0,0,.42)) drop-shadow(0 0 13px rgba(63,211,244,.18))!important;
+}
+.axiom-robotics-portal .axiom-robot-avatar > :not(.brainbot-pro){display:none!important}
+.axiom-robotics-portal .brainbot-pro{
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+.axiom-robotics-portal .brainbot-pro-head{
+  transform-box:view-box;
+  transform-origin:110px 90px;
+  transform:
+    translate(calc(var(--robot-head-x,0px) + var(--robot-speak-x,0px)),calc(var(--robot-head-y,0px) + var(--robot-speak-y,0px)))
+    rotate(calc(var(--robot-speak-rot-y,0deg) * .65));
+  transition:transform 105ms ease-out;
+}
+.axiom-robotics-portal .brainbot-pro-body,
+.axiom-robotics-portal .brainbot-pro-pelvis{
+  transform-box:view-box;
+  transform-origin:110px 220px;
+  transform:translateY(var(--robot-body-y,0px)) rotate(var(--robot-body-rotate,0deg));
+  transition:transform 100ms ease-out;
+}
+.axiom-robotics-portal .brainbot-pro-arm{
+  transform-box:view-box;
+  transition:transform 95ms cubic-bezier(.2,.8,.3,1);
+}
+.axiom-robotics-portal .brainbot-pro-arm-left{
+  transform-origin:62px 126px;
+  transform:translateY(var(--robot-left-y,0px)) rotate(var(--robot-left-rotate,0deg));
+}
+.axiom-robotics-portal .brainbot-pro-arm-right{
+  transform-origin:158px 126px;
+  transform:translateY(var(--robot-right-y,0px)) rotate(var(--robot-right-rotate,0deg));
+}
+.axiom-robotics-portal .brainbot-pro-forearm{
+  transform-box:view-box;
+  transition:transform 95ms cubic-bezier(.2,.8,.3,1);
+}
+.axiom-robotics-portal .brainbot-pro-forearm-left{
+  transform-origin:57px 205px;
+  transform:rotate(var(--robot-left-elbow,0deg));
+}
+.axiom-robotics-portal .brainbot-pro-forearm-right{
+  transform-origin:163px 205px;
+  transform:rotate(var(--robot-right-elbow,0deg));
+}
+.axiom-robotics-portal .brainbot-pro-hand{
+  transform-box:view-box;
+  transition:transform 90ms ease-out;
+}
+.axiom-robotics-portal .brainbot-pro-hand-left{
+  transform-origin:56px 278px;
+  transform:rotate(var(--robot-left-wrist,0deg));
+}
+.axiom-robotics-portal .brainbot-pro-hand-right{
+  transform-origin:164px 278px;
+  transform:rotate(var(--robot-right-wrist,0deg));
+}
+.axiom-robotics-portal .brainbot-pro-mouth{
+  transform-box:fill-box;
+  transform-origin:center;
+  transform:scaleX(var(--robot-mouth-width,1)) scaleY(var(--robot-mouth-open,.62));
+  transition:transform 65ms linear;
+  filter:drop-shadow(0 0 2px rgba(88,226,244,.62));
+}
+.axiom-robotics-portal[data-speaking="true"] .brainbot-pro-mouth{
+  filter:drop-shadow(0 0 4px rgba(100,235,250,.95));
+}
+@media(max-width:560px){
+  .axiom-robotics-portal .axiom-robot-avatar,
+  .axiom-robotics-portal[data-placement="hero"] .axiom-robot-avatar{
+    width:88px!important;
+    height:170px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .axiom-robotics-portal .brainbot-pro-head,
+  .axiom-robotics-portal .brainbot-pro-body,
+  .axiom-robotics-portal .brainbot-pro-pelvis,
+  .axiom-robotics-portal .brainbot-pro-arm,
+  .axiom-robotics-portal .brainbot-pro-forearm,
+  .axiom-robotics-portal .brainbot-pro-hand,
+  .axiom-robotics-portal .brainbot-pro-mouth{transition:none!important}
+}
