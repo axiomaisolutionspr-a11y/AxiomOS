@@ -43,6 +43,16 @@ export default function SiteExperience() {
       "--robot-right-elbow",
       "--robot-left-wrist",
       "--robot-right-wrist",
+      "--robot-left-shoulder-y",
+      "--robot-right-shoulder-y",
+      "--robot-left-shoulder-roll",
+      "--robot-right-shoulder-roll",
+      "--robot-left-finger-spread",
+      "--robot-right-finger-spread",
+      "--robot-left-finger-curl",
+      "--robot-right-finger-curl",
+      "--robot-left-thumb",
+      "--robot-right-thumb",
     ]) {
       portal.style.removeProperty(name);
     }
@@ -124,6 +134,16 @@ export default function SiteExperience() {
       portal.style.setProperty("--robot-right-elbow", `${(emphasis * (pose.rightElbow - rightBeat * 6)).toFixed(2)}deg`);
       portal.style.setProperty("--robot-left-wrist", `${(emphasis * (-4 + leftBeat * 8)).toFixed(2)}deg`);
       portal.style.setProperty("--robot-right-wrist", `${(emphasis * (4 - rightBeat * 8)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-shoulder-y", `${(-emphasis * (0.8 + leftBeat * 2.2)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-right-shoulder-y", `${(-emphasis * (0.8 + rightBeat * 2.2)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-left-shoulder-roll", `${(emphasis * (-1.5 + leftBeat * 3.8)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-shoulder-roll", `${(emphasis * (1.5 - rightBeat * 3.8)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-finger-spread", (1 + emphasis * (0.06 + leftBeat * 0.14)).toFixed(3));
+      portal.style.setProperty("--robot-right-finger-spread", (1 + emphasis * (0.06 + rightBeat * 0.14)).toFixed(3));
+      portal.style.setProperty("--robot-left-finger-curl", (1 - emphasis * (0.12 + rightBeat * 0.18)).toFixed(3));
+      portal.style.setProperty("--robot-right-finger-curl", (1 - emphasis * (0.12 + leftBeat * 0.18)).toFixed(3));
+      portal.style.setProperty("--robot-left-thumb", `${(emphasis * (-4 - leftBeat * 8)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-thumb", `${(emphasis * (4 + rightBeat * 8)).toFixed(2)}deg`);
       narrationFrame.current = requestAnimationFrame(tick);
     };
     tick();
