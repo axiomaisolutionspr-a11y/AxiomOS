@@ -15,12 +15,14 @@ export default function SiteExperience() {
   const narrationSource = useRef<MediaElementAudioSourceNode | null>(null);
   const narrationAnalyser = useRef<AnalyserNode | null>(null);
   const narrationFrame = useRef<number>(0);
+  const voiceEnvelope = useRef(0);
   const enabledRef = useRef(true);
   const [enabled, setEnabled] = useState(true);
 
   const resetRobotVoiceMotion = () => {
     cancelAnimationFrame(narrationFrame.current);
     narrationFrame.current = 0;
+    voiceEnvelope.current = 0;
     const portal = document.querySelector<HTMLElement>(".axiom-robotics-portal");
     if (!portal) return;
     for (const name of ["--robot-mouth-open", "--robot-mouth-width", "--robot-speak-x", "--robot-speak-y", "--robot-speak-rot-x", "--robot-speak-rot-y", "--robot-left-y", "--robot-left-rotate", "--robot-right-y", "--robot-right-rotate", "--robot-body-y"]) {
@@ -36,8 +38,8 @@ export default function SiteExperience() {
       try {
         const source = narrationSource.current ?? ctx.createMediaElementSource(voice);
         const node = ctx.createAnalyser();
-        node.fftSize = 256;
-        node.smoothingTimeConstant = 0.72;
+        node.fftSize = 512;
+        node.smoothingTimeConstant = 0.84;
         source.connect(node);
         node.connect(ctx.destination);
         narrationSource.current = source;
@@ -58,23 +60,33 @@ export default function SiteExperience() {
         return;
       }
       analyser.getByteFrequencyData(samples);
-      let sum = 0;
-      for (const sample of samples) sum += sample;
-      const average = sum / samples.length / 255;
-      const level = Math.max(0, Math.min(1, (average - 0.035) * 3.6));
+      let weighted = 0;
+      let weight = 0;
+      const speechBins = Math.min(92, samples.length);
+      for (let index = 2; index < speechBins; index += 1) {
+        const binWeight = index < 44 ? 1.35 : 0.55;
+        weighted += samples[index] * binWeight;
+        weight += binWeight;
+      }
+      const average = weight ? weighted / weight / 255 : 0;
+      const rawLevel = Math.max(0, Math.min(1, (average - 0.075) * 5.2));
+      const previous = voiceEnvelope.current;
+      const smoothing = rawLevel > previous ? 0.32 : 0.12;
+      const envelope = previous + (rawLevel - previous) * smoothing;
+      voiceEnvelope.current = envelope;
       const time = voice.currentTime;
-      const pulse = Math.min(1, 0.16 + level * 1.35);
-      portal.style.setProperty("--robot-mouth-open", (0.34 + pulse * 1.12).toFixed(2));
-      portal.style.setProperty("--robot-mouth-width", (0.84 + pulse * 0.18).toFixed(2));
-      portal.style.setProperty("--robot-speak-x", `${(Math.sin(time * 1.7) * (0.6 + pulse * 1.8)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-speak-y", `${(Math.cos(time * 1.45) * (0.5 + pulse * 1.5)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-speak-rot-x", `${(Math.sin(time * 1.3) * (0.7 + pulse * 1.8)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-speak-rot-y", `${(Math.cos(time * 1.1) * (0.8 + pulse * 2.2)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-y", `${(Math.sin(time * 2.15) * (1.5 + pulse * 8)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-left-rotate", `${(Math.sin(time * 2.15 + Math.PI / 2) * (1.5 + pulse * 7)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-y", `${(Math.sin(time * 1.78 + Math.PI) * (1.1 + pulse * 6.5)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-right-rotate", `${(Math.sin(time * 1.78 + Math.PI / 2) * (1.1 + pulse * 6)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-body-y", `${(Math.sin(time * 2.1) * (0.35 + pulse * 1.7)).toFixed(2)}px`);
+      const gesture = Math.min(1, envelope * 1.8);
+      portal.style.setProperty("--robot-mouth-open", (0.08 + envelope * 0.92).toFixed(2));
+      portal.style.setProperty("--robot-mouth-width", (0.90 + envelope * 0.10).toFixed(2));
+      portal.style.setProperty("--robot-speak-x", `${(Math.sin(time * 1.05) * gesture * 0.75).toFixed(2)}px`);
+      portal.style.setProperty("--robot-speak-y", `${(Math.cos(time * 0.92) * gesture * 0.55).toFixed(2)}px`);
+      portal.style.setProperty("--robot-speak-rot-x", `${(Math.sin(time * 0.78) * gesture * 1.1).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-speak-rot-y", `${(Math.cos(time * 0.68) * gesture * 1.3).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-y", `${(Math.sin(time * 1.18) * gesture * 5.5).toFixed(2)}px`);
+      portal.style.setProperty("--robot-left-rotate", `${(Math.sin(time * 1.18 + Math.PI / 2) * gesture * 4.8).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-y", `${(Math.sin(time * 1.02 + Math.PI) * gesture * 4.2).toFixed(2)}px`);
+      portal.style.setProperty("--robot-right-rotate", `${(Math.sin(time * 1.02 + Math.PI / 2) * gesture * 4.4).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-body-y", `${(Math.sin(time * 1.1) * gesture * 1.15).toFixed(2)}px`);
       narrationFrame.current = requestAnimationFrame(tick);
     };
     tick();
@@ -246,23 +258,3 @@ export default function SiteExperience() {
     });
   };
   return (
-    <>
-      <audio ref={music} src="/audio/game-on-dopestuff.mp3" loop preload="none" />
-      {pathname === "/" && <>
-        <audio ref={narration} src="/audio/axiomai-presentacion-roger.mp3" preload="none"
-          onPlaying={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.setAttribute("data-speaking", "true"); startRobotVoiceMotion(); setNarrating(true); setVoiceStarted(true); if (music.current) music.current.volume = 0.045; }}
-          onPause={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); if (music.current) music.current.volume = 0.18; }}
-          onEnded={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); setVoiceStarted(false); if (music.current) music.current.volume = 0.18; }}
-          onError={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); setVoiceError(true); if (music.current) music.current.volume = 0.18; }}
-        />
-        <button type="button" className="axiom-narration-toggle" aria-pressed={narrating} onClick={toggleNarration}>
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">{narrating ? <path d="M6 4h4v16H6zm8 0h4v16h-4z" /> : <path d="m7 4 14 8-14 8z" />}</svg>
-          {narrating ? "Pausar narración" : voiceError ? "Reintentar narración" : voiceStarted ? "Continuar presentación" : "Escuchar presentación"}
-        </button>
-      </>}
-      <button type="button" className="axiom-sound-toggle" aria-label={enabled ? "Silenciar música, narración y sonidos / Mute sound" : "Activar música y sonidos / Enable sound"} aria-pressed={enabled} title={enabled ? "Sonido activado" : "Sonido desactivado"} onClick={toggle}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z" />{enabled ? <><path d="M15 8a6 6 0 0 1 0 8" /><path d="M18 5a10 10 0 0 1 0 14" /></> : <path d="m16 9 5 6m0-6-5 6" />}</svg>
-      </button>
-    </>
-  );
-}
