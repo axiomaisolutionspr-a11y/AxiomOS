@@ -101,24 +101,41 @@ export default function SiteExperience() {
       voiceEnvelope.current = envelope;
       const phase = performance.now() / 1000;
       const gesture = Math.min(1, envelope * 2.8);
-      const leftBeat = Math.max(0, Math.sin(phase * 2.35));
-      const rightBeat = Math.max(0, Math.sin(phase * 2.35 + Math.PI));
+      const slowPhase = phase * 1.05;
+      const leftBeat = (Math.sin(slowPhase) + 1) / 2;
+      const rightBeat = (Math.sin(slowPhase + Math.PI) + 1) / 2;
       const headBeat = Math.sin(phase * 3.1);
       const bodyBeat = Math.sin(phase * 2.05);
       const speechGate = Math.min(1, envelope * 4.2);
-      // Fast, unsmoothed voice energy makes the hands respond to each spoken beat.
-      const speechPulse = Math.min(1, rawLevel * 3.4);
-      const phraseIndex = Math.floor((voice.currentTime || phase) / 2.35) % 4;
-      const cadence = (Math.sin(phase * 2.7) + 1) / 2;
+      const handEnergy = Math.min(1, envelope * 2.2);
+      const cadence = (Math.sin(slowPhase * 0.72) + 1) / 2;
+      // One open-hand presentation gesture at a time, with a neutral pose between sides.
       const phrasePoses = [
-        { left: -2, right: 0, leftElbow: -42, rightElbow: 14, leftWrist: 16, rightWrist: -6 },
-        { left: 0, right: 2, leftElbow: -16, rightElbow: 44, leftWrist: 6, rightWrist: -17 },
-        { left: -1, right: 1, leftElbow: -34, rightElbow: 34, leftWrist: 14, rightWrist: -14 },
-        { left: 0, right: 0, leftElbow: -25, rightElbow: 23, leftWrist: 10, rightWrist: -9 },
+        { left: -1, right: -1, leftElbow: -64, rightElbow: -4, leftWrist: 29, rightWrist: -2 },
+        { left: -1, right: -1, leftElbow: -60, rightElbow: -4, leftWrist: 26, rightWrist: -2 },
+        { left: 0, right: 0, leftElbow: 4, rightElbow: -4, leftWrist: 0, rightWrist: 0 },
+        { left: 1, right: 1, leftElbow: 4, rightElbow: 64, leftWrist: 2, rightWrist: -29 },
+        { left: 1, right: 1, leftElbow: 4, rightElbow: 60, leftWrist: 2, rightWrist: -26 },
+        { left: 0, right: 0, leftElbow: 4, rightElbow: -4, leftWrist: 0, rightWrist: 0 },
       ] as const;
-      const pose = phrasePoses[phraseIndex];
-      // A small hold keeps poses readable; most of the travel follows the live voice level.
-      const emphasis = speechGate * (0.22 + speechPulse * 0.64 + cadence * 0.14);
+      const phraseStep = (voice.currentTime || phase) / 1.8;
+      const phraseIndex = Math.floor(phraseStep) % phrasePoses.length;
+      const nextPhraseIndex = (phraseIndex + 1) % phrasePoses.length;
+      const poseProgress = phraseStep - Math.floor(phraseStep);
+      const poseEase = (1 - Math.cos(Math.PI * poseProgress)) / 2;
+      const mixPose = (from: number, to: number) => from + (to - from) * poseEase;
+      const currentPose = phrasePoses[phraseIndex];
+      const nextPose = phrasePoses[nextPhraseIndex];
+      const pose = {
+        left: mixPose(currentPose.left, nextPose.left),
+        right: mixPose(currentPose.right, nextPose.right),
+        leftElbow: mixPose(currentPose.leftElbow, nextPose.leftElbow),
+        rightElbow: mixPose(currentPose.rightElbow, nextPose.rightElbow),
+        leftWrist: mixPose(currentPose.leftWrist, nextPose.leftWrist),
+        rightWrist: mixPose(currentPose.rightWrist, nextPose.rightWrist),
+      };
+      // Smoothed voice energy starts and stops the pose without rapid pumping motions.
+      const emphasis = speechGate * (0.76 + handEnergy * 0.16 + cadence * 0.08);
 
       portal.style.setProperty("--robot-mouth-open", Math.min(1.55, 0.62 + envelope * 1.35).toFixed(2));
       portal.style.setProperty("--robot-mouth-width", (1 + envelope * 0.08).toFixed(2));
@@ -129,27 +146,29 @@ export default function SiteExperience() {
       portal.style.setProperty("--robot-speak-rot-y", `${(Math.sin(phase * 1.55) * gesture * 2.4).toFixed(2)}deg`);
       portal.style.setProperty("--robot-body-y", `${(bodyBeat * gesture * 1.2).toFixed(2)}px`);
       portal.style.setProperty("--robot-body-rotate", `${(bodyBeat * gesture * 0.75).toFixed(2)}deg`);
-      // Keep shoulders quiet; lift the hands from the elbows and articulate on live speech energy.
-      const leftDrive = leftBeat * (0.35 + speechPulse * 0.65);
-      const rightDrive = rightBeat * (0.35 + speechPulse * 0.65);
-      portal.style.setProperty("--robot-left-y", `${(-emphasis * (0.2 + leftDrive * 0.45)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-left-rotate", `${(emphasis * (pose.left - leftDrive * 1.2)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-y", `${(-emphasis * (0.2 + rightDrive * 0.45)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-right-rotate", `${(emphasis * (pose.right + rightDrive * 1.2)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-elbow", `${(emphasis * pose.leftElbow - speechPulse * (5 + leftDrive * 7)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-elbow", `${(emphasis * pose.rightElbow + speechPulse * (5 + rightDrive * 7)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-wrist", `${(emphasis * pose.leftWrist + speechPulse * (4 + leftDrive * 5)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-wrist", `${(emphasis * pose.rightWrist - speechPulse * (4 + rightDrive * 5)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-shoulder-y", `${(-emphasis * (0.15 + leftDrive * 0.3)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-right-shoulder-y", `${(-emphasis * (0.15 + rightDrive * 0.3)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-left-shoulder-roll", `${(emphasis * (-0.35 + leftDrive * 0.7)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-shoulder-roll", `${(emphasis * (0.35 - rightDrive * 0.7)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-finger-spread", (1 + speechGate * 0.04 + speechPulse * (0.1 + leftDrive * 0.08)).toFixed(3));
-      portal.style.setProperty("--robot-right-finger-spread", (1 + speechGate * 0.04 + speechPulse * (0.1 + rightDrive * 0.08)).toFixed(3));
-      portal.style.setProperty("--robot-left-finger-curl", (1 - speechGate * 0.08 - speechPulse * (0.2 + rightDrive * 0.12)).toFixed(3));
-      portal.style.setProperty("--robot-right-finger-curl", (1 - speechGate * 0.08 - speechPulse * (0.2 + leftDrive * 0.12)).toFixed(3));
-      portal.style.setProperty("--robot-left-thumb", `${(-emphasis * 8 - speechPulse * (7 + leftDrive * 7)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-thumb", `${(emphasis * 8 + speechPulse * (7 + rightDrive * 7)).toFixed(2)}deg`);
+      // Keep the hands above the waist: only one side presents while the other rests outward.
+      const leftActivity = Math.min(1, Math.max(0, -pose.leftElbow) / 60);
+      const rightActivity = Math.min(1, Math.max(0, pose.rightElbow) / 60);
+      const leftDrive = leftBeat * leftActivity;
+      const rightDrive = rightBeat * rightActivity;
+      portal.style.setProperty("--robot-left-y", `${(-emphasis * (0.12 + leftDrive * 0.22)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-left-rotate", `${(emphasis * pose.left).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-y", `${(-emphasis * (0.12 + rightDrive * 0.22)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-right-rotate", `${(emphasis * pose.right).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-elbow", `${(emphasis * pose.leftElbow).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-elbow", `${(emphasis * pose.rightElbow).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-wrist", `${(emphasis * pose.leftWrist).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-wrist", `${(emphasis * pose.rightWrist).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-shoulder-y", `${(-emphasis * (0.08 + leftDrive * 0.18)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-right-shoulder-y", `${(-emphasis * (0.08 + rightDrive * 0.18)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-left-shoulder-roll", `${(emphasis * (-0.22 + leftDrive * 0.35)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-shoulder-roll", `${(emphasis * (0.22 - rightDrive * 0.35)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-finger-spread", (1 + speechGate * (0.035 + leftActivity * 0.07)).toFixed(3));
+      portal.style.setProperty("--robot-right-finger-spread", (1 + speechGate * (0.035 + rightActivity * 0.07)).toFixed(3));
+      portal.style.setProperty("--robot-left-finger-curl", (1 - speechGate * (0.05 + leftActivity * 0.08)).toFixed(3));
+      portal.style.setProperty("--robot-right-finger-curl", (1 - speechGate * (0.05 + rightActivity * 0.08)).toFixed(3));
+      portal.style.setProperty("--robot-left-thumb", `${(-emphasis * (5 + leftActivity * 7)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-thumb", `${(emphasis * (5 + rightActivity * 7)).toFixed(2)}deg`);
       narrationFrame.current = requestAnimationFrame(tick);
     };
     tick();
