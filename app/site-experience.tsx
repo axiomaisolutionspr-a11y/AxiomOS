@@ -25,7 +25,21 @@ export default function SiteExperience() {
     voiceEnvelope.current = 0;
     const portal = document.querySelector<HTMLElement>(".axiom-robotics-portal");
     if (!portal) return;
-    for (const name of ["--robot-mouth-open", "--robot-mouth-width"]) {
+    for (const name of [
+      "--robot-mouth-open",
+      "--robot-mouth-width",
+      "--robot-voice-level",
+      "--robot-speak-x",
+      "--robot-speak-y",
+      "--robot-speak-rot-x",
+      "--robot-speak-rot-y",
+      "--robot-body-y",
+      "--robot-body-rotate",
+      "--robot-left-y",
+      "--robot-left-rotate",
+      "--robot-right-y",
+      "--robot-right-rotate",
+    ]) {
       portal.style.removeProperty(name);
     }
   };
@@ -71,8 +85,26 @@ export default function SiteExperience() {
       const smoothing = rawLevel > previous ? 0.32 : 0.12;
       const envelope = previous + (rawLevel - previous) * smoothing;
       voiceEnvelope.current = envelope;
+      const phase = performance.now() / 1000;
+      const gesture = Math.min(1, envelope * 2.8);
+      const leftBeat = Math.max(0, Math.sin(phase * 2.35));
+      const rightBeat = Math.max(0, Math.sin(phase * 2.35 + Math.PI));
+      const headBeat = Math.sin(phase * 3.1);
+      const bodyBeat = Math.sin(phase * 2.05);
+
       portal.style.setProperty("--robot-mouth-open", (0.05 + envelope * 0.95).toFixed(2));
       portal.style.setProperty("--robot-mouth-width", (0.9 + envelope * 0.1).toFixed(2));
+      portal.style.setProperty("--robot-voice-level", envelope.toFixed(3));
+      portal.style.setProperty("--robot-speak-x", `${(headBeat * gesture * 0.8).toFixed(2)}px`);
+      portal.style.setProperty("--robot-speak-y", `${(-gesture * 1.4 + Math.abs(headBeat) * gesture * 0.6).toFixed(2)}px`);
+      portal.style.setProperty("--robot-speak-rot-x", `${(headBeat * gesture * 1.4).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-speak-rot-y", `${(Math.sin(phase * 1.55) * gesture * 2.4).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-body-y", `${(bodyBeat * gesture * 1.2).toFixed(2)}px`);
+      portal.style.setProperty("--robot-body-rotate", `${(bodyBeat * gesture * 0.75).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-y", `${(-gesture * (2.5 + leftBeat * 6)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-left-rotate", `${(-gesture * (5 + leftBeat * 15)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-y", `${(-gesture * (2.5 + rightBeat * 6)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-right-rotate", `${(gesture * (5 + rightBeat * 15)).toFixed(2)}deg`);
       narrationFrame.current = requestAnimationFrame(tick);
     };
     tick();
