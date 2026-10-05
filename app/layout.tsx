@@ -70,8 +70,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </span>
               <span className="axiom-robot-neck" />
               <span className="axiom-robot-body"><i /></span>
-              <span className="axiom-robot-arm axiom-robot-arm-left" />
-              <span className="axiom-robot-arm axiom-robot-arm-right" />
+              <span className="axiom-robot-pelvis" />
+              <span className="axiom-robot-arm axiom-robot-arm-left">
+                <i className="axiom-robot-upper-arm" />
+                <i className="axiom-robot-elbow" />
+                <span className="axiom-robot-forearm"><i className="axiom-robot-hand" /></span>
+              </span>
+              <span className="axiom-robot-arm axiom-robot-arm-right">
+                <i className="axiom-robot-upper-arm" />
+                <i className="axiom-robot-elbow" />
+                <span className="axiom-robot-forearm"><i className="axiom-robot-hand" /></span>
+              </span>
               <span className="axiom-robot-leg axiom-robot-leg-left" />
               <span className="axiom-robot-leg axiom-robot-leg-right" />
             </span>

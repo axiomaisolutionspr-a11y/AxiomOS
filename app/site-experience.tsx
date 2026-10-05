@@ -39,6 +39,8 @@ export default function SiteExperience() {
       "--robot-left-rotate",
       "--robot-right-y",
       "--robot-right-rotate",
+      "--robot-left-elbow",
+      "--robot-right-elbow",
     ]) {
       portal.style.removeProperty(name);
     }
@@ -105,6 +107,8 @@ export default function SiteExperience() {
       portal.style.setProperty("--robot-left-rotate", `${(-gesture * (5 + leftBeat * 15)).toFixed(2)}deg`);
       portal.style.setProperty("--robot-right-y", `${(-gesture * (2.5 + rightBeat * 6)).toFixed(2)}px`);
       portal.style.setProperty("--robot-right-rotate", `${(gesture * (5 + rightBeat * 15)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-elbow", `${(gesture * (leftBeat * 14 - 3)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-elbow", `${(gesture * (3 - rightBeat * 14)).toFixed(2)}deg`);
       narrationFrame.current = requestAnimationFrame(tick);
     };
     tick();
