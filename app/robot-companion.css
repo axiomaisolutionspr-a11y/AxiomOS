@@ -1184,3 +1184,19 @@
   transform-origin:0 0;
   transform:rotate(var(--robot-right-thumb,0deg));
 }
+
+
+/* Smooth BrainBot's presenter gestures so voice pauses never create abrupt hand drops. */
+.axiom-robotics-portal .brainbot-pro-arm{
+  transition-duration:320ms!important;
+}
+.axiom-robotics-portal .brainbot-pro-forearm{
+  transition-duration:520ms!important;
+}
+.axiom-robotics-portal .brainbot-pro-hand{
+  transition-duration:440ms!important;
+}
+.axiom-robotics-portal .brainbot-pro-fingers,
+.axiom-robotics-portal .brainbot-pro-thumb{
+  transition-duration:360ms!important;
+}

@@ -111,11 +111,11 @@ export default function SiteExperience() {
       const cadence = (Math.sin(slowPhase * 0.72) + 1) / 2;
       // One open-hand presentation gesture at a time, with a neutral pose between sides.
       const phrasePoses = [
-        { left: -1, right: -1, leftElbow: -64, rightElbow: -4, leftWrist: 29, rightWrist: -2 },
-        { left: -1, right: -1, leftElbow: -60, rightElbow: -4, leftWrist: 26, rightWrist: -2 },
+        { left: -1, right: -1, leftElbow: -78, rightElbow: -4, leftWrist: 38, rightWrist: -2 },
+        { left: -1, right: -1, leftElbow: -74, rightElbow: -4, leftWrist: 35, rightWrist: -2 },
         { left: 0, right: 0, leftElbow: 4, rightElbow: -4, leftWrist: 0, rightWrist: 0 },
-        { left: 1, right: 1, leftElbow: 4, rightElbow: 64, leftWrist: 2, rightWrist: -29 },
-        { left: 1, right: 1, leftElbow: 4, rightElbow: 60, leftWrist: 2, rightWrist: -26 },
+        { left: 1, right: 1, leftElbow: 4, rightElbow: 78, leftWrist: 2, rightWrist: -38 },
+        { left: 1, right: 1, leftElbow: 4, rightElbow: 74, leftWrist: 2, rightWrist: -35 },
         { left: 0, right: 0, leftElbow: 4, rightElbow: -4, leftWrist: 0, rightWrist: 0 },
       ] as const;
       const phraseStep = (voice.currentTime || phase) / 1.8;
