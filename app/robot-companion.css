@@ -1146,3 +1146,41 @@
 .axiom-robotics-portal .brainbot-pro-hand{
   will-change:transform;
 }
+
+
+/* Independent shoulder and finger articulation; all other styling remains unchanged. */
+.axiom-robotics-portal .brainbot-pro-arm-left{
+  transform:
+    translateY(calc(var(--robot-left-y,0px) + var(--robot-left-shoulder-y,0px)))
+    rotate(calc(4deg + var(--robot-left-rotate,0deg) + var(--robot-left-shoulder-roll,0deg)))!important;
+}
+.axiom-robotics-portal .brainbot-pro-arm-right{
+  transform:
+    translateY(calc(var(--robot-right-y,0px) + var(--robot-right-shoulder-y,0px)))
+    rotate(calc(-4deg + var(--robot-right-rotate,0deg) + var(--robot-right-shoulder-roll,0deg)))!important;
+}
+.axiom-robotics-portal .brainbot-pro-fingers,
+.axiom-robotics-portal .brainbot-pro-thumb{
+  transform-box:fill-box;
+  transition:transform 80ms ease-out;
+}
+.axiom-robotics-portal .brainbot-pro-fingers-left{
+  transform-origin:50% 0;
+  transform:
+    scaleX(var(--robot-left-finger-spread,1))
+    scaleY(var(--robot-left-finger-curl,1));
+}
+.axiom-robotics-portal .brainbot-pro-fingers-right{
+  transform-origin:50% 0;
+  transform:
+    scaleX(var(--robot-right-finger-spread,1))
+    scaleY(var(--robot-right-finger-curl,1));
+}
+.axiom-robotics-portal .brainbot-pro-thumb-left{
+  transform-origin:100% 0;
+  transform:rotate(var(--robot-left-thumb,0deg));
+}
+.axiom-robotics-portal .brainbot-pro-thumb-right{
+  transform-origin:0 0;
+  transform:rotate(var(--robot-right-thumb,0deg));
+}
