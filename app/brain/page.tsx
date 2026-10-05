@@ -1534,11 +1534,11 @@ export default function BrainPage() {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          object-position: center;
+          object-position: center 30%;
           pointer-events: none;
-          opacity: 0.24;
-          filter: brightness(0.55) saturate(1.12) contrast(1.06) blur(1px);
-          transform: scale(1.025);
+          opacity: 0.46;
+          filter: brightness(0.72) saturate(0.96) contrast(1.08);
+          transform: scale(1.015);
           z-index: 0;
         }
 
@@ -1547,8 +1547,8 @@ export default function BrainPage() {
           inset: 0;
           pointer-events: none;
           background:
-            radial-gradient(circle at 50% 4%, rgba(13, 65, 126, 0.38), rgba(3, 13, 29, 0.82) 52%, rgba(0, 4, 10, 0.94) 100%),
-            linear-gradient(180deg, rgba(3, 18, 39, 0.3), rgba(0, 5, 13, 0.72));
+            radial-gradient(circle at 50% 7%, rgba(8, 52, 108, 0.16), rgba(3, 13, 29, 0.5) 54%, rgba(0, 4, 10, 0.76) 100%),
+            linear-gradient(180deg, rgba(2, 14, 31, 0.08), rgba(0, 5, 13, 0.4));
           z-index: 1;
         }
 
@@ -1903,7 +1903,7 @@ export default function BrainPage() {
         preload="metadata"
         aria-hidden="true"
       >
-        <source src="/videos/axiomai-automation-bg.mp4" type="video/mp4" />
+        <source src="/videos/axiomai-solutions-clear.mp4" type="video/mp4" />
       </video>
       <div className="brain-page-video-overlay" aria-hidden="true" />
 
