@@ -109,13 +109,13 @@ export default function SiteExperience() {
       const speechGate = Math.min(1, envelope * 4.2);
       const handEnergy = Math.min(1, envelope * 2.2);
       const cadence = (Math.sin(slowPhase * 0.72) + 1) / 2;
-      // One open-hand presentation gesture at a time, with a neutral pose between sides.
+      // One open-palm gesture at a time, always directed away from the center of the body.
       const phrasePoses = [
-        { left: -1, right: -1, leftElbow: -78, rightElbow: -4, leftWrist: 38, rightWrist: -2 },
-        { left: -1, right: -1, leftElbow: -74, rightElbow: -4, leftWrist: 35, rightWrist: -2 },
+        { left: 0, right: 0, leftElbow: 25, rightElbow: -4, leftWrist: 12, rightWrist: 0 },
+        { left: 0, right: 0, leftElbow: 22, rightElbow: -4, leftWrist: 10, rightWrist: 0 },
         { left: 0, right: 0, leftElbow: 4, rightElbow: -4, leftWrist: 0, rightWrist: 0 },
-        { left: 1, right: 1, leftElbow: 4, rightElbow: 78, leftWrist: 2, rightWrist: -38 },
-        { left: 1, right: 1, leftElbow: 4, rightElbow: 74, leftWrist: 2, rightWrist: -35 },
+        { left: 0, right: 0, leftElbow: 4, rightElbow: -25, leftWrist: 0, rightWrist: -12 },
+        { left: 0, right: 0, leftElbow: 4, rightElbow: -22, leftWrist: 0, rightWrist: -10 },
         { left: 0, right: 0, leftElbow: 4, rightElbow: -4, leftWrist: 0, rightWrist: 0 },
       ] as const;
       const phraseStep = (voice.currentTime || phase) / 1.8;
@@ -146,9 +146,9 @@ export default function SiteExperience() {
       portal.style.setProperty("--robot-speak-rot-y", `${(Math.sin(phase * 1.55) * gesture * 2.4).toFixed(2)}deg`);
       portal.style.setProperty("--robot-body-y", `${(bodyBeat * gesture * 1.2).toFixed(2)}px`);
       portal.style.setProperty("--robot-body-rotate", `${(bodyBeat * gesture * 0.75).toFixed(2)}deg`);
-      // Keep the hands above the waist: only one side presents while the other rests outward.
-      const leftActivity = Math.min(1, Math.max(0, -pose.leftElbow) / 60);
-      const rightActivity = Math.min(1, Math.max(0, pose.rightElbow) / 60);
+      // The active palm opens to the outside; neither hand crosses the torso or pelvis.
+      const leftActivity = Math.min(1, Math.max(0, pose.leftElbow - 4) / 18);
+      const rightActivity = Math.min(1, Math.max(0, -pose.rightElbow - 4) / 18);
       const leftDrive = leftBeat * leftActivity;
       const rightDrive = rightBeat * rightActivity;
       portal.style.setProperty("--robot-left-y", `${(-emphasis * (0.12 + leftDrive * 0.22)).toFixed(2)}px`);
