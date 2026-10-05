@@ -258,3 +258,23 @@ export default function SiteExperience() {
     });
   };
   return (
+    <>
+      <audio ref={music} src="/audio/game-on-dopestuff.mp3" loop preload="none" />
+      {pathname === "/" && <>
+        <audio ref={narration} src="/audio/axiomai-presentacion-roger.mp3" preload="none"
+          onPlaying={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.setAttribute("data-speaking", "true"); startRobotVoiceMotion(); setNarrating(true); setVoiceStarted(true); if (music.current) music.current.volume = 0.045; }}
+          onPause={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); if (music.current) music.current.volume = 0.18; }}
+          onEnded={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); setVoiceStarted(false); if (music.current) music.current.volume = 0.18; }}
+          onError={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); setVoiceError(true); if (music.current) music.current.volume = 0.18; }}
+        />
+        <button type="button" className="axiom-narration-toggle" aria-pressed={narrating} onClick={toggleNarration}>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">{narrating ? <path d="M6 4h4v16H6zm8 0h4v16h-4z" /> : <path d="m7 4 14 8-14 8z" />}</svg>
+          {narrating ? "Pausar narración" : voiceError ? "Reintentar narración" : voiceStarted ? "Continuar presentación" : "Escuchar presentación"}
+        </button>
+      </>}
+      <button type="button" className="axiom-sound-toggle" aria-label={enabled ? "Silenciar música, narración y sonidos / Mute sound" : "Activar música y sonidos / Enable sound"} aria-pressed={enabled} title={enabled ? "Sonido activado" : "Sonido desactivado"} onClick={toggle}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z" />{enabled ? <><path d="M15 8a6 6 0 0 1 0 8" /><path d="M18 5a10 10 0 0 1 0 14" /></> : <path d="m16 9 5 6m0-6-5 6" />}</svg>
+      </button>
+    </>
+  );
+}
