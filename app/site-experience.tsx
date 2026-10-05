@@ -15,12 +15,14 @@ export default function SiteExperience() {
   const narrationSource = useRef<MediaElementAudioSourceNode | null>(null);
   const narrationAnalyser = useRef<AnalyserNode | null>(null);
   const narrationFrame = useRef<number>(0);
+  const voiceEnvelope = useRef(0);
   const enabledRef = useRef(true);
   const [enabled, setEnabled] = useState(true);
 
   const resetRobotVoiceMotion = () => {
     cancelAnimationFrame(narrationFrame.current);
     narrationFrame.current = 0;
+    voiceEnvelope.current = 0;
     const portal = document.querySelector<HTMLElement>(".axiom-robotics-portal");
     if (!portal) return;
     for (const name of ["--robot-mouth-open", "--robot-mouth-width", "--robot-speak-x", "--robot-speak-y", "--robot-speak-rot-x", "--robot-speak-rot-y", "--robot-left-y", "--robot-left-rotate", "--robot-right-y", "--robot-right-rotate", "--robot-body-y"]) {
@@ -36,8 +38,8 @@ export default function SiteExperience() {
       try {
         const source = narrationSource.current ?? ctx.createMediaElementSource(voice);
         const node = ctx.createAnalyser();
-        node.fftSize = 256;
-        node.smoothingTimeConstant = 0.72;
+        node.fftSize = 512;
+        node.smoothingTimeConstant = 0.84;
         source.connect(node);
         node.connect(ctx.destination);
         narrationSource.current = source;
@@ -58,23 +60,33 @@ export default function SiteExperience() {
         return;
       }
       analyser.getByteFrequencyData(samples);
-      let sum = 0;
-      for (const sample of samples) sum += sample;
-      const average = sum / samples.length / 255;
-      const level = Math.max(0, Math.min(1, (average - 0.035) * 3.6));
+      let weighted = 0;
+      let weight = 0;
+      const speechBins = Math.min(92, samples.length);
+      for (let index = 2; index < speechBins; index += 1) {
+        const binWeight = index < 44 ? 1.35 : 0.55;
+        weighted += samples[index] * binWeight;
+        weight += binWeight;
+      }
+      const average = weight ? weighted / weight / 255 : 0;
+      const rawLevel = Math.max(0, Math.min(1, (average - 0.075) * 5.2));
+      const previous = voiceEnvelope.current;
+      const smoothing = rawLevel > previous ? 0.32 : 0.12;
+      const envelope = previous + (rawLevel - previous) * smoothing;
+      voiceEnvelope.current = envelope;
       const time = voice.currentTime;
-      const pulse = Math.min(1, 0.16 + level * 1.35);
-      portal.style.setProperty("--robot-mouth-open", (0.34 + pulse * 1.12).toFixed(2));
-      portal.style.setProperty("--robot-mouth-width", (0.84 + pulse * 0.18).toFixed(2));
-      portal.style.setProperty("--robot-speak-x", `${(Math.sin(time * 1.7) * (0.6 + pulse * 1.8)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-speak-y", `${(Math.cos(time * 1.45) * (0.5 + pulse * 1.5)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-speak-rot-x", `${(Math.sin(time * 1.3) * (0.7 + pulse * 1.8)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-speak-rot-y", `${(Math.cos(time * 1.1) * (0.8 + pulse * 2.2)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-y", `${(Math.sin(time * 2.15) * (1.5 + pulse * 8)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-left-rotate", `${(Math.sin(time * 2.15 + Math.PI / 2) * (1.5 + pulse * 7)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-y", `${(Math.sin(time * 1.78 + Math.PI) * (1.1 + pulse * 6.5)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-right-rotate", `${(Math.sin(time * 1.78 + Math.PI / 2) * (1.1 + pulse * 6)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-body-y", `${(Math.sin(time * 2.1) * (0.35 + pulse * 1.7)).toFixed(2)}px`);
+      const gesture = Math.min(1, envelope * 1.8);
+      portal.style.setProperty("--robot-mouth-open", (0.08 + envelope * 0.92).toFixed(2));
+      portal.style.setProperty("--robot-mouth-width", (0.90 + envelope * 0.10).toFixed(2));
+      portal.style.setProperty("--robot-speak-x", `${(Math.sin(time * 1.05) * gesture * 0.75).toFixed(2)}px`);
+      portal.style.setProperty("--robot-speak-y", `${(Math.cos(time * 0.92) * gesture * 0.55).toFixed(2)}px`);
+      portal.style.setProperty("--robot-speak-rot-x", `${(Math.sin(time * 0.78) * gesture * 1.1).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-speak-rot-y", `${(Math.cos(time * 0.68) * gesture * 1.3).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-y", `${(Math.sin(time * 1.18) * gesture * 5.5).toFixed(2)}px`);
+      portal.style.setProperty("--robot-left-rotate", `${(Math.sin(time * 1.18 + Math.PI / 2) * gesture * 4.8).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-y", `${(Math.sin(time * 1.02 + Math.PI) * gesture * 4.2).toFixed(2)}px`);
+      portal.style.setProperty("--robot-right-rotate", `${(Math.sin(time * 1.02 + Math.PI / 2) * gesture * 4.4).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-body-y", `${(Math.sin(time * 1.1) * gesture * 1.15).toFixed(2)}px`);
       narrationFrame.current = requestAnimationFrame(tick);
     };
     tick();

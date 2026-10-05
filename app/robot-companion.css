@@ -67,6 +67,42 @@
 .axiom-robotics-portal .axiom-robot-leg{position:absolute;top:82%;height:14%;width:18%;background:linear-gradient(90deg,#395f7c,#c6e3ee,#608eaa);border:1px solid #8bb9cf;border-radius:25%;z-index:1}
 .axiom-robotics-portal .axiom-robot-leg-left{left:29%}
 .axiom-robotics-portal .axiom-robot-leg-right{right:29%}
+
+/* Humanoid reference pass: rounded shell, ear modules and cleaner proportions. */
+.axiom-robotics-portal .axiom-robot-face{
+  left:15%!important;right:15%!important;top:11%!important;height:42%!important;
+  border-radius:43% 43% 36% 36%!important;
+  background:linear-gradient(150deg,#ffffff 0%,#f2f8fb 38%,#c6d8e0 77%,#ffffff 100%)!important;
+  box-shadow:inset 0 4px 6px rgba(255,255,255,.98),inset 0 -9px 12px rgba(80,111,127,.22),0 0 18px rgba(93,220,241,.3)!important;
+}
+.axiom-robotics-portal .axiom-robot-face::before{
+  left:17%;right:17%;top:53%;height:22%;border-radius:46% 46% 35% 35%;
+  background:linear-gradient(180deg,rgba(255,255,255,.64),rgba(150,182,196,.2));
+  box-shadow:inset 0 -2px 4px rgba(53,94,116,.14);
+}
+.axiom-robotics-portal .axiom-robot-face::after{
+  display:block;content:"";position:absolute;left:-15%;top:39%;width:130%;height:22%;
+  background:radial-gradient(circle at 8% 50%,#dcecf2 0 15%,#7598aa 16% 22%,transparent 23%),radial-gradient(circle at 92% 50%,#dcecf2 0 15%,#7598aa 16% 22%,transparent 23%);
+  pointer-events:none;filter:drop-shadow(0 0 3px rgba(75,193,218,.35));
+}
+.axiom-robotics-portal .axiom-robot-brain-window{
+  left:36%;top:5%;width:28%;height:25%;border-radius:50%;background-size:86% auto;
+  box-shadow:0 0 9px rgba(73,218,244,.6),inset 0 0 7px rgba(8,40,70,.9);
+}
+.axiom-robotics-portal .axiom-robot-eye{top:49%!important;width:14%!important;height:11%!important;border-radius:50%!important}
+.axiom-robotics-portal .axiom-robot-eye-left{left:25%!important}.axiom-robotics-portal .axiom-robot-eye-right{right:25%!important}
+.axiom-robotics-portal .axiom-robot-mouth{
+  bottom:9%!important;width:25%!important;height:8%!important;border-radius:48%;
+  transform:scaleY(var(--robot-mouth-open,.08)) scaleX(var(--robot-mouth-width,.9));
+  transition:transform 110ms ease-out,opacity 110ms ease-out;
+}
+.axiom-robotics-portal .axiom-robot-body{
+  left:23%;top:55%;width:54%;height:31%;border-radius:31% 31% 25% 25%;
+  background:linear-gradient(145deg,#fff 0%,#edf5f8 42%,#b1c8d3 82%,#f9fdff 100%);
+  box-shadow:inset 0 4px 4px #fff,inset 0 -8px 9px rgba(55,91,112,.22),0 0 11px rgba(75,204,231,.24);
+}
+.axiom-robotics-portal .axiom-robot-arm{top:56%;width:17%;height:29%;border-radius:44% 44% 30% 30%}
+.axiom-robotics-portal .axiom-robot-arm-left{left:6%}.axiom-robotics-portal .axiom-robot-arm-right{right:6%}
 .axiom-robotics-portal .axiom-robot-leg::after{content:"";position:absolute;left:-19%;bottom:-6%;width:138%;height:35%;border-radius:40% 40% 22% 22%;background:linear-gradient(#d7f0fa,#648ca6);border:1px solid #91c5da}
 @media(min-width:1300px) and (max-width:1739px){
   .axiom-site #inicio .axiom-v6-visual{width:416px!important;justify-self:end}
