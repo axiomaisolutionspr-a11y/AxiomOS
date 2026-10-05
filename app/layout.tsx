@@ -15,6 +15,7 @@ import "./robot-companion.css";
 import HomeBackgroundVideo from "./home-background-video";
 import SiteExperience from "./site-experience";
 import RobotCompanion from "./robot-companion";
+import BrainBotFigure from "./brainbot-figure";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             title="Escuchar presentación"
           >
             <span className="axiom-robot-avatar" aria-hidden="true">
+              <BrainBotFigure />
               <span className="axiom-robot-antenna" />
               <span className="axiom-robot-face">
                 <span className="axiom-robot-brain-window" />

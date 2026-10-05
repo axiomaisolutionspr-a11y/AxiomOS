@@ -107,7 +107,7 @@ export default function SiteExperience() {
       const pose = phrasePoses[phraseIndex];
       const emphasis = speechGate * (0.58 + cadence * 0.42);
 
-      portal.style.setProperty("--robot-mouth-open", Math.min(1.35, 0.32 + envelope * 1.45).toFixed(2));
+      portal.style.setProperty("--robot-mouth-open", Math.min(1.55, 0.62 + envelope * 1.35).toFixed(2));
       portal.style.setProperty("--robot-mouth-width", (1 + envelope * 0.08).toFixed(2));
       portal.style.setProperty("--robot-voice-level", envelope.toFixed(3));
       portal.style.setProperty("--robot-speak-x", `${(headBeat * gesture * 0.8).toFixed(2)}px`);
