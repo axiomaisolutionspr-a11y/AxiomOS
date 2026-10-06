@@ -67,7 +67,7 @@ export default function SiteExperience() {
         const source = narrationSource.current ?? ctx.createMediaElementSource(voice);
         const node = ctx.createAnalyser();
         node.fftSize = 512;
-        node.smoothingTimeConstant = 0.84;
+        node.smoothingTimeConstant = 0.72;
         source.connect(node);
         node.connect(ctx.destination);
         narrationSource.current = source;
@@ -96,7 +96,7 @@ export default function SiteExperience() {
       const rms = Math.sqrt(energy / samples.length);
       const rawLevel = Math.max(0, Math.min(1, (rms - 0.012) * 9));
       const previous = voiceEnvelope.current;
-      const smoothing = rawLevel > previous ? 0.32 : 0.12;
+      const smoothing = rawLevel > previous ? 0.46 : 0.18;
       const envelope = previous + (rawLevel - previous) * smoothing;
       voiceEnvelope.current = envelope;
       const phase = performance.now() / 1000;
@@ -111,12 +111,12 @@ export default function SiteExperience() {
       const cadence = (Math.sin(slowPhase * 0.72) + 1) / 2;
       // One open-palm gesture at a time, always directed away from the center of the body.
       const phrasePoses = [
-        { left: 0, right: 0, leftElbow: 25, rightElbow: -4, leftWrist: 12, rightWrist: 0 },
-        { left: 0, right: 0, leftElbow: 22, rightElbow: -4, leftWrist: 10, rightWrist: 0 },
-        { left: 0, right: 0, leftElbow: 4, rightElbow: -4, leftWrist: 0, rightWrist: 0 },
-        { left: 0, right: 0, leftElbow: 4, rightElbow: -25, leftWrist: 0, rightWrist: -12 },
-        { left: 0, right: 0, leftElbow: 4, rightElbow: -22, leftWrist: 0, rightWrist: -10 },
-        { left: 0, right: 0, leftElbow: 4, rightElbow: -4, leftWrist: 0, rightWrist: 0 },
+        { left: 7, right: -2, leftElbow: 25, rightElbow: -7, leftWrist: 12, rightWrist: -3 },
+        { left: 10, right: -3, leftElbow: 29, rightElbow: -8, leftWrist: 15, rightWrist: -4 },
+        { left: 4, right: -4, leftElbow: 12, rightElbow: -12, leftWrist: 6, rightWrist: -6 },
+        { left: 2, right: -7, leftElbow: 7, rightElbow: -25, leftWrist: 3, rightWrist: -12 },
+        { left: 3, right: -10, leftElbow: 8, rightElbow: -29, leftWrist: 4, rightWrist: -15 },
+        { left: 4, right: -4, leftElbow: 12, rightElbow: -12, leftWrist: 6, rightWrist: -6 },
       ] as const;
       const phraseStep = (voice.currentTime || phase) / 1.8;
       const phraseIndex = Math.floor(phraseStep) % phrasePoses.length;
@@ -137,7 +137,7 @@ export default function SiteExperience() {
       // Smoothed voice energy starts and stops the pose without rapid pumping motions.
       const emphasis = speechGate * (0.76 + handEnergy * 0.16 + cadence * 0.08);
 
-      portal.style.setProperty("--robot-mouth-open", Math.min(1.55, 0.62 + envelope * 1.35).toFixed(2));
+      portal.style.setProperty("--robot-mouth-open", Math.min(1.5, 0.30 + envelope * 1.75).toFixed(2));
       portal.style.setProperty("--robot-mouth-width", (1 + envelope * 0.08).toFixed(2));
       portal.style.setProperty("--robot-voice-level", envelope.toFixed(3));
       portal.style.setProperty("--robot-speak-x", `${(headBeat * gesture * 0.8).toFixed(2)}px`);
@@ -159,10 +159,10 @@ export default function SiteExperience() {
       portal.style.setProperty("--robot-right-elbow", `${(emphasis * pose.rightElbow).toFixed(2)}deg`);
       portal.style.setProperty("--robot-left-wrist", `${(emphasis * pose.leftWrist).toFixed(2)}deg`);
       portal.style.setProperty("--robot-right-wrist", `${(emphasis * pose.rightWrist).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-shoulder-y", `${(-emphasis * (0.08 + leftDrive * 0.18)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-right-shoulder-y", `${(-emphasis * (0.08 + rightDrive * 0.18)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-left-shoulder-roll", `${(emphasis * (-0.22 + leftDrive * 0.35)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-shoulder-roll", `${(emphasis * (0.22 - rightDrive * 0.35)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-left-shoulder-y", `${(-emphasis * (0.8 + leftDrive * 1.15)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-right-shoulder-y", `${(-emphasis * (0.8 + rightDrive * 1.15)).toFixed(2)}px`);
+      portal.style.setProperty("--robot-left-shoulder-roll", `${(emphasis * (1.6 + leftDrive * 3.2)).toFixed(2)}deg`);
+      portal.style.setProperty("--robot-right-shoulder-roll", `${(-emphasis * (1.6 + rightDrive * 3.2)).toFixed(2)}deg`);
       portal.style.setProperty("--robot-left-finger-spread", (1 + speechGate * (0.035 + leftActivity * 0.07)).toFixed(3));
       portal.style.setProperty("--robot-right-finger-spread", (1 + speechGate * (0.035 + rightActivity * 0.07)).toFixed(3));
       portal.style.setProperty("--robot-left-finger-curl", (1 - speechGate * (0.05 + leftActivity * 0.08)).toFixed(3));
