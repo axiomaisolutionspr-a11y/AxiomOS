@@ -94,8 +94,8 @@ export default function BrainBotFigure() {
 
         <rect x="88" y="48" width="16" height="11" rx="2" fill="#f8fbfc" stroke="#6d7d84" strokeWidth="1.2" />
         <rect x="116" y="48" width="16" height="11" rx="2" fill="#f8fbfc" stroke="#6d7d84" strokeWidth="1.2" />
-        <rect x="93" y="50" width="6" height="7" rx="1.1" fill="#ec65db" />
-        <rect x="121" y="50" width="6" height="7" rx="1.1" fill="#32dcf6" />
+        <rect x="93" y="50" width="6" height="7" rx="1.1" fill="#d664e3" />
+        <rect x="121" y="50" width="6" height="7" rx="1.1" fill="#26d0fa" />
         <rect x="95" y="51.5" width="2" height="4" rx=".4" fill="#11181d" />
         <rect x="123" y="51.5" width="2" height="4" rx=".4" fill="#11181d" />
         <rect x="94.8" y="51.2" width="1.1" height="1.1" rx=".2" fill="#fff" />
