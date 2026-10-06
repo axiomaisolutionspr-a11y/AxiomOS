@@ -49,3 +49,27 @@
     height:54px;
   }
 }
+
+
+/* Keep the uploaded AxiomAI Robotics film clearly visible behind the opening message. */
+.ax-scenes .ax-scene:first-child .ax-scene-video{
+  display:block!important;
+  opacity:.58!important;
+  object-position:center 42%!important;
+  filter:brightness(.94) saturate(.92) contrast(1.05)!important;
+  transform:scale(1.015)!important;
+}
+.ax-scenes .ax-scene:first-child .ax-scene-shade{
+  background:
+    linear-gradient(90deg,rgba(2,6,17,.94) 0%,rgba(2,6,17,.76) 38%,rgba(2,6,17,.25) 69%,rgba(2,6,17,.44) 100%),
+    linear-gradient(180deg,rgba(2,6,17,.08),rgba(2,6,17,.56))!important;
+}
+@media(max-width:900px){
+  .ax-scenes .ax-scene:first-child .ax-scene-video{
+    opacity:.52!important;
+    object-position:center 36%!important;
+  }
+  .ax-scenes .ax-scene:first-child .ax-scene-shade{
+    background:linear-gradient(180deg,rgba(2,6,17,.91) 0%,rgba(2,6,17,.65) 56%,rgba(2,6,17,.36) 100%)!important;
+  }
+}
