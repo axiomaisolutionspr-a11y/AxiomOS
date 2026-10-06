@@ -1903,7 +1903,7 @@ export default function BrainPage() {
         preload="metadata"
         aria-hidden="true"
       >
-        <source src="/videos/axiomai-solutions-clear.mp4" type="video/mp4" />
+        <source src="/videos/axiomai-brain-robotics-bg.mp4" type="video/mp4" />
       </video>
       <div className="brain-page-video-overlay" aria-hidden="true" />
 
