@@ -741,3 +741,16 @@
 .axiom-narration-toggle svg{width:15px;height:15px;flex:none}
 .axiom-narration-toggle:focus-visible{outline:2px solid #8ceaff;outline-offset:3px}
 .axiom-narration-toggle[aria-pressed="true"]{border-color:#8ceaff;color:#fff}
+
+
+/* Improve hero proof text contrast over the video background. */
+.axiom-site .axiom-v6-copy .axiom-v6-cta-note{
+  color:#f5fbff!important;
+  text-shadow:0 1px 6px rgba(0,0,0,.92)!important;
+}
+.axiom-site .axiom-v6-copy .axiom-v6-proof span{
+  color:#effaff!important;
+  background:rgba(1,8,18,.88)!important;
+  border-color:rgba(85,220,255,.48)!important;
+  text-shadow:0 1px 4px rgba(0,0,0,.9)!important;
+}
