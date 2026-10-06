@@ -365,3 +365,31 @@
   }
   .robotics-sector-icon{width:44px;height:44px;flex-basis:44px}
 }
+
+
+/* Match the homepage's full-frame video treatment on the Robotics experience. */
+.ax-robotics-video-backdrop video.ax-robotics-video-fill{
+  z-index:0;
+  object-fit:cover!important;
+  object-position:center!important;
+  transform:scale(1.08)!important;
+  opacity:.74!important;
+  filter:none!important;
+}
+.ax-robotics-video-backdrop video.ax-robotics-video-main{
+  z-index:1;
+  object-fit:contain!important;
+  object-position:68% 50%!important;
+  transform:none!important;
+  opacity:1!important;
+  filter:saturate(1.1) contrast(1.08) brightness(1.18)!important;
+}
+.ax-robotics-video-shade{
+  z-index:2;
+  background:linear-gradient(180deg,rgba(2,6,17,.16),rgba(2,6,17,.22) 52%,rgba(2,6,17,.32))!important;
+}
+.ax-scenes .ax-scene-shade{
+  background:
+    linear-gradient(90deg,rgba(2,6,17,.68),rgba(2,6,17,.32) 55%,rgba(2,6,17,.12)),
+    linear-gradient(180deg,rgba(2,6,17,.04),rgba(2,6,17,.18))!important;
+}
