@@ -3,6 +3,38 @@
 import { useMemo, useState } from "react";
 import { useRoboticsLanguage } from "./robotics-language";
 
+const iconPaths: Record<string, string[]> = {
+  serve: ["M3 13h18l-2 7H5l-2-7Z", "M6 12a6 6 0 0 1 12 0", "M8 17h.01M12 17h.01M16 17h.01"],
+  host: ["M4 21V5l8-3 8 3v16", "M9 21v-5h6v5", "M8 8h.01M12 8h.01M16 8h.01M8 12h.01M12 12h.01M16 12h.01"],
+  clean: ["m4 20 9-9", "m10 14 4 4", "m13 11 6-6 2 2-6 6", "M3 21h6"],
+  turf: ["M20 4C11 4 5 7 5 14a6 6 0 0 0 6 6c7 0 9-7 9-16Z", "M4 21c3-5 7-8 13-12"],
+  move: ["M3 7h13v11H3z", "M16 11h3l2 3v4h-5", "M7 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"],
+  industrial: ["M3 21V9l6 3V8l6 4V5l6 3v13H3Z", "M7 17h.01M12 17h.01M17 17h.01"],
+  connect: ["M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2", "M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z", "M17 8h4M19 6v4"],
+  future: ["M12 3v3M12 18v3M3 12h3M18 12h3", "m5.6 5.6 2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1", "M12 8v8M8 12h8"],
+  assess: ["M10.5 18a7.5 7.5 0 1 1 5.3-2.2", "m16 16 5 5"],
+  compare: ["M4 6h16M4 12h16M4 18h16", "M8 4v4M15 10v4M11 16v4"],
+  design: ["M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z", "m13.5 6.5 4 4"],
+  deploy: ["M4 12h14", "m13 6 6 6-6 6", "M4 5v14"],
+  industry: ["M3 21V9l6 3V8l6 4V5l6 3v13H3Z", "M7 17h.01M12 17h.01M17 17h.01"],
+  task: ["M4 7h5l3 5-3 5H4", "m12 12 4-4 3 2-4 4", "M18 14v5M15 19h6"],
+  environment: ["M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z", "M12 10h.01"],
+  scale: ["M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5", "M4 4l6 6m10-6-6 6M4 20l6-6m10 6-6-6"],
+  priority: ["M12 3v3M12 18v3M3 12h3M18 12h3", "M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z", "M12 10v4m-2-2h4"],
+  orchestration: ["M12 5v5m0 4v5M5 12h14", "M12 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM12 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"],
+  leads: ["M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2", "M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z", "M19 8v6m-3-3h6"],
+  alerts: ["M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z", "M10 21h4"],
+  reports: ["M4 19V5M4 19h17", "m7 15 4-4 3 2 6-7", "M16 6h4v4"],
+  fallback: ["M12 3v3M12 18v3M3 12h3M18 12h3", "M12 8v8M8 12h8"],
+};
+function RoboticsIcon({ name, className }: { name: string; className?: string }) {
+  const paths = iconPaths[name] ?? iconPaths.fallback;
+  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths.map((d, i) => <path key={i} d={d} />)}</svg>;
+}
+const matchIconNames = ["industry", "task", "environment", "scale", "priority"];
+const brainIconNames = ["orchestration", "leads", "alerts", "reports"];
+
+
 type Match = {
   sector: string;
   task: string;
@@ -63,10 +95,10 @@ const content = {
       titleA: "Del problema operativo",
       titleB: "a una implementación medible.",
       steps: [
-        ["01", "EVALUAR", "Medimos flujo, espacio, tareas, carga, tráfico, infraestructura y restricciones."],
-        ["02", "COMPARAR", "Comparamos fabricantes, modelos, soporte, integración, costo y disponibilidad."],
-        ["03", "DISEÑAR", "Diseñamos Robot Match, integración con Brain, SOPs, piloto y KPIs."],
-        ["04", "IMPLEMENTAR", "Implementamos, entrenamos, medimos y escalamos solo si los datos lo justifican."],
+        ["assess", "EVALUAR", "Medimos flujo, espacio, tareas, carga, tráfico, infraestructura y restricciones."],
+        ["compare", "COMPARAR", "Comparamos fabricantes, modelos, soporte, integración, costo y disponibilidad."],
+        ["design", "DISEÑAR", "Diseñamos Robot Match, integración con Brain, SOPs, piloto y KPIs."],
+        ["deploy", "IMPLEMENTAR", "Implementamos, entrenamos, medimos y escalamos solo si los datos lo justifican."],
       ],
     },
     match: {
@@ -74,7 +106,7 @@ const content = {
       titleA: "¿Qué robot necesita",
       titleB: "tu operación?",
       text: "Responde cinco preguntas. El resultado es una orientación inicial; el Robot Match final requiere evaluación del sitio.",
-      labels: ["1. Industria / operación", "2. Tarea repetitiva principal", "3. Ambiente", "4. Escala", "5. Prioridad"],
+      labels: ["Industria / operación", "Tarea repetitiva principal", "Ambiente", "Escala", "Prioridad"],
       select: "Selecciona",
       sectors: [["serve","Restaurante / Hospitalidad"],["host","Retail / Sala de exhibición"],["connect","Salud / Senior Living"],["move","Almacén / Logística"],["industrial","Manufactura / Industrial"],["clean","Limpieza comercial"],["turf","Terrenos / Corte"]],
       tasks: [["host","Recibir / orientar clientes"],["serve","Entrega / mover artículos"],["clean","Limpieza de pisos"],["move","Mover materiales / carros"],["industrial","Paletizado / atención de máquinas"],["connect","Telepresencia / atención remota"],["turf","Cortar grama / mantener terreno"]],
@@ -164,10 +196,10 @@ const content = {
       titleA: "From operational problem",
       titleB: "to measurable deployment.",
       steps: [
-        ["01", "ASSESS", "We measure flow, space, tasks, load, traffic, infrastructure and constraints."],
-        ["02", "COMPARE", "We compare manufacturers, models, support, integration, cost and availability."],
-        ["03", "DESIGN", "We design the Robot Match, Brain integration, SOPs, pilot and KPIs."],
-        ["04", "DEPLOY", "We deploy, train, measure and scale only when the data supports it."],
+        ["assess", "ASSESS", "We measure flow, space, tasks, load, traffic, infrastructure and constraints."],
+        ["compare", "COMPARE", "We compare manufacturers, models, support, integration, cost and availability."],
+        ["design", "DESIGN", "We design the Robot Match, Brain integration, SOPs, pilot and KPIs."],
+        ["deploy", "DEPLOY", "We deploy, train, measure and scale only when the data supports it."],
       ],
     },
     match: {
@@ -175,7 +207,7 @@ const content = {
       titleA: "What robot does",
       titleB: "your operation need?",
       text: "Answer five questions. The result is an initial direction; final Robot Match requires a site assessment.",
-      labels: ["1. Industry / operation", "2. Main repetitive task", "3. Environment", "4. Scale", "5. Priority"],
+      labels: ["Industry / operation", "Main repetitive task", "Environment", "Scale", "Priority"],
       select: "Select",
       sectors: [["serve","Restaurant / Hospitality"],["host","Retail / Showroom"],["connect","Healthcare / Senior Living"],["move","Warehouse / Logistics"],["industrial","Manufacturing / Industrial"],["clean","Commercial Cleaning"],["turf","Grounds / Turf"]],
       tasks: [["host","Receive / guide customers"],["serve","Delivery / move items"],["clean","Floor cleaning"],["move","Move materials / carts"],["industrial","Palletizing / machine tending"],["connect","Telepresence / remote service"],["turf","Mowing / grounds maintenance"]],
@@ -292,9 +324,9 @@ export default function RoboticsExperience() {
           <p>{copy.solutions.text}</p>
         </div>
         <div className="robotics-sector-grid">
-          {copy.sectors.map((sector, index) => (
+          {copy.sectors.map((sector) => (
             <article className="robotics-sector-card" key={sector.key}>
-              <div className="robotics-sector-number">0{index + 1}</div>
+              <div className="robotics-sector-icon"><RoboticsIcon name={sector.key} /></div>
               <div className="robotics-sector-accent">{sector.accent}</div>
               <span>{sector.eyebrow}</span>
               <h3>{sector.title}</h3>
@@ -310,9 +342,9 @@ export default function RoboticsExperience() {
           <h2>{copy.method.titleA}<br /><span>{copy.method.titleB}</span></h2>
         </div>
         <div className="robotics-method-line">
-          {copy.method.steps.map(([n, title, text]) => (
-            <div className="robotics-method-step" key={n}>
-              <span>{n}</span><h3>{title}</h3><p>{text}</p>
+          {copy.method.steps.map(([iconName, title, text]) => (
+            <div className="robotics-method-step" key={iconName}>
+              <span className="robotics-method-icon"><RoboticsIcon name={iconName} /></span><h3>{title}</h3><p>{text}
             </div>
           ))}
         </div>
@@ -327,11 +359,11 @@ export default function RoboticsExperience() {
 
         <div className="robotics-match-shell">
           <div className="robotics-match-form">
-            <label><span>{copy.match.labels[0]}</span><select value={match.sector} onChange={(e) => setField("sector", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.sectors)}</select></label>
-            <label><span>{copy.match.labels[1]}</span><select value={match.task} onChange={(e) => setField("task", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.tasks)}</select></label>
-            <label><span>{copy.match.labels[2]}</span><select value={match.environment} onChange={(e) => setField("environment", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.environments)}</select></label>
-            <label><span>{copy.match.labels[3]}</span><select value={match.scale} onChange={(e) => setField("scale", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.scales)}</select></label>
-            <label><span>{copy.match.labels[4]}</span><select value={match.priority} onChange={(e) => setField("priority", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.priorities)}</select></label>
+            <label><span className="robotics-match-label"><RoboticsIcon name={matchIconNames[0]} />{copy.match.labels[0]}</span><select value={match.sector} onChange={(e) => setField("sector", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.sectors)}</select></label>
+            <label><span className="robotics-match-label"><RoboticsIcon name={matchIconNames[1]} />{copy.match.labels[1]}</span><select value={match.task} onChange={(e) => setField("task", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.tasks)}</select></label>
+            <label><span className="robotics-match-label"><RoboticsIcon name={matchIconNames[2]} />{copy.match.labels[2]}</span><select value={match.environment} onChange={(e) => setField("environment", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.environments)}</select></label>
+            <label><span className="robotics-match-label"><RoboticsIcon name={matchIconNames[3]} />{copy.match.labels[3]}</span><select value={match.scale} onChange={(e) => setField("scale", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.scales)}</select></label>
+            <label><span className="robotics-match-label"><RoboticsIcon name={matchIconNames[4]} />{copy.match.labels[4]}</span><select value={match.priority} onChange={(e) => setField("priority", e.target.value)}><option value="">{copy.match.select}</option>{optionList(copy.match.priorities)}</select></label>
             <button className="robotics-btn robotics-btn-primary robotics-match-button" onClick={() => setShowResult(true)} disabled={!match.sector || !match.task}>{copy.match.button}</button>
           </div>
 
@@ -369,7 +401,7 @@ export default function RoboticsExperience() {
           <h2>{copy.brain.titleA}<br /><span>{copy.brain.titleB}</span></h2>
           <p>{copy.brain.text}</p>
           <div className="robotics-brain-points">
-            {copy.brain.points.map((point, index) => <div key={point}><strong>0{index + 1}</strong><span>{point}</span></div>)}
+            {copy.brain.points.map((point, index) => <div key={point}><strong className="robotics-brain-point-icon"><RoboticsIcon name={brainIconNames[index]} /></strong><span>{point}</span></div>)}
           </div>
         </div>
       </section>
