@@ -344,7 +344,9 @@ export default function RoboticsExperience() {
         <div className="robotics-method-line">
           {copy.method.steps.map(([iconName, title, text]) => (
             <div className="robotics-method-step" key={iconName}>
-              <span className="robotics-method-icon"><RoboticsIcon name={iconName} /></span><h3>{title}</h3><p>{text}
+              <span className="robotics-method-icon"><RoboticsIcon name={iconName} /></span>
+              <h3>{title}</h3>
+              <p>{text}</p>
             </div>
           ))}
         </div>
