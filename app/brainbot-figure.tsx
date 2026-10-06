@@ -83,8 +83,18 @@ export default function BrainBotFigure() {
         <circle cx="96" cy="55" r="1.5" fill="#071017" />
         <circle cx="124" cy="55" r="1.5" fill="#071017" />
         <path d="M107 60 L104 70 H113" fill="none" stroke="#7b8c94" strokeWidth="2" strokeLinecap="round" />
-        <rect className="brainbot-pro-mouth" x="94" y="76" width="32" height="8" rx="4" fill="#071017" stroke="#73dbea" strokeWidth="1.5" />
-        <path d="M98 80 H122" stroke="#b9f8ff" strokeWidth="1.5" opacity=".85" />
+        <path
+          className="brainbot-pro-mouth-shell"
+          d="M91 74 Q110 70 129 74 L127 86 Q110 91 93 86 Z"
+          fill="url(#bbMetal)"
+          stroke="#8298a2"
+          strokeWidth="1.5"
+        />
+        <g className="brainbot-pro-mouth">
+          <path d="M96 77 Q110 74 124 77 L123 84 Q110 87 97 84 Z" fill="#02070b" stroke="#73dbea" strokeWidth="1.25" />
+          <path d="M100 80 H120" stroke="#d4fbff" strokeWidth="1.5" strokeLinecap="round" opacity=".92" />
+          <path d="M103 77.5 V84 M110 76.5 V85 M117 77.5 V84" stroke="#286d78" strokeWidth=".85" opacity=".9" />
+        </g>
       </g>
 
       <g className="brainbot-pro-arm brainbot-pro-arm-left">
