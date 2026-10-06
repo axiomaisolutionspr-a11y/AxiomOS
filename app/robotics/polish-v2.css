@@ -219,3 +219,38 @@
     transition:none!important;
   }
 }
+
+
+/* Opening film: clearer, wider framing, no visible grid. */
+.ax-scenes .ax-scene:first-child{
+  background:#020611!important;
+}
+.ax-scenes .ax-scene:first-child .ax-scene-video{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:68% 50%!important;
+  opacity:.84!important;
+  filter:brightness(1.12) saturate(1.02) contrast(1.02)!important;
+  transform:scale(.96)!important;
+}
+.ax-scenes .ax-scene:first-child .ax-scene-grid{
+  display:none!important;
+}
+.ax-scenes .ax-scene:first-child .ax-scene-shade{
+  background:
+    linear-gradient(90deg,rgba(2,6,17,.96) 0%,rgba(2,6,17,.83) 35%,rgba(2,6,17,.34) 58%,rgba(2,6,17,.20) 76%,rgba(2,6,17,.45) 100%),
+    linear-gradient(180deg,rgba(2,6,17,.04),rgba(2,6,17,.38))!important;
+}
+@media(max-width:900px){
+  .ax-scenes .ax-scene:first-child .ax-scene-video{
+    object-fit:contain!important;
+    object-position:center center!important;
+    opacity:.76!important;
+    transform:scale(.94)!important;
+  }
+  .ax-scenes .ax-scene:first-child .ax-scene-shade{
+    background:linear-gradient(180deg,rgba(2,6,17,.80) 0%,rgba(2,6,17,.54) 56%,rgba(2,6,17,.32) 100%)!important;
+  }
+}
