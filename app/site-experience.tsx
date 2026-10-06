@@ -211,30 +211,36 @@ export default function SiteExperience() {
         }).catch(() => {});
       }
     };
-    const tone = (brain: boolean) => {
+    const tone = async (brain: boolean) => {
       const ctx = context.current;
       if (!enabledRef.current || !ctx || ctx.state === "closed") return;
+      try {
+        if (ctx.state === "suspended") await ctx.resume();
+      } catch {
+        return;
+      }
+      if (ctx.state !== "running") return;
       (brain ? [523.25, 783.99, 1046.5] : [740]).forEach((frequency, index) => {
         const oscillator = ctx.createOscillator();
         const gain = ctx.createGain();
         const time = ctx.currentTime + index * 0.045;
         oscillator.type = brain ? "sine" : "triangle";
         oscillator.frequency.setValueAtTime(frequency, time);
-        oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.82, time + 0.1);
+        oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.82, time + 0.12);
         gain.gain.setValueAtTime(0.0001, time);
-        gain.gain.exponentialRampToValueAtTime(brain ? 0.07 : 0.045, time + 0.008);
-        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.14);
+        gain.gain.exponentialRampToValueAtTime(brain ? 0.065 : 0.095, time + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.19);
         oscillator.connect(gain);
         gain.connect(ctx.destination);
         oscillator.start(time);
-        oscillator.stop(time + 0.15);
+        oscillator.stop(time + 0.2);
         oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
       });
     };
     const playAction = (target: EventTarget | null) => {
       const element = target instanceof Element ? target.closest<HTMLElement>('a[href],button,[role="button"],label:has(input[type="checkbox"]),label:has(input[type="radio"])') : null;
       if (!element || element.matches(':disabled,[aria-disabled="true"]') || element.closest(".axiom-sound-toggle,.axiom-narration-toggle")) return;
-      tone(element.matches('.home-brain-shell,.brain-orb-button,a[href^="/brain"]') || pathname === "/brain");
+      void tone(element.matches('.home-brain-shell,.brain-orb-button,a[href^="/brain"]') || pathname === "/brain");
     };
     const pointer = (event: PointerEvent) => {
       if (event.target instanceof Element && event.target.closest(".axiom-sound-toggle,.axiom-narration-toggle")) return;

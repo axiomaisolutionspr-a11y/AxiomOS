@@ -1536,8 +1536,8 @@ export default function BrainPage() {
           object-fit: cover;
           object-position: center 30%;
           pointer-events: none;
-          opacity: 0.46;
-          filter: brightness(0.72) saturate(0.96) contrast(1.08);
+          opacity: 0.74;
+          filter: brightness(1.12) saturate(1.02) contrast(1.06);
           transform: scale(1.015);
           z-index: 0;
         }
@@ -1547,8 +1547,8 @@ export default function BrainPage() {
           inset: 0;
           pointer-events: none;
           background:
-            radial-gradient(circle at 50% 7%, rgba(8, 52, 108, 0.16), rgba(3, 13, 29, 0.5) 54%, rgba(0, 4, 10, 0.76) 100%),
-            linear-gradient(180deg, rgba(2, 14, 31, 0.08), rgba(0, 5, 13, 0.4));
+            radial-gradient(circle at 50% 7%, rgba(8, 52, 108, 0.12), rgba(3, 13, 29, 0.34) 54%, rgba(0, 4, 10, 0.58) 100%),
+            linear-gradient(180deg, rgba(2, 14, 31, 0.06), rgba(0, 5, 13, 0.28));
           z-index: 1;
         }
 

@@ -254,3 +254,148 @@
     background:linear-gradient(180deg,rgba(2,6,17,.80) 0%,rgba(2,6,17,.54) 56%,rgba(2,6,17,.32) 100%)!important;
   }
 }
+
+/* Sharper, single muted film stays behind every Robotics section without zooming the portrait source. */
+.ax-robotics-video-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  background:#020611;
+}
+.ax-robotics-video-backdrop video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+  opacity:.94;
+  filter:brightness(1.1) contrast(1.08) saturate(1.06);
+}
+.ax-robotics-video-shade{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(2,6,17,.34),rgba(2,6,17,.42) 52%,rgba(2,6,17,.56));
+}
+.ax-scenes,.robotics-page{
+  position:relative;
+  z-index:1;
+  background:transparent!important;
+}
+.ax-scene,.robotics-page .robotics-hero,.robotics-page .robotics-section,.robotics-page .robotics-cta{
+  background:transparent!important;
+}
+.ax-scenes .ax-scene-shade{
+  background:linear-gradient(90deg,rgba(2,6,17,.78),rgba(2,6,17,.42) 55%,rgba(2,6,17,.35)),linear-gradient(180deg,rgba(2,6,17,.08),rgba(2,6,17,.32))!important;
+}
+.ax-scenes .ax-scene-grid,.ax-scenes .ax-scene-floor,.robotics-page .robotics-grid-glow{
+  display:none!important;
+}
+.robotics-sector-card{
+  background:linear-gradient(160deg,rgba(12,31,49,.72),rgba(3,10,20,.76))!important;
+}
+.robotics-match-form,.robotics-match-result{
+  background:linear-gradient(160deg,rgba(6,23,39,.76),rgba(2,8,16,.78))!important;
+}
+.robotics-prototype-strip article{
+  background:linear-gradient(150deg,rgba(13,38,59,.74),rgba(4,12,22,.76))!important;
+}
+.robotics-sector-icon,.robotics-method-icon,.robotics-brain-point-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:48px;
+  height:48px;
+  flex:0 0 48px;
+  color:#72e5ff;
+  border:1px solid rgba(114,229,255,.35);
+  border-radius:16px;
+  background:linear-gradient(145deg,rgba(85,220,255,.16),rgba(37,134,255,.08));
+  box-shadow:0 0 25px rgba(0,174,239,.12),inset 0 0 18px rgba(85,220,255,.05);
+}
+.robotics-sector-icon svg,.robotics-method-icon svg,.robotics-brain-point-icon svg,.robotics-match-label svg{
+  width:25px;
+  height:25px;
+  display:block;
+}
+.robotics-sector-card>span{
+  margin-top:16px!important;
+}
+.robotics-method-step>.robotics-method-icon{
+  width:46px;
+  height:46px;
+  letter-spacing:0;
+}
+.robotics-method-step h3{
+  margin-top:20px!important;
+}
+.robotics-match-form label .robotics-match-label{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-bottom:10px;
+}
+.robotics-match-label svg{
+  width:19px;
+  height:19px;
+  color:#72e5ff;
+  flex:0 0 19px;
+}
+.robotics-brain-points .robotics-brain-point-icon{
+  width:34px;
+  height:34px;
+  margin-right:10px;
+  vertical-align:middle;
+  border-radius:11px;
+}
+.robotics-brain-point-icon svg{
+  width:19px;
+  height:19px;
+}
+@media(max-width:900px){
+  .ax-robotics-video-backdrop video{
+    object-fit:contain;
+    opacity:.82;
+    filter:brightness(1.04) contrast(1.08) saturate(1.04);
+  }
+  .ax-robotics-video-shade{
+    background:linear-gradient(180deg,rgba(2,6,17,.48),rgba(2,6,17,.52) 56%,rgba(2,6,17,.66));
+  }
+  .robotics-sector-icon{width:44px;height:44px;flex-basis:44px}
+}
+
+
+/* Match the homepage's full-frame video treatment on the Robotics experience. */
+.ax-robotics-video-backdrop video.ax-robotics-video-fill{
+  z-index:0;
+  object-fit:cover!important;
+  object-position:center!important;
+  transform:scale(1.08)!important;
+  opacity:.74!important;
+  filter:none!important;
+}
+.ax-robotics-video-backdrop video.ax-robotics-video-main{
+  z-index:1;
+  object-fit:contain!important;
+  object-position:68% 50%!important;
+  transform:none!important;
+  opacity:1!important;
+  filter:saturate(1.1) contrast(1.08) brightness(1.18)!important;
+}
+.ax-robotics-video-shade{
+  z-index:2;
+  background:linear-gradient(180deg,rgba(2,6,17,.16),rgba(2,6,17,.22) 52%,rgba(2,6,17,.32))!important;
+}
+.ax-scenes .ax-scene-shade{
+  background:
+    linear-gradient(90deg,rgba(2,6,17,.68),rgba(2,6,17,.32) 55%,rgba(2,6,17,.12)),
+    linear-gradient(180deg,rgba(2,6,17,.04),rgba(2,6,17,.18))!important;
+}
+
+
+/* Let the fixed film show through the opening Robotics scene. */
+.ax-scenes .ax-scene:first-child{
+  background:transparent!important;
+}

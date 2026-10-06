@@ -1319,3 +1319,12 @@
     width:46%!important;
   }
 }
+
+
+/* Use the same full BrainBot head on the homepage companion as on Robotics. */
+.axiom-robotics-portal .brainbot-pro-head{
+  display:block!important;
+}
+.axiom-robotics-portal .axiom-robot-avatar > .axiom-robot-face{
+  display:none!important;
+}

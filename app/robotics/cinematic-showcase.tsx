@@ -102,18 +102,6 @@ export default function CinematicShowcase() {
     <div className="ax-scenes" aria-label={language === "es" ? "Resumen cinematográfico de AxiomAI Robotics" : "AxiomAI Robotics cinematic overview"}>
       {activeScenes.map((scene, index) => (
         <section className={`ax-scene ax-scene-${scene.key}`} key={scene.key}>
-          {index === 0 ? (
-            <video
-              className="ax-scene-video"
-              src="/videos/axiomai-brain-robotics-bg.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              aria-hidden="true"
-            />
-          ) : null}
           <div className="ax-scene-shade" />
           <div className="ax-scene-grid" />
           <div className="ax-scene-copy">
