@@ -1185,6 +1185,14 @@
   transform:rotate(var(--robot-right-thumb,0deg));
 }
 
+/* Original compact BrainBot body with audio-driven shoulders, elbows and wrists. */
+.axiom-robotics-portal .brainbot-pro-body{transform-origin:110px 165px}
+.axiom-robotics-portal .brainbot-pro-pelvis{transform-origin:110px 225px}
+.axiom-robotics-portal .brainbot-pro-forearm-left{transform-origin:57px 174px}
+.axiom-robotics-portal .brainbot-pro-forearm-right{transform-origin:163px 174px}
+.axiom-robotics-portal .brainbot-pro-hand-left{transform-origin:56px 218px}
+.axiom-robotics-portal .brainbot-pro-hand-right{transform-origin:164px 218px}
+
 
 /* Smooth BrainBot's presenter gestures so voice pauses never create abrupt hand drops. */
 .axiom-robotics-portal .brainbot-pro-arm{
