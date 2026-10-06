@@ -73,3 +73,149 @@
     background:linear-gradient(180deg,rgba(2,6,17,.91) 0%,rgba(2,6,17,.65) 56%,rgba(2,6,17,.36) 100%)!important;
   }
 }
+
+
+/* The visible hero robot is the same articulated BrainBot that follows the voice-over. */
+.ax-scene-machine-brainbot{
+  width:min(40vw,610px)!important;
+  filter:drop-shadow(0 0 36px rgba(77,218,255,.22))!important;
+}
+.ax-scene-machine-brainbot .ax-machine-beam{
+  opacity:.44;
+}
+.ax-hero-brainbot{
+  appearance:none;
+  position:absolute;
+  left:50%;
+  top:50%;
+  z-index:6;
+  width:48%;
+  height:84%;
+  padding:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:inherit;
+  cursor:pointer;
+  transform:translate(-50%,-49%);
+  filter:drop-shadow(0 18px 18px rgba(0,0,0,.5)) drop-shadow(0 0 18px rgba(72,215,245,.28));
+}
+.ax-hero-brainbot:focus-visible{
+  border-radius:42%;
+  outline:2px solid #85ecff;
+  outline-offset:12px;
+}
+.ax-hero-brainbot .brainbot-pro{
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+.ax-hero-brainbot .brainbot-pro-head{
+  transform-box:view-box;
+  transform-origin:110px 90px;
+  transform:
+    translate(calc(var(--robot-head-x,0px) + var(--robot-speak-x,0px)),calc(var(--robot-head-y,0px) + var(--robot-speak-y,0px)))
+    rotate(calc(var(--robot-speak-rot-y,0deg) * .65));
+  transition:transform 105ms ease-out;
+}
+.ax-hero-brainbot .brainbot-pro-body,
+.ax-hero-brainbot .brainbot-pro-pelvis{
+  transform-box:view-box;
+  transform-origin:110px 220px;
+  transform:translateY(var(--robot-body-y,0px)) rotate(var(--robot-body-rotate,0deg));
+  transition:transform 150ms ease-out;
+}
+.ax-hero-brainbot .brainbot-pro-arm{
+  transform-box:view-box;
+  transition:transform 320ms cubic-bezier(.2,.8,.3,1);
+}
+.ax-hero-brainbot .brainbot-pro-arm-left{
+  transform-origin:62px 126px;
+  transform:
+    translateY(calc(var(--robot-left-y,0px) + var(--robot-left-shoulder-y,0px)))
+    rotate(calc(4deg + var(--robot-left-rotate,0deg) + var(--robot-left-shoulder-roll,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-arm-right{
+  transform-origin:158px 126px;
+  transform:
+    translateY(calc(var(--robot-right-y,0px) + var(--robot-right-shoulder-y,0px)))
+    rotate(calc(-4deg + var(--robot-right-rotate,0deg) + var(--robot-right-shoulder-roll,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-forearm{
+  transform-box:view-box;
+  transition:transform 520ms cubic-bezier(.2,.8,.3,1);
+}
+.ax-hero-brainbot .brainbot-pro-forearm-left{
+  transform-origin:57px 205px;
+  transform:rotate(calc(8deg + var(--robot-left-elbow,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-forearm-right{
+  transform-origin:163px 205px;
+  transform:rotate(calc(-8deg + var(--robot-right-elbow,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-hand{
+  transform-box:view-box;
+  transition:transform 440ms ease-out;
+}
+.ax-hero-brainbot .brainbot-pro-hand-left{
+  transform-origin:56px 278px;
+  transform:rotate(calc(14deg + var(--robot-left-wrist,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-hand-right{
+  transform-origin:164px 278px;
+  transform:rotate(calc(-14deg + var(--robot-right-wrist,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-fingers,
+.ax-hero-brainbot .brainbot-pro-thumb{
+  transform-box:fill-box;
+  transition:transform 360ms ease-out;
+}
+.ax-hero-brainbot .brainbot-pro-fingers-left{
+  transform-origin:50% 0;
+  transform:scaleX(var(--robot-left-finger-spread,1)) scaleY(var(--robot-left-finger-curl,1));
+}
+.ax-hero-brainbot .brainbot-pro-fingers-right{
+  transform-origin:50% 0;
+  transform:scaleX(var(--robot-right-finger-spread,1)) scaleY(var(--robot-right-finger-curl,1));
+}
+.ax-hero-brainbot .brainbot-pro-thumb-left{
+  transform-origin:100% 0;
+  transform:rotate(var(--robot-left-thumb,0deg));
+}
+.ax-hero-brainbot .brainbot-pro-thumb-right{
+  transform-origin:0 0;
+  transform:rotate(var(--robot-right-thumb,0deg));
+}
+.ax-hero-brainbot .brainbot-pro-mouth{
+  transform-box:fill-box;
+  transform-origin:center;
+  transform:scaleX(var(--robot-mouth-width,1)) scaleY(var(--robot-mouth-open,.36));
+  transition:transform 58ms linear;
+  filter:drop-shadow(0 0 3px rgba(98,231,246,.8));
+}
+.ax-hero-brainbot[data-speaking="true"]{
+  filter:drop-shadow(0 20px 20px rgba(0,0,0,.5)) drop-shadow(0 0 28px rgba(87,225,250,.5));
+}
+@media(max-width:900px){
+  .ax-scene-machine-brainbot{
+    right:-16vw!important;
+    width:78vw!important;
+    opacity:.82!important;
+  }
+  .ax-hero-brainbot{
+    width:52%;
+    height:82%;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .ax-hero-brainbot .brainbot-pro-head,
+  .ax-hero-brainbot .brainbot-pro-body,
+  .ax-hero-brainbot .brainbot-pro-pelvis,
+  .ax-hero-brainbot .brainbot-pro-arm,
+  .ax-hero-brainbot .brainbot-pro-forearm,
+  .ax-hero-brainbot .brainbot-pro-hand,
+  .ax-hero-brainbot .brainbot-pro-mouth{
+    transition:none!important;
+  }
+}
