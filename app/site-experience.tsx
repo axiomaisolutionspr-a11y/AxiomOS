@@ -19,12 +19,22 @@ export default function SiteExperience() {
   const enabledRef = useRef(true);
   const [enabled, setEnabled] = useState(true);
 
+  const getRobotMotionTargets = () =>
+    Array.from(document.querySelectorAll<HTMLElement>(".axiom-robotics-portal, .ax-hero-brainbot"));
+
+  const setRobotSpeaking = (speaking: boolean) => {
+    for (const target of getRobotMotionTargets()) {
+      if (speaking) target.setAttribute("data-speaking", "true");
+      else target.removeAttribute("data-speaking");
+    }
+  };
+
   const resetRobotVoiceMotion = () => {
     cancelAnimationFrame(narrationFrame.current);
     narrationFrame.current = 0;
     voiceEnvelope.current = 0;
-    const portal = document.querySelector<HTMLElement>(".axiom-robotics-portal");
-    if (!portal) return;
+    const targets = getRobotMotionTargets();
+    if (!targets.length) return;
     for (const name of [
       "--robot-mouth-open",
       "--robot-mouth-width",
@@ -54,7 +64,7 @@ export default function SiteExperience() {
       "--robot-left-thumb",
       "--robot-right-thumb",
     ]) {
-      portal.style.removeProperty(name);
+      for (const target of targets) target.style.removeProperty(name);
     }
   };
 
@@ -82,11 +92,14 @@ export default function SiteExperience() {
     cancelAnimationFrame(narrationFrame.current);
     const samples = new Uint8Array(analyser.fftSize);
     const tick = () => {
-      const portal = document.querySelector<HTMLElement>(".axiom-robotics-portal");
-      if (!portal || voice.paused || voice.ended) {
+      const targets = getRobotMotionTargets();
+      if (!targets.length || voice.paused || voice.ended) {
         resetRobotVoiceMotion();
         return;
       }
+      const setRobotVariable = (name: string, value: string) => {
+        for (const target of targets) target.style.setProperty(name, value);
+      };
       analyser.getByteTimeDomainData(samples);
       let energy = 0;
       for (const sample of samples) {
@@ -137,38 +150,38 @@ export default function SiteExperience() {
       // Smoothed voice energy starts and stops the pose without rapid pumping motions.
       const emphasis = speechGate * (0.76 + handEnergy * 0.16 + cadence * 0.08);
 
-      portal.style.setProperty("--robot-mouth-open", Math.min(1.5, 0.30 + envelope * 1.75).toFixed(2));
-      portal.style.setProperty("--robot-mouth-width", (1 + envelope * 0.08).toFixed(2));
-      portal.style.setProperty("--robot-voice-level", envelope.toFixed(3));
-      portal.style.setProperty("--robot-speak-x", `${(headBeat * gesture * 0.8).toFixed(2)}px`);
-      portal.style.setProperty("--robot-speak-y", `${(-gesture * 1.4 + Math.abs(headBeat) * gesture * 0.6).toFixed(2)}px`);
-      portal.style.setProperty("--robot-speak-rot-x", `${(headBeat * gesture * 1.4).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-speak-rot-y", `${(Math.sin(phase * 1.55) * gesture * 2.4).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-body-y", `${(bodyBeat * gesture * 1.2).toFixed(2)}px`);
-      portal.style.setProperty("--robot-body-rotate", `${(bodyBeat * gesture * 0.75).toFixed(2)}deg`);
+      setRobotVariable("--robot-mouth-open", Math.min(1.5, 0.30 + envelope * 1.75).toFixed(2));
+      setRobotVariable("--robot-mouth-width", (1 + envelope * 0.08).toFixed(2));
+      setRobotVariable("--robot-voice-level", envelope.toFixed(3));
+      setRobotVariable("--robot-speak-x", `${(headBeat * gesture * 0.8).toFixed(2)}px`);
+      setRobotVariable("--robot-speak-y", `${(-gesture * 1.4 + Math.abs(headBeat) * gesture * 0.6).toFixed(2)}px`);
+      setRobotVariable("--robot-speak-rot-x", `${(headBeat * gesture * 1.4).toFixed(2)}deg`);
+      setRobotVariable("--robot-speak-rot-y", `${(Math.sin(phase * 1.55) * gesture * 2.4).toFixed(2)}deg`);
+      setRobotVariable("--robot-body-y", `${(bodyBeat * gesture * 1.2).toFixed(2)}px`);
+      setRobotVariable("--robot-body-rotate", `${(bodyBeat * gesture * 0.75).toFixed(2)}deg`);
       // The active palm opens to the outside; neither hand crosses the torso or pelvis.
       const leftActivity = Math.min(1, Math.max(0, pose.leftElbow - 4) / 18);
       const rightActivity = Math.min(1, Math.max(0, -pose.rightElbow - 4) / 18);
       const leftDrive = leftBeat * leftActivity;
       const rightDrive = rightBeat * rightActivity;
-      portal.style.setProperty("--robot-left-y", `${(-emphasis * (0.12 + leftDrive * 0.22)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-left-rotate", `${(emphasis * pose.left).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-y", `${(-emphasis * (0.12 + rightDrive * 0.22)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-right-rotate", `${(emphasis * pose.right).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-elbow", `${(emphasis * pose.leftElbow).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-elbow", `${(emphasis * pose.rightElbow).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-wrist", `${(emphasis * pose.leftWrist).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-wrist", `${(emphasis * pose.rightWrist).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-shoulder-y", `${(-emphasis * (0.8 + leftDrive * 1.15)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-right-shoulder-y", `${(-emphasis * (0.8 + rightDrive * 1.15)).toFixed(2)}px`);
-      portal.style.setProperty("--robot-left-shoulder-roll", `${(emphasis * (1.6 + leftDrive * 3.2)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-shoulder-roll", `${(-emphasis * (1.6 + rightDrive * 3.2)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-left-finger-spread", (1 + speechGate * (0.035 + leftActivity * 0.07)).toFixed(3));
-      portal.style.setProperty("--robot-right-finger-spread", (1 + speechGate * (0.035 + rightActivity * 0.07)).toFixed(3));
-      portal.style.setProperty("--robot-left-finger-curl", (1 - speechGate * (0.05 + leftActivity * 0.08)).toFixed(3));
-      portal.style.setProperty("--robot-right-finger-curl", (1 - speechGate * (0.05 + rightActivity * 0.08)).toFixed(3));
-      portal.style.setProperty("--robot-left-thumb", `${(-emphasis * (5 + leftActivity * 7)).toFixed(2)}deg`);
-      portal.style.setProperty("--robot-right-thumb", `${(emphasis * (5 + rightActivity * 7)).toFixed(2)}deg`);
+      setRobotVariable("--robot-left-y", `${(-emphasis * (0.12 + leftDrive * 0.22)).toFixed(2)}px`);
+      setRobotVariable("--robot-left-rotate", `${(emphasis * pose.left).toFixed(2)}deg`);
+      setRobotVariable("--robot-right-y", `${(-emphasis * (0.12 + rightDrive * 0.22)).toFixed(2)}px`);
+      setRobotVariable("--robot-right-rotate", `${(emphasis * pose.right).toFixed(2)}deg`);
+      setRobotVariable("--robot-left-elbow", `${(emphasis * pose.leftElbow).toFixed(2)}deg`);
+      setRobotVariable("--robot-right-elbow", `${(emphasis * pose.rightElbow).toFixed(2)}deg`);
+      setRobotVariable("--robot-left-wrist", `${(emphasis * pose.leftWrist).toFixed(2)}deg`);
+      setRobotVariable("--robot-right-wrist", `${(emphasis * pose.rightWrist).toFixed(2)}deg`);
+      setRobotVariable("--robot-left-shoulder-y", `${(-emphasis * (0.8 + leftDrive * 1.15)).toFixed(2)}px`);
+      setRobotVariable("--robot-right-shoulder-y", `${(-emphasis * (0.8 + rightDrive * 1.15)).toFixed(2)}px`);
+      setRobotVariable("--robot-left-shoulder-roll", `${(emphasis * (1.6 + leftDrive * 3.2)).toFixed(2)}deg`);
+      setRobotVariable("--robot-right-shoulder-roll", `${(-emphasis * (1.6 + rightDrive * 3.2)).toFixed(2)}deg`);
+      setRobotVariable("--robot-left-finger-spread", (1 + speechGate * (0.035 + leftActivity * 0.07)).toFixed(3));
+      setRobotVariable("--robot-right-finger-spread", (1 + speechGate * (0.035 + rightActivity * 0.07)).toFixed(3));
+      setRobotVariable("--robot-left-finger-curl", (1 - speechGate * (0.05 + leftActivity * 0.08)).toFixed(3));
+      setRobotVariable("--robot-right-finger-curl", (1 - speechGate * (0.05 + rightActivity * 0.08)).toFixed(3));
+      setRobotVariable("--robot-left-thumb", `${(-emphasis * (5 + leftActivity * 7)).toFixed(2)}deg`);
+      setRobotVariable("--robot-right-thumb", `${(emphasis * (5 + rightActivity * 7)).toFixed(2)}deg`);
       narrationFrame.current = requestAnimationFrame(tick);
     };
     tick();
@@ -348,10 +361,10 @@ export default function SiteExperience() {
       <audio ref={music} src="/audio/game-on-dopestuff.mp3" loop preload="none" />
       <>
         <audio ref={narration} src="/audio/axiomai-presentacion-roger.mp3" preload="none"
-          onPlaying={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.setAttribute("data-speaking", "true"); startRobotVoiceMotion(); setNarrating(true); setVoiceStarted(true); if (music.current) music.current.volume = 0.045; }}
-          onPause={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); if (music.current) music.current.volume = 0.18; }}
-          onEnded={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); setVoiceStarted(false); if (music.current) music.current.volume = 0.18; }}
-          onError={() => { document.querySelector<HTMLElement>(".axiom-robotics-portal")?.removeAttribute("data-speaking"); resetRobotVoiceMotion(); setNarrating(false); setVoiceError(true); if (music.current) music.current.volume = 0.18; }}
+          onPlaying={() => { setRobotSpeaking(true); startRobotVoiceMotion(); setNarrating(true); setVoiceStarted(true); if (music.current) music.current.volume = 0.045; }}
+          onPause={() => { setRobotSpeaking(false); resetRobotVoiceMotion(); setNarrating(false); if (music.current) music.current.volume = 0.18; }}
+          onEnded={() => { setRobotSpeaking(false); resetRobotVoiceMotion(); setNarrating(false); setVoiceStarted(false); if (music.current) music.current.volume = 0.18; }}
+          onError={() => { setRobotSpeaking(false); resetRobotVoiceMotion(); setNarrating(false); setVoiceError(true); if (music.current) music.current.volume = 0.18; }}
         />
         <button type="button" className="axiom-narration-toggle" aria-pressed={narrating} onClick={toggleNarration}>
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">{narrating ? <path d="M6 4h4v16H6zm8 0h4v16h-4z" /> : <path d="m7 4 14 8-14 8z" />}</svg>
