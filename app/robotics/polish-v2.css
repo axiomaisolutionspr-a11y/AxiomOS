@@ -393,3 +393,9 @@
     linear-gradient(90deg,rgba(2,6,17,.68),rgba(2,6,17,.32) 55%,rgba(2,6,17,.12)),
     linear-gradient(180deg,rgba(2,6,17,.04),rgba(2,6,17,.18))!important;
 }
+
+
+/* Let the fixed film show through the opening Robotics scene. */
+.ax-scenes .ax-scene:first-child{
+  background:transparent!important;
+}
