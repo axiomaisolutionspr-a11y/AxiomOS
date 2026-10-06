@@ -104,12 +104,12 @@ export default function CinematicShowcase() {
           {index === 0 ? (
             <video
               className="ax-scene-video"
-              src="/videos/axiomai-avatar.mp4"
+              src="/videos/axiomai-brain-robotics-bg.mp4"
               autoPlay
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               aria-hidden="true"
             />
           ) : null}
