@@ -4,15 +4,15 @@ export default function BrainBotFigure() {
       <title>BrainBot de AxiomAI</title>
       <defs>
         <linearGradient id="bbArmor" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset=".42" stopColor="#e8eef1" />
-          <stop offset=".72" stopColor="#9aaab2" />
-          <stop offset="1" stopColor="#f8fbfc" />
+          <stop offset="0" stopColor="#f4fdff" />
+          <stop offset=".42" stopColor="#d8eff5" />
+          <stop offset=".72" stopColor="#9fc6d2" />
+          <stop offset="1" stopColor="#effaff" />
         </linearGradient>
         <linearGradient id="bbArmorDark" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#eaf0f2" />
-          <stop offset=".55" stopColor="#8798a1" />
-          <stop offset="1" stopColor="#34434c" />
+          <stop offset="0" stopColor="#e2f4f8" />
+          <stop offset=".55" stopColor="#8fb9c6" />
+          <stop offset="1" stopColor="#344c57" />
         </linearGradient>
         <linearGradient id="bbMetal" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="#14202a" />
@@ -80,6 +80,7 @@ export default function BrainBotFigure() {
       </g>
 
       <g className="brainbot-pro-head">
+        <g transform="translate(19.8 9.4) scale(.82)">
         <path d="M110 10 V1" fill="none" stroke="#30dff5" strokeWidth="2.4" strokeLinecap="round" />
         <circle cx="110" cy="0" r="5.5" fill="#45e7fb" stroke="#d9fdff" strokeWidth="1.3" filter="url(#bbGlow)" />
         <path d="M76 8 H144 Q166 8 166 30 V74 Q166 97 143 97 H77 Q54 97 54 74 V30 Q54 8 76 8 Z" fill="url(#bbHeadShell)" stroke="#72d2e9" strokeWidth="2.6" />
@@ -99,6 +100,7 @@ export default function BrainBotFigure() {
         <g className="brainbot-pro-mouth">
           <path d="M99 79 Q110 84 121 79 Q110 88 99 79 Z" fill="#172229" stroke="#82959d" strokeWidth="1" />
           <path d="M102 81 Q110 83 118 81" fill="none" stroke="#d2dde1" strokeWidth=".8" strokeLinecap="round" opacity=".82" />
+        </g>
         </g>
       </g>
       <g className="brainbot-pro-arm brainbot-pro-arm-left">
