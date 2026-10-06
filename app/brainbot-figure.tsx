@@ -74,10 +74,6 @@ export default function BrainBotFigure() {
       </g>
 
       <g className="brainbot-pro-head">
-        <circle cx="78" cy="54" r="12" fill="url(#bbArmorDark)" stroke="#8fa2ab" strokeWidth="2" />
-        <circle cx="142" cy="54" r="12" fill="url(#bbArmorDark)" stroke="#8fa2ab" strokeWidth="2" />
-        <circle cx="78" cy="54" r="6" fill="#17232b" stroke="#b9c8ce" strokeWidth="1.5" />
-        <circle cx="142" cy="54" r="6" fill="#17232b" stroke="#b9c8ce" strokeWidth="1.5" />
 
         <path
           d="M82 24 Q85 5 110 3 Q135 5 138 24 L136 67 Q132 88 110 98 Q88 88 84 67 Z"
@@ -98,8 +94,8 @@ export default function BrainBotFigure() {
 
         <path d="M87 53 Q96 47 104 52 Q97 59 87 53 Z" fill="#f8fbfc" stroke="#6d7d84" strokeWidth="1.2" />
         <path d="M116 52 Q124 47 133 53 Q123 59 116 52 Z" fill="#f8fbfc" stroke="#6d7d84" strokeWidth="1.2" />
-        <ellipse cx="96" cy="53" rx="3.5" ry="3.2" fill="#9b8a63" />
-        <ellipse cx="124" cy="53" rx="3.5" ry="3.2" fill="#9b8a63" />
+        <ellipse cx="96" cy="53" rx="3.5" ry="3.2" fill="#ec65db" />
+        <ellipse cx="124" cy="53" rx="3.5" ry="3.2" fill="#32dcf6" />
         <circle cx="96" cy="53" r="1.7" fill="#11181d" />
         <circle cx="124" cy="53" r="1.7" fill="#11181d" />
         <circle cx="95.2" cy="52.2" r=".65" fill="#fff" />
