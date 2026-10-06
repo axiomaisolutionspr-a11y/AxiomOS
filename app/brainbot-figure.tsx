@@ -82,7 +82,7 @@ export default function BrainBotFigure() {
           strokeWidth="3"
         />
         <path
-          d="M88 43 H132 V67 Q128 83 110 91 Q92 83 88 67 Z"
+          d="M87 43 Q110 32 133 43 L132 68 Q127 84 110 91 Q93 84 88 68 Z"
           fill="#edf3f5"
           stroke="#a8b8bf"
           strokeWidth="1.3"
