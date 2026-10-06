@@ -1,5 +1,6 @@
 "use client";
 
+import BrainBotFigure from "../brainbot-figure";
 import { useRoboticsLanguage } from "./robotics-language";
 
 const scenes = {
@@ -127,9 +128,25 @@ export default function CinematicShowcase() {
               </div>
             ) : null}
           </div>
-          <div className="ax-scene-machine" aria-hidden="true">
-            <div className="ax-machine-head" />
-            <div className="ax-machine-core" />
+          <div
+            className={`ax-scene-machine${index === 0 ? " ax-scene-machine-brainbot" : ""}`}
+            aria-hidden={index === 0 ? undefined : true}
+          >
+            {index === 0 ? (
+              <button
+                type="button"
+                className="ax-hero-brainbot"
+                aria-label={language === "es" ? "Escuchar o pausar la presentación de BrainBot" : "Play or pause the BrainBot presentation"}
+                onClick={() => document.querySelector<HTMLButtonElement>(".axiom-narration-toggle")?.click()}
+              >
+                <BrainBotFigure />
+              </button>
+            ) : (
+              <>
+                <div className="ax-machine-head" />
+                <div className="ax-machine-core" />
+              </>
+            )}
             <div className="ax-machine-ring ax-machine-ring-a" />
             <div className="ax-machine-ring ax-machine-ring-b" />
             <div className="ax-machine-beam" />
