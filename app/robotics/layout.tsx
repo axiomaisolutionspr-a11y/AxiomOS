@@ -10,6 +10,12 @@ import { RoboticsLanguageProvider } from "./robotics-language";
 export default function RoboticsLayout({ children }: { children: React.ReactNode }) {
   return (
     <RoboticsLanguageProvider>
+      <div className="ax-robotics-video-backdrop" aria-hidden="true">
+        <video autoPlay muted loop playsInline preload="metadata">
+          <source src="/videos/axiomai-robotics-background-hq.mp4" type="video/mp4" />
+        </video>
+        <div className="ax-robotics-video-shade" />
+      </div>
       <CinematicShowcase />
       {children}
     </RoboticsLanguageProvider>
