@@ -1054,7 +1054,7 @@
 .axiom-robotics-portal .brainbot-pro-body,
 .axiom-robotics-portal .brainbot-pro-pelvis{
   transform-box:view-box;
-  transform-origin:110px 132px;
+  transform-origin:110px 130px;
   transform:translateY(var(--robot-body-y,0px)) rotate(var(--robot-body-rotate,0deg));
   transition:transform 100ms ease-out;
 }
@@ -1063,11 +1063,11 @@
   transition:transform 95ms cubic-bezier(.2,.8,.3,1);
 }
 .axiom-robotics-portal .brainbot-pro-arm-left{
-  transform-origin:62px 110px;
+  transform-origin:74px 111px;
   transform:translateY(var(--robot-left-y,0px)) rotate(var(--robot-left-rotate,0deg));
 }
 .axiom-robotics-portal .brainbot-pro-arm-right{
-  transform-origin:158px 110px;
+  transform-origin:146px 111px;
   transform:translateY(var(--robot-right-y,0px)) rotate(var(--robot-right-rotate,0deg));
 }
 .axiom-robotics-portal .brainbot-pro-forearm{
@@ -1075,11 +1075,11 @@
   transition:transform 95ms cubic-bezier(.2,.8,.3,1);
 }
 .axiom-robotics-portal .brainbot-pro-forearm-left{
-  transform-origin:61px 143px;
+  transform-origin:66px 132px;
   transform:rotate(var(--robot-left-elbow,0deg));
 }
 .axiom-robotics-portal .brainbot-pro-forearm-right{
-  transform-origin:159px 143px;
+  transform-origin:154px 132px;
   transform:rotate(var(--robot-right-elbow,0deg));
 }
 .axiom-robotics-portal .brainbot-pro-hand{
@@ -1087,11 +1087,11 @@
   transition:transform 90ms ease-out;
 }
 .axiom-robotics-portal .brainbot-pro-hand-left{
-  transform-origin:58px 171px;
+  transform-origin:61px 147px;
   transform:rotate(var(--robot-left-wrist,0deg));
 }
 .axiom-robotics-portal .brainbot-pro-hand-right{
-  transform-origin:162px 171px;
+  transform-origin:159px 147px;
   transform:rotate(var(--robot-right-wrist,0deg));
 }
 .axiom-robotics-portal .brainbot-pro-mouth{
