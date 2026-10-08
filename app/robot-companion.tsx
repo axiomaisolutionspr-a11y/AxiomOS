@@ -23,38 +23,18 @@ export default function RobotCompanion() {
     const mobileSlot = hero?.querySelector<HTMLElement>(".axiom-v6-robot-slot");
     const stage = hero?.querySelector<HTMLElement>(".axiom-v6-video-stage");
     const cards = hero?.querySelector<HTMLElement>(".axiom-v6-cards");
-    const originalParent = portal.parentElement;
-    const originalNext = portal.nextSibling;
     let layoutFrame = 0;
     let disposed = false;
-    const restorePortal = () => {
-      if (originalParent && portal.parentElement !== originalParent) {
-        originalParent.insertBefore(portal, originalNext?.parentNode === originalParent ? originalNext : null);
-      }
-      if (mobileSlot) mobileSlot.setAttribute("aria-hidden", "true");
-    };
     const align = () => {
       if (!hero || !slot || !stage || !cards || !mobileSlot) return;
       const desktop = matchMedia("(min-width:1300px)").matches;
-      if (!desktop) {
-        mobileSlot.removeAttribute("aria-hidden");
-        if (portal.parentElement !== mobileSlot) mobileSlot.appendChild(portal);
-        portal.dataset.placement = "hero-mobile";
-        for (const property of ["--robot-left", "--robot-top", "--robot-width", "--robot-height"]) {
-          portal.style.removeProperty(property);
-        }
-        stage.style.removeProperty("--axiom-frame-shift");
-        return;
-      }
-
-      restorePortal();
-      const target = slot.getBoundingClientRect();
+      const target = (desktop ? slot : mobileSlot).getBoundingClientRect();
       const cardRect = cards.getBoundingClientRect();
       const scale = hero.getBoundingClientRect().width / hero.offsetWidth;
       const background = document.querySelector(".axiom-home-video-bg")?.getBoundingClientRect();
       const middle = background ? background.left + background.width / 2 : document.documentElement.clientWidth / 2;
       const stageCenter = target.left + stage.offsetWidth * scale / 2;
-      stage.style.setProperty("--axiom-frame-shift", `${(middle - stageCenter) / scale}px`);
+      stage.style.setProperty("--axiom-frame-shift", desktop ? `${(middle - stageCenter) / scale}px` : "0px");
       portal.dataset.placement = "hero";
       portal.style.setProperty("--robot-left", `${target.left + window.scrollX}px`);
       portal.style.setProperty("--robot-top", `${cardRect.top + window.scrollY}px`);
@@ -79,9 +59,7 @@ export default function RobotCompanion() {
       observer.disconnect();
       window.removeEventListener("resize", schedule);
       talk?.removeEventListener("click", speak);
-      restorePortal();
       delete portal.dataset.placement;
-      for (const property of ["--robot-left", "--robot-top", "--robot-width", "--robot-height"]) portal.style.removeProperty(property);
       stage?.style.removeProperty("--axiom-frame-shift");
     };
   }, [pathname]);
