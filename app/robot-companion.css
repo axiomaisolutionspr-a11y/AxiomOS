@@ -1556,3 +1556,20 @@
     text-align:center!important;
   }
 }
+
+
+/* Keep floating audio controls from covering mobile page content. */
+@media(max-width:680px){
+  body > .axiom-site{order:0!important}
+  body > .axiom-narration-toggle,
+  body > .axiom-sound-toggle{
+    position:static!important;
+    inset:auto!important;
+    order:1!important;
+    align-self:center!important;
+    flex:none!important;
+    margin:10px auto 0!important;
+  }
+  body > .axiom-narration-toggle{max-width:calc(100vw - 32px)!important}
+  body > .axiom-sound-toggle{margin-bottom:20px!important}
+}
