@@ -1328,3 +1328,31 @@
 .axiom-robotics-portal .axiom-robot-avatar > .axiom-robot-face{
   display:none!important;
 }
+
+/* Mobile caption only: keep the approved figure and its container unchanged. */
+@media(max-width:560px){
+  .axiom-robotics-portal[data-placement="hero"] .axiom-robot-talk{position:static}
+  .axiom-robotics-portal[data-placement="hero"] .axiom-robotics-copy{
+    bottom:12px;
+    left:3px;
+    right:3px;
+    display:grid;
+    grid-template-columns:auto auto;
+    justify-content:center;
+    align-items:center;
+    column-gap:4px;
+    row-gap:0;
+  }
+  .axiom-robotics-portal[data-placement="hero"] .axiom-robotics-copy small{
+    margin:0;font-size:7px;line-height:10px;letter-spacing:.08em;
+  }
+  .axiom-robotics-portal[data-placement="hero"] .axiom-robotics-copy strong{
+    font-size:11px!important;line-height:10px;
+  }
+  .axiom-robotics-portal[data-placement="hero"] .axiom-robotics-copy em{
+    grid-column:1 / -1;margin:0;font-size:8px;line-height:10px;
+  }
+  .axiom-robotics-portal[data-placement="hero"] .axiom-robotics-link{
+    bottom:1px;line-height:10px;
+  }
+}
