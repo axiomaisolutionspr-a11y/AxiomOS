@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { createPortal } from "react-dom";
+import LogoCurrent from "./logo-current";
 
 export default function SiteExperience() {
   const pathname = usePathname();
@@ -18,6 +20,7 @@ export default function SiteExperience() {
   const voiceEnvelope = useRef(0);
   const enabledRef = useRef(true);
   const [enabled, setEnabled] = useState(true);
+  const [logoTarget, setLogoTarget] = useState<HTMLElement | null>(null);
 
   const getRobotMotionTargets = () =>
     Array.from(document.querySelectorAll<HTMLElement>(".axiom-robotics-portal, .ax-hero-brainbot"));
@@ -280,14 +283,23 @@ export default function SiteExperience() {
   }, [publicPage, pathname]);
 
   useEffect(() => {
+    let active = true;
+    queueMicrotask(() => {
+      if (active) setLogoTarget(document.querySelector<HTMLElement>(".axiom-v6-brand"));
+    });
+    return () => { active = false; };
+  }, [pathname]);
+
+  useEffect(() => {
     if (!publicPage || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let frame = 0;
     let x = 0;
     let y = 0;
-    const targets = () => [...document.querySelectorAll<HTMLElement>(".axiom-v6-brand,.home-brain-shell,.brain-orb-button")];
+    const targets = () => [...document.querySelectorAll<HTMLElement>(".axiom-v6-brand,.home-brain-shell,.brain-orb-button,.axiom-robotics-portal,.ax-hero-brainbot")];
     const reset = () => targets().forEach((element) => {
       for (const name of ["--brain-x", "--brain-y", "--logo-brain-x", "--logo-brain-y"]) element.style.setProperty(name, "0px");
       delete element.dataset.brainNear;
+      for (const name of ["--robot-head-x", "--robot-head-y", "--robot-cursor-rotate", "--robot-cursor-yaw"]) element.style.removeProperty(name);
     });
     const move = (event: PointerEvent) => {
       if (event.pointerType === "touch") return;
@@ -302,9 +314,16 @@ export default function SiteExperience() {
           const dy = Math.max(rect.top - y, 0, y - rect.bottom);
           const proximity = Math.max(0, 1 - Math.hypot(dx, dy) / 100);
           const logo = element.classList.contains("axiom-v6-brand");
+          const robot = element.matches(".axiom-robotics-portal,.ax-hero-brainbot");
           const strength = logo ? 3.5 : element.classList.contains("brain-orb-button") ? 5 : 12;
           const nx = Math.max(-1, Math.min(1, (x - rect.left - rect.width / 2) / (rect.width / 2 + 50)));
           const ny = Math.max(-1, Math.min(1, (y - rect.top - rect.height / 2) / (rect.height / 2 + 50)));
+          if (robot) {
+            element.style.setProperty("--robot-head-x", `${(nx * 4 * proximity).toFixed(2)}px`);
+            element.style.setProperty("--robot-head-y", `${(ny * 2.5 * proximity).toFixed(2)}px`);
+            element.style.setProperty("--robot-cursor-rotate", `${(nx * 7 * proximity).toFixed(2)}deg`);
+            element.style.setProperty("--robot-cursor-yaw", `${(nx * 12 * proximity).toFixed(2)}deg`);
+          }
           element.style.setProperty(logo ? "--logo-brain-x" : "--brain-x", `${(nx * strength * proximity).toFixed(2)}px`);
           element.style.setProperty(logo ? "--logo-brain-y" : "--brain-y", `${(ny * strength * proximity).toFixed(2)}px`);
           element.dataset.brainNear = proximity > 0 ? "true" : "false";
@@ -364,6 +383,7 @@ export default function SiteExperience() {
   };
   return (
     <>
+      {logoTarget && createPortal(<LogoCurrent />, logoTarget)}
       <audio ref={music} src="/audio/game-on-dopestuff.mp3" loop preload="none" />
       <>
         <audio ref={narration} src="/audio/axiomai-presentacion-roger.mp3" preload="none"

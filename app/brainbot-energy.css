@@ -13,3 +13,10 @@
 @keyframes brainbot-eye-look{0%,12%,92%,100%{transform:translate(0,0)}22%,35%{transform:translate(2.5px,-.6px)}45%,52%{transform:translate(0,0)}63%,76%{transform:translate(-2.5px,.7px)}84%{transform:translate(0,-.6px)}}
 @keyframes brainbot-eye-blink{0%,40%,43%,100%{transform:scaleY(1)}41.4%,41.8%{transform:scaleY(.16)}}
 @media(prefers-reduced-motion:reduce){.brainbot-pro .brainbot-energy-brain,.brainbot-pro .brainbot-energy-brain-frame,.brainbot-pro .brainbot-energy-current,.brainbot-pro .brainbot-energy-core,.brainbot-pro .brainbot-energy-eye,.brainbot-pro .brainbot-energy-pupil{animation:none!important}.brainbot-pro .brainbot-energy-current{opacity:.4}}
+/* Current follows the original A's edges and circuits without replacing the artwork. */
+.axiom-site #inicio .axiom-v6-brand .axiom-logo-current{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;overflow:visible}
+.axiom-logo-current-trace,.axiom-logo-current-cross{stroke:#e2fcff;stroke-width:7;stroke-dasharray:7 15;filter:drop-shadow(0 0 8px #00bfff);animation:axiom-a-current 3s linear infinite}
+.axiom-logo-current-cross{stroke:#67eaff;stroke-width:6;stroke-dasharray:4 18;animation-duration:4s;animation-direction:reverse}
+@keyframes axiom-a-current{from{stroke-dashoffset:88}to{stroke-dashoffset:0}}
+.axiom-robotics-portal .brainbot-pro-head,.ax-hero-brainbot .brainbot-pro-head{transform:translate(calc(var(--robot-head-x,0px) + var(--robot-speak-x,0px)),calc(var(--robot-head-y,0px) + var(--robot-speak-y,0px))) rotate(calc(var(--robot-cursor-rotate,0deg) + var(--robot-speak-rot-y,0deg) * .65)) rotateY(var(--robot-cursor-yaw,0deg))!important;transform-box:view-box;transform-origin:110px 90px;transition:transform 140ms ease-out}
+@media(prefers-reduced-motion:reduce){.axiom-logo-current-trace,.axiom-logo-current-cross{animation:none;opacity:.35}.axiom-robotics-portal .brainbot-pro-head,.ax-hero-brainbot .brainbot-pro-head{transform:none!important}}
