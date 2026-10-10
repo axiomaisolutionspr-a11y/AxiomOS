@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
+import WhatsAppAvisos from "./WhatsAppAvisos";
 import CerrarSesionButton from "./CerrarSesionButton";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,17 @@ type Llamada = {
   call_outcome: string | null;
   next_action: string | null;
 };
+
+type MensajeWhatsApp = {
+  id: string;
+  phone: string;
+  message: string;
+  created_at: string | Date;
+};
+
+function telefonoWhatsApp(value: string | null) {
+  return (value || "").replace(/\D/g, "").slice(-10);
+}
 
 const ETAPAS = [
   "Nuevo",
@@ -444,122 +456,7 @@ async function marcarComoRevisada(formData: FormData) {
     throw new Error("No se encontró DATABASE_URL.");
   }
 
-  const id = String(formData.get("id") || "").trim();
-
-  if (!/^\d+$/.test(id)) {
-    throw new Error("ID inválido.");
-  }
-
-  const sql = neon(databaseUrl);
-
-  await sql`
-    UPDATE prospects
-    SET
-      last_reviewed_at = NOW(),
-      updated_at = NOW()
-    WHERE id = ${id}
-  `;
-
-  revalidatePath("/prospectos");
-}
-
-export default async function ProspectosPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{
-    q?: string;
-    estado?: string;
-    call?: string;
-  }>;
-}) {
-  const params = (await searchParams) ?? {};
-
-  const busqueda = (params.q ?? "").trim().toLowerCase();
-  const filtroEstado = params.estado ?? "";
-
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    return (
-      <main className="crm-page">
-        <div className="shell">
-          <h1>Error de configuración</h1>
-          <p>No se encontró DATABASE_URL.</p>
-        </div>
-      </main>
-    );
-  }
-
-  const sql = neon(databaseUrl);
-
-  const prospectos = (await sql`
-    SELECT
-      id::text AS id,
-      prospect_key,
-      caller_name,
-      caller_phone,
-      caller_company,
-      crm_stage,
-      assigned_to,
-      follow_up_at,
-      crm_notes,
-      first_seen_at,
-      last_seen_at,
-      last_reviewed_at
-    FROM prospects
-    ORDER BY last_seen_at DESC
-  `) as Prospecto[];
-
-  const llamadas = (await sql`
-    SELECT
-      id,
-      prospect_id::text AS prospect_id,
-      created_at,
-      caller_name,
-      caller_phone,
-      caller_company,
-      call_reason,
-      call_classification,
-      call_summary,
-      call_outcome,
-      next_action
-    FROM call_leads
-    WHERE prospect_id IS NOT NULL
-    ORDER BY created_at DESC
-  `) as Llamada[];
-
-  const llamadasPorProspecto = new Map<string, Llamada[]>();
-
-  for (const llamada of llamadas) {
-    const historial =
-      llamadasPorProspecto.get(llamada.prospect_id) ?? [];
-
-    historial.push(llamada);
-    llamadasPorProspecto.set(llamada.prospect_id, historial);
-  }
-
-  function llamadasNuevas(prospecto: Prospecto) {
-    const historial =
-      llamadasPorProspecto.get(prospecto.id) ?? [];
-
-    if (!prospecto.last_reviewed_at) {
-      return historial;
-    }
-
-    const revisado = new Date(
-      prospecto.last_reviewed_at
-    ).getTime();
-
-    return historial.filter(
-      (llamada) =>
-        new Date(llamada.created_at).getTime() > revisado
-    );
-  }
-
-  const ahora = new Date();
-  const hoyPR = fechaPuertoRico(ahora);
-
-  const totalLlamadasNuevas = prospectos.reduce(
+  const id = String…1039 tokens truncated…alLlamadasNuevas = prospectos.reduce(
     (total, prospecto) => total + llamadasNuevas(prospecto).length,
     0
   );
@@ -1155,14 +1052,17 @@ export default async function ProspectosPage({
         <p className="eyebrow">AXIOMAI SOLUTIONS</p>
         <h1 className="title">Prospectos</h1>
         <p className="subtitle">
-          CRM inteligente con seguimiento e historial de llamadas
+          CRM inteligente con seguimiento, llamadas y mensajes de WhatsApp
         </p>
+
+        <WhatsAppAvisos pendientes={totalMensajesNuevos} ultimoMensajeId={ultimoMensajeId} />
 
         <section className="stats">
           {[
             ["Prospectos únicos", prospectos.length],
             ["Llamadas totales", llamadas.length],
             ["Nuevas llamadas", totalLlamadasNuevas],
+            ["WhatsApp sin revisar", totalMensajesNuevos],
             ["Nuevos", nuevos],
             ["Vencidos", vencidos],
             ["Seguimientos hoy", seguimientosHoy],
@@ -1229,7 +1129,9 @@ export default async function ProspectosPage({
               llamadasPorProspecto.get(prospecto.id) ?? [];
 
             const nuevas = llamadasNuevas(prospecto);
-            const tieneNueva = nuevas.length > 0;
+            const whatsappNuevos = mensajesNuevos(prospecto);
+            const whatsappHistorial = mensajesDelProspecto(prospecto);
+            const tieneNueva = nuevas.length > 0 || whatsappNuevos.length > 0;
 
             const seguimiento = prospecto.follow_up_at
               ? new Date(prospecto.follow_up_at)
@@ -1302,13 +1204,14 @@ export default async function ProspectosPage({
                   </div>
 
                   <div className="badges">
-                    {tieneNueva && (
+                    {nuevas.length > 0 && (
                       <span className="badge new">
                         {nuevas.length} nueva
                         {nuevas.length === 1 ? "" : "s"}
                       </span>
                     )}
 
+                    {whatsappNuevos.length > 0 && <span className="badge new">{whatsappNuevos.length} WhatsApp sin revisar</span>}
                     {vencido && (
                       <span className="badge overdue">Vencido</span>
                     )}
@@ -1340,7 +1243,9 @@ export default async function ProspectosPage({
                 color: "#67e8f9",
               }}
             >
-              {String(prospecto.crm_notes ?? "").includes("Origen: AxiomOS Brain")
+              {whatsappHistorial.length > 0
+                ? "WHATSAPP"
+                : String(prospecto.crm_notes ?? "").includes("Origen: AxiomOS Brain")
                 ? "BRAIN"
                 : String(prospecto.crm_notes ?? "").includes("Origen: Formulario web AxiomAI")
                   ? "WEB"
@@ -1358,9 +1263,8 @@ export default async function ProspectosPage({
                   {tieneNueva && (
                     <div className="alert">
                       <strong>
-                        {nuevas.length === 1
-                          ? "Hay 1 llamada nueva sin revisar."
-                          : `Hay ${nuevas.length} llamadas nuevas sin revisar.`}
+                        {nuevas.length > 0 ? `${nuevas.length} llamada(s) sin revisar. ` : ""}
+                        {whatsappNuevos.length > 0 ? `${whatsappNuevos.length} mensaje(s) de WhatsApp sin revisar.` : ""}
                       </strong>
 
                       <form
@@ -1376,7 +1280,7 @@ export default async function ProspectosPage({
                           className="button success"
                           type="submit"
                         >
-                          Marcar como revisada
+                          Marcar contacto como revisado
                         </button>
                       </form>
                     </div>
@@ -1505,6 +1409,21 @@ export default async function ProspectosPage({
                       </div>
                     </form>
                   </section>
+
+                  {whatsappHistorial.length > 0 && (
+                    <section className="section">
+                      <h3 className="section-title">Mensajes recibidos por WhatsApp ({whatsappHistorial.length})</h3>
+                      <div className="call-list">
+                        {whatsappHistorial.slice(0, 20).map(mensaje => (
+                          <details className={`call${whatsappNuevos.some(nuevo => nuevo.id === mensaje.id) ? " new" : ""}`} key={mensaje.id}>
+                            <summary>{whatsappNuevos.some(nuevo => nuevo.id === mensaje.id) ? "NUEVO — " : ""}{formatearFecha(mensaje.created_at)}</summary>
+                            <div className="call-body"><p style={{ whiteSpace: "pre-wrap" }}>{mensaje.message}</p></div>
+                          </details>
+                        ))}
+                      </div>
+                      {whatsappHistorial.length > 20 && <p className="mini-value">Se muestran los últimos 20 mensajes recibidos.</p>}
+                    </section>
+                  )}
 
                   <section className="section">
                     <h3 className="section-title">

@@ -393,10 +393,21 @@ export async function POST(
               ? message.from
               : "";
 
-          const text =
-            typeof message?.text?.body ===
-            "string"
-              ? message.text.body.trim()
+          const incomingText = message?.text?.body
+            ?? message?.button?.text
+            ?? message?.interactive?.button_reply?.title
+            ?? message?.interactive?.list_reply?.title;
+          const mediaLabels: Record<string, string> = {
+            image: "Imagen recibida", audio: "Nota de voz recibida",
+            video: "Video recibido", document: "Documento recibido",
+            sticker: "Sticker recibido", location: "Ubicación recibida",
+            contacts: "Contacto recibido",
+          };
+          const isConversationalText = typeof incomingText === "string" && Boolean(incomingText.trim());
+          const caption = message?.image?.caption ?? message?.video?.caption ?? message?.document?.caption;
+          const text = isConversationalText ? incomingText.trim()
+            : mediaLabels[message?.type]
+              ? `[${mediaLabels[message.type]}]${typeof caption === "string" ? ` ${caption.trim()}` : ""}`
               : "";
 
           const whatsappMessageId =
@@ -407,7 +418,6 @@ export async function POST(
 
           if (
             !from ||
-            message?.type !== "text" ||
             !text
           ) {
             continue;
@@ -556,6 +566,9 @@ export async function POST(
             const contactReply = await registerWhatsAppContact({
               phone, text, messageId: whatsappMessageId, profileName, history,
             });
+            // Archivos y notas de voz se registran para el equipo; no se finge
+            // que Brain pudo verlos ni se envía una respuesta generada sin texto.
+            if (!isConversationalText) continue;
             const brainReply = contactReply ?? await askBrain(request, history);
 
             console.log(
