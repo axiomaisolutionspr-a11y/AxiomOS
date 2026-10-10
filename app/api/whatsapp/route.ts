@@ -25,8 +25,82 @@ type BrainMessage = {
   text: string;
 };
 
+type WhatsAppRecipient =
+  | {
+      kind: "phone";
+      value: string;
+    }
+  | {
+      kind: "bsuid";
+      value: string;
+    };
+
+type MetaApiErrorEnvelope = {
+  error?: {
+    message?: unknown;
+    type?: unknown;
+    code?: unknown;
+    error_subcode?: unknown;
+    fbtrace_id?: unknown;
+    error_data?: {
+      details?: unknown;
+      messaging_product?: unknown;
+    };
+  };
+};
+
 function normalizePhone(value: string) {
   return value.replace(/\D/g, "");
+}
+
+function normalizeBsuid(value: string) {
+  return value.trim();
+}
+
+function readMetaApiError(responseBody: string) {
+  try {
+    const parsed =
+      JSON.parse(responseBody) as MetaApiErrorEnvelope;
+
+    const error = parsed?.error;
+
+    if (!error) {
+      return null;
+    }
+
+    return {
+      code:
+        typeof error.code === "number"
+          ? error.code
+          : null,
+      subcode:
+        typeof error.error_subcode === "number"
+          ? error.error_subcode
+          : null,
+      type:
+        typeof error.type === "string"
+          ? error.type
+          : null,
+      message:
+        typeof error.message === "string"
+          ? error.message
+          : null,
+      details:
+        typeof error.error_data?.details === "string"
+          ? error.error_data.details
+          : null,
+      messagingProduct:
+        typeof error.error_data?.messaging_product === "string"
+          ? error.error_data.messaging_product
+          : null,
+      fbtraceId:
+        typeof error.fbtrace_id === "string"
+          ? error.fbtrace_id
+          : null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /*
@@ -104,7 +178,7 @@ ENVIAR UN MENSAJE POR DUALHOOK
 */
 
 async function sendSingleWhatsAppMessage(
-  to: string,
+  recipient: WhatsAppRecipient,
   text: string
 ) {
   if (!PHONE_NUMBER_ID) {
@@ -119,7 +193,25 @@ async function sendSingleWhatsAppMessage(
     );
   }
 
-  const destination = normalizePhone(to);
+  const destination =
+    recipient.kind === "phone"
+      ? normalizePhone(recipient.value)
+      : normalizeBsuid(recipient.value);
+
+  if (!destination) {
+    throw new Error(
+      "WhatsApp recipient identifier is empty"
+    );
+  }
+
+  const recipientFields =
+    recipient.kind === "phone"
+      ? {
+          to: destination,
+        }
+      : {
+          recipient: destination,
+        };
 
   const response = await fetch(
     `https://api.dualhook.com/v25.0/${PHONE_NUMBER_ID}/messages`,
@@ -134,7 +226,7 @@ async function sendSingleWhatsAppMessage(
       body: JSON.stringify({
         messaging_product: "whatsapp",
         recipient_type: "individual",
-        to: destination,
+        ...recipientFields,
         type: "text",
         text: {
           preview_url: false,
@@ -158,8 +250,38 @@ async function sendSingleWhatsAppMessage(
   );
 
   if (!response.ok) {
+    const metaError =
+      readMetaApiError(responseBody);
+
+    console.error(
+      "DUALHOOK_OUTBOUND_ERROR_DETAILS:",
+      {
+        httpStatus: response.status,
+        recipientKind: recipient.kind,
+        metaCode:
+          metaError?.code ?? null,
+        metaSubcode:
+          metaError?.subcode ?? null,
+        metaType:
+          metaError?.type ?? null,
+        metaMessage:
+          metaError?.message ?? null,
+        details:
+          metaError?.details ?? null,
+        messagingProduct:
+          metaError?.messagingProduct ?? null,
+        fbtraceId:
+          metaError?.fbtraceId ?? null,
+      }
+    );
+
+    const diagnostic =
+      metaError?.details ||
+      metaError?.message ||
+      responseBody;
+
     throw new Error(
-      `Dualhook error ${response.status}: ${responseBody}`
+      `Dualhook error ${response.status}${metaError?.code ? ` / Meta #${metaError.code}` : ""}: ${diagnostic}`
     );
   }
 
@@ -173,7 +295,7 @@ ENVIAR RESPUESTA COMPLETA POR WHATSAPP
 */
 
 async function sendWhatsAppMessage(
-  to: string,
+  recipient: WhatsAppRecipient,
   text: string
 ) {
   const chunks =
@@ -204,7 +326,7 @@ async function sendWhatsAppMessage(
 
     const response =
       await sendSingleWhatsAppMessage(
-        to,
+        recipient,
         chunks[index]
       );
 
@@ -381,17 +503,110 @@ export async function POST(
             ? change.value.messages
             : [];
 
+        const contacts =
+          Array.isArray(
+            change?.value?.contacts
+          )
+            ? change.value.contacts
+            : [];
+
+        const statuses =
+          Array.isArray(
+            change?.value?.statuses
+          )
+            ? change.value.statuses
+            : [];
+
         console.log(
           "WHATSAPP_MESSAGES_IN_EVENT:",
           messages.length
         );
 
+        for (const status of statuses) {
+          const statusErrors =
+            Array.isArray(status?.errors)
+              ? status.errors
+              : [];
+
+          if (statusErrors.length > 0) {
+            console.error(
+              "WHATSAPP_STATUS_ERROR:",
+              {
+                messageId:
+                  typeof status?.id === "string"
+                    ? status.id
+                    : null,
+                status:
+                  typeof status?.status === "string"
+                    ? status.status
+                    : null,
+                recipientId:
+                  typeof status?.recipient_id === "string"
+                    ? status.recipient_id
+                    : null,
+                recipientUserId:
+                  typeof status?.recipient_user_id === "string"
+                    ? status.recipient_user_id
+                    : null,
+                errors: statusErrors,
+              }
+            );
+          }
+        }
+
         for (const message of messages) {
-          const from =
+          const fromPhoneRaw =
             typeof message?.from ===
             "string"
               ? message.from
               : "";
+
+          const messageUserId =
+            typeof message?.from_user_id ===
+            "string"
+              ? message.from_user_id.trim()
+              : "";
+
+          const matchingContact =
+            contacts.find(
+              (contact: {
+                wa_id?: unknown;
+                user_id?: unknown;
+              }) =>
+                (
+                  fromPhoneRaw &&
+                  contact?.wa_id ===
+                    fromPhoneRaw
+                ) ||
+                (
+                  messageUserId &&
+                  contact?.user_id ===
+                    messageUserId
+                )
+            ) ??
+            contacts[0];
+
+          const contactWaId =
+            typeof matchingContact?.wa_id ===
+            "string"
+              ? matchingContact.wa_id
+              : "";
+
+          const contactUserId =
+            typeof matchingContact?.user_id ===
+            "string"
+              ? matchingContact.user_id.trim()
+              : "";
+
+          const phone =
+            normalizePhone(
+              fromPhoneRaw ||
+              contactWaId
+            );
+
+          const userId =
+            messageUserId ||
+            contactUserId;
 
           const incomingText = message?.text?.body
             ?? message?.button?.text
@@ -416,25 +631,83 @@ export async function POST(
               ? message.id
               : null;
 
+          const recipient:
+            WhatsAppRecipient | null =
+              phone
+                ? {
+                    kind: "phone",
+                    value: phone,
+                  }
+                : userId
+                  ? {
+                      kind: "bsuid",
+                      value: userId,
+                    }
+                  : null;
+
           if (
-            !from ||
+            !recipient ||
             !text
           ) {
+            if (!recipient && text) {
+              console.error(
+                "WHATSAPP_INCOMING_IDENTITY_MISSING:",
+                {
+                  whatsappMessageId,
+                  hasFrom:
+                    Boolean(fromPhoneRaw),
+                  hasFromUserId:
+                    Boolean(messageUserId),
+                  hasWaId:
+                    Boolean(contactWaId),
+                  hasUserId:
+                    Boolean(contactUserId),
+                }
+              );
+            }
+
             continue;
           }
 
           messagesReceived++;
 
-          const phone =
-            normalizePhone(from);
+          const legacyConversationKey =
+            phone
+              ? `whatsapp:${phone}`
+              : null;
+
+          const bsuidConversationKey =
+            userId
+              ? `whatsapp:bsuid:${userId}`
+              : null;
 
           const conversationKey =
-            `whatsapp:${phone}`;
+            bsuidConversationKey ||
+            legacyConversationKey!;
+
+          const storedIdentity =
+            phone ||
+            `bsuid:${userId}`;
 
           console.log(
-            "WHATSAPP_INCOMING_FROM:",
-            phone
+            "WHATSAPP_INCOMING_IDENTITY:",
+            {
+              phone:
+                phone || null,
+              userId:
+                userId || null,
+              recipientKind:
+                recipient.kind,
+            }
           );
+
+          if (!phone && userId) {
+            console.log(
+              "WHATSAPP_BSUID_WITHOUT_PHONE:",
+              userId
+            );
+          }
+
 
           console.log(
             "WHATSAPP_INCOMING_TEXT:",
@@ -466,16 +739,60 @@ export async function POST(
                   whatsappMessageId
                 );
 
-                const retryRows = await sql`
-                  SELECT role, message FROM whatsapp_messages
-                  WHERE conversation_key = ${conversationKey}
-                  ORDER BY created_at DESC, id DESC LIMIT 12
-                `;
-                const retryHistory: BrainMessage[] = retryRows.slice().reverse()
-                  .filter(row => (row.role === "user" || row.role === "assistant") && typeof row.message === "string")
-                  .map(row => ({ role: row.role as "user" | "assistant", text: row.message }));
-                await registerWhatsAppContact({ phone, text,
-                  messageId: whatsappMessageId, history: retryHistory });
+                const retryRows =
+                  legacyConversationKey &&
+                  legacyConversationKey !==
+                    conversationKey
+                    ? await sql`
+                        SELECT role, message
+                        FROM whatsapp_messages
+                        WHERE conversation_key IN (
+                          ${conversationKey},
+                          ${legacyConversationKey}
+                        )
+                        ORDER BY created_at DESC, id DESC
+                        LIMIT 12
+                      `
+                    : await sql`
+                        SELECT role, message
+                        FROM whatsapp_messages
+                        WHERE conversation_key =
+                          ${conversationKey}
+                        ORDER BY created_at DESC, id DESC
+                        LIMIT 12
+                      `;
+
+                const retryHistory: BrainMessage[] =
+                  retryRows
+                    .slice()
+                    .reverse()
+                    .filter(
+                      (row) =>
+                        (
+                          row.role === "user" ||
+                          row.role === "assistant"
+                        ) &&
+                        typeof row.message === "string"
+                    )
+                    .map((row) => ({
+                      role:
+                        row.role as
+                          | "user"
+                          | "assistant",
+                      text: row.message,
+                    }));
+
+                if (phone) {
+                  await registerWhatsAppContact({
+                    phone,
+                    text,
+                    messageId:
+                      whatsappMessageId,
+                    history:
+                      retryHistory,
+                  });
+                }
+
                 continue;
               }
             }
@@ -496,7 +813,7 @@ export async function POST(
               )
               VALUES (
                 ${conversationKey},
-                ${phone},
+                ${storedIdentity},
                 ${"user"},
                 ${text},
                 ${whatsappMessageId}
@@ -510,18 +827,35 @@ export async function POST(
             */
 
             const historyRows =
-              await sql`
-                SELECT
-                  role,
-                  message
-                FROM whatsapp_messages
-                WHERE conversation_key =
-                  ${conversationKey}
-                ORDER BY
-                  created_at DESC,
-                  id DESC
-                LIMIT 12
-              `;
+              legacyConversationKey &&
+              legacyConversationKey !==
+                conversationKey
+                ? await sql`
+                    SELECT
+                      role,
+                      message
+                    FROM whatsapp_messages
+                    WHERE conversation_key IN (
+                      ${conversationKey},
+                      ${legacyConversationKey}
+                    )
+                    ORDER BY
+                      created_at DESC,
+                      id DESC
+                    LIMIT 12
+                  `
+                : await sql`
+                    SELECT
+                      role,
+                      message
+                    FROM whatsapp_messages
+                    WHERE conversation_key =
+                      ${conversationKey}
+                    ORDER BY
+                      created_at DESC,
+                      id DESC
+                    LIMIT 12
+                  `;
 
             const history:
               BrainMessage[] =
@@ -558,14 +892,20 @@ export async function POST(
             ================================================
             */
 
-            const contacts = Array.isArray(change?.value?.contacts)
-              ? change.value.contacts : [];
-            const profileName = contacts.find(
-              (contact: { wa_id?: unknown }) => contact.wa_id === from
-            )?.profile?.name;
-            const contactReply = await registerWhatsAppContact({
-              phone, text, messageId: whatsappMessageId, profileName, history,
-            });
+            const profileName =
+              matchingContact?.profile?.name;
+
+            const contactReply =
+              phone
+                ? await registerWhatsAppContact({
+                    phone,
+                    text,
+                    messageId:
+                      whatsappMessageId,
+                    profileName,
+                    history,
+                  })
+                : null;
             // Archivos y notas de voz se registran para el equipo; no se finge
             // que Brain pudo verlos ni se envía una respuesta generada sin texto.
             if (!isConversationalText) continue;
@@ -583,7 +923,7 @@ export async function POST(
             */
 
             await sendWhatsAppMessage(
-              phone,
+              recipient,
               brainReply
             );
 
@@ -602,7 +942,7 @@ export async function POST(
               )
               VALUES (
                 ${conversationKey},
-                ${phone},
+                ${storedIdentity},
                 ${"assistant"},
                 ${brainReply}
               )
