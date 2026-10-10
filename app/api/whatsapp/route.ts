@@ -57,6 +57,77 @@ function normalizeBsuid(value: string) {
   return value.trim();
 }
 
+function normalizeConversationCommand(
+  value: string
+) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function isConversationResetCommand(
+  value: string
+) {
+  const command =
+    normalizeConversationCommand(value);
+
+  return (
+    command === "#nueva_conversacion" ||
+    command === "#nueva-conversacion" ||
+    command === "#reset"
+  );
+}
+
+function buildBrainHistory(
+  rows: Array<{
+    role?: unknown;
+    message?: unknown;
+  }>
+): BrainMessage[] {
+  const chronological =
+    rows
+      .slice()
+      .reverse()
+      .filter(
+        (row) =>
+          (
+            row.role === "user" ||
+            row.role === "assistant"
+          ) &&
+          typeof row.message === "string"
+      )
+      .map((row) => ({
+        role:
+          row.role as
+            | "user"
+            | "assistant",
+        text: row.message as string,
+      }));
+
+  let lastResetIndex = -1;
+
+  for (
+    let index = 0;
+    index < chronological.length;
+    index += 1
+  ) {
+    const item = chronological[index];
+
+    if (
+      item.role === "user" &&
+      isConversationResetCommand(item.text)
+    ) {
+      lastResetIndex = index;
+    }
+  }
+
+  return chronological.slice(
+    lastResetIndex + 1
+  );
+}
+
 function readMetaApiError(responseBody: string) {
   try {
     const parsed =
@@ -762,27 +833,20 @@ export async function POST(
                         LIMIT 12
                       `;
 
-                const retryHistory: BrainMessage[] =
-                  retryRows
-                    .slice()
-                    .reverse()
-                    .filter(
-                      (row) =>
-                        (
-                          row.role === "user" ||
-                          row.role === "assistant"
-                        ) &&
-                        typeof row.message === "string"
-                    )
-                    .map((row) => ({
-                      role:
-                        row.role as
-                          | "user"
-                          | "assistant",
-                      text: row.message,
-                    }));
+                const retryHistory =
+                  buildBrainHistory(
+                    retryRows as Array<{
+                      role?: unknown;
+                      message?: unknown;
+                    }>
+                  );
 
-                if (phone) {
+                if (
+                  phone &&
+                  !isConversationResetCommand(
+                    text
+                  )
+                ) {
                   await registerWhatsAppContact({
                     phone,
                     text,
@@ -795,6 +859,73 @@ export async function POST(
 
                 continue;
               }
+            }
+
+            /*
+            ================================================
+            NUEVA CONVERSACIÓN SIN BORRAR HISTORIAL
+            ================================================
+            */
+
+            if (
+              isConversationResetCommand(
+                text
+              )
+            ) {
+              const resetReply =
+                "Listo. Empezamos una conversación nueva. El historial anterior se conserva en AxiomOS, pero Brain no lo usará como contexto desde este punto.";
+
+              await sql`
+                INSERT INTO whatsapp_messages (
+                  conversation_key,
+                  phone,
+                  role,
+                  message,
+                  whatsapp_message_id
+                )
+                VALUES (
+                  ${conversationKey},
+                  ${storedIdentity},
+                  ${"user"},
+                  ${text},
+                  ${whatsappMessageId}
+                )
+              `;
+
+              await sendWhatsAppMessage(
+                recipient,
+                resetReply
+              );
+
+              await sql`
+                INSERT INTO whatsapp_messages (
+                  conversation_key,
+                  phone,
+                  role,
+                  message
+                )
+                VALUES (
+                  ${conversationKey},
+                  ${storedIdentity},
+                  ${"assistant"},
+                  ${resetReply}
+                )
+              `;
+
+              repliesSent++;
+
+              console.log(
+                "WHATSAPP_CONVERSATION_RESET:",
+                {
+                  conversationKey,
+                  phone:
+                    phone || null,
+                  userId:
+                    userId || null,
+                }
+              );
+
+              continue;
             }
 
             /*
@@ -857,29 +988,13 @@ export async function POST(
                     LIMIT 12
                   `;
 
-            const history:
-              BrainMessage[] =
-                historyRows
-                  .slice()
-                  .reverse()
-                  .filter(
-                    (row) =>
-                      (
-                        row.role ===
-                          "user" ||
-                        row.role ===
-                          "assistant"
-                      ) &&
-                      typeof row.message ===
-                        "string"
-                  )
-                  .map((row) => ({
-                    role:
-                      row.role as
-                        | "user"
-                        | "assistant",
-                    text: row.message,
-                  }));
+            const history =
+              buildBrainHistory(
+                historyRows as Array<{
+                  role?: unknown;
+                  message?: unknown;
+                }>
+              );
 
             console.log(
               "WHATSAPP_HISTORY_ITEMS:",
