@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function WhatsAppAvisos({ pendientes, ultimoMensajeId }: {
+export default function WhatsAppAvisos({ pendientes, ultimoMensajeId, autoRefresh=true }: {
   pendientes: number;
   ultimoMensajeId: string;
+  autoRefresh?: boolean;
 }) {
   const router = useRouter();
   const ultimo = useRef(ultimoMensajeId);
@@ -27,6 +28,7 @@ export default function WhatsAppAvisos({ pendientes, ultimoMensajeId }: {
   }, []);
 
   useEffect(() => {
+    if (!autoRefresh) return;
     const refresh = () => {
       if (!pausado && document.visibilityState === "visible") router.refresh();
     };
@@ -36,7 +38,7 @@ export default function WhatsAppAvisos({ pendientes, ultimoMensajeId }: {
       window.clearInterval(interval);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [router, pausado]);
+  }, [router, pausado, autoRefresh]);
 
   useEffect(() => {
     const nuevo = BigInt(ultimoMensajeId) > BigInt(ultimo.current);
