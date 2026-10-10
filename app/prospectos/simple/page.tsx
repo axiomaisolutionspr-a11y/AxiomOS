@@ -3,7 +3,7 @@ import CRMWorkspace from "./CRMWorkspace";
 import { Channel, Contact, STAGES, cleanNotes, nextAction, phoneKey, summaryFromNotes } from "../../lib/crm/model";
 export const dynamic = "force-dynamic";
 export default async function SimpleCRMPage() {
-  if (!process.env.DATABASE_URL) return <main style={{padding:32}}><h1>Tu CRM está protegido</h1><p>Esta versión de prueba necesita la conexión del CRM para mostrar tus contactos.</p><a href="/prospectos/demo">Abrir el demo con datos ficticios</a></main>;
+  if (!process.env.DATABASE_URL) return <main style={{padding:32}}><h1>Tu CRM está protegido</h1><p>Esta vista necesita la conexión del CRM para mostrar tus contactos.</p><a href="/prospectos/demo">Abrir el demo con datos ficticios</a></main>;
   let contacts: Contact[];
   try {
     const sql = neon(process.env.DATABASE_URL);
@@ -36,4 +36,4 @@ export default async function SimpleCRMPage() {
   }
   return <CRMWorkspace mode="live" initialContacts={contacts} />;
 }
-function loadError() { return <main style={{padding:32}}><h1>No pudimos cargar tus contactos</h1><p>Puedes continuar en el CRM actual o abrir la demostración.</p><a href="/prospectos">CRM actual</a> · <a href="/prospectos/demo">Ver demo</a></main>; }
+function loadError() { return <main style={{padding:32}}><h1>No pudimos cargar tus contactos</h1><p>Puedes continuar en el CRM actual o abrir la demostración.</p><a href="/prospectos/anterior">CRM actual</a> · <a href="/prospectos/demo">Ver demo</a></main>; }
