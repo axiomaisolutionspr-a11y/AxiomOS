@@ -108,14 +108,58 @@ export async function registerWhatsAppContact(input: {
       }
     }
   }
-  // Destino de alertas autorizado por Rolando. No es el teléfono del prospecto.
-  const smsTo = "+17872320132";
+  // Alerta móvil para nuevos mensajes de WhatsApp.
+  // Usa el mismo destino de alertas SMS del resto de AxiomOS cuando existe.
+  const smsTo =
+    process.env.SMS_ALERT_TO?.trim() ||
+    "+17872320132";
+  const whatsappSmsSetting =
+    String(
+      process.env.WHATSAPP_SMS_ALERTS_ENABLED ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+  const whatsappSmsEnabled =
+    ![
+      "false",
+      "0",
+      "off",
+      "no",
+    ].includes(whatsappSmsSetting);
   const smsAttemptMarker = `[WA_SMS_ATTEMPT:${token}]`;
   const smsAcceptedMarker = `[WA_SMS_ACCEPTED:${token}]`;
-  if (String(process.env.SMS_ENABLED || "").trim().toLowerCase() !== "true") {
-    console.log("WHATSAPP_CONTACT_SMS_DISABLED", { prospectId: row.id });
-  } else if (!process.env.TELNYX_API_KEY?.trim() || !process.env.TELNYX_SMS_FROM?.trim()) {
-    console.error("WHATSAPP_CONTACT_SMS_CONFIG_MISSING", { prospectId: row.id });
+
+  if (!whatsappSmsEnabled) {
+    console.log(
+      "WHATSAPP_CONTACT_SMS_DISABLED",
+      {
+        prospectId: row.id,
+        reason:
+          "WHATSAPP_SMS_ALERTS_ENABLED=false",
+      }
+    );
+  } else if (
+    !process.env.TELNYX_API_KEY?.trim() ||
+    !process.env.TELNYX_SMS_FROM?.trim() ||
+    !smsTo
+  ) {
+    console.error(
+      "WHATSAPP_CONTACT_SMS_CONFIG_MISSING",
+      {
+        prospectId: row.id,
+        hasApiKey:
+          Boolean(
+            process.env.TELNYX_API_KEY?.trim()
+          ),
+        hasSmsFrom:
+          Boolean(
+            process.env.TELNYX_SMS_FROM?.trim()
+          ),
+        hasSmsTo:
+          Boolean(smsTo),
+      }
+    );
   } else {
     try {
       // Reserva atómica: dos entregas simultáneas no deben enviar dos SMS.
@@ -154,10 +198,21 @@ export async function registerWhatsAppContact(input: {
         if (!response.ok || typeof result?.data?.id !== "string" || !result.data.id
           || result.errors?.length || result.data.errors?.length
           || result.data.to?.some(recipient => ["sending_failed", "delivery_failed"].includes(recipient.status || ""))) {
-          console.error("WHATSAPP_CONTACT_SMS_REJECTED", {
-            prospectId: row.id, status: response.status,
-            codes: Array.isArray(result?.errors) ? result.errors.map(error => error.code) : [],
-          });
+          console.error(
+            "WHATSAPP_CONTACT_SMS_REJECTED",
+            {
+              prospectId: row.id,
+              status: response.status,
+              to: smsTo,
+              codes:
+                Array.isArray(result?.errors)
+                  ? result.errors.map(
+                      (error) => error.code
+                    )
+                  : [],
+              result,
+            }
+          );
         } else {
           // Aceptado por Telnyx; esto todavía no confirma entrega al teléfono.
           console.log("WHATSAPP_CONTACT_SMS_ACCEPTED", {
