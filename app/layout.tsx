@@ -12,6 +12,7 @@ import "./home-cinematic-v8.css";
 import "./home-cinematic-v9.css";
 import "./home-cinematic-v10.css";
 import "./robot-companion.css";
+import "./brainbot-energy.css";
 import HomeBackgroundVideo from "./home-background-video";
 import SiteExperience from "./site-experience";
 import RobotCompanion from "./robot-companion";
