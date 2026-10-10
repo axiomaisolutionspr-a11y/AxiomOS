@@ -456,7 +456,155 @@ async function marcarComoRevisada(formData: FormData) {
     throw new Error("No se encontró DATABASE_URL.");
   }
 
-  const id = String…1039 tokens truncated…alLlamadasNuevas = prospectos.reduce(
+  const id = String(formData.get("id") || "").trim();
+
+  if (!/^\d+$/.test(id)) {
+    throw new Error("ID inválido.");
+  }
+
+  const sql = neon(databaseUrl);
+
+  await sql`
+    UPDATE prospects
+    SET
+      last_reviewed_at = NOW(),
+      updated_at = NOW()
+    WHERE id = ${id}
+  `;
+
+  revalidatePath("/prospectos");
+}
+
+export default async function ProspectosPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    q?: string;
+    estado?: string;
+    call?: string;
+  }>;
+}) {
+  const params = (await searchParams) ?? {};
+
+  const busqueda = (params.q ?? "").trim().toLowerCase();
+  const filtroEstado = params.estado ?? "";
+
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return (
+      <main className="crm-page">
+        <div className="shell">
+          <h1>Error de configuración</h1>
+          <p>No se encontró DATABASE_URL.</p>
+        </div>
+      </main>
+    );
+  }
+
+  const sql = neon(databaseUrl);
+
+  const prospectos = (await sql`
+    SELECT
+      id::text AS id,
+      prospect_key,
+      caller_name,
+      caller_phone,
+      caller_company,
+      crm_stage,
+      assigned_to,
+      follow_up_at,
+      crm_notes,
+      first_seen_at,
+      last_seen_at,
+      last_reviewed_at
+    FROM prospects
+    ORDER BY last_seen_at DESC
+  `) as Prospecto[];
+
+  const llamadas = (await sql`
+    SELECT
+      id,
+      prospect_id::text AS prospect_id,
+      created_at,
+      caller_name,
+      caller_phone,
+      caller_company,
+      call_reason,
+      call_classification,
+      call_summary,
+      call_outcome,
+      next_action
+    FROM call_leads
+    WHERE prospect_id IS NOT NULL
+    ORDER BY created_at DESC
+  `) as Llamada[];
+
+  const mensajesWhatsApp = (await sql`
+    SELECT w.id::text AS id, w.phone, w.message, w.created_at
+    FROM whatsapp_messages w
+    WHERE w.role = 'user'
+      AND EXISTS (
+        SELECT 1 FROM prospects p
+        WHERE p.prospect_key = 'phone:' || RIGHT(REGEXP_REPLACE(w.phone, '[^0-9]', '', 'g'), 10)
+          OR RIGHT(REGEXP_REPLACE(COALESCE(p.caller_phone, ''), '[^0-9]', '', 'g'), 10)
+             = RIGHT(REGEXP_REPLACE(w.phone, '[^0-9]', '', 'g'), 10)
+      )
+    ORDER BY w.created_at DESC, w.id DESC
+  `) as MensajeWhatsApp[];
+  const mensajesPorTelefono = new Map<string, MensajeWhatsApp[]>();
+  for (const mensaje of mensajesWhatsApp) {
+    const key = telefonoWhatsApp(mensaje.phone);
+    const historial = mensajesPorTelefono.get(key) ?? [];
+    historial.push(mensaje);
+    mensajesPorTelefono.set(key, historial);
+  }
+  function mensajesDelProspecto(prospecto: Prospecto) {
+    const phone = prospecto.prospect_key.startsWith("phone:")
+      ? telefonoWhatsApp(prospecto.prospect_key.slice(6))
+      : telefonoWhatsApp(prospecto.caller_phone);
+    return mensajesPorTelefono.get(phone) ?? [];
+  }
+  function mensajesNuevos(prospecto: Prospecto) {
+    return mensajesDelProspecto(prospecto).filter(mensaje =>
+      !prospecto.last_reviewed_at || new Date(mensaje.created_at).getTime() > new Date(prospecto.last_reviewed_at).getTime()
+    );
+  }
+  const totalMensajesNuevos = prospectos.reduce((total, p) => total + mensajesNuevos(p).length, 0);
+  const ultimoMensajeId = mensajesWhatsApp.reduce((max, m) => BigInt(m.id) > BigInt(max) ? m.id : max, "0");
+
+  const llamadasPorProspecto = new Map<string, Llamada[]>();
+
+  for (const llamada of llamadas) {
+    const historial =
+      llamadasPorProspecto.get(llamada.prospect_id) ?? [];
+
+    historial.push(llamada);
+    llamadasPorProspecto.set(llamada.prospect_id, historial);
+  }
+
+  function llamadasNuevas(prospecto: Prospecto) {
+    const historial =
+      llamadasPorProspecto.get(prospecto.id) ?? [];
+
+    if (!prospecto.last_reviewed_at) {
+      return historial;
+    }
+
+    const revisado = new Date(
+      prospecto.last_reviewed_at
+    ).getTime();
+
+    return historial.filter(
+      (llamada) =>
+        new Date(llamada.created_at).getTime() > revisado
+    );
+  }
+
+  const ahora = new Date();
+  const hoyPR = fechaPuertoRico(ahora);
+
+  const totalLlamadasNuevas = prospectos.reduce(
     (total, prospecto) => total + llamadasNuevas(prospecto).length,
     0
   );
