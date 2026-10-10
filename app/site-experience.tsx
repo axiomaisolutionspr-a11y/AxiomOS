@@ -299,6 +299,9 @@ export default function SiteExperience() {
     const reset = () => targets().forEach((element) => {
       for (const name of ["--brain-x", "--brain-y", "--logo-brain-x", "--logo-brain-y"]) element.style.setProperty(name, "0px");
       delete element.dataset.brainNear;
+      delete element.dataset.eyeFollowing;
+      element.style.removeProperty("--robot-gaze-x");
+      element.style.removeProperty("--robot-gaze-y");
       for (const name of ["--robot-head-x", "--robot-head-y", "--robot-cursor-rotate", "--robot-cursor-yaw"]) element.style.removeProperty(name);
     });
     const move = (event: PointerEvent) => {
@@ -319,6 +322,12 @@ export default function SiteExperience() {
           const nx = Math.max(-1, Math.min(1, (x - rect.left - rect.width / 2) / (rect.width / 2 + 50)));
           const ny = Math.max(-1, Math.min(1, (y - rect.top - rect.height / 2) / (rect.height / 2 + 50)));
           if (robot) {
+            const head = element.querySelector(".brainbot-pro-head")?.getBoundingClientRect() ?? rect;
+            const gazeX = Math.max(-1, Math.min(1, (x - head.left - head.width / 2) / 70));
+            const gazeY = Math.max(-1, Math.min(1, (y - head.top - head.height / 2) / 70));
+            element.dataset.eyeFollowing = proximity > 0 ? "true" : "false";
+            element.style.setProperty("--robot-gaze-x", `${(gazeX * 3 * proximity).toFixed(2)}px`);
+            element.style.setProperty("--robot-gaze-y", `${(gazeY * 2 * proximity).toFixed(2)}px`);
             element.style.setProperty("--robot-head-x", `${(nx * 4 * proximity).toFixed(2)}px`);
             element.style.setProperty("--robot-head-y", `${(ny * 2.5 * proximity).toFixed(2)}px`);
             element.style.setProperty("--robot-cursor-rotate", `${(nx * 7 * proximity).toFixed(2)}deg`);

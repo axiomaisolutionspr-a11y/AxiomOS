@@ -6,6 +6,7 @@
 .brainbot-pro .brainbot-energy-core{animation:brainbot-core-energy 8s ease-in-out infinite}
 .brainbot-pro .brainbot-energy-eye{transform-box:fill-box;transform-origin:center;animation:brainbot-eye-blink 8s ease-in-out infinite}
 .brainbot-pro .brainbot-energy-pupil{animation:brainbot-eye-look 8s ease-in-out infinite}
+.axiom-robotics-portal[data-eye-following="true"] .brainbot-energy-pupil,.ax-hero-brainbot[data-eye-following="true"] .brainbot-energy-pupil{animation:none;transform:translate(var(--robot-gaze-x,0px),var(--robot-gaze-y,0px));transition:transform 140ms ease-out}
 @keyframes brainbot-brain-energy{0%,100%{filter:brightness(1.1) saturate(1.1) drop-shadow(0 0 1.5px #3ddcff)}30%,65%{filter:brightness(1.45) saturate(1.22) drop-shadow(0 0 3.5px #40e6ff)}48%{filter:brightness(1.25) saturate(1.16) drop-shadow(0 0 2.5px #b066f5)}}
 @keyframes brainbot-brain-frame-energy{0%,100%{stroke:#76e4f4;filter:drop-shadow(0 0 1.5px #5ce5ff)}30%,65%{stroke:#d1fbff;filter:drop-shadow(0 0 4px #5ce5ff)}48%{stroke:#b4b2ff;filter:drop-shadow(0 0 3px #936af8)}}
 @keyframes brainbot-current-flow{from{stroke-dashoffset:39}to{stroke-dashoffset:0}}
