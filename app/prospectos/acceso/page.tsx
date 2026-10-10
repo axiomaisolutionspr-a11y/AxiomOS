@@ -40,7 +40,10 @@ export default function AccesoProspectosPage() {
         return;
       }
 
-      window.location.assign("/prospectos");
+      const requested = new URL(window.location.href).searchParams.get("from");
+      const destination = requested && requested.startsWith("/prospectos/")
+        && !requested.startsWith("/prospectos/acceso") ? requested : "/prospectos";
+      window.location.assign(destination);
     } catch {
       setError(
         "No se pudo conectar con AxiomOS. Intenta nuevamente."
