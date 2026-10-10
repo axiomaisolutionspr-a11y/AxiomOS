@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 
 export const runtime = "nodejs";
@@ -28,6 +28,193 @@ function normalizePhone(value: string | null): string | null {
   // Puerto Rico / Estados Unidos:
   // usamos los últimos 10 dígitos como identidad CRM.
   return digits.slice(-10);
+}
+
+type BrainPriority =
+  | "alta"
+  | "media"
+  | "baja"
+  | "sin_definir";
+
+function normalizeBrainPriority(
+  value: string
+): BrainPriority {
+  const normalized = value
+    .trim()
+    .toLowerCase();
+
+  if (
+    normalized.includes("alta") ||
+    normalized.includes("high")
+  ) {
+    return "alta";
+  }
+
+  if (
+    normalized.includes("media") ||
+    normalized.includes("medium")
+  ) {
+    return "media";
+  }
+
+  if (
+    normalized.includes("baja") ||
+    normalized.includes("low")
+  ) {
+    return "baja";
+  }
+
+  return "sin_definir";
+}
+
+function isBusinessDayPR(
+  localDate: Date
+) {
+  const day = localDate.getUTCDay();
+
+  return day >= 1 && day <= 5;
+}
+
+function nextBusinessDayAtPR(
+  localDate: Date,
+  hour: number
+) {
+  const target = new Date(localDate);
+
+  do {
+    target.setUTCDate(
+      target.getUTCDate() + 1
+    );
+  } while (!isBusinessDayPR(target));
+
+  target.setUTCHours(
+    hour,
+    0,
+    0,
+    0
+  );
+
+  return target;
+}
+
+function getBrainFollowUpIso(
+  priority: BrainPriority
+) {
+  // Puerto Rico permanece en UTC-4.
+  // Trabajamos temporalmente con una fecha "local PR"
+  // usando getters/setters UTC para evitar depender
+  // de la zona horaria del servidor.
+  const puertoRicoOffsetMs =
+    4 * 60 * 60 * 1000;
+
+  const localNow = new Date(
+    Date.now() - puertoRicoOffsetMs
+  );
+
+  const hour =
+    localNow.getUTCHours();
+
+  let targetLocal: Date;
+
+  if (priority === "alta") {
+    if (
+      isBusinessDayPR(localNow) &&
+      hour < 9
+    ) {
+      targetLocal =
+        new Date(localNow);
+
+      targetLocal.setUTCHours(
+        9,
+        0,
+        0,
+        0
+      );
+    } else if (
+      isBusinessDayPR(localNow) &&
+      hour < 15
+    ) {
+      targetLocal = new Date(
+        localNow.getTime() +
+          2 * 60 * 60 * 1000
+      );
+    } else {
+      targetLocal =
+        nextBusinessDayAtPR(
+          localNow,
+          9
+        );
+    }
+  } else if (
+    priority === "baja"
+  ) {
+    const firstBusinessDay =
+      nextBusinessDayAtPR(
+        localNow,
+        10
+      );
+
+    targetLocal =
+      nextBusinessDayAtPR(
+        firstBusinessDay,
+        10
+      );
+  } else {
+    targetLocal =
+      nextBusinessDayAtPR(
+        localNow,
+        10
+      );
+  }
+
+  return new Date(
+    targetLocal.getTime() +
+      puertoRicoOffsetMs
+  ).toISOString();
+}
+
+function formatPuertoRicoFollowUp(
+  value: string
+) {
+  return new Intl.DateTimeFormat(
+    "es-PR",
+    {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone:
+        "America/Puerto_Rico",
+    }
+  ).format(new Date(value));
+}
+
+function getBrainSuggestedAction(
+  priority: BrainPriority
+) {
+  if (priority === "alta") {
+    return (
+      "Contactar lo antes posible por WhatsApp o llamada. " +
+      "Revisar el análisis de Brain antes del contacto."
+    );
+  }
+
+  if (priority === "media") {
+    return (
+      "Contactar el próximo día laborable y validar " +
+      "alcance, necesidad y próximos pasos."
+    );
+  }
+
+  if (priority === "baja") {
+    return (
+      "Dar seguimiento en los próximos dos días laborables " +
+      "y confirmar interés y momento adecuado."
+    );
+  }
+
+  return (
+    "Contactar el próximo día laborable para calificar " +
+    "el caso y confirmar su prioridad."
+  );
 }
 
 export async function GET() {
@@ -159,6 +346,45 @@ export async function POST(request: NextRequest) {
 
     const prospectKey = `phone:${normalizedPhone}`;
 
+    const isBrainLead =
+      origen
+        .toLowerCase()
+        .includes("brain") ||
+      submissionId
+        .toUpperCase()
+        .startsWith("BRAIN-");
+
+    const normalizedBrainPriority =
+      normalizeBrainPriority(
+        prioridadBrain
+      );
+
+    const automaticStage =
+      isBrainLead
+        ? "Interesado"
+        : "Nuevo";
+
+    const automaticFollowUpAt =
+      isBrainLead
+        ? getBrainFollowUpIso(
+            normalizedBrainPriority
+          )
+        : null;
+
+    const suggestedAction =
+      isBrainLead
+        ? getBrainSuggestedAction(
+            normalizedBrainPriority
+          )
+        : "";
+
+    const followUpLabel =
+      automaticFollowUpAt
+        ? formatPuertoRicoFollowUp(
+            automaticFollowUpAt
+          )
+        : "";
+
     const noteParts = [
       `WEB / AXIOMOS — NUEVA SOLICITUD`,
       `ID: ${submissionId}`,
@@ -183,6 +409,12 @@ export async function POST(request: NextRequest) {
         : "",
       complejidadBrain
         ? `Complejidad Brain: ${complejidadBrain}`
+        : "",
+      isBrainLead && suggestedAction
+        ? `Próxima acción sugerida: ${suggestedAction}`
+        : "",
+      isBrainLead && followUpLabel
+        ? `Seguimiento automático: ${followUpLabel}`
         : "",
       lecturaBrain
         ? `\nLectura principal Brain:\n${lecturaBrain}`
@@ -209,6 +441,7 @@ export async function POST(request: NextRequest) {
         caller_company,
         crm_stage,
         assigned_to,
+        follow_up_at,
         crm_notes,
         first_seen_at,
         last_seen_at,
@@ -220,8 +453,9 @@ export async function POST(request: NextRequest) {
         ${nombre},
         ${telefono},
         ${negocio || null},
-        ${"Nuevo"},
+        ${automaticStage},
         ${"Rolando"},
+        ${automaticFollowUpAt},
         ${crmNotes},
         NOW(),
         NOW(),
@@ -251,15 +485,33 @@ export async function POST(request: NextRequest) {
           ),
 
         crm_stage =
-          COALESCE(
-            NULLIF(prospects.crm_stage, ''),
-            ${"Nuevo"}
-          ),
+          CASE
+            WHEN
+              ${isBrainLead}
+              AND (
+                prospects.crm_stage IS NULL
+                OR BTRIM(prospects.crm_stage) = ''
+                OR prospects.crm_stage = 'Nuevo'
+              )
+            THEN ${automaticStage}
+
+            ELSE
+              COALESCE(
+                NULLIF(prospects.crm_stage, ''),
+                ${automaticStage}
+              )
+          END,
 
         assigned_to =
           COALESCE(
             NULLIF(prospects.assigned_to, ''),
             ${"Rolando"}
+          ),
+
+        follow_up_at =
+          COALESCE(
+            prospects.follow_up_at,
+            EXCLUDED.follow_up_at
           ),
 
         crm_notes =
@@ -279,7 +531,9 @@ export async function POST(request: NextRequest) {
 
       RETURNING
         id::text AS id,
-        prospect_key
+        prospect_key,
+        crm_stage,
+        follow_up_at
     `;
 
     return NextResponse.json({
@@ -288,6 +542,15 @@ export async function POST(request: NextRequest) {
       prospectId: rows[0]?.id ?? null,
       prospectKey,
       submissionId,
+      crmStage:
+        rows[0]?.crm_stage ??
+        automaticStage,
+      followUpAt:
+        rows[0]?.follow_up_at ??
+        automaticFollowUpAt,
+      brainPriority:
+        normalizedBrainPriority,
+      suggestedAction,
     });
   } catch (error) {
     console.error(

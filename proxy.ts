@@ -21,9 +21,9 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   /*
-    La pantalla para ingresar el PIN debe permanecer pública.
+    La pantalla de acceso y el icono de marca (sin datos CRM) son públicos.
   */
-  if (pathname === "/prospectos/acceso") {
+  if (pathname === "/prospectos/acceso" || pathname === "/prospectos/icon") {
     return NextResponse.next();
   }
 

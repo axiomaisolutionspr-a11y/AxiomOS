@@ -1,0 +1,72 @@
+/* AXIOMAI ROBOTICS — CINEMATIC EXPERIENCE LAYER */
+html{scroll-behavior:smooth}
+.robotics-page{--ax-cyan:#55dcff;--ax-blue:#2586ff;--ax-deep:#020611;background:#020611;isolation:isolate}
+.robotics-nav{border-bottom:1px solid rgba(85,220,255,.08);background:linear-gradient(180deg,rgba(2,6,17,.9),rgba(2,6,17,.55));box-shadow:0 12px 60px rgba(0,0,0,.22)}
+.robotics-nav:after{content:"";position:absolute;left:4vw;right:4vw;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(85,220,255,.45),transparent)}
+.robotics-brand img{filter:drop-shadow(0 0 18px rgba(85,220,255,.26))}
+.robotics-hero{min-height:108svh;overflow:hidden;isolation:isolate;background:radial-gradient(circle at 78% 42%,rgba(0,174,239,.24),transparent 32%),radial-gradient(circle at 60% 68%,rgba(90,40,255,.13),transparent 31%),linear-gradient(180deg,#01040b 0%,#04111f 62%,#020611 100%)}
+.robotics-hero:before{content:"ROBOTICS";position:absolute;left:-2vw;top:12vh;font-size:clamp(110px,18vw,310px);line-height:.8;font-weight:1000;letter-spacing:-.085em;color:rgba(114,224,255,.028);white-space:nowrap;z-index:0;pointer-events:none}
+.robotics-hero:after{content:"SCROLL TO DISCOVER  ↓";position:absolute;left:50%;bottom:18px;transform:translateX(-50%);font-size:9px;letter-spacing:.34em;font-weight:900;color:rgba(175,226,249,.62);z-index:7;animation:axScrollCue 2.4s ease-in-out infinite}
+.robotics-grid-glow{opacity:.9;background-size:76px 76px;transform:perspective(800px) rotateX(8deg) scale(1.08);transform-origin:center bottom}
+.robotics-orb-one{width:520px;height:520px;opacity:.28;filter:blur(70px);animation:axDriftOne 10s ease-in-out infinite alternate}
+.robotics-orb-two{width:390px;height:390px;opacity:.22;filter:blur(75px);animation:axDriftTwo 12s ease-in-out infinite alternate}
+.robotics-hero-copy{transform:translateY(-1vh)}
+.robotics-hero h1{font-size:clamp(62px,8.5vw,132px);max-width:1040px;text-wrap:balance;text-shadow:0 18px 80px rgba(0,0,0,.55)}
+.robotics-hero h1 span{background:linear-gradient(100deg,#fff 0%,#8ceaff 32%,#55dcff 55%,#5a7cff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+.robotics-hero-copy>p{max-width:720px;color:#d5e8f3;font-size:clamp(17px,1.4vw,21px)}
+.robotics-hero-visual:before{content:"";position:absolute;width:82%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(85,220,255,.18) 0%,rgba(37,134,255,.08) 36%,transparent 68%);filter:blur(8px);animation:axHalo 4.8s ease-in-out infinite}
+.robotics-hero-visual img{animation:axFloat 6s ease-in-out infinite;filter:drop-shadow(0 0 36px rgba(85,220,255,.45)) drop-shadow(0 0 110px rgba(37,134,255,.2))}
+.robotics-core-ring{background:radial-gradient(circle,transparent 62%,rgba(85,220,255,.035) 70%,transparent 78%)}
+.robotics-signal{backdrop-filter:blur(12px);box-shadow:0 0 30px rgba(0,174,239,.18),inset 0 0 20px rgba(85,220,255,.04)}
+.robotics-hero-footer{padding-top:18px;border-top:1px solid rgba(85,220,255,.11);color:#b2d8ea}
+.robotics-section{position:relative}
+.robotics-section:before{content:"";position:absolute;left:6vw;right:6vw;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(85,220,255,.13),transparent);pointer-events:none}
+.robotics-section-heading h2{text-wrap:balance}
+.robotics-solutions{background:radial-gradient(circle at 50% 20%,rgba(37,134,255,.09),transparent 34%),linear-gradient(180deg,#020611,#061323 50%,#020611)}
+.robotics-sector-grid{perspective:1400px}
+.robotics-sector-card{min-height:370px;padding:36px;background:linear-gradient(165deg,rgba(14,39,59,.94),rgba(3,10,20,.97));transform-style:preserve-3d;border-color:rgba(104,210,255,.18);box-shadow:0 34px 100px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.035)}
+.robotics-sector-card:before{content:"";position:absolute;inset:-40%;background:conic-gradient(from 220deg,transparent 0 62%,rgba(85,220,255,.10) 72%,transparent 82%);opacity:.25;transition:opacity .35s,transform .65s;transform:rotate(-18deg);pointer-events:none}
+.robotics-sector-card:after{content:"";position:absolute;left:28px;right:28px;bottom:25px;height:1px;background:linear-gradient(90deg,rgba(85,220,255,.55),transparent);opacity:.5}
+.robotics-sector-card:hover{transform:translateY(-10px) rotateX(1deg);border-color:rgba(94,220,255,.64);box-shadow:0 45px 130px rgba(0,174,239,.12),0 30px 90px rgba(0,0,0,.4)}
+.robotics-sector-card:hover:before{opacity:.8;transform:rotate(6deg)}
+.robotics-sector-card:nth-child(2n){background:linear-gradient(165deg,rgba(18,31,62,.94),rgba(3,10,20,.97))}
+.robotics-sector-card:nth-child(3n){background:linear-gradient(165deg,rgba(10,45,56,.94),rgba(3,10,20,.97))}
+.robotics-sector-accent{font-size:50px;color:rgba(85,220,255,.065)}
+.robotics-sector-card h3{font-size:32px;letter-spacing:-.035em}
+.robotics-method{background:radial-gradient(circle at 15% 20%,rgba(85,220,255,.06),transparent 30%),#020611}
+.robotics-method-line{position:relative;border-top-color:rgba(85,220,255,.3)}
+.robotics-method-line:before{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;background:linear-gradient(90deg,#55dcff,#2586ff,transparent 92%);opacity:.55;box-shadow:0 0 26px rgba(85,220,255,.38)}
+.robotics-method-step{min-height:270px;transition:background .25s,transform .25s}
+.robotics-method-step:hover{background:linear-gradient(180deg,rgba(85,220,255,.055),transparent);transform:translateY(-4px)}
+.robotics-match{background:radial-gradient(circle at 50% 18%,rgba(0,174,239,.2),transparent 32%),radial-gradient(circle at 80% 70%,rgba(88,55,255,.08),transparent 28%),linear-gradient(180deg,#020611,#071523,#020611)}
+.robotics-match-shell{gap:32px}
+.robotics-match-form,.robotics-match-result{background:linear-gradient(160deg,rgba(6,23,39,.95),rgba(2,8,16,.94));border-color:rgba(89,213,255,.24);box-shadow:0 40px 130px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.04)}
+.robotics-match-form select{transition:border-color .2s,box-shadow .2s;background-color:#061423}
+.robotics-match-form select:focus{border-color:#55dcff;box-shadow:0 0 0 3px rgba(85,220,255,.08),0 0 28px rgba(85,220,255,.08)}
+.robotics-match-result{position:relative;overflow:hidden}
+.robotics-match-result:before{content:"";position:absolute;width:360px;height:360px;border-radius:50%;right:-120px;top:-120px;background:radial-gradient(circle,rgba(85,220,255,.16),transparent 68%);pointer-events:none}
+.robotics-placeholder img{animation:axFloat 5.5s ease-in-out infinite}
+.robotics-brain{min-height:92svh;background:radial-gradient(circle at 28% 50%,rgba(0,174,239,.13),transparent 29%),linear-gradient(180deg,#020611,#030b15)}
+.robotics-brain-visual:after{content:"AI + PHYSICAL AUTOMATION";position:absolute;bottom:35px;font-size:10px;letter-spacing:.34em;font-weight:900;color:rgba(143,216,247,.55)}
+.robotics-brain-visual img{animation:axFloat 6.8s ease-in-out infinite}
+.robotics-brain-halo{box-shadow:0 0 90px rgba(0,174,239,.09),inset 0 0 70px rgba(85,220,255,.04);animation:axHalo 5s ease-in-out infinite}
+.robotics-brain-points div{transition:transform .22s,border-color .22s,background .22s}
+.robotics-brain-points div:hover{transform:translateY(-4px);border-color:rgba(85,220,255,.35);background:rgba(85,220,255,.05)}
+.robotics-prototypes{background:radial-gradient(circle at 50% 5%,rgba(37,134,255,.1),transparent 35%),linear-gradient(180deg,#020611,#071523)}
+.robotics-prototype-strip{gap:20px}
+.robotics-prototype-strip article{position:relative;overflow:hidden;min-height:290px;transition:transform .25s,border-color .25s,box-shadow .25s}
+.robotics-prototype-strip article:after{content:"";position:absolute;right:-80px;bottom:-90px;width:200px;height:200px;border-radius:50%;border:1px solid rgba(85,220,255,.12);box-shadow:0 0 45px rgba(85,220,255,.05)}
+.robotics-prototype-strip article:hover{transform:translateY(-7px);border-color:rgba(85,220,255,.44);box-shadow:0 28px 75px rgba(0,174,239,.09)}
+.robotics-cta{min-height:72svh;background:radial-gradient(circle at 78% 50%,rgba(0,174,239,.22),transparent 30%),radial-gradient(circle at 20% 80%,rgba(83,55,255,.08),transparent 30%),#030918}
+.robotics-cta:before{content:"READY WHEN YOUR OPERATION IS.";position:absolute;right:4vw;bottom:3vh;font-size:clamp(38px,7vw,120px);font-weight:1000;letter-spacing:-.065em;color:rgba(85,220,255,.025);pointer-events:none}
+.robotics-btn{position:relative;overflow:hidden}
+.robotics-btn-primary:after{content:"";position:absolute;top:-30%;bottom:-30%;width:40%;left:-55%;transform:skewX(-18deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:axButtonSweep 4.5s ease-in-out infinite}
+@keyframes axFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-15px) scale(1.012)}}
+@keyframes axHalo{0%,100%{transform:scale(.98);opacity:.7}50%{transform:scale(1.045);opacity:1}}
+@keyframes axDriftOne{0%{transform:translate(0,0)}100%{transform:translate(-65px,45px)}}
+@keyframes axDriftTwo{0%{transform:translate(0,0)}100%{transform:translate(55px,-40px)}}
+@keyframes axScrollCue{0%,100%{opacity:.4;transform:translate(-50%,0)}50%{opacity:1;transform:translate(-50%,7px)}}
+@keyframes axButtonSweep{0%,72%{left:-55%}100%{left:140%}}
+@media(max-width:1100px){.robotics-hero{min-height:auto}.robotics-brain{min-height:auto}.robotics-sector-card{min-height:330px}.robotics-cta{min-height:auto}}
+@media(max-width:720px){.robotics-hero:before{top:16vh;font-size:92px}.robotics-hero:after{font-size:7px;letter-spacing:.24em;bottom:14px}.robotics-hero{padding-bottom:110px}.robotics-hero h1{font-size:clamp(48px,15vw,66px)}.robotics-sector-card{min-height:310px}.robotics-sector-card:hover{transform:none}.robotics-match-shell{gap:20px}.robotics-cta:before{display:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.robotics-page *, .robotics-page *:before, .robotics-page *:after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}

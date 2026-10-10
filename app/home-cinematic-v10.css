@@ -1,0 +1,756 @@
+/* AxiomAI Solutions — phase 10: cleaner premium hero + readable full Robotics background */
+
+/* =========================================================
+   BACKGROUND VIDEO — SHOW MORE OF THE REAL FRAME
+   The source is vertical. The primary layer now uses contain so
+   we can actually appreciate the robot footage instead of cropping it.
+   A soft blurred cover layer fills the sides on wide screens.
+   ========================================================= */
+.axiom-home-bg-video-primary{
+  width:100vw!important;
+  height:100vh!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  transform:none!important;
+  opacity:.72!important;
+  filter:saturate(1.08) contrast(1.02) brightness(.92)!important;
+  background:#020812!important;
+}
+
+.axiom-home-bg-video-secondary{
+  width:100vw!important;
+  height:100vh!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  transform:scale(1.02)!important;
+  opacity:.24!important;
+  filter:blur(24px) saturate(1.10) brightness(.70)!important;
+}
+
+.axiom-home-video-vignette{
+  background:
+    linear-gradient(90deg,rgba(1,6,13,.64) 0%,rgba(2,10,18,.34) 24%,rgba(2,10,18,.16) 50%,rgba(2,10,18,.30) 76%,rgba(1,6,13,.58) 100%),
+    linear-gradient(180deg,rgba(1,5,11,.22),rgba(1,6,13,.12) 55%,rgba(1,4,9,.35))!important;
+}
+
+/* =========================================================
+   HERO — CLEAN EDITORIAL LAYOUT
+   Remove the heavy left glass card. The copy now sits naturally
+   over a controlled dark field, while the product demo is the
+   visual anchor on the right.
+   ========================================================= */
+.axiom-site .axiom-v6-hero{
+  position:relative!important;
+  min-height:760px!important;
+  grid-template-columns:minmax(0,1.08fr) minmax(400px,.92fr)!important;
+  align-items:center!important;
+  gap:clamp(54px,6vw,92px)!important;
+  padding:78px 0 92px!important;
+  overflow:visible!important;
+  background:
+    linear-gradient(90deg,rgba(1,7,15,.86) 0%,rgba(2,12,22,.67) 39%,rgba(2,11,20,.28) 66%,rgba(1,7,14,.14) 100%)!important;
+  border-bottom:1px solid rgba(85,220,255,.10)!important;
+  box-shadow:inset 0 -75px 120px rgba(1,5,11,.22)!important;
+}
+
+.axiom-site .axiom-v6-copy{
+  align-self:center!important;
+  padding:20px 0 24px 10px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  overflow:visible!important;
+}
+
+/* Replace the troublesome embedded square logo with a clean textual brand chip. */
+.axiom-site .axiom-v6-copy .axiom-v6-brand{
+  width:auto!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0 0 22px!important;
+  padding:8px 12px 8px 9px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  transform:none!important;
+  border:1px solid rgba(93,220,255,.20)!important;
+  border-radius:999px!important;
+  background:rgba(4,25,42,.50)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 12px 35px rgba(0,0,0,.12)!important;
+  backdrop-filter:blur(10px)!important;
+  -webkit-backdrop-filter:blur(10px)!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-v6-brand::before{
+  content:"A";
+  width:29px;
+  height:29px;
+  flex:0 0 29px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  color:#02101b;
+  font-size:14px;
+  font-weight:950;
+  background:linear-gradient(145deg,#a9f2ff,#55dcff 48%,#2586ff);
+  box-shadow:0 0 20px rgba(85,220,255,.25);
+}
+
+.axiom-site .axiom-v6-copy .axiom-v6-brand > img{
+  display:none!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-v6-brand > div{
+  display:flex!important;
+  align-items:baseline!important;
+  gap:8px!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-v6-brand strong{
+  color:#f4fbff!important;
+  font-size:13px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  letter-spacing:-.2px!important;
+  white-space:nowrap!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-v6-brand small{
+  display:block!important;
+  max-width:none!important;
+  color:#78a7bf!important;
+  font-size:8px!important;
+  line-height:1!important;
+  font-weight:750!important;
+  white-space:nowrap!important;
+}
+
+/* Headline: strong, left aligned, with a cleaner scale relationship. */
+.axiom-site .axiom-v6-copy > .axiom-hero-punch-title-v3{
+  position:relative!important;
+  top:auto!important;
+  left:auto!important;
+  width:100%!important;
+  max-width:620px!important;
+  margin:0 0 22px!important;
+  padding:0!important;
+  text-align:left!important;
+  transform:none!important;
+}
+
+.axiom-site .axiom-v6-copy > .axiom-hero-punch-title-v3 > span{
+  width:100%!important;
+  margin:0!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+  line-height:.91!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-hero-punch-white-v3{
+  font-size:clamp(54px,4.6vw,74px)!important;
+  letter-spacing:-2.8px!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-hero-punch-blue-v3{
+  margin-top:7px!important;
+  font-size:clamp(50px,4.25vw,68px)!important;
+  letter-spacing:-2.8px!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-v6-lead{
+  max-width:610px!important;
+  margin:0 0 25px!important;
+  padding:0!important;
+  color:#d0e3ed!important;
+  font-size:17px!important;
+  line-height:1.68!important;
+  text-align:left!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-v6-actions{
+  display:flex!important;
+  align-items:center!important;
+  flex-wrap:wrap!important;
+  gap:12px!important;
+  margin:0!important;
+}
+
+.axiom-site .axiom-v6-copy .primary,
+.axiom-site .axiom-v6-copy .secondary{
+  min-height:50px!important;
+  padding:0 20px!important;
+  border-radius:13px!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-v6-cta-note{
+  margin:11px 0 12px!important;
+  color:rgba(174,211,231,.74)!important;
+}
+
+.axiom-site .axiom-v6-copy .axiom-v6-proof{
+  margin-top:12px!important;
+  gap:7px!important;
+}
+
+/* RIGHT PRODUCT DEMO */
+.axiom-site .axiom-v6-visual{
+  align-self:center!important;
+  padding:0!important;
+  margin:0!important;
+}
+
+.axiom-site .axiom-v6-video-shell{
+  width:min(100%,450px)!important;
+  max-width:450px!important;
+  margin:0 auto!important;
+}
+
+.axiom-site .axiom-v6-video-eyebrow{
+  margin:0 auto 13px!important;
+  padding:9px 14px!important;
+  display:flex!important;
+  justify-content:center!important;
+  width:fit-content!important;
+  background:rgba(3,25,42,.64)!important;
+  border-color:rgba(85,220,255,.22)!important;
+}
+
+.axiom-site .axiom-v6-video-stage{
+  width:330px!important;
+  height:550px!important;
+  margin:0 auto!important;
+  border-radius:28px!important;
+  border:1px solid rgba(104,226,255,.44)!important;
+  background:rgba(2,13,23,.82)!important;
+  box-shadow:
+    0 35px 96px rgba(0,0,0,.34),
+    0 0 85px rgba(20,155,255,.14),
+    inset 0 1px 0 rgba(255,255,255,.07)!important;
+}
+
+.axiom-site .axiom-v6-cards{
+  width:100%!important;
+  max-width:450px!important;
+  margin:13px auto 0!important;
+  gap:9px!important;
+}
+
+.axiom-site .axiom-v6-card{
+  min-height:64px!important;
+  padding:9px 11px!important;
+  background:linear-gradient(155deg,rgba(5,29,47,.76),rgba(2,14,26,.74))!important;
+  border-color:rgba(85,220,255,.18)!important;
+  backdrop-filter:blur(12px)!important;
+  -webkit-backdrop-filter:blur(12px)!important;
+}
+
+/* Body begins cleanly after the hero. */
+.axiom-site .signal-strip{
+  margin-top:0!important;
+  border-top:1px solid rgba(85,220,255,.12)!important;
+  background:linear-gradient(180deg,rgba(3,18,31,.82),rgba(2,12,22,.72))!important;
+}
+
+@media (max-width:1050px){
+  .axiom-home-bg-video-primary{
+    object-fit:contain!important;
+    opacity:.58!important;
+  }
+  .axiom-home-bg-video-secondary{opacity:.18!important}
+
+  .axiom-site .axiom-v6-hero{
+    min-height:0!important;
+    grid-template-columns:1fr!important;
+    gap:40px!important;
+    padding:58px 0 72px!important;
+    background:linear-gradient(180deg,rgba(1,8,17,.78),rgba(2,12,23,.60) 58%,rgba(1,7,15,.50))!important;
+  }
+
+  .axiom-site .axiom-v6-copy{
+    width:min(100%,760px)!important;
+    margin:0 auto!important;
+    padding:18px 22px 24px!important;
+    text-align:center!important;
+  }
+
+  .axiom-site .axiom-v6-copy .axiom-v6-brand{
+    margin:0 auto 20px!important;
+  }
+
+  .axiom-site .axiom-v6-copy > .axiom-hero-punch-title-v3,
+  .axiom-site .axiom-v6-copy > .axiom-hero-punch-title-v3 > span,
+  .axiom-site .axiom-v6-copy .axiom-v6-lead{
+    text-align:center!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  .axiom-site .axiom-v6-copy .axiom-v6-actions,
+  .axiom-site .axiom-v6-copy .axiom-v6-proof{
+    justify-content:center!important;
+  }
+
+  .axiom-site .axiom-v6-copy .axiom-v6-cta-note{text-align:center!important}
+}
+
+@media (max-width:680px){
+  .axiom-site .axiom-v6-hero{
+    padding:38px 0 56px!important;
+    gap:32px!important;
+  }
+
+  .axiom-site .axiom-v6-copy{
+    padding:12px 8px 18px!important;
+  }
+
+  .axiom-site .axiom-v6-copy .axiom-v6-brand{
+    padding:7px 10px 7px 8px!important;
+  }
+
+  .axiom-site .axiom-v6-copy .axiom-v6-brand small{display:none!important}
+
+  .axiom-site .axiom-v6-copy .axiom-hero-punch-white-v3{
+    font-size:clamp(42px,11.4vw,54px)!important;
+    letter-spacing:-1.8px!important;
+  }
+
+  .axiom-site .axiom-v6-copy .axiom-hero-punch-blue-v3{
+    font-size:clamp(38px,10.2vw,50px)!important;
+    letter-spacing:-1.8px!important;
+  }
+
+  .axiom-site .axiom-v6-copy .axiom-v6-lead{
+    font-size:15.5px!important;
+    line-height:1.62!important;
+  }
+
+  .axiom-site .axiom-v6-copy .primary,
+  .axiom-site .axiom-v6-copy .secondary{
+    width:100%!important;
+  }
+
+  .axiom-site .axiom-v6-video-stage{
+    width:min(88vw,315px)!important;
+    height:min(146vw,525px)!important;
+  }
+
+  .axiom-site .axiom-v6-cards{
+    grid-template-columns:1fr 1fr!important;
+  }
+}
+
+/* Hero alignment: original logo, shared left edge, compact demo and right-hand benefits. */
+.axiom-site #inicio.axiom-v6-hero{
+  grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)!important;
+  gap:clamp(28px,4vw,64px)!important;
+  min-height:640px!important;
+  padding:48px 0 64px!important;
+}
+.axiom-site #inicio .axiom-v6-copy{
+  padding:0!important;
+  margin:0!important;
+  width:100%!important;
+  text-align:left!important;
+}
+.axiom-site #inicio .axiom-v6-brand{
+  display:block!important;
+  margin:0 0 28px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+.axiom-site #inicio .axiom-v6-brand::before{content:none!important}
+.axiom-site #inicio .axiom-v6-brand > div{display:none!important}
+.axiom-site #inicio .axiom-v6-brand > img{
+  display:block!important;
+  width:200px!important;
+  height:auto!important;
+  max-height:none!important;
+  max-width:100%!important;
+  object-fit:contain!important;
+  object-position:left top!important;
+  transform:none!important;
+}
+.axiom-site #inicio .axiom-hero-punch-title-v3,
+.axiom-site #inicio .axiom-hero-punch-title-v3 > span,
+.axiom-site #inicio .axiom-v6-lead{
+  width:100%!important;
+  max-width:100%!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  text-align:left!important;
+  transform:none!important;
+  left:auto!important;
+}
+.axiom-site #inicio .axiom-hero-punch-title-v3 > span{
+  font-size:clamp(36px,4.2vw,64px)!important;
+  letter-spacing:-.035em!important;
+  line-height:1.05!important;
+}
+.axiom-site #inicio .axiom-v6-actions{justify-content:flex-start!important}
+.axiom-site #inicio .axiom-v6-video-shell{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,260px)!important;
+  align-items:center!important;
+  gap:16px!important;
+  width:100%!important;
+  max-width:none!important;
+}
+.axiom-site #inicio .axiom-v6-video-eyebrow{
+  grid-column:1 / -1!important;
+  margin:0!important;
+  font-size:11px!important;
+}
+.axiom-site #inicio .axiom-v6-video-stage{
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:9 / 16;
+  margin:0!important;
+  padding:6px!important;
+}
+.axiom-site #inicio .axiom-v6-video-stage > video.axiom-v6-video-main{
+  inset:6px!important;
+  width:calc(100% - 12px)!important;
+  height:calc(100% - 12px)!important;
+  object-fit:cover!important;
+  filter:none!important;
+}
+.axiom-site #inicio .axiom-v6-cards{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  margin:0!important;
+  width:100%!important;
+  gap:12px!important;
+}
+.axiom-site #inicio .axiom-v6-card{min-width:0!important;padding:12px 10px!important;gap:10px!important}
+.axiom-site #inicio .axiom-v6-card b{flex:0 0 36px!important;width:36px!important;height:36px!important}
+.axiom-site #inicio .axiom-v6-card svg{width:24px;height:24px}
+.axiom-site #inicio .axiom-v6-card small{font-size:12px!important}
+.axiom-site #inicio .axiom-v6-card strong{font-size:14px!important;line-height:1.4!important}
+@media(max-width:1050px){
+  .axiom-site #inicio.axiom-v6-hero{grid-template-columns:1fr!important;min-height:0!important}
+  .axiom-site #inicio .axiom-v6-video-shell{max-width:580px!important;margin:0 auto!important}
+}
+@media(max-width:560px){
+  .axiom-site #inicio .axiom-v6-video-shell{grid-template-columns:1fr!important}
+  .axiom-site #inicio .axiom-v6-video-stage{width:min(100%,250px)!important;margin:0 auto!important}
+  .axiom-site #inicio .axiom-v6-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .axiom-site #inicio .axiom-v6-brand > img{width:175px!important}
+  .axiom-site #inicio .axiom-v6-card{flex-wrap:wrap!important}
+  .axiom-site #inicio .axiom-hero-punch-title-v3 > span{font-size:clamp(30px,8.1vw,44px)!important}
+}
+/* Neutralize earlier absolute positioning of the original hero logo. */
+.axiom-site #inicio .axiom-v6-brand{
+  width:fit-content!important;
+  height:auto!important;
+  min-height:0!important;
+}
+.axiom-site #inicio .axiom-v6-brand > img{
+  position:static!important;
+  inset:auto!important;
+  margin:0!important;
+  flex:none!important;
+}
+.axiom-site #inicio .axiom-hero-punch-title-v3{
+  top:auto!important;
+  margin:0 0 24px!important;
+}
+
+/* Clearer source footage; keep the approved foreground composition. */
+.axiom-home-video-bg .axiom-home-bg-video-primary{
+  inset:0!important;
+  opacity:1!important;
+  filter:saturate(1.08) contrast(1.05) brightness(1.04)!important;
+  animation:none!important;
+}
+.axiom-home-video-bg .axiom-home-video-vignette{
+  background:
+    linear-gradient(90deg,rgba(1,6,13,.24),rgba(2,10,18,.08) 35%,rgba(2,10,18,.06) 65%,rgba(1,6,13,.20)),
+    linear-gradient(180deg,rgba(1,5,11,.08),rgba(1,6,13,.04) 55%,rgba(1,4,9,.16))!important;
+}
+.axiom-home-video-bg .axiom-home-video-vignette::after{
+  box-shadow:inset 0 0 100px rgba(0,0,0,.12)!important;
+}
+.axiom-site #inicio.axiom-v6-hero{
+  background:linear-gradient(90deg,rgba(1,7,15,.58),rgba(2,12,22,.36) 39%,rgba(2,11,20,.14) 66%,rgba(1,7,14,.08))!important;
+}
+@media(min-width:1300px){
+  .axiom-site #inicio.axiom-v6-hero{
+    transform:scale(1.08)!important;
+    transform-origin:center top!important;
+    margin-bottom:54px!important;
+  }
+}
+
+/* Robotics joins the message; blurred footage fills the background sides. */
+.axiom-site #inicio .axiom-v6-robotics-line{
+  display:block;
+  margin-top:10px;
+}
+.axiom-home-video-bg .axiom-home-bg-video-primary{
+  z-index:2!important;
+  background:transparent!important;
+}
+.axiom-home-video-bg .axiom-home-bg-video-secondary{
+  z-index:1!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100vh!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  opacity:.55!important;
+  filter:blur(20px) saturate(1.08) brightness(.9)!important;
+  transform:scale(1.05)!important;
+  animation:none!important;
+  mix-blend-mode:normal!important;
+}
+@media(max-width:560px){
+  .axiom-site #inicio .axiom-v6-video-stage{order:1}
+  .axiom-site #inicio .axiom-v6-cards{order:2}
+}
+
+/* One decoder per scene; gradients soften the outer edges without live video blur. */
+.axiom-home-video-bg .axiom-home-scene{
+  position:absolute;inset:0 auto 0 0;width:50%;height:100%;overflow:hidden;z-index:1;
+}
+.axiom-home-video-bg .axiom-home-robotics-scene{left:50%}
+.axiom-home-video-bg .axiom-home-scene-main{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;object-position:center;transform:scale(1.20);
+  transform-origin:50% 20%;opacity:1;z-index:1;
+  filter:saturate(1.16) contrast(1.04) brightness(1.22);
+  pointer-events:none;animation:none!important;
+}
+.axiom-home-video-bg .axiom-home-video-vignette{
+  background:
+    linear-gradient(90deg,rgba(1,7,15,.46),rgba(2,12,22,.38) 32%,rgba(2,11,20,.25) 54%,rgba(1,7,14,.20)),
+    linear-gradient(180deg,rgba(1,6,13,.03),transparent 60%,rgba(1,6,13,.09))!important;
+}
+.axiom-home-video-bg .axiom-home-video-vignette::before{display:none!important}
+.axiom-home-video-bg .axiom-home-video-vignette::after{
+  box-shadow:inset 0 0 80px rgba(0,0,0,.09)!important;
+}
+.axiom-home-video-bg .axiom-home-video-edge{
+  position:absolute;top:0;bottom:0;width:clamp(55px,9vw,170px);z-index:2;
+  pointer-events:none;background:linear-gradient(90deg,rgba(1,7,15,.36),transparent);
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+.axiom-home-video-bg .axiom-home-video-edge-left{left:0}
+.axiom-home-video-bg .axiom-home-video-edge-right{
+  right:0;transform:scaleX(-1);
+}
+.axiom-site #inicio.axiom-v6-hero,
+.axiom-site #inicio .axiom-v6-copy{
+  background:transparent!important;box-shadow:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+.axiom-site #inicio.axiom-v6-hero::before,
+.axiom-site #inicio.axiom-v6-hero::after{display:none!important}
+.axiom-site #inicio .axiom-v6-lead{text-shadow:0 1px 5px rgba(0,0,0,.85)}
+@media(max-width:680px){
+  .axiom-home-video-bg .axiom-home-scene-main{
+    filter:saturate(1.13) contrast(1.04) brightness(1.25);
+  }
+  .axiom-home-video-bg .axiom-home-video-edge{width:30px}
+  .axiom-home-video-bg .axiom-home-video-vignette{
+    background:linear-gradient(90deg,rgba(1,7,15,.44),rgba(1,7,15,.22) 55%,rgba(1,7,15,.17))!important;
+  }
+  .axiom-site .experience,
+  .axiom-site .experience-node,
+  .axiom-site .process-item,
+  .axiom-site .bento .card,
+  .axiom-site .brain-spotlight,
+  .axiom-site .signal-strip{
+    backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  }
+}
+
+/* Preserve the approved wide desktop hero layout. */
+@media(min-width:1440px){
+  .axiom-site #inicio.axiom-v6-hero{
+    --axiom-hero-width:min(1600px,calc((100vw - 112px) / 1.08));
+    width:var(--axiom-hero-width)!important;
+    margin-left:calc((100% - var(--axiom-hero-width)) / 2)!important;
+    margin-right:0!important;
+    grid-template-columns:minmax(0,590px) minmax(0,536px)!important;
+    justify-content:space-between!important;
+  }
+}
+
+/* Animate just the original logo's brain; the logo box and copy stay fixed. */
+.axiom-site #inicio .axiom-v6-brand{position:relative!important}
+.axiom-site #inicio .axiom-logo-brain-cover,
+.axiom-site #inicio .axiom-logo-brain-motion{
+  position:absolute;left:40.3%;top:45.5%;width:20.5%;height:23%;pointer-events:none;
+  border-radius:45%;mask-image:radial-gradient(ellipse,#000 60%,transparent 100%);
+}
+.axiom-site #inicio .axiom-logo-brain-cover{z-index:2;background:radial-gradient(ellipse,#02020a 65%,transparent)}
+.axiom-site #inicio .axiom-logo-brain-motion{
+  z-index:3;background-image:url('/images/axiomai-hero-logo.webp');background-repeat:no-repeat;
+  background-size:487.8% 434.78%;background-position:50.69% 59.09%;
+  transform:translate3d(var(--logo-brain-x,0px),var(--logo-brain-y,0px),0);
+  transition:transform 120ms ease-out,filter 160ms ease;
+}
+.axiom-site #inicio .axiom-v6-brand[data-brain-near="true"] .axiom-logo-brain-motion{filter:drop-shadow(0 0 3px rgba(85,220,255,.5))}
+.home-brain-shell .home-brain-art{transition:transform 120ms ease-out!important}
+.brain-orb-button > img{transform:translate3d(var(--brain-x,0px),var(--brain-y,0px),0);transition:transform 120ms ease-out}
+.axiom-sound-toggle{
+  position:fixed;left:18px;bottom:18px;z-index:100;width:38px;height:38px;display:grid;place-items:center;
+  padding:8px;border-radius:50%;border:1px solid rgba(85,220,255,.4);background:rgba(2,14,26,.9);color:#8ceaff;
+  cursor:pointer;box-shadow:0 0 16px rgba(0,174,239,.12);
+}
+.axiom-sound-toggle svg{width:21px;height:21px}
+.axiom-sound-toggle:focus-visible{outline:2px solid #8ceaff;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){
+  .axiom-logo-brain-motion,.brain-orb-button > img{transform:none!important;transition:none!important}
+}
+
+/* Consistent pictograms in the existing rectangular cards. */
+.axiom-site .experience-node b.axiom-illustrated-icon,
+.axiom-site #proceso .process-item .step.axiom-illustrated-icon{
+  width:42px!important;height:42px!important;min-width:42px!important;
+  display:grid!important;place-items:center!important;padding:0!important;
+  border-radius:12px!important;
+  border:1px solid rgba(73,202,255,.28)!important;
+  background:linear-gradient(180deg,rgba(13,61,101,.96),rgba(7,42,75,.96))!important;
+  box-shadow:inset 0 0 16px rgba(45,175,255,.08)!important;
+  color:#69e1ff!important;
+}
+.axiom-illustrated-icon svg{
+  display:block;width:25px;height:25px;flex:none;
+}
+.axiom-brain-emblem{
+  display:block!important;width:25px;height:25px;flex:none;margin:0!important;
+  background:url("/neon_brain_circuit_emblem.png") 50% 46% / 440% 440% no-repeat;
+  filter:drop-shadow(0 0 3px rgba(85,220,255,.35));
+}
+.axiom-site .axiom-v6-card .axiom-brain-emblem{width:25px;height:25px}
+.axiom-site .experience-node > span{color:#a9c2d1}
+
+/* Keep the existing enlargement while restoring definition in the left scene. */
+.axiom-home-video-bg .axiom-home-solutions-scene .axiom-home-scene-main{
+  filter:saturate(1.08) contrast(1.07) brightness(1.16);
+}
+
+/* Reduce live GPU work while preserving the dark glass appearance. */
+.axiom-home-video-bg .axiom-home-scene-main{
+  filter:saturate(1.10) contrast(1.09) brightness(1.24)!important;
+}
+.axiom-site .topbar,
+.axiom-site .axiom-v6-copy .axiom-v6-brand,
+.axiom-site .axiom-v6-card,
+.axiom-site .experience,
+.axiom-site .experience-node,
+.axiom-site .process-item,
+.axiom-site .bento .card,
+.axiom-site .brain-spotlight,
+.axiom-site .signal-strip,
+.axiom-site .cta-band,
+.axiom-site .form-card,
+.axiom-site .contact-line{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+
+/* Deja ver mejor el video nuevo sin activar filtros costosos en tiempo real. */
+.axiom-home-video-bg .axiom-home-video-vignette{
+  background:
+    linear-gradient(90deg,rgba(1,7,15,.32),rgba(2,12,22,.22) 32%,rgba(2,11,20,.15) 54%,rgba(1,7,14,.14)),
+    linear-gradient(180deg,rgba(1,6,13,.02),transparent 60%,rgba(1,6,13,.05))!important;
+}
+@media(max-width:680px){
+  .axiom-home-video-bg .axiom-home-video-vignette{
+    background:linear-gradient(90deg,rgba(1,7,15,.26),rgba(1,7,15,.14) 55%,rgba(1,7,15,.11))!important;
+  }
+}
+
+
+/* Low-resolution pre-blurred loops fill the portrait-video side bars. */
+.axiom-home-video-bg .axiom-home-scene-fill{
+  position:absolute;inset:-4%;width:108%;height:108%;
+  object-fit:cover;object-position:center;transform:scale(1.08);
+  opacity:.74;z-index:0;pointer-events:none;filter:none!important;
+}
+.axiom-home-video-bg .axiom-home-solutions-scene .axiom-home-scene-main{
+  filter:saturate(1.10) contrast(1.12) brightness(1.34)!important;
+}
+.axiom-home-video-bg .axiom-home-video-vignette{
+  background:
+    linear-gradient(90deg,rgba(1,7,15,.17),rgba(2,12,22,.10) 32%,rgba(2,11,20,.07) 54%,rgba(1,7,14,.09)),
+    linear-gradient(180deg,rgba(1,6,13,.01),transparent 60%,rgba(1,6,13,.04))!important;
+}
+@media(max-width:680px){
+  .axiom-home-video-bg .axiom-home-scene-main{
+    filter:saturate(1.08) contrast(1.10) brightness(1.28)!important;
+  }
+  .axiom-home-video-bg .axiom-home-solutions-scene .axiom-home-scene-main{
+    filter:saturate(1.10) contrast(1.10) brightness(1.34)!important;
+  }
+  .axiom-home-video-bg .axiom-home-video-vignette{
+    background:linear-gradient(90deg,rgba(1,7,15,.14),rgba(1,7,15,.08) 55%,rgba(1,7,15,.06))!important;
+  }
+}
+
+/* Keep the original Brain artwork as a crisp, isolated icon at the shared icon size. */
+.axiom-brain-emblem,
+.axiom-site .axiom-v6-card .axiom-brain-emblem {
+  width:25px!important;
+  height:25px!important;
+  background:url("data:image/webp;base64,UklGRvYbAABXRUJQVlA4WAoAAAAQAAAAXwAAXwAAQUxQSJ0HAAABDAVt2zAJf9jtDoSImACq/JrNHr4Irti4IBtLAYdKjdY2Q5L0fRE5xtq2bdu2bdu2bdu2bdvG2KxQ5ntOVcYXWVm9/BURDiRJjZsF3ZKjEynwA0iRJDmS+LM4jPdaUb2yMiKXQUQ4kCQ1bojvSAgWWPQG+p+MVJYppbOMpY60SHNXiSmhC5rmlXrQ8Ug8ijn2vPbpZ+66dNcpSBFxM3/BnY8+65xDVutFpLqCm/fuiSjTgF1IM9Nm7wSU6IdDs04zc0Z7jEVhywQcTd2y64FgjTHWA2/OTJnijuVkrTk5AYUNeZm8wyp0O4zLQ6krvoHvp23NbUeqlya8d6894EIukMNj28CEPJTQrGfw4txz9yHSHVnv/gc+99OvrRHIZCZEdUMTpZFa89ttyxJz/W6NHwEgl6k0lKh+3AlfFEBxDiuu263rYJz3Ic0+L4fRr5TIetxWc6HiWUcVtrS8/iNvJjz8qm3g6PaZxS50o6dhW7MPzjy++pbuOGHUtsGbOXRtUdZM68QugkwSI3JSOm9xY21iShH1XfGzXDwOGQM9aNIaOm7T/kSqFtf/9F8AH3yQknEAWMOGZDbjj1N61MCK5v8KCE2Sv0615nrT92Y/HfD+LG2zoln/RMOLg5ChoFuQjEvwDfw4Q5vMuvt7MPL6imYRBbVEBm90a+9jmk5AQ5x5P2aNLoQMauDsiuePuXycZxnnfTyeeLPRVN4DoUKfvQuLVWOOwmtghbPqGplDOHRig8VLbRQrNfWY8lRJMTWAcwHVIBYeq7Cuim50KpwglDmskqQY6gbL3OEJyiq32VqU04w35ydBCEY99DiKsopueS9sp60pReihYKis7HswrMf2pCt8gVX/H+DSO6gAnssB65C9dGHcXKyqhOfDBvfGnwrJsmE2sXiG0lA04/jcp85XfuovcyyOYIDDGunDl9HRsNLGEVZ2XsKEowZKA5pB8XAaTG8ULlQ4Z8Y/6QyWHC9FIcLwyYhTru8AeBmNi9wwh90ePKITjqVIpzDNKIQK6ztyB0VArEWtRBvYYc00evwGL+0YHiyggMqpUgHczrFwsrHmu+AqIM2nhFAZgTPB9viiB6dl3mmwcee5liLIzbbL+YvK+9we7yqdYE0rToj3iGMky4bt2vj4r/35opRoUpM1SxInmPhVzaAcYw0PmLNsSlbUdDVMcgXoUXMA/x4Y8QBI49PXvRRLQmk+79MLPAM+eP89JwbyJtUQtjiQMim8ElYUOURpBT2xDrZjrLyDK37syRwfun4Di1Z5Eo7iERSH6a/YK+QOG5GOw3UqtAnQUY2EiwiKssVAtsWNcTKjU4KzRwQwTy/FojwLQLZNDu8Tx7jleSXCFCDQGpPgobpf5LnH772F59YDz+upCFn+L+wYyxRjlOAxcmoBd+ZmFxN/m4//w0qwVubGkY50QgZPGiGjCx4XSuyxPQn9xwaw7kLrWS/faAHbMaeeUjhEdEeQD0vibmaa7v/hugpaLv6GtC5ttdibMkFu/MVAaWBksWJCX7QmcfdYDJlcuPoVzzsmcdlOobDYAZRUwrx3aEJwfw8v9TXTHpE02fkqKaIx9FiRBShaULq7Ge2RdjhyQYsADsowi+Nlub1udOlDFjL+TAwZuMJjpUGL22RsGIOgt6HWl0EYjOHMcXiQtIRlEEJIoFtB5PhaUiYGN0oeU//BhQ/Vt6rJr3mduWJwGGUkBbejJJlcRAe+1LtLssyHBUmJWDR3IdrwpFT6VlEF7Lh3HYPHSSXeXReiIYpuiXEwSc4Sqw4uRmKLcfOwDNbZI5BHnwjEk9UuQzn72IYkypiwTvLdy6zObpTTHRkp7qpVVfr8nSrKA0X0Dfwv3A0juEwezTqtPGxC3atoJnr/UkaRnjMSaTh6XE2xl8oqqVbeF/8Z7ChCXAtFoDJtwcNifdIysjvDdEhQYhaCFlIt+nzMNMSVVGaLFL7aNRmbLK0V341Km9xUVvJquhFGmJKml9ELTJU9WHxjhrFzcDXVEKtJvoUJlf9zFNUsxkkbw3lsXVmFrGjuP9Dwbeg5xJqEUVc0wO6kiSrzbG+jMC7RfWVX+szeRu1swMD1KGtLr9jztBFAyDOi7A5L6FNNQLhzRtLtKqVnPPSF6BGGrY5y6b5yCAImJTPgrMXbN6GUHhtvF9GlC/3nPDGt05otFtsS1WHe4B68BqzMQRpKMeZjyCJVFIUNfJB113UZTU4EjBfaihXw41lwwlexw1mDYfORIqqL9xkMRFMinweP1zeATwvc8tfeT6s6flxsmj3fDr7CebO4su+4QmDawjQe3L5mE6ImWhlGkAkhammxUuk/VhhrBLiDqG4LpequHsNEJ0nQ8ta5ndRCLricC943MHK2rBvXb/Kc9HnAGRvyuKrDO/1URjsDBj45Y4EBK3TEvMqkDv4OQFHWKHgD3NKfmDRt+juutxWnmwcw4tqSMaMjTD3XOuleCwTvcmDYDiUdcJOnegiAdwHAs8duOm1b36hDhtBitw0AkP98ycykOd50W7wwEigGP7Zhp63nrDNN1H+xdddbuBeRlq0g0yy16iKTEXEXsP6rWDuSeGequE9dglhpXUFecqkv//qIAABWUDggMhQAAHBEAJ0BKmAAYAA+MRKGQyIhDq+YEAGCWwAyX+OfcepfkP7B1Pfpn9N/MX7v/7j4n9MfM3ki8ff7P+7fut/lfff/tPYB+gPYC/UD/Xf2/8gO4B/U/9b6gP57/ef1y9z7/J/tz7gP199gP+gf4b1dP9R7AH9s/0XsAfsd6tP+7/bf4GP6t/qP/f/rPgH/m395/9fsAegB/4/UA7AD+S/hX3+f2z8ZvMv8M+M/rf5Rf1/1tsZ/PH/deiP8a+yv33+7fuX+aXv73g+4z+s9QL8X/kf+J/MP14PauxB0L+qf8v1AvV/5t/qf7l+8v+P8+z/E9APx/+of6f7ZvsA/jf8v/1P9e/HT4g/u/g7eQ/6D7VfsA/mX9g/5X9w/xn7e/SV+8f9T/G/l57MvzH+1f8r/MfAF/Iv6D/tP7j++P+j///1Vewz9l/ZS/Yt0qIvsgWUFkReaG9bvtTQJyN3E+U9yy9WVu9upqUlY93bj+23KmssSh8Yk7bZJkViL0sf7/TebzJ+BwuS15q8VKGjT5tHsDDgtW0IYvIPF2V/nvRPEgMHvoBqDX2OAh1oizYmijj62L2wWUPfgaeQPta+Om3YMdPFZCMwiAk5qoi/55WcGxcTijIFzkfnSJVXEh5qNxKrFYMEzvvdVnVp3fXflteusY8YGLlVXT1/9+G2o9HITYFtGe2c4B4flSc+2RcCrdLOmj82gdP3VpKPjp+WTufIAC0xYEdEmqC/GMV5yvIAA/v9gGHD+6tiYPZX26WBO0V6xxx6qiZhI4ZKWMgQEwrIW4yb//XKVvahquhpPf/7+Dvuy1xcacEEYMoFrMRQE3xiJuTLAjnCqZIf77eLNvZXHWrR192SzUyoQwcicnF3XjAuxZuG9MHyG6KlFEt4siYfGrJ64/tIZA+cXxq+ZC1EoH267sYKUIdRu/qHcy0eCinZ/r8zdmlqmf/yc50tW82uy8vMwkQWAbqKX+PnXeIrRQLlI+7BQDm90hCKvdsuJ7S+K98x5EpjjoNwCWVKkuadnFW3Ik0hP1c+Bg46cld/G7/CovcGmNod+eRQq5jU3KXTffXKuDm/ger4zvv/Gi5y0l4KpYETcO4elXUBAlRTtqxQQ+jkmnaxTt6XpMu1uS46Qtoz6/y4XsVDxMaRqwUDR2Z072LME0L1ChdjPCKIBjuXhDHCJFKgCnv8HbIABBnSri5UMnAkINrEldLUpJa3NX7HnwARUC1O7mQxyZEBAKUmxwC5kA8P2K9BVFapFg9WBNY4WeF6MNxMFadS5gHmPEGl/OBlnVnJ4y1WqNZaXzrZORScEnVkpUjYPHDNutb//ttgCcfyzLEhZw2YKzLRnhg/f4kQ4qEvvbpxDhjeIO5tAIGX8tP7e3buyw+f8xoJxaskHK6xl+GMby6J6YJHmAMwRem51QeKQnLr+nlSpexmE8aCJQ6Hb2IJUv/OUBHkT8mAhE89zV9aU0KWe5vR1TECXhHjTnOhr8lC72+puhwSArFaGk+Y3vQuFGd1bDlXIHxO+B6boie4kZ1/vS9+Iux3r3rmyUrfkStHwK2TkNGU2KZWQoVr9zMRfIeuXiBJ1JSAsfQXdvc4dX2OiIDzluSBTWXRKxD6i9iWb5o0/m0QecwauWynCTa96KOl+9frDOurW/C1ARcQ2n+3RhvT9+yAav/P8FQJ5zv/7fTccCYlLgIj98q49CuZt0/chNOrw/Bk4nI9eT3tzHMftxV1pI8zEYS/8sDokKUyLIw8Tlfhbdq7HgxocWuayxX937mMXSpXs/GRSDMf9YiTwRx+aau0ANjQCxaUxZLv8RgRN7yQo9vMwcaUR1dyzSmnD6EZt4QnwP+2/4w186WA8dd61DddxR++zLn3gykkABLCwvbniqJsidHiqXvIeNrlO/0Mv3Q3Jy/ECUfC36gGZJiL6KD/xkPezilQfT3jfPX3+dENHTsUudZSPoDjXh6pFoRw128Fw/OGm/VUvOE8LwJpAM1zImsO2T7zHKoQn9kxjf2yQmxoaD+q3MtTGur35oLcmnMC3DG0kiWdA5zEWXhocBYPcQLGS3nB1/VYpn4xEFAgt6jXJzuTgLVrw7MxCBgOJfUr0w1TLrIKe04LaVCkpkTjOU/drr5k7/bxKbRVPmBbn0w+FxpdKbaBW1QB70Q/bSzJPJ73ua7DT7bj+l0ddExxed8qIMhlRzNXdd5uIEdzWDYfqzpQ0Wo8IbTverTi+smClpGPo3dIFdxyLPEnGfhvopYeaFc4mJuREXcGu5jXgHh1/usG8IuIFQoIy9zI94vcJ9FaaoBvP97OA9K9Owg1ZE27XIinPfOUQMhyHz4QZMl/514QaVIoLHlKobNgGBgyNIOKpbyM8edzYgkREa4Gz7gaQtclJgUOi8bPP5sfNBNjqvkty/fygMR9N0BpjrWww8lLOL3Ig4J7EoIIBqUTmt4koE1/sSEk5SRkwds2+Q62GR4yazMs43aUYh00jmeWNk13VDoxse3+qPz//cX7c5SECdtH3yk2Dy0+yq0olQkZaEavwDunWPfRhtgXkeHMast1kXMEmRYLf95GjEfpD0+0pUz3sYxwQwrSeZLnWgiVT01JmhOHcP4AvtyLdomeyzmL6PyJZj8P4ZOYRWf3yYbWrxIa3mOlwbwelEZB0MEAQ+eHg4OArT83uuBXRW4RPNQH+2q+uV+l0eR7986/OES6Wu7KPujV3S+T0XP/ZntrrYf7fxCvNn4owCIkrodZGrTJAokTRGLLBE+7N6VogPeQnxoY1Hp2vEYrGO8hfEPkGTqSxpXZdDlIP+vMeh2wNPZ81+wctDdlartJeEM3Dp2n8PwcuBHHKon8UAATKCNYj/5yl2COLM672GeGbpLgWtfr8Cl+EB/BLVKr0YRQeZoan8aStI4tiXC/udSOYxrbk0KVmcsO+R/XvamNTGNdMqUQsFDuvZ8f7lb2aCRL6hKYUNB+J4WM+BdeU33KF5cHR+Slher+qMVcmsaZvPPwbDxvZOzdCVjt/a83aElkabgef0S+SmeianZmDy+qfYfRBeg1nG6ZB3+B5iWcBYOYCrC5x48KwU9tFUeK8By8Ad2YIC7T+WJt4JvQlD0IvFbDZfLi4EqCa7b6ATcyloIV0pmjNQ/NwqP5mynlPX6NM1iw3S3rZVEGanDcGNrFirJ/EurTXvKm8JeL98Murl7sLt3UgzhpX5beRFgRLnA/SFcRLA66AYGNrkyxAN6CNnZODdqzfOg9u/Heq3mRI6auPTmrHCTJ9D3KxTgEBRBvKJcf0C6jN8VVBQDd6YSdSlc+HCBX3gQBNZAXN/XwLUE5h4JnqMJwmjNGv6riw5BuCSQMkDGRxITRIk4sjlHK38vGoqcYvNF4AuzEjLxvYYgNVbRfpNtfGkV/MS4IjXMqdxuAcEZsW2juC0MSwrCdDQPSfHjyWlZBJN38nrbdw33htqnczLDOu++zEaifmHwcAyQWeveuMr9MUpWUFwIUOIMxxgZuf2azpj56ysirsDLYZ5pCyTVAbP8JewIEVflycCdabcUkXjmgzUMHUxB2g3hrDM7uk8PSpmJqBgzaRlP/ABtXSwc7G7ujH0/KQSiyzJ398cFOMQEfp8YCf1G+NnhLBcNbHYl9ybq9WE4WC4Uz1lHExnbFrHaopm9jNlyQ2qY42YkFpmoMIscsBb53lBg2yviiXtJwib4RLTSdPNznBajeqxzhICGqhr12WJ6NC+BS6ckTxVbptPpcgkZCI6UPKaldNzk2nosvpl9Wgwx9E5OuO3ejSLIb0R5XCSn/oFyYp/uJe9whfUq/4txZdToP3vhZgsybdxdT0RgbooZ3VxHvRv00tqm8a3wFWlTvjk4SVTntiPeTe8ewBVf/gFovMnxJnMfpibXEJ5RUv3lpK1a6hBkceIWE8y/z6JHwnx8Rx2uEnSQvf5TikCm5puAiuAXs45cvOk0F7EGS6G00m7fRvPXCPWAc9Bn47DPeVlJQXM3/Nm55dZi4FX2722wLcmYGwKKmqkSvBoU4BgD78N4amV6vPzZ6Jt70Reims01aLniV+pPmquw4clX+Ed/xDxPHczropvfxfjq/I6sAmk4yCINTS9b6nSx3ixzzPZEKI88/0Lizp0lvijWELujh67PWI2lj4QfR6rfrYyQaQkfOrCvA5QyB/LIMLfMzLfZa652vcLNFLm0Nuz2ozGcpcyzNCVShe6lAb/O6O2VsZL3YSjLtXwE6k6/gxxOJI3CFhWChQwD02PubhpwksGgYvGoB4Di4bjs6Jbsze9tvfZCpJIZz82GicsgUqN0UB+k0mmrispbV1j/O1/4XlX5yQMT4ixP/hFRecieO4yh4t7rp8RXbLAprNXGmbfeeKQOY36I3JcBiyt0VNsRVh5Ax60Tg/mTTjoyFhu4tlgwAAB3pVXjydLKBKZrVdp6WEYWSuBlZkLYRsauDBd/TI/r6mqG5kKv6jQfAPAYM7n1OkL/2z0xBhEF9cMU9+Yfdtgv47Dwp9r6pVRdHKim3HTZi/EzEViq5j8PufXjJ4Ybef8+OjGoxqBE0fBEXklpfPHQBybyIYYb9Sek0yMbT0EOozsuqkUKR0gCxiup8okYXcgLEI/j4cBKdTNeUdaZTrtQQOqyTwKTJQ9OltJeVHptTinL3T+s4wdiC1pLZKAYcx0Pnd5S1A8h3uojXNtIdMp2b21cA/+vAzrfALEXN0NqRnYUtRn9B8kHevgeGbEmPNEdeJY6I3sQLARJNSFh7oCb3/iY+Jci+dWLce5HL/L9OGFqg6J4BNZq2fZ3nC8bQK7F4+06+fLb+V2d1kAi9b2u7FyC0y0xTiHZ/Yr61PAWcw3YyP0Kncnz4FS+FN3sK1Y59Ta5K8Jq588PI/wufnHpdX/Hg+ThMd8UZ305hYAmTkqo0GvVeLckru83/x+Z/Ta7IDCNRNc9S/Ecu0KIrQuFQYs967nNEKpZ4k25BiFanZYBKlG8kTBMhcGQWsT4vnCXzkqYQBGS0TNbxov6O3hmWbOq4BhUv44ifneCyvEArdbIa0jUATPsLLmZCF7oafeJPP7AaVj6z/wvJRgWpcibnAMz+6Q8oZNxFFue9fLn250uV93uavifQyJ4jYT3nJglehbcT4PAFwM6ZkIlfb/SzibDig6nUe6jK01A/aAEwv9SKBm9WpeCUHaptajEl0qRab6+A71pCtkXEvfKN9zFgmFRYmLPfm29rlyXJrajMcXY+WuGWwVRwdHkljykJ8MpvcJAbHtjOzYRD+xrwudv4pLHA2REEa8zEftRw1S8MiSO9b/O2MSb1Hfa+BaddYuisbhvyiGi767hDqC8KW6zE955sfMjreFV/1tPsL64oOIBltoHYuXVFriVM81X4bdozxq9/6Ub8cKf4D+Pjcnpp1lN5D1QnZfBx+X+7oYrQMebbfyDipcVOEsIZDG4Uqsa5LLfHu0CEIwJcARasjLWrHtr4QCFl8kvnjkhX8egn+J79xJHAclK686sVTmczXv1vr7W2bfuzreuqn1P1zCwq4kHBe693ihLXbX6fw6HWXtVta3L1UqCr7t7pJJG+CrHkh01nL6p3alpZQKlDtto5KN58SHy0g00VdW8miZiq7cY3z/nuzyYzVY09thguKuxVC3ax9qsj/i52HCgT0iIjkLRLegtvVPi1U1K/q36aIvQfr/Du+oqOGElmP4b8zmcI8AdLEvWGGAnlhQ0rJSq7sklYynnnkv5jXE8MKtXPjZ71u7PzH/kRNRsAeQrWiPT0jLc83MYf5atNQm9+0HYZthAbHbzsR/17ymfIQ7eby8vFHbHsv+r/ncSlUe58WPiCiZRztI3eJBrRLlkBAe1ynBQmT4SFwvQ3WnAQGvfwb1Jga2NcVQWTbOlpBWHMEY89Fo3dfpagDM0bb1HAg+UCfqr6U1lWThSCkQ+tCaviNCN0bg5LC6uTFoHhhMM3PHESQmQdcCr3GmMT7ZGQp8z/+fScROFrsyrc5nne3J5Mdqxq5OXvTe0whgzFV5OopnDhVkBvVpaaVyvDuJaodG3GN+7go/zsy3LoaMuOnv/4oueIR8OHJ+SZ3u0vy+l/ptsXqeyCGnkoFhGlHAr+/HAiZKdvWJvtkIv/6co6XrSk7CfE1fbf7rAWuT64fLSN33bHLJrmEsU3jYKYYyMdk7JC0uw8NYqNxtQJwwhvpLkP+ZMMbW5tTiaYVpkpzqhTADXo4MgZ0G9sTlDDSheKlkefKoTzfgnV+qdg1geR+yyfhoyxQagjO8ir1gpf4MDZZErX6k/Gw87YjYJEfxaWdJRutG8zDWY+uJUpB9iDJLcf847szPJEitU3jsBADQzWIjcEGWpgFnt3ovs+SN4vw07mWP1O7zVC3VAfccbUqC7F/ZJEILtUqOfWDncWwDTeL3dNbDbHDPu3aDu5jEUN4NmryBTUvj2h9HzUwjf825hl2L5nl2fQr45GGAVRJ34p8F178QAHNSSDW6n9oSqHiCnT4KyhQl8Pnum1ApRtEVoxOCKSfV3+wBzFhrrR4jOexxQy3M7n8q0Ez57DkOjLIiNs0q18DAGZunybagMDR/naM1I/rjv+pX6KbQBmmiaez6nycmaW0WF/BsxeUW91e3I1JiL8J5nfcLpQ5+TxD8tF84RdrJX1Cr0JVEv9c/VF7FHjS1OG5y8wcf0UJPHYrj5AzqVv61MkoH+1nPwcCGn4+C89do9rzQ4CL+OJwvjoit8UoNQDXous4AGfmxKEhko6F6HvHoa6FDwV4fj4XkIRqROy+FZTw+++eGTOSRN3BCxP7hYLgjaG0Uz2gkS0aYxOTkKkYEen5Lgm91VQztn829jI8GCYJ0lOEKJ/J4IfC2ZE4O4Rs2CVIZWLvtQf+aDJ/+dPAFP4NB2k0oTtw3IfSxVVFDwVV83XgogJ8AAA=") center / contain no-repeat!important;
+}
+
+/* Pre-blurred stills fill portrait margins without decoding two extra videos. */
+.axiom-home-video-bg .axiom-home-solutions-scene {
+  background:#020812 url("data:image/webp;base64,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") center / cover no-repeat;
+}
+.axiom-home-video-bg .axiom-home-robotics-scene {
+  background:#020812 url("data:image/webp;base64,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") center / cover no-repeat;
+}
+
+/* Show the corrected source without the remaining dark veil or live filters. */
+.axiom-home-video-bg .axiom-home-solutions-scene .axiom-home-scene-main{
+  filter:none!important;
+}
+.axiom-home-video-bg .axiom-home-video-vignette{
+  background:none!important;
+}
+.axiom-home-video-bg .axiom-home-video-vignette::after{
+  box-shadow:none!important;
+}
+.axiom-home-video-bg .axiom-home-video-edge-left{
+  background:none!important;
+}
+.axiom-home-video-bg::after{
+  display:none!important;
+}
+.axiom-narration-toggle{
+  position:fixed;left:66px;bottom:18px;z-index:100;min-height:38px;
+  display:flex;align-items:center;gap:8px;padding:9px 14px;
+  border:1px solid rgba(85,220,255,.4);border-radius:22px;
+  background:rgba(2,14,26,.95);color:#b2efff;
+  font:600 12px/1.3 system-ui,sans-serif;cursor:pointer;
+}
+.axiom-narration-toggle svg{width:15px;height:15px;flex:none}
+.axiom-narration-toggle:focus-visible{outline:2px solid #8ceaff;outline-offset:3px}
+.axiom-narration-toggle[aria-pressed="true"]{border-color:#8ceaff;color:#fff}
+
+
+/* Improve hero proof text contrast over the video background. */
+.axiom-site .axiom-v6-copy .axiom-v6-cta-note{
+  color:#f5fbff!important;
+  text-shadow:0 1px 6px rgba(0,0,0,.92)!important;
+}
+.axiom-site .axiom-v6-copy .axiom-v6-proof span{
+  color:#effaff!important;
+  background:rgba(1,8,18,.88)!important;
+  border-color:rgba(85,220,255,.48)!important;
+  text-shadow:0 1px 4px rgba(0,0,0,.9)!important;
+}

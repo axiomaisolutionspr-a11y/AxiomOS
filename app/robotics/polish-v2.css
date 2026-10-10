@@ -1,0 +1,401 @@
+/* AxiomAI Robotics — final brand polish */
+
+/* Remove legacy scene numbering if an older cached markup still renders it. */
+.ax-scenes .ax-scene-index{
+  display:none!important;
+}
+
+.ax-scenes .ax-scene-eyebrow{
+  text-transform:none!important;
+  letter-spacing:.16em!important;
+  font-size:13px!important;
+  color:#86eaff!important;
+  text-shadow:0 0 20px rgba(85,220,255,.30);
+}
+
+.ax-scenes .ax-scene-copy{
+  position:relative;
+}
+
+.ax-scenes .ax-scene-copy::before{
+  content:"";
+  position:absolute;
+  left:-24px;
+  top:4px;
+  width:3px;
+  height:72px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#86eaff,#2586ff,transparent);
+  box-shadow:0 0 24px rgba(85,220,255,.45);
+  opacity:.82;
+}
+
+.ax-scenes .ax-scene h1{
+  max-width:900px;
+}
+
+.ax-scenes .ax-scene-tag{
+  backdrop-filter:blur(16px) saturate(1.1);
+  -webkit-backdrop-filter:blur(16px) saturate(1.1);
+}
+
+@media(max-width:900px){
+  .ax-scenes .ax-scene-eyebrow{
+    font-size:11px!important;
+    letter-spacing:.12em!important;
+  }
+  .ax-scenes .ax-scene-copy::before{
+    left:-12px;
+    height:54px;
+  }
+}
+
+
+/* Keep the uploaded AxiomAI Robotics film clearly visible behind the opening message. */
+.ax-scenes .ax-scene:first-child .ax-scene-video{
+  display:block!important;
+  opacity:.58!important;
+  object-position:center 42%!important;
+  filter:brightness(.94) saturate(.92) contrast(1.05)!important;
+  transform:scale(1.015)!important;
+}
+.ax-scenes .ax-scene:first-child .ax-scene-shade{
+  background:
+    linear-gradient(90deg,rgba(2,6,17,.94) 0%,rgba(2,6,17,.76) 38%,rgba(2,6,17,.25) 69%,rgba(2,6,17,.44) 100%),
+    linear-gradient(180deg,rgba(2,6,17,.08),rgba(2,6,17,.56))!important;
+}
+@media(max-width:900px){
+  .ax-scenes .ax-scene:first-child .ax-scene-video{
+    opacity:.52!important;
+    object-position:center 36%!important;
+  }
+  .ax-scenes .ax-scene:first-child .ax-scene-shade{
+    background:linear-gradient(180deg,rgba(2,6,17,.91) 0%,rgba(2,6,17,.65) 56%,rgba(2,6,17,.36) 100%)!important;
+  }
+}
+
+
+/* The visible hero robot is the same articulated BrainBot that follows the voice-over. */
+.ax-scene-machine-brainbot{
+  width:min(40vw,610px)!important;
+  filter:drop-shadow(0 0 36px rgba(77,218,255,.22))!important;
+}
+.ax-scene-machine-brainbot .ax-machine-beam{
+  opacity:.44;
+}
+.ax-hero-brainbot{
+  appearance:none;
+  position:absolute;
+  left:50%;
+  top:50%;
+  z-index:6;
+  width:48%;
+  height:84%;
+  padding:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:inherit;
+  cursor:pointer;
+  transform:translate(-50%,-49%);
+  filter:drop-shadow(0 18px 18px rgba(0,0,0,.5)) drop-shadow(0 0 18px rgba(72,215,245,.28));
+}
+.ax-hero-brainbot:focus-visible{
+  border-radius:42%;
+  outline:2px solid #85ecff;
+  outline-offset:12px;
+}
+.ax-hero-brainbot .brainbot-pro{
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+.ax-hero-brainbot .brainbot-pro-head{
+  transform-box:view-box;
+  transform-origin:110px 90px;
+  transform:
+    translate(calc(var(--robot-head-x,0px) + var(--robot-speak-x,0px)),calc(var(--robot-head-y,0px) + var(--robot-speak-y,0px)))
+    rotate(calc(var(--robot-speak-rot-y,0deg) * .65));
+  transition:transform 105ms ease-out;
+}
+.ax-hero-brainbot .brainbot-pro-body,
+.ax-hero-brainbot .brainbot-pro-pelvis{
+  transform-box:view-box;
+  transform-origin:110px 220px;
+  transform:translateY(var(--robot-body-y,0px)) rotate(var(--robot-body-rotate,0deg));
+  transition:transform 150ms ease-out;
+}
+.ax-hero-brainbot .brainbot-pro-arm{
+  transform-box:view-box;
+  transition:transform 320ms cubic-bezier(.2,.8,.3,1);
+}
+.ax-hero-brainbot .brainbot-pro-arm-left{
+  transform-origin:62px 126px;
+  transform:
+    translateY(calc(var(--robot-left-y,0px) + var(--robot-left-shoulder-y,0px)))
+    rotate(calc(4deg + var(--robot-left-rotate,0deg) + var(--robot-left-shoulder-roll,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-arm-right{
+  transform-origin:158px 126px;
+  transform:
+    translateY(calc(var(--robot-right-y,0px) + var(--robot-right-shoulder-y,0px)))
+    rotate(calc(-4deg + var(--robot-right-rotate,0deg) + var(--robot-right-shoulder-roll,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-forearm{
+  transform-box:view-box;
+  transition:transform 520ms cubic-bezier(.2,.8,.3,1);
+}
+.ax-hero-brainbot .brainbot-pro-forearm-left{
+  transform-origin:57px 205px;
+  transform:rotate(calc(8deg + var(--robot-left-elbow,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-forearm-right{
+  transform-origin:163px 205px;
+  transform:rotate(calc(-8deg + var(--robot-right-elbow,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-hand{
+  transform-box:view-box;
+  transition:transform 440ms ease-out;
+}
+.ax-hero-brainbot .brainbot-pro-hand-left{
+  transform-origin:56px 278px;
+  transform:rotate(calc(14deg + var(--robot-left-wrist,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-hand-right{
+  transform-origin:164px 278px;
+  transform:rotate(calc(-14deg + var(--robot-right-wrist,0deg)));
+}
+.ax-hero-brainbot .brainbot-pro-fingers,
+.ax-hero-brainbot .brainbot-pro-thumb{
+  transform-box:fill-box;
+  transition:transform 360ms ease-out;
+}
+.ax-hero-brainbot .brainbot-pro-fingers-left{
+  transform-origin:50% 0;
+  transform:scaleX(var(--robot-left-finger-spread,1)) scaleY(var(--robot-left-finger-curl,1));
+}
+.ax-hero-brainbot .brainbot-pro-fingers-right{
+  transform-origin:50% 0;
+  transform:scaleX(var(--robot-right-finger-spread,1)) scaleY(var(--robot-right-finger-curl,1));
+}
+.ax-hero-brainbot .brainbot-pro-thumb-left{
+  transform-origin:100% 0;
+  transform:rotate(var(--robot-left-thumb,0deg));
+}
+.ax-hero-brainbot .brainbot-pro-thumb-right{
+  transform-origin:0 0;
+  transform:rotate(var(--robot-right-thumb,0deg));
+}
+.ax-hero-brainbot .brainbot-pro-mouth{
+  transform-box:fill-box;
+  transform-origin:center;
+  transform:scaleX(var(--robot-mouth-width,1)) scaleY(var(--robot-mouth-open,.36));
+  transition:transform 58ms linear;
+  filter:drop-shadow(0 0 3px rgba(98,231,246,.8));
+}
+.ax-hero-brainbot[data-speaking="true"]{
+  filter:drop-shadow(0 20px 20px rgba(0,0,0,.5)) drop-shadow(0 0 28px rgba(87,225,250,.5));
+}
+@media(max-width:900px){
+  .ax-scene-machine-brainbot{
+    right:-16vw!important;
+    width:78vw!important;
+    opacity:.82!important;
+  }
+  .ax-hero-brainbot{
+    width:52%;
+    height:82%;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .ax-hero-brainbot .brainbot-pro-head,
+  .ax-hero-brainbot .brainbot-pro-body,
+  .ax-hero-brainbot .brainbot-pro-pelvis,
+  .ax-hero-brainbot .brainbot-pro-arm,
+  .ax-hero-brainbot .brainbot-pro-forearm,
+  .ax-hero-brainbot .brainbot-pro-hand,
+  .ax-hero-brainbot .brainbot-pro-mouth{
+    transition:none!important;
+  }
+}
+
+
+/* Opening film: clearer, wider framing, no visible grid. */
+.ax-scenes .ax-scene:first-child{
+  background:#020611!important;
+}
+.ax-scenes .ax-scene:first-child .ax-scene-video{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:68% 50%!important;
+  opacity:.84!important;
+  filter:brightness(1.12) saturate(1.02) contrast(1.02)!important;
+  transform:scale(.96)!important;
+}
+.ax-scenes .ax-scene:first-child .ax-scene-grid{
+  display:none!important;
+}
+.ax-scenes .ax-scene:first-child .ax-scene-shade{
+  background:
+    linear-gradient(90deg,rgba(2,6,17,.96) 0%,rgba(2,6,17,.83) 35%,rgba(2,6,17,.34) 58%,rgba(2,6,17,.20) 76%,rgba(2,6,17,.45) 100%),
+    linear-gradient(180deg,rgba(2,6,17,.04),rgba(2,6,17,.38))!important;
+}
+@media(max-width:900px){
+  .ax-scenes .ax-scene:first-child .ax-scene-video{
+    object-fit:contain!important;
+    object-position:center center!important;
+    opacity:.76!important;
+    transform:scale(.94)!important;
+  }
+  .ax-scenes .ax-scene:first-child .ax-scene-shade{
+    background:linear-gradient(180deg,rgba(2,6,17,.80) 0%,rgba(2,6,17,.54) 56%,rgba(2,6,17,.32) 100%)!important;
+  }
+}
+
+/* Sharper, single muted film stays behind every Robotics section without zooming the portrait source. */
+.ax-robotics-video-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  background:#020611;
+}
+.ax-robotics-video-backdrop video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+  opacity:.94;
+  filter:brightness(1.1) contrast(1.08) saturate(1.06);
+}
+.ax-robotics-video-shade{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(2,6,17,.34),rgba(2,6,17,.42) 52%,rgba(2,6,17,.56));
+}
+.ax-scenes,.robotics-page{
+  position:relative;
+  z-index:1;
+  background:transparent!important;
+}
+.ax-scene,.robotics-page .robotics-hero,.robotics-page .robotics-section,.robotics-page .robotics-cta{
+  background:transparent!important;
+}
+.ax-scenes .ax-scene-shade{
+  background:linear-gradient(90deg,rgba(2,6,17,.78),rgba(2,6,17,.42) 55%,rgba(2,6,17,.35)),linear-gradient(180deg,rgba(2,6,17,.08),rgba(2,6,17,.32))!important;
+}
+.ax-scenes .ax-scene-grid,.ax-scenes .ax-scene-floor,.robotics-page .robotics-grid-glow{
+  display:none!important;
+}
+.robotics-sector-card{
+  background:linear-gradient(160deg,rgba(12,31,49,.72),rgba(3,10,20,.76))!important;
+}
+.robotics-match-form,.robotics-match-result{
+  background:linear-gradient(160deg,rgba(6,23,39,.76),rgba(2,8,16,.78))!important;
+}
+.robotics-prototype-strip article{
+  background:linear-gradient(150deg,rgba(13,38,59,.74),rgba(4,12,22,.76))!important;
+}
+.robotics-sector-icon,.robotics-method-icon,.robotics-brain-point-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:48px;
+  height:48px;
+  flex:0 0 48px;
+  color:#72e5ff;
+  border:1px solid rgba(114,229,255,.35);
+  border-radius:16px;
+  background:linear-gradient(145deg,rgba(85,220,255,.16),rgba(37,134,255,.08));
+  box-shadow:0 0 25px rgba(0,174,239,.12),inset 0 0 18px rgba(85,220,255,.05);
+}
+.robotics-sector-icon svg,.robotics-method-icon svg,.robotics-brain-point-icon svg,.robotics-match-label svg{
+  width:25px;
+  height:25px;
+  display:block;
+}
+.robotics-sector-card>span{
+  margin-top:16px!important;
+}
+.robotics-method-step>.robotics-method-icon{
+  width:46px;
+  height:46px;
+  letter-spacing:0;
+}
+.robotics-method-step h3{
+  margin-top:20px!important;
+}
+.robotics-match-form label .robotics-match-label{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-bottom:10px;
+}
+.robotics-match-label svg{
+  width:19px;
+  height:19px;
+  color:#72e5ff;
+  flex:0 0 19px;
+}
+.robotics-brain-points .robotics-brain-point-icon{
+  width:34px;
+  height:34px;
+  margin-right:10px;
+  vertical-align:middle;
+  border-radius:11px;
+}
+.robotics-brain-point-icon svg{
+  width:19px;
+  height:19px;
+}
+@media(max-width:900px){
+  .ax-robotics-video-backdrop video{
+    object-fit:contain;
+    opacity:.82;
+    filter:brightness(1.04) contrast(1.08) saturate(1.04);
+  }
+  .ax-robotics-video-shade{
+    background:linear-gradient(180deg,rgba(2,6,17,.48),rgba(2,6,17,.52) 56%,rgba(2,6,17,.66));
+  }
+  .robotics-sector-icon{width:44px;height:44px;flex-basis:44px}
+}
+
+
+/* Match the homepage's full-frame video treatment on the Robotics experience. */
+.ax-robotics-video-backdrop video.ax-robotics-video-fill{
+  z-index:0;
+  object-fit:cover!important;
+  object-position:center!important;
+  transform:scale(1.08)!important;
+  opacity:.74!important;
+  filter:none!important;
+}
+.ax-robotics-video-backdrop video.ax-robotics-video-main{
+  z-index:1;
+  object-fit:contain!important;
+  object-position:68% 50%!important;
+  transform:none!important;
+  opacity:1!important;
+  filter:saturate(1.1) contrast(1.08) brightness(1.18)!important;
+}
+.ax-robotics-video-shade{
+  z-index:2;
+  background:linear-gradient(180deg,rgba(2,6,17,.16),rgba(2,6,17,.22) 52%,rgba(2,6,17,.32))!important;
+}
+.ax-scenes .ax-scene-shade{
+  background:
+    linear-gradient(90deg,rgba(2,6,17,.68),rgba(2,6,17,.32) 55%,rgba(2,6,17,.12)),
+    linear-gradient(180deg,rgba(2,6,17,.04),rgba(2,6,17,.18))!important;
+}
+
+
+/* Let the fixed film show through the opening Robotics scene. */
+.ax-scenes .ax-scene:first-child{
+  background:transparent!important;
+}

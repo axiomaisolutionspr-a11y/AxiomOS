@@ -323,21 +323,103 @@ function extractDiagnosticSummary(text: string) {
     : summary;
 }
 
+const profileEnglishValues: Record<string, string> = {
+  "Dealer de autos": "Auto dealership",
+  "Barbería": "Barbershop",
+  "Salón de belleza": "Beauty salon",
+  "Restaurante / alimentos": "Restaurant / food",
+  "Panadería / repostería": "Bakery / pastries",
+  "Cuidado de adultos mayores": "Senior care",
+  "Oficina dental": "Dental office",
+  "Servicios de salud": "Healthcare services",
+  "Taller automotriz": "Auto repair shop",
+  "Construcción / maquinaria pesada": "Construction / heavy equipment",
+  "Plomería": "Plumbing",
+  "Servicios eléctricos": "Electrical services",
+  "Jardinería / paisajismo": "Landscaping",
+  "Limpieza / mantenimiento": "Cleaning / maintenance",
+  "Transporte / logística": "Transportation / logistics",
+  "Bienes raíces": "Real estate",
+  "Comercio": "Retail",
+  "Gimnasio / fitness": "Gym / fitness",
+  "Hospitalidad": "Hospitality",
+  "Servicios profesionales": "Professional services",
+
+  "Captación y ventas": "Lead generation and sales",
+  "Atención y citas": "Customer service and appointments",
+  "Inventario y seguimiento": "Inventory and follow-up",
+  "Atención al cliente": "Customer service",
+  "Órdenes y solicitudes": "Orders and requests",
+  "Operación administrativa": "Administrative operations",
+
+  "Llamadas": "Calls",
+  "Página web": "Website",
+  "Correo": "Email",
+  "Formularios": "Forms",
+  "Calendario": "Calendar",
+  "Redes sociales": "Social media",
+
+  "Por identificar": "To be identified",
+  "Por definir": "To be determined",
+  "Alta": "High",
+  "Media": "Medium",
+  "Baja": "Low",
+  "Media a alta": "Medium to high",
+  "Media a baja": "Medium to low",
+
+  "Brain seguirá refinando este perfil a medida que avance la conversación.":
+    "Brain will continue refining this profile as the conversation progresses.",
+};
+
+function translateProfileValue(
+  value: string,
+  isEnglish: boolean
+) {
+  if (!isEnglish) {
+    return value;
+  }
+
+  return profileEnglishValues[value] ?? value;
+}
+
 function buildBusinessProfile(
   conversation: ConversationMessage[],
   result: string
 ): BusinessProfile {
   const userMessages = conversation.filter((item) => item.role === "user");
-  const userText = userMessages
+
+  let currentCaseStartIndex = 0;
+
+  // El caso vigente comienza en el mensaje más reciente donde el usuario
+  // identifica claramente un tipo de negocio. Los mensajes posteriores
+  // continúan perteneciendo a ese mismo caso.
+  for (
+    let index = userMessages.length - 1;
+    index >= 0;
+    index -= 1
+  ) {
+    if (
+      detectBusinessType(userMessages[index].text) !==
+      "Por identificar"
+    ) {
+      currentCaseStartIndex = index;
+      break;
+    }
+  }
+
+  const currentCaseText = userMessages
+    .slice(currentCaseStartIndex)
     .map((item) => item.text)
     .join("\n");
 
-  // Datos del negocio: solo se toman de lo que el cliente realmente ha dicho.
-  // Así evitamos convertir recomendaciones de Brain en hechos confirmados.
-  const businessType = detectBusinessType(userText);
-  const focus = detectFocus(userText);
-  const channels = detectChannels(userText);
+  const businessType =
+    detectBusinessType(currentCaseText);
 
+  const focus =
+    detectFocus(currentCaseText);
+
+  const channels =
+    detectChannels(currentCaseText);
   // Prioridad y complejidad sí son evaluaciones de Brain sobre el caso actual.
   const priority = extractLevel(result, "Prioridad");
   const complexity = extractLevel(result, "Complejidad");
@@ -907,6 +989,120 @@ export default function BrainPage() {
     useState<ConversationMessage[]>([]);
   const [copyStatus, setCopyStatus] = useState("");
   const [storageReady, setStorageReady] = useState(false);
+  const [language, setLanguage] =
+    useState<"es" | "en">("es");
+
+  const [leadOpen, setLeadOpen] =
+    useState(false);
+
+  const [leadName, setLeadName] =
+    useState("");
+
+  const [leadPhone, setLeadPhone] =
+    useState("");
+
+  const [leadCompany, setLeadCompany] =
+    useState("");
+
+  const [leadContactTime, setLeadContactTime] =
+    useState("");
+
+  const [leadSubmitting, setLeadSubmitting] =
+    useState(false);
+
+  const [leadError, setLeadError] =
+    useState("");
+
+  const [leadSaved, setLeadSaved] =
+    useState(false);
+
+  const isEnglish = language === "en";
+
+  const t = (es: string, en: string) =>
+    isEnglish ? en : es;
+
+  function changeBrainLanguage(
+    nextLanguage: "es" | "en"
+  ) {
+    setLanguage(nextLanguage);
+    document.documentElement.lang =
+      nextLanguage;
+
+    try {
+      window.localStorage.setItem(
+        "axiomai_site_language",
+        nextLanguage
+      );
+    } catch (languageError) {
+      console.error(
+        "No se pudo guardar el idioma de AxiomAI:",
+        languageError
+      );
+    }
+
+    const url = new URL(
+      window.location.href
+    );
+
+    url.searchParams.set(
+      "lang",
+      nextLanguage
+    );
+
+    window.history.replaceState(
+      null,
+      "",
+      `${url.pathname}${url.search}${url.hash}`
+    );
+  }
+
+  useEffect(() => {
+    const urlLanguage =
+      new URLSearchParams(
+        window.location.search
+      ).get("lang");
+
+    let nextLanguage: "es" | "en" =
+      urlLanguage === "en" ||
+      urlLanguage === "es"
+        ? urlLanguage
+        : "es";
+
+    if (
+      urlLanguage !== "en" &&
+      urlLanguage !== "es"
+    ) {
+      try {
+        nextLanguage =
+          window.localStorage.getItem(
+            "axiomai_site_language"
+          ) === "en"
+            ? "en"
+            : "es";
+      } catch (languageError) {
+        console.error(
+          "No se pudo leer el idioma de AxiomAI:",
+          languageError
+        );
+      }
+    }
+
+    setLanguage(nextLanguage);
+    document.documentElement.lang =
+      nextLanguage;
+
+    try {
+      window.localStorage.setItem(
+        "axiomai_site_language",
+        nextLanguage
+      );
+    } catch (languageError) {
+      console.error(
+        "No se pudo guardar el idioma de AxiomAI:",
+        languageError
+      );
+    }
+  }, []);
 
   const inputRef =
     useRef<HTMLTextAreaElement | null>(null);
@@ -990,6 +1186,7 @@ export default function BrainPage() {
           },
           body: JSON.stringify({
             messages: nextConversation,
+            language,
           }),
         }
       );
@@ -1006,7 +1203,7 @@ export default function BrainPage() {
 
       const answer =
         data.result ||
-        "AxiomOS Brain no devolvió una respuesta.";
+        t("AxiomOS Brain no devolvió una respuesta.", "AxiomOS Brain did not return a response.");
 
       const completedConversation: ConversationMessage[] = [
         ...nextConversation,
@@ -1034,7 +1231,7 @@ export default function BrainPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Ocurrió un error al conectar con AxiomOS Brain."
+          : t("Ocurrió un error al conectar con AxiomOS Brain.", "An error occurred while connecting to AxiomOS Brain.")
       );
     } finally {
       setLoading(false);
@@ -1077,7 +1274,7 @@ export default function BrainPage() {
     }
 
     const confirmed = window.confirm(
-      "¿Quieres iniciar una conversación nueva? Se borrará el contexto guardado de esta conversación."
+      t("¿Quieres iniciar una conversación nueva? Se borrará el contexto guardado de esta conversación.", "Do you want to start a new conversation? The saved context for this conversation will be deleted.")
     );
 
     if (!confirmed) {
@@ -1161,7 +1358,159 @@ export default function BrainPage() {
         storageError
       );
     }
+  }
 
+  async function submitBrainLead(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+
+    if (leadSubmitting) {
+      return;
+    }
+
+    const cleanName = leadName.trim();
+    const cleanPhone = leadPhone.trim();
+
+    if (!cleanName) {
+      setLeadError(
+        t(
+          "Escribe tu nombre.",
+          "Enter your name."
+        )
+      );
+      return;
+    }
+
+    if (!cleanPhone) {
+      setLeadError(
+        t(
+          "Escribe tu número de WhatsApp o teléfono.",
+          "Enter your WhatsApp or phone number."
+        )
+      );
+      return;
+    }
+
+    const latestUserMessage = [...conversation]
+      .reverse()
+      .find(
+        (item) => item.role === "user"
+      );
+
+    const currentBrainContext = [
+      latestUserMessage?.text
+        ? `Consulta actual: ${latestUserMessage.text}`
+        : "",
+      businessProfile.businessType
+        ? `Tipo de negocio: ${businessProfile.businessType}`
+        : "",
+      businessProfile.focus
+        ? `Foco: ${businessProfile.focus}`
+        : "",
+      businessProfile.channels.length > 0
+        ? `Canales: ${businessProfile.channels.join(", ")}`
+        : "",
+      businessProfile.summary
+        ? `Lectura principal: ${businessProfile.summary}`
+        : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const contactTimeLabel =
+      leadContactTime === "morning"
+        ? t("Mañana", "Morning")
+        : leadContactTime === "afternoon"
+          ? t("Tarde", "Afternoon")
+          : leadContactTime === "evening"
+            ? t("Noche", "Evening")
+            : t(
+                "Cualquier hora",
+                "Any time"
+              );
+
+    setLeadSubmitting(true);
+    setLeadError("");
+
+    try {
+      const response = await fetch(
+        "/api/prospectos-web",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            nombre: cleanName,
+            telefono: cleanPhone,
+            negocio: leadCompany.trim(),
+            origen: "AxiomOS Brain",
+            id_solicitud:
+              `BRAIN-${Date.now()}`,
+            mensaje: t(
+              `El prospecto solicitó una evaluación gratuita directamente desde AxiomOS Brain. Mejor hora para contactar: ${contactTimeLabel}.`,
+              `The prospect requested a free evaluation directly from AxiomOS Brain. Best time to contact: ${contactTimeLabel}.`
+            ),
+            consulta_brain:
+              latestUserMessage?.text || "",
+            tipo_de_negocio_brain:
+              businessProfile.businessType,
+            foco_brain:
+              businessProfile.focus,
+            canales_mencionados_brain:
+              businessProfile.channels.join(
+                ", "
+              ),
+            prioridad_brain:
+              businessProfile.priority,
+            complejidad_brain:
+              businessProfile.complexity,
+            lectura_principal_brain:
+              businessProfile.summary,
+            contexto_del_cliente_brain:
+              currentBrainContext,
+            analisis_brain: result,
+          }),
+        }
+      );
+
+      const data = (await response
+        .json()
+        .catch(() => null)) as
+        | {
+            ok?: boolean;
+            error?: string;
+            prospectId?: string;
+          }
+        | null;
+
+      if (!response.ok || !data?.ok) {
+        throw new Error(
+          data?.error ||
+            t(
+              "No se pudo registrar la solicitud.",
+              "The request could not be registered."
+            )
+        );
+      }
+
+      setLeadSaved(true);
+      setLeadError("");
+    } catch (error) {
+      setLeadError(
+        error instanceof Error
+          ? error.message
+          : t(
+              "No se pudo registrar la solicitud. Intenta nuevamente.",
+              "The request could not be registered. Please try again."
+            )
+      );
+    } finally {
+      setLeadSubmitting(false);
+    }
   }
 
   return (
@@ -1174,9 +1523,40 @@ export default function BrainPage() {
         fontFamily: "Arial, sans-serif",
         padding: "28px 18px 60px",
         overflowX: "hidden",
+        position: "relative",
+        isolation: "isolate",
       }}
     >
       <style>{`
+        .brain-page-video {
+          position: fixed;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 30%;
+          pointer-events: none;
+          opacity: 0.74;
+          filter: brightness(1.12) saturate(1.02) contrast(1.06);
+          transform: scale(1.015);
+          z-index: 0;
+        }
+
+        .brain-page-video-overlay {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          background:
+            radial-gradient(circle at 50% 7%, rgba(8, 52, 108, 0.12), rgba(3, 13, 29, 0.34) 54%, rgba(0, 4, 10, 0.58) 100%),
+            linear-gradient(180deg, rgba(2, 14, 31, 0.06), rgba(0, 5, 13, 0.28));
+          z-index: 1;
+        }
+
+        .brain-page-content {
+          position: relative;
+          z-index: 2;
+        }
+
         @keyframes brainAuraBreath {
           0%, 100% { transform: scale(0.9); opacity: 0.38; filter: blur(10px); }
           50% { transform: scale(1.12); opacity: 0.72; filter: blur(13px); }
@@ -1486,6 +1866,10 @@ export default function BrainPage() {
         }
 
         @media (prefers-reduced-motion: reduce) {
+          .brain-page-video {
+            display: none;
+          }
+
           .brain-orb-aura,
           .brain-orbit-ring,
           .brain-orb-core,
@@ -1510,7 +1894,21 @@ export default function BrainPage() {
         }
       `}</style>
 
+      <video
+        className="brain-page-video"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        aria-hidden="true"
+      >
+        <source src="/videos/axiomai-brain-robotics-bg.mp4" type="video/mp4" />
+      </video>
+      <div className="brain-page-video-overlay" aria-hidden="true" />
+
       <div
+        className="brain-page-content"
         style={{
           width: "100%",
           maxWidth: "980px",
@@ -1537,18 +1935,98 @@ export default function BrainPage() {
               fontSize: "15px",
             }}
           >
-            ← Volver a AxiomAI
+            {t("← Volver a AxiomAI", "← Back to AxiomAI")}
           </Link>
 
           <div
             style={{
-              color: "#53b7ff",
-              letterSpacing: "3px",
-              fontSize: "12px",
-              fontWeight: 800,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: "12px",
+              flexWrap: "wrap",
             }}
           >
-            AXIOMOS • BRAIN 2.2
+            <div
+              style={{
+                color: "#53b7ff",
+                letterSpacing: "3px",
+                fontSize: "12px",
+                fontWeight: 800,
+              }}
+            >
+              AXIOMOS • BRAIN 2.2
+            </div>
+
+            <div
+              role="group"
+              aria-label={t(
+                "Selector de idioma",
+                "Language selector"
+              )}
+              style={{
+                display: "flex",
+                gap: "3px",
+                padding: "3px",
+                border:
+                  "1px solid rgba(83,183,255,0.28)",
+                borderRadius: "999px",
+                background:
+                  "rgba(6,20,38,0.82)",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  changeBrainLanguage("es")
+                }
+                aria-pressed={language === "es"}
+                style={{
+                  border: 0,
+                  borderRadius: "999px",
+                  padding: "6px 9px",
+                  cursor: "pointer",
+                  fontSize: "11px",
+                  fontWeight: 900,
+                  background:
+                    language === "es"
+                      ? "rgba(83,183,255,0.28)"
+                      : "transparent",
+                  color:
+                    language === "es"
+                      ? "#ffffff"
+                      : "#7fa4c8",
+                }}
+              >
+                ES
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  changeBrainLanguage("en")
+                }
+                aria-pressed={language === "en"}
+                style={{
+                  border: 0,
+                  borderRadius: "999px",
+                  padding: "6px 9px",
+                  cursor: "pointer",
+                  fontSize: "11px",
+                  fontWeight: 900,
+                  background:
+                    language === "en"
+                      ? "rgba(83,183,255,0.28)"
+                      : "transparent",
+                  color:
+                    language === "en"
+                      ? "#ffffff"
+                      : "#7fa4c8",
+                }}
+              >
+                EN
+              </button>
+            </div>
           </div>
         </header>
 
@@ -1575,7 +2053,7 @@ export default function BrainPage() {
 
             <button
               type="button"
-              aria-label="Activar AxiomOS Brain"
+              aria-label={t("Activar AxiomOS Brain", "Activate AxiomOS Brain")}
               onClick={() =>
                 inputRef.current?.focus()
               }
@@ -1707,7 +2185,7 @@ export default function BrainPage() {
               marginBottom: "10px",
             }}
           >
-            INTELIGENCIA OPERATIVA
+            {t("INTELIGENCIA OPERATIVA", "OPERATIONAL INTELLIGENCE")}
           </p>
 
           <h1
@@ -1729,11 +2207,10 @@ export default function BrainPage() {
               lineHeight: 1.7,
               fontSize: "17px",
             }}
-          >
-            Describe un problema de tu negocio.
-            Brain identificará qué conviene
-            mejorar primero y cómo convertirlo
-            en una solución práctica.
+          >            {t(
+              "Describe un problema de tu negocio. Brain identificará qué conviene mejorar primero y cómo convertirlo en una solución práctica.",
+              "Describe a problem in your business. Brain will identify what should be improved first and how to turn it into a practical solution."
+            )}
           </p>
         </section>
 
@@ -1758,22 +2235,29 @@ export default function BrainPage() {
               marginBottom: "22px",
             }}
           >
-            {quickPrompts.map(
-              (prompt) => (
+            {quickPrompts.map((prompt, index) => {
+              const englishPrompt = [
+                "What tasks in my business can I automate?",
+                "Help me improve customer service.",
+                "How can I use AI to get more leads?",
+              ][index];
+
+              const displayedPrompt =
+                isEnglish ? englishPrompt : prompt;
+
+              return (
                 <button
                   key={prompt}
                   type="button"
                   onClick={() => {
-                    setMessage(prompt);
-                    void askBrain(prompt);
+                    setMessage(displayedPrompt);
+                    void askBrain(displayedPrompt);
                   }}
                   disabled={loading}
                   className="brain-chip"
                   style={{
-                    padding:
-                      "10px 13px",
-                    borderRadius:
-                      "999px",
+                    padding: "10px 13px",
+                    borderRadius: "999px",
                     border:
                       "1px solid rgba(83, 183, 255, 0.28)",
                     background:
@@ -1783,17 +2267,15 @@ export default function BrainPage() {
                       ? "not-allowed"
                       : "pointer",
                     fontSize: "13px",
-                    opacity: loading
-                      ? 0.6
-                      : 1,
+                    opacity: loading ? 0.6 : 1,
                   }}
                 >
-                  {prompt}
+                  {displayedPrompt}
                 </button>
-              )
-            )}
-          </div>
+              );
+            })}
 
+          </div>
           <form
             onSubmit={handleSubmit}
           >
@@ -1805,9 +2287,10 @@ export default function BrainPage() {
                 marginBottom: "10px",
                 color: "#dcecff",
               }}
-            >
-              ¿En qué quieres que Brain
-              te ayude?
+            >              {t(
+                "¿En qué quieres que Brain te ayude?",
+                "What would you like Brain to help you with?"
+              )}
             </label>
 
             <textarea
@@ -1825,7 +2308,7 @@ export default function BrainPage() {
               rows={6}
               maxLength={4000}
               disabled={loading}
-              placeholder="Ejemplo: Recibo muchas consultas por WhatsApp y se me pierden algunos seguimientos. ¿Qué debería automatizar primero?"
+              placeholder={t("Ejemplo: Recibo muchas consultas por WhatsApp y se me pierden algunos seguimientos. ¿Qué debería automatizar primero?", "Example: I receive many inquiries through WhatsApp and some follow-ups get lost. What should I automate first?")}
               style={{
                 width: "100%",
                 boxSizing:
@@ -1867,10 +2350,10 @@ export default function BrainPage() {
                   color: "#7186a0",
                   fontSize: "12px",
                 }}
-              >
-                Enter para enviar •
-                Shift + Enter para nueva
-                línea
+              >                {t(
+                  "Enter para enviar • Shift + Enter para nueva línea",
+                  "Enter to send • Shift + Enter for a new line"
+                )}
               </span>
 
               <button
@@ -1907,42 +2390,85 @@ export default function BrainPage() {
                 }}
               >
                 {loading
-                  ? "Brain está analizando..."
-                  : "Consultar a Brain"}
+                  ? t("Brain está analizando...", "Brain is analyzing...")
+                  : t("Consultar a Brain", "Ask Brain")}
               </button>
             </div>
           </form>
 
           {loading && (
             <div
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
               style={{
                 marginTop: "22px",
-                padding:
-                  "17px 18px",
-                borderRadius:
-                  "14px",
+                padding: "18px",
+                borderRadius: "14px",
                 border:
-                  "1px solid rgba(83, 183, 255, 0.24)",
+                  "1px solid rgba(83, 183, 255, 0.28)",
                 background:
                   "rgba(10, 38, 68, 0.48)",
                 color: "#bfe7ff",
-                fontWeight: 700,
               }}
             >
-              🧠 Brain está
-              priorizando oportunidades y
-              preparando una recomendación
-              ejecutiva...
+              <div
+                style={{
+                  fontWeight: 850,
+                  marginBottom: "14px",
+                  color: "#dff6ff",
+                }}
+              >
+                {t("Brain está trabajando en tu análisis", "Brain is working on your analysis")}
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gap: "10px",
+                  fontSize: "14px",
+                  lineHeight: 1.45,
+                }}
+              >
+                <div>
+                  <span style={{ color: "#55e6a5" }}>✓</span>{" "}
+                  {t("Consulta recibida", "Request received")}
+                </div>
+
+                <div>
+                  <span
+                    className="brain-loading-dot"
+                    aria-hidden="true"
+                    style={{
+                      display: "inline-block",
+                      marginRight: "7px",
+                      color: "#54c8ff",
+                    }}
+                  >
+                    ●
+                  </span>
+                  {t("Analizando tu operación", "Analyzing your operation")}
+                </div>
+
+                <div
+                  style={{
+                    color: "#7896ad",
+                  }}
+                >
+                  {t("○ Preparando recomendación", "○ Preparing recommendation")}
+                </div>
+              </div>
             </div>
           )}
 
-          {error && (
+          {error && !loading && (
             <div
+              role="alert"
+              aria-live="assertive"
               style={{
                 marginTop: "24px",
                 padding: "18px",
-                borderRadius:
-                  "15px",
+                borderRadius: "15px",
                 border:
                   "1px solid rgba(255, 111, 111, 0.45)",
                 background:
@@ -1951,7 +2477,50 @@ export default function BrainPage() {
                 lineHeight: 1.6,
               }}
             >
-              {error}
+              <div
+                style={{
+                  fontWeight: 800,
+                  marginBottom: "10px",
+                }}
+              >
+                {t("Brain no pudo completar el análisis.", "Brain could not complete the analysis.")}
+              </div>
+
+              <div
+                style={{
+                  marginBottom: "16px",
+                }}
+              >
+                {error}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => void askBrain()}
+                disabled={loading || !message.trim()}
+                className="brain-primary-button"
+                style={{
+                  minHeight: "44px",
+                  padding: "0 17px",
+                  borderRadius: "12px",
+                  border:
+                    "1px solid rgba(255, 150, 150, 0.48)",
+                  background:
+                    "rgba(122, 28, 38, 0.52)",
+                  color: "#ffffff",
+                  fontWeight: 800,
+                  cursor:
+                    loading || !message.trim()
+                      ? "not-allowed"
+                      : "pointer",
+                  opacity:
+                    loading || !message.trim()
+                      ? 0.6
+                      : 1,
+                }}
+              >
+                Intentar nuevamente
+              </button>
             </div>
           )}
 
@@ -2008,7 +2577,7 @@ export default function BrainPage() {
                     }}
                   >
                     {copyStatus ||
-                      "Copiar análisis"}
+                      t("Copiar análisis", "Copy analysis")}
                   </button>
 
                   <button
@@ -2039,7 +2608,7 @@ export default function BrainPage() {
                         "pointer",
                     }}
                   >
-                    Ver análisis ↓
+                    {t("Ver análisis ↓", "View analysis ↓")}
                   </button>
                 </div>
               </div>
@@ -2128,8 +2697,7 @@ export default function BrainPage() {
                           "3px",
                       }}
                     >
-                      Diagnóstico de
-                      inteligencia operativa
+                      {t("Diagnóstico de inteligencia operativa", "Operational intelligence diagnosis")}
                     </div>
                   </div>
                 </div>
@@ -2174,7 +2742,7 @@ export default function BrainPage() {
                         }}
                       >
                         <span className="brain-profile-dot" />
-                        Perfil del negocio • actualización en vivo
+                        {t("Perfil del negocio • actualización en vivo", "Business profile • live update")}
                       </div>
 
                       <h3
@@ -2186,7 +2754,7 @@ export default function BrainPage() {
                           fontWeight: 900,
                         }}
                       >
-                        Brain está construyendo contexto operativo
+                        {t("Brain está construyendo contexto operativo", "Brain is building operational context")}
                       </h3>
 
                       <p
@@ -2198,7 +2766,7 @@ export default function BrainPage() {
                           maxWidth: "650px",
                         }}
                       >
-                        Este perfil se refina con cada respuesta. Los datos del negocio se confirman con lo que el cliente realmente menciona.
+                        {t("Este perfil se refina con cada respuesta. Los datos del negocio se confirman con lo que el cliente realmente menciona.", "This profile is refined with each response. Business data is confirmed from what the client actually mentions.")}
                       </p>
                     </div>
 
@@ -2220,7 +2788,7 @@ export default function BrainPage() {
                           letterSpacing: "1.6px",
                         }}
                       >
-                        CONTEXTO
+                        {t("CONTEXTO", "CONTEXT")}
                       </div>
                       <div
                         style={{
@@ -2230,7 +2798,7 @@ export default function BrainPage() {
                           fontWeight: 900,
                         }}
                       >
-                        {businessProfile.confirmedCount}/3 datos
+                        {businessProfile.confirmedCount}/3 {t("datos", "data points")}
                       </div>
                       <div
                         style={{
@@ -2240,7 +2808,7 @@ export default function BrainPage() {
                           fontWeight: 750,
                         }}
                       >
-                        {businessProfile.assessmentCount}/2 evaluaciones Brain
+                        {businessProfile.assessmentCount}/2 {t("evaluaciones Brain", "Brain assessments")}
                       </div>
                     </div>
                   </div>
@@ -2277,10 +2845,10 @@ export default function BrainPage() {
                     }}
                   >
                     {[
-                      ["Tipo de negocio", businessProfile.businessType],
-                      ["Foco", businessProfile.focus],
-                      ["Prioridad Brain", businessProfile.priority],
-                      ["Complejidad Brain", businessProfile.complexity],
+                      [t("Tipo de negocio", "Business type"), translateProfileValue(businessProfile.businessType, isEnglish)],
+                      [t("Foco", "Focus"), translateProfileValue(businessProfile.focus, isEnglish)],
+                      [t("Prioridad Brain", "Brain priority"), translateProfileValue(businessProfile.priority, isEnglish)],
+                      [t("Complejidad Brain", "Brain complexity"), translateProfileValue(businessProfile.complexity, isEnglish)],
                     ].map(([label, value]) => (
                       <div
                         key={label}
@@ -2345,7 +2913,7 @@ export default function BrainPage() {
                           marginBottom: "8px",
                         }}
                       >
-                        Canales mencionados
+                        {t("Canales mencionados", "Mentioned channels")}
                       </div>
 
                       <div
@@ -2357,7 +2925,7 @@ export default function BrainPage() {
                       >
                         {(businessProfile.channels.length > 0
                           ? businessProfile.channels
-                          : ["Por confirmar"]
+                          : [t("Por confirmar", "To be confirmed")]
                         ).map((channel) => (
                           <span
                             key={channel}
@@ -2373,7 +2941,7 @@ export default function BrainPage() {
                               fontWeight: 750,
                             }}
                           >
-                            {channel}
+                            {translateProfileValue(channel, isEnglish)}
                           </span>
                         ))}
                       </div>
@@ -2397,7 +2965,7 @@ export default function BrainPage() {
                           marginBottom: "7px",
                         }}
                       >
-                        Lectura principal de Brain
+                        {t("Lectura principal de Brain", "Brain main assessment")}
                       </div>
                       <p
                         style={{
@@ -2407,7 +2975,7 @@ export default function BrainPage() {
                           lineHeight: 1.55,
                         }}
                       >
-                        {businessProfile.summary}
+                        {translateProfileValue(businessProfile.summary, isEnglish)}
                       </p>
                     </div>
                   </div>
@@ -2420,7 +2988,7 @@ export default function BrainPage() {
                       lineHeight: 1.45,
                     }}
                   >
-                    Contexto confirmado a partir de {businessProfile.interactionCount || 1} {(businessProfile.interactionCount || 1) === 1 ? "interacción" : "interacciones"}. Los datos del negocio se toman de lo que el cliente ha mencionado; prioridad y complejidad son evaluaciones de Brain.
+                    {isEnglish ? <>Context confirmed from {businessProfile.interactionCount || 1} {(businessProfile.interactionCount || 1) === 1 ? "interaction" : "interactions"}. Business data is based on what the client has mentioned; priority and complexity are Brain assessments.</> : <>Contexto confirmado a partir de {businessProfile.interactionCount || 1} {(businessProfile.interactionCount || 1) === 1 ? "interacción" : "interacciones"}. Los datos del negocio se toman de lo que el cliente ha mencionado; prioridad y complejidad son evaluaciones de Brain.</>}
                   </div>
 
 
@@ -2450,7 +3018,7 @@ export default function BrainPage() {
                             textTransform: "uppercase",
                           }}
                         >
-                          Siguiente dato útil • {profileNextQuestion.label}
+                          {t("Siguiente dato útil", "Next useful detail")} • {isEnglish ? (profileNextQuestion.label === "Tipo de negocio" ? "Business type" : profileNextQuestion.label === "Objetivo principal" ? "Main objective" : profileNextQuestion.label === "Canales actuales" ? "Current channels" : profileNextQuestion.label) : profileNextQuestion.label}
                         </div>
                         <div
                           style={{
@@ -2461,7 +3029,7 @@ export default function BrainPage() {
                             fontWeight: 780,
                           }}
                         >
-                          {profileNextQuestion.question}
+                          {isEnglish ? (profileNextQuestion.question === "¿Qué tipo de negocio tienes y qué servicios o productos ofreces?" ? "What type of business do you have and what services or products do you offer?" : profileNextQuestion.question === "¿Cuál es el problema principal que quieres resolver o qué resultado quieres mejorar?" ? "What is the main problem you want to solve or what result do you want to improve?" : profileNextQuestion.question === "¿Por qué canales te contactan hoy tus clientes: llamadas, WhatsApp, redes sociales, página web u otros?" ? "Which channels do your customers use to contact you today: calls, WhatsApp, social media, website, or others?" : profileNextQuestion.question) : profileNextQuestion.question}
                         </div>
                       </div>
 
@@ -2529,7 +3097,7 @@ export default function BrainPage() {
                         "7px",
                     }}
                   >
-                    ¿Quieres profundizar?
+                    {t("¿Quieres profundizar?", "Would you like to go deeper?")}
                   </div>
 
                   <p
@@ -2541,10 +3109,7 @@ export default function BrainPage() {
                       fontSize: "13px",
                     }}
                   >
-                    Brain conserva el
-                    contexto de este análisis.
-                    Elige una dirección y
-                    continuará desde aquí.
+                    {t("Brain conserva el contexto de este análisis. Elige una dirección y continuará desde aquí.", "Brain keeps the context of this analysis. Choose a direction and it will continue from here.")}
                   </p>
 
                   <div
@@ -2554,51 +3119,46 @@ export default function BrainPage() {
                       flexWrap: "wrap",
                     }}
                   >
-                    {followUpPrompts.map(
-                      (
-                        prompt,
-                        index
-                      ) => (
+                    {followUpPrompts.map((prompt, index) => {
+                      const englishPrompt = [
+                        "Turn this recommendation into a phased implementation plan.",
+                        "What information and tools would I need to implement this solution?",
+                        "Which automation should I implement first and why?",
+                      ][index];
+
+                      const displayedPrompt =
+                        isEnglish ? englishPrompt : prompt;
+
+                      return (
                         <button
                           key={prompt}
                           type="button"
                           className="brain-follow-button"
-                          disabled={
-                            loading
-                          }
+                          disabled={loading}
                           onClick={() =>
-                            void askBrain(
-                              prompt
-                            )
+                            void askBrain(displayedPrompt)
                           }
                           style={{
-                            padding:
-                              "10px 13px",
-                            borderRadius:
-                              "12px",
+                            padding: "10px 13px",
+                            borderRadius: "12px",
                             border:
                               "1px solid rgba(83,183,255,0.24)",
                             background:
                               "rgba(14,48,83,0.62)",
-                            color:
-                              "#cbeeff",
-                            cursor:
-                              "pointer",
-                            fontSize:
-                              "13px",
-                            fontWeight:
-                              750,
+                            color: "#cbeeff",
+                            cursor: "pointer",
+                            fontSize: "13px",
+                            fontWeight: 750,
                           }}
                         >
                           {index === 0
-                            ? "Plan por fases"
-                            : index ===
-                                1
-                              ? "Qué necesito"
-                              : "Qué hacer primero"}
+                            ? t("Plan por fases", "Phased plan")
+                            : index === 1
+                              ? t("Qué necesito", "What I need")
+                              : t("Qué hacer primero", "What to do first")}
                         </button>
-                      )
-                    )}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -2621,9 +3181,7 @@ export default function BrainPage() {
                         "8px",
                     }}
                   >
-                    ¿Quieres convertir este
-                    análisis en una solución
-                    real?
+                    {t("¿Quieres convertir este análisis en una solución real?", "Would you like to turn this analysis into a real solution?")}
                   </div>
 
                   <p
@@ -2635,11 +3193,7 @@ export default function BrainPage() {
                       fontSize: "14px",
                     }}
                   >
-                    AxiomAI Solutions puede
-                    estudiar tu proceso,
-                    definir la arquitectura
-                    adecuada y ayudarte a
-                    llevarla a implementación.
+                    {t("AxiomAI Solutions puede estudiar tu proceso, definir la arquitectura adecuada y ayudarte a llevarla a implementación.", "AxiomAI Solutions can study your process, define the right architecture, and help you bring it to implementation.")}
                   </p>
 
                   <div
@@ -2651,9 +3205,14 @@ export default function BrainPage() {
                       flexWrap: "wrap",
                     }}
                   >
-                    <a
-                      href="/#evaluacion"
-                      onClick={implementSolution}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        implementSolution();
+                        setLeadOpen(true);
+                        setLeadSaved(false);
+                        setLeadError("");
+                      }}
                       className="brain-cta-button"
                       style={{
                         display:
@@ -2685,9 +3244,11 @@ export default function BrainPage() {
                           "0 0 28px rgba(53,189,255,0.3)",
                       }}
                     >
-                      Quiero implementar esta
-                      solución →
-                    </a>
+                      {t(
+                        "Solicitar evaluación gratuita →",
+                        "Request a free evaluation →"
+                      )}
+                    </button>
 
                     <button
                       type="button"
@@ -2714,7 +3275,7 @@ export default function BrainPage() {
                           "pointer",
                       }}
                     >
-                      Hacer otra pregunta
+                      {t("Hacer otra pregunta", "Ask another question")}
                     </button>
 
                     <button
@@ -2732,9 +3293,294 @@ export default function BrainPage() {
                         cursor: "pointer",
                       }}
                     >
-                      Nueva conversación
+                      {t("Nueva conversación", "New conversation")}
                     </button>
                   </div>
+
+                  {leadOpen && (
+                    <div
+                      style={{
+                        marginTop: "20px",
+                        padding: "18px",
+                        borderRadius: "16px",
+                        border:
+                          "1px solid rgba(85,205,255,0.24)",
+                        background:
+                          "rgba(3,18,34,0.72)",
+                      }}
+                    >
+                      {leadSaved ? (
+                        <div
+                          style={{
+                            padding: "16px",
+                            borderRadius: "13px",
+                            border:
+                              "1px solid rgba(83,225,164,0.28)",
+                            background:
+                              "rgba(18,91,67,0.22)",
+                            color: "#b9f7db",
+                            lineHeight: 1.6,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {t(
+                            "✓ Solicitud registrada. Tu análisis de Brain fue enviado a AxiomOS CRM y el equipo de AxiomAI podrá continuar desde este mismo contexto.",
+                            "✓ Request registered. Your Brain analysis was sent to AxiomOS CRM and the AxiomAI team can continue from this same context."
+                          )}
+                        </div>
+                      ) : (
+                        <form
+                          onSubmit={submitBrainLead}
+                        >
+                          <div
+                            style={{
+                              color: "#ffffff",
+                              fontSize: "15px",
+                              fontWeight: 900,
+                              marginBottom: "5px",
+                            }}
+                          >
+                            {t(
+                              "Recibe una evaluación basada en este análisis",
+                              "Get an evaluation based on this analysis"
+                            )}
+                          </div>
+
+                          <div
+                            style={{
+                              color: "#8fa8bf",
+                              fontSize: "12px",
+                              lineHeight: 1.55,
+                              marginBottom: "16px",
+                            }}
+                          >
+                            {t(
+                              "Solo necesitamos tus datos de contacto. Brain enviará automáticamente el contexto de este análisis.",
+                              "We only need your contact details. Brain will automatically send the context of this analysis."
+                            )}
+                          </div>
+
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns:
+                                "repeat(auto-fit, minmax(210px, 1fr))",
+                              gap: "11px",
+                            }}
+                          >
+                            <input
+                              value={leadName}
+                              onChange={(event) =>
+                                setLeadName(
+                                  event.target.value
+                                )
+                              }
+                              placeholder={t(
+                                "Nombre",
+                                "Name"
+                              )}
+                              autoComplete="name"
+                              style={{
+                                width: "100%",
+                                minHeight: "46px",
+                                padding: "0 13px",
+                                borderRadius: "11px",
+                                border:
+                                  "1px solid rgba(94,180,232,0.24)",
+                                background:
+                                  "rgba(0,8,18,0.70)",
+                                color: "#ffffff",
+                                outline: "none",
+                              }}
+                            />
+
+                            <input
+                              value={leadPhone}
+                              onChange={(event) =>
+                                setLeadPhone(
+                                  event.target.value
+                                )
+                              }
+                              placeholder={t(
+                                "WhatsApp o teléfono",
+                                "WhatsApp or phone"
+                              )}
+                              type="tel"
+                              autoComplete="tel"
+                              style={{
+                                width: "100%",
+                                minHeight: "46px",
+                                padding: "0 13px",
+                                borderRadius: "11px",
+                                border:
+                                  "1px solid rgba(94,180,232,0.24)",
+                                background:
+                                  "rgba(0,8,18,0.70)",
+                                color: "#ffffff",
+                                outline: "none",
+                              }}
+                            />
+
+                            <input
+                              value={leadCompany}
+                              onChange={(event) =>
+                                setLeadCompany(
+                                  event.target.value
+                                )
+                              }
+                              placeholder={t(
+                                "Empresa o negocio",
+                                "Company or business"
+                              )}
+                              autoComplete="organization"
+                              style={{
+                                width: "100%",
+                                minHeight: "46px",
+                                padding: "0 13px",
+                                borderRadius: "11px",
+                                border:
+                                  "1px solid rgba(94,180,232,0.24)",
+                                background:
+                                  "rgba(0,8,18,0.70)",
+                                color: "#ffffff",
+                                outline: "none",
+                              }}
+                            />
+
+                            <select
+                              value={leadContactTime}
+                              onChange={(event) =>
+                                setLeadContactTime(
+                                  event.target.value
+                                )
+                              }
+                              style={{
+                                width: "100%",
+                                minHeight: "46px",
+                                padding: "0 13px",
+                                borderRadius: "11px",
+                                border:
+                                  "1px solid rgba(94,180,232,0.24)",
+                                background: "#061426",
+                                color: "#dcecff",
+                                outline: "none",
+                              }}
+                            >
+                              <option value="">
+                                {t(
+                                  "Mejor hora para contactar",
+                                  "Best time to contact"
+                                )}
+                              </option>
+                              <option value="morning">
+                                {t(
+                                  "Mañana",
+                                  "Morning"
+                                )}
+                              </option>
+                              <option value="afternoon">
+                                {t(
+                                  "Tarde",
+                                  "Afternoon"
+                                )}
+                              </option>
+                              <option value="evening">
+                                {t(
+                                  "Noche",
+                                  "Evening"
+                                )}
+                              </option>
+                              <option value="any">
+                                {t(
+                                  "Cualquier hora",
+                                  "Any time"
+                                )}
+                              </option>
+                            </select>
+                          </div>
+
+                          {leadError && (
+                            <div
+                              style={{
+                                marginTop: "11px",
+                                color: "#ff9b9b",
+                                fontSize: "12px",
+                                fontWeight: 750,
+                              }}
+                            >
+                              {leadError}
+                            </div>
+                          )}
+
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "10px",
+                              flexWrap: "wrap",
+                              marginTop: "15px",
+                            }}
+                          >
+                            <button
+                              type="submit"
+                              disabled={leadSubmitting}
+                              style={{
+                                minHeight: "44px",
+                                padding: "0 17px",
+                                border: "none",
+                                borderRadius: "11px",
+                                background:
+                                  "linear-gradient(135deg, #147df5, #35d4ff)",
+                                color: "#ffffff",
+                                fontWeight: 900,
+                                cursor:
+                                  leadSubmitting
+                                    ? "wait"
+                                    : "pointer",
+                                opacity:
+                                  leadSubmitting
+                                    ? 0.7
+                                    : 1,
+                              }}
+                            >
+                              {leadSubmitting
+                                ? t(
+                                    "Registrando...",
+                                    "Registering..."
+                                  )
+                                : t(
+                                    "Enviar a AxiomOS →",
+                                    "Send to AxiomOS →"
+                                  )}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setLeadOpen(false)
+                              }
+                              style={{
+                                minHeight: "44px",
+                                padding: "0 15px",
+                                borderRadius: "11px",
+                                border:
+                                  "1px solid rgba(110,160,200,0.24)",
+                                background:
+                                  "rgba(7,22,38,0.72)",
+                                color: "#9db4c8",
+                                fontWeight: 800,
+                                cursor: "pointer",
+                              }}
+                            >
+                              {t(
+                                "Ahora no",
+                                "Not now"
+                              )}
+                            </button>
+                          </div>
+                        </form>
+                      )}
+                    </div>
+                  )}
 
                   <div
                     style={{
@@ -2746,8 +3592,7 @@ export default function BrainPage() {
                         "12px",
                     }}
                   >
-                    Evaluación inicial gratuita
-                    • Sin compromiso
+                    {t("Evaluación inicial gratuita • Sin compromiso", "Free initial evaluation • No obligation")}
                   </div>
                 </div>
               </div>
@@ -2764,11 +3609,7 @@ export default function BrainPage() {
             lineHeight: 1.6,
           }}
         >
-          AxiomOS Brain ofrece orientación
-          tecnológica inicial. Las decisiones
-          importantes de negocio deben
-          validarse con información específica
-          de cada caso.
+          {t("AxiomOS Brain ofrece orientación tecnológica inicial. Las decisiones importantes de negocio deben validarse con información específica de cada caso.", "AxiomOS Brain provides initial technology guidance. Important business decisions should be validated with information specific to each case.")}
         </p>
       </div>
     </main>

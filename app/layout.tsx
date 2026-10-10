@@ -1,6 +1,22 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./home-cinematic.css";
+import "./home-cinematic-v2.css";
+import "./home-cinematic-v3.css";
+import "./home-cinematic-v4.css";
+import "./home-cinematic-v5.css";
+import "./home-cinematic-v6.css";
+import "./home-cinematic-v7.css";
+import "./home-cinematic-v8.css";
+import "./home-cinematic-v9.css";
+import "./home-cinematic-v10.css";
+import "./robot-companion.css";
+import "./brainbot-energy.css";
+import HomeBackgroundVideo from "./home-background-video";
+import SiteExperience from "./site-experience";
+import RobotCompanion from "./robot-companion";
+import BrainBotFigure from "./brainbot-figure";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,24 +29,73 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-title: "AxiomAI Solutions",
-description:
-"Automatización, inteligencia artificial y desarrollo de software para empresas.",
-icons: {
-icon: "/logo.png",
-shortcut: "/logo.png",
-apple: "/logo.png",
-},
+  title: "AxiomAI Solutions",
+  description:
+    "Automatización, inteligencia artificial y desarrollo de software para empresas.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
+  other: {
+    "facebook-domain-verification": "u3cqzn0y2marft1is7tbneqy02orr9",
+  },
 };
-
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <HomeBackgroundVideo />
+        <SiteExperience />
+        <RobotCompanion />
+        {children}
+
+        <div className="axiom-robotics-portal">
+          <button
+            type="button"
+            className="axiom-robot-talk"
+            aria-pressed={false}
+            aria-label="Escuchar o pausar la presentación de BrainBot"
+            title="Escuchar presentación"
+          >
+            <span className="axiom-robot-avatar" aria-hidden="true">
+              <BrainBotFigure />
+              <span className="axiom-robot-antenna" />
+              <span className="axiom-robot-face">
+                <span className="axiom-robot-brain-window" />
+                <i className="axiom-robot-eye axiom-robot-eye-left" />
+                <i className="axiom-robot-eye axiom-robot-eye-right" />
+                <i className="axiom-robot-mouth" />
+              </span>
+              <span className="axiom-robot-neck" />
+              <span className="axiom-robot-body"><i /></span>
+              <span className="axiom-robot-pelvis" />
+              <span className="axiom-robot-arm axiom-robot-arm-left">
+                <i className="axiom-robot-upper-arm" />
+                <i className="axiom-robot-elbow" />
+                <span className="axiom-robot-forearm"><i className="axiom-robot-hand" /></span>
+              </span>
+              <span className="axiom-robot-arm axiom-robot-arm-right">
+                <i className="axiom-robot-upper-arm" />
+                <i className="axiom-robot-elbow" />
+                <span className="axiom-robot-forearm"><i className="axiom-robot-hand" /></span>
+              </span>
+              <span className="axiom-robot-leg axiom-robot-leg-left" />
+              <span className="axiom-robot-leg axiom-robot-leg-right" />
+            </span>
+            <span className="axiom-robotics-copy">
+              <small>AXIOMAI</small>
+              <strong>BrainBot</strong>
+              <em>Escuchar presentación</em>
+            </span>
+          </button>
+          <a className="axiom-robotics-link" href="/robotics">Explorar Robotics →</a>
+        </div>
+      </body>
     </html>
   );
 }
