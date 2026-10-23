@@ -27,6 +27,11 @@ export default function BrainBotFigure() {
           <stop offset=".58" stopColor="#27dff2" />
           <stop offset="1" stopColor="#08728d" />
         </radialGradient>
+        <linearGradient id="bbChestLogo" x1="108" y1="120" x2="119" y2="133" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#e8ffff" />
+          <stop offset=".42" stopColor="#42eaff" />
+          <stop offset="1" stopColor="#1687ff" />
+        </linearGradient>
         <filter id="bbGlow" x="-80%" y="-80%" width="260%" height="260%">
           <feGaussianBlur stdDeviation="4" result="blur" />
           <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
@@ -64,9 +69,16 @@ export default function BrainBotFigure() {
         <rect x="92" y="112" width="36" height="29" rx="9" fill="#09283a" stroke="#54d5e7" strokeWidth="2" />
         <rect x="96" y="116" width="28" height="21" rx="6" fill="#061722" stroke="#347284" strokeWidth="1" />
         <clipPath id="bbChestClip"><rect x="96" y="116" width="28" height="21" rx="6" /></clipPath>
-        <image className="brainbot-chest-brand" href="/axiomai-mark.svg" x="97" y="117.5" width="26" height="18" clipPath="url(#bbChestClip)" preserveAspectRatio="xMidYMid meet" aria-hidden="true" />
-        <circle className="brainbot-energy-core" cx="110" cy="126.5" r="6.5" fill="url(#bbCore)" filter="url(#bbGlow)" />
-        <circle cx="110" cy="126.5" r="2.2" fill="#eaffff" />
+        <rect x="97" y="117" width="26" height="19" rx="4" fill="#04101d" clipPath="url(#bbChestClip)" />
+        <g className="brainbot-chest-brand" clipPath="url(#bbChestClip)" aria-hidden="true">
+          <path d="M99 122 H103 L106 125 H109 M98 127 H107 M99 132 H104 L108 129" fill="none" stroke="#42eaff" strokeWidth=".8" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="99" cy="122" r=".8" fill="#e8ffff" />
+          <circle cx="98" cy="127" r=".8" fill="#e8ffff" />
+          <circle cx="99" cy="132" r=".8" fill="#e8ffff" />
+          <path d="M108 133 L112 120 H115 L120 133 H116.7 L115.3 129 H111.2 L110 133 Z" fill="url(#bbChestLogo)" stroke="#c9ffff" strokeWidth=".45" strokeLinejoin="round" filter="url(#bbGlow)" />
+          <path d="M111.7 127.8 H114.7 L113.2 123.8 Z" fill="#04101d" />
+          <path d="M110.8 129 H115.8" stroke="#e8ffff" strokeWidth=".7" strokeLinecap="round" />
+        </g>
         <g className="brainbot-energy-circuits" fill="none" strokeLinecap="round" aria-hidden="true">
           <path d="M109 117 H102 L98 121 V132 M111 117 H118 L122 121 V132" stroke="#37cde9" strokeWidth=".8" opacity=".35" />
           <path className="brainbot-energy-current brainbot-energy-current-body" d="M109 117 H102 L98 121 V132 M111 117 H118 L122 121 V132" stroke="#b4faff" strokeWidth="1.2" strokeDasharray="4 27" />
