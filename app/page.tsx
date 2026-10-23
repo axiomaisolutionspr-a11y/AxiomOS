@@ -5715,6 +5715,7 @@ export default function Home() {
 
           <nav className="nav-links" aria-label={t("Navegación principal", "Main navigation")}>
             <a href="#soluciones">{t("Soluciones", "Solutions")}</a>
+            <a href="/robotics#roi">Robotics ROI</a>
             <a href="#proceso">{t("Cómo funciona", "How it works")}</a>
             <a href={`/brain?lang=${language}`}>Brain</a>
             <a href="#evaluacion">{t("Contacto", "Contact")}</a>
@@ -5819,6 +5820,16 @@ export default function Home() {
                 {t(
                   "Solicitar evaluaci\u00F3n",
                   "Request an assessment"
+                )}
+              </a>
+
+              <a
+                className="secondary"
+                href="/robotics#roi"
+              >
+                {t(
+                  "Calcular ahorro con robótica",
+                  "Calculate robotics savings"
                 )}
               </a>
             </div>

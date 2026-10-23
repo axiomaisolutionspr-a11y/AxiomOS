@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRoboticsLanguage } from "./robotics-language";
+import RoiCalculator from "./roi-calculator";
 
 const iconPaths: Record<string, string[]> = {
   serve: ["M3 13h18l-2 7H5l-2-7Z", "M6 12a6 6 0 0 1 12 0", "M8 17h.01M12 17h.01M16 17h.01"],
@@ -47,7 +48,7 @@ const initialMatch: Match = { sector: "", task: "", environment: "", scale: "", 
 
 const content = {
   es: {
-    nav: { solutions: "Soluciones", match: "Robot Match", brain: "Brain", contact: "Contacto" },
+    nav: { solutions: "Soluciones", roi: "Ahorro + ROI", match: "Robot Match", brain: "Brain", contact: "Contacto" },
     sectors: [
       { key: "serve", title: "Axiom Serve", eyebrow: "RESTAURANTES + HOSPITALIDAD", text: "Robots de servicio para entrega, recogido de mesas, apoyo al salón y operaciones de alto volumen.", accent: "SERVICIO" },
       { key: "host", title: "Axiom Host", eyebrow: "RECEPCIÓN + EXPERIENCIA", text: "Recepción, orientación, promociones, telepresencia y atención guiada para clientes y visitantes.", accent: "RECEPCIÓN" },
@@ -148,7 +149,7 @@ const content = {
     languageLabel: "Cambiar a inglés",
   },
   en: {
-    nav: { solutions: "Solutions", match: "Robot Match", brain: "Brain", contact: "Contact" },
+    nav: { solutions: "Solutions", roi: "Savings + ROI", match: "Robot Match", brain: "Brain", contact: "Contact" },
     sectors: [
       { key: "serve", title: "Axiom Serve", eyebrow: "RESTAURANTS + HOSPITALITY", text: "Service robots for delivery, bussing, dining-room support and high-volume operations.", accent: "SERVICE" },
       { key: "host", title: "Axiom Host", eyebrow: "RECEPTION + EXPERIENCE", text: "Reception, guidance, promotions, telepresence and guided customer or visitor experiences.", accent: "HOST" },
@@ -281,6 +282,7 @@ export default function RoboticsExperience() {
         </a>
         <div className="robotics-nav-links">
           <a href="#solutions">{copy.nav.solutions}</a>
+          <a href="#roi">{copy.nav.roi}</a>
           <a href="#match">{copy.nav.match}</a>
           <a href="#brain">{copy.nav.brain}</a>
           <a href="#contact">{copy.nav.contact}</a>
@@ -351,6 +353,8 @@ export default function RoboticsExperience() {
           ))}
         </div>
       </section>
+
+      <RoiCalculator language={language} />
 
       <section id="match" className="robotics-section robotics-match">
         <div className="robotics-section-heading">
