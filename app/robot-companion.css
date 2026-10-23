@@ -1383,3 +1383,12 @@
     opacity:.82;
   }
 }
+
+
+/* Keep the floating BrainBot fully inside the visible screen on compact layouts. */
+@media(max-width:1299px){
+  .axiom-robotics-portal[data-placement="hero"]{
+    right:max(24px,env(safe-area-inset-right))!important;
+    bottom:max(28px,env(safe-area-inset-bottom))!important;
+  }
+}
