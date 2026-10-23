@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useRoboticsLanguage } from "./robotics-language";
 import RoiCalculator from "./roi-calculator";
 
@@ -265,6 +265,88 @@ export default function RoboticsExperience() {
   const resultKey = useMemo(() => recommendedKey(match), [match]);
   const result = copy.sectors.find((s) => s.key === resultKey) ?? copy.sectors[1];
   const resultBots = copy.prototypes.filter((p) => p.sector === resultKey).slice(0, 3);
+  const [partnerStatus, setPartnerStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [partnerError, setPartnerError] = useState("");
+  const partner = language === "es" ? {
+    kicker:"FABRICANTES • PROVEEDORES • ALIADOS", title:"Presenta tu tecnología.",
+    subtitle:"La evaluamos para proyectos reales en Puerto Rico.",
+    intro:"Comparte el producto, sus aplicaciones, soporte y condiciones de colaboración. Revisamos cada propuesta según las necesidades de nuestros clientes y su adecuación técnica.",
+    disclaimer:"Enviar información no implica compra, distribución, exclusividad ni compromiso de volumen. No incluyas información confidencial o restringida.",
+    contact:"Nombre de contacto", company:"Empresa / fabricante", email:"Correo de trabajo", phone:"Teléfono",
+    product:"Producto / modelo", category:"Tipo de tecnología", prompt:"Selecciona una opción",
+    categories:[["service_robot","Robot de servicio"],["cleaning_robot","Robot de limpieza"],["amr","AMR / logística"],["cobot","Cobot / automatización industrial"],["ai_software","IA / software / integración"],["other","Otra tecnología"]],
+    catalog:"Catálogo o ficha técnica (enlace)", application:"Caso de uso y sectores atendidos",
+    integration:"Integración y conectividad", integrationHint:"APIs, ROS 2, Modbus, sistemas compatibles u otros protocolos.",
+    safety:"Seguridad y certificaciones relevantes",
+    support:"Soporte técnico, garantía y repuestos disponibles en Puerto Rico",
+    training:"Capacitación para instalación, operación y servicio",
+    trainings:[["onsite","Presencial en Puerto Rico"],["remote","Remota"],["both","Presencial y remota"],["not_available","Aún no disponible"]],
+    commercial:"Modalidad comercial propuesta",
+    commercialOptions:[["project","Por proyecto / venta"],["rental","Alquiler o RaaS"],["reseller","Reventa / margen de integrador"],["referral","Referidos / comisión"],["distribution","Distribución"],["other","Otra modalidad"]],
+    consent:"Autorizo a AxiomAI Solutions a revisar esta propuesta y contactarme sobre ella.",
+    submit:"Enviar tecnología para evaluación", sending:"Enviando…",
+    success:"Recibimos la propuesta. La revisaremos para identificar posibles aplicaciones y próximos pasos.",
+    error:"No pudimos registrar la propuesta. Verifica tus datos e inténtalo nuevamente.",
+  } : {
+    kicker:"MANUFACTURERS • SUPPLIERS • TECHNOLOGY PARTNERS", title:"Present your technology.",
+    subtitle:"We evaluate it for real projects in Puerto Rico.",
+    intro:"Tell us about the product, its applications, support, and collaboration terms. We review each proposal against customer needs and technical fit.",
+    disclaimer:"Submitting information does not imply a purchase, distribution agreement, exclusivity, or volume commitment. Do not include confidential or restricted information.",
+    contact:"Contact name", company:"Company / manufacturer", email:"Work email", phone:"Phone",
+    product:"Product / model", category:"Technology type", prompt:"Choose an option",
+    categories:[["service_robot","Service robot"],["cleaning_robot","Cleaning robot"],["amr","AMR / logistics"],["cobot","Cobot / industrial automation"],["ai_software","AI / software / integration"],["other","Other technology"]],
+    catalog:"Catalog or technical sheet (link)", application:"Use case and industries served",
+    integration:"Integration and connectivity", integrationHint:"APIs, ROS 2, Modbus, compatible systems, or other protocols.",
+    safety:"Relevant safety information and certifications",
+    support:"Technical support, warranty, and spare parts available in Puerto Rico",
+    training:"Training for installation, operation, and service",
+    trainings:[["onsite","On-site in Puerto Rico"],["remote","Remote"],["both","On-site and remote"],["not_available","Not currently available"]],
+    commercial:"Proposed commercial model",
+    commercialOptions:[["project","Project-based / sale"],["rental","Rental or RaaS"],["reseller","Resale / integrator margin"],["referral","Referral / commission"],["distribution","Distribution"],["other","Other"]],
+    consent:"I authorize AxiomAI Solutions to review this submission and contact me about it.",
+    submit:"Submit technology for evaluation", sending:"Submitting…",
+    success:"We received your submission. We will review potential applications and next steps.",
+    error:"We couldn't record your submission. Check your information and try again.",
+  };
+
+  async function submitPartner(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setPartnerStatus("sending");
+    setPartnerError("");
+    const details = [
+      "Technology partner submission",
+      `Company / manufacturer: ${data.get("partnerCompany") || ""}`,
+      `Product / model: ${data.get("partnerProduct") || ""}`,
+      `Technology type: ${data.get("partnerCategory") || ""}`,
+      `Catalog / technical sheet: ${data.get("partnerCatalog") || "Not provided"}`,
+      `Use case / industries: ${data.get("partnerApplication") || ""}`,
+      `Integration / connectivity: ${data.get("partnerIntegration") || "Not provided"}`,
+      `Safety / certifications: ${data.get("partnerSafety") || "Not provided"}`,
+      `Puerto Rico support / warranty / parts: ${data.get("partnerSupport") || ""}`,
+      `Training: ${data.get("partnerTraining") || ""}`,
+      `Commercial model: ${data.get("partnerCommercial") || ""}`,
+    ].join("\n");
+    try {
+      const response = await fetch("/api/prospectos-web", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          nombre:data.get("partnerContact"), telefono:data.get("partnerPhone"),
+          negocio:data.get("partnerCompany"), email:data.get("partnerEmail"),
+          mensaje:details, origen:"Robotics / Technology Partner Intake",
+          id_solicitud:`PARTNER-${Date.now()}`,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(partner.error);
+      form.reset();
+      setPartnerStatus("sent");
+    } catch {
+      setPartnerStatus("error");
+      setPartnerError(partner.error);
+    }
+  }
 
   function setField(field: keyof Match, value: string) {
     setMatch((current) => ({ ...current, [field]: value }));
@@ -432,10 +514,39 @@ export default function RoboticsExperience() {
         </div>
       </section>
 
+      <section id="partners" className="robotics-partner-section" aria-labelledby="robotics-partner-title">
+        <div className="robotics-partner-intro">
+          <span className="robotics-kicker">{partner.kicker}</span>
+          <h2 id="robotics-partner-title">{partner.title}<br /><span>{partner.subtitle}</span></h2>
+          <p>{partner.intro}</p><p className="robotics-partner-disclaimer">{partner.disclaimer}</p>
+        </div>
+        <form className="robotics-partner-form" onSubmit={submitPartner}>
+          <div className="robotics-partner-fields">
+            <label>{partner.contact}<input name="partnerContact" autoComplete="name" required maxLength={180} /></label>
+            <label>{partner.company}<input name="partnerCompany" autoComplete="organization" required maxLength={220} /></label>
+            <label>{partner.email}<input name="partnerEmail" type="email" autoComplete="email" required maxLength={320} /></label>
+            <label>{partner.phone}<input name="partnerPhone" type="tel" autoComplete="tel" required maxLength={80} /></label>
+            <label>{partner.product}<input name="partnerProduct" required maxLength={220} /></label>
+            <label>{partner.category}<select name="partnerCategory" defaultValue="" required><option value="" disabled>{partner.prompt}</option>{partner.categories.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+            <label className="robotics-partner-wide">{partner.catalog}<input name="partnerCatalog" type="url" placeholder="https://" maxLength={1200} /></label>
+            <label className="robotics-partner-wide">{partner.application}<textarea name="partnerApplication" required rows={3} maxLength={1800} /></label>
+            <label className="robotics-partner-wide">{partner.integration}<textarea name="partnerIntegration" rows={2} maxLength={1200} placeholder={partner.integrationHint} /></label>
+            <label className="robotics-partner-wide">{partner.safety}<textarea name="partnerSafety" rows={2} maxLength={1200} /></label>
+            <label className="robotics-partner-wide">{partner.support}<textarea name="partnerSupport" required rows={3} maxLength={1800} /></label>
+            <label>{partner.training}<select name="partnerTraining" defaultValue="" required><option value="" disabled>{partner.prompt}</option>{partner.trainings.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+            <label>{partner.commercial}<select name="partnerCommercial" defaultValue="" required><option value="" disabled>{partner.prompt}</option>{partner.commercialOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+          </div>
+          <label className="robotics-partner-consent"><input name="partnerConsent" type="checkbox" required /><span>{partner.consent} <a href="/privacy" target="_blank" rel="noreferrer">{language === "es" ? "Política de privacidad" : "Privacy policy"}</a>.</span></label>
+          <button className="robotics-btn robotics-btn-primary robotics-partner-submit" type="submit" disabled={partnerStatus === "sending"}>{partnerStatus === "sending" ? partner.sending : partner.submit}</button>
+          {partnerStatus === "sent" && <p className="robotics-partner-status" role="status">{partner.success}</p>}
+          {partnerStatus === "error" && <p className="robotics-partner-status robotics-partner-error" role="alert">{partnerError}</p>}
+        </form>
+      </section>
+
       <footer className="robotics-footer">
         <img src="/logo.png" alt="AxiomAI Solutions" />
         <div><strong>AxiomAI Solutions LLC</strong><span>{copy.footerSub}</span></div>
-        <div className="robotics-footer-right"><span>1 (787) 450-3679</span><span>axiomaisolutions.org</span></div>
+        <div className="robotics-footer-right"><a href="#partners">{language === "es" ? "Fabricantes y aliados" : "Manufacturers & partners"}</a><span>1 (787) 450-3679</span><span>axiomaisolutions.org</span></div>
       </footer>
     </main>
   );
