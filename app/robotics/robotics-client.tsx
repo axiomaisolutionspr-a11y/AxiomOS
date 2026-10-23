@@ -277,11 +277,13 @@ export default function RoboticsExperience() {
     categories:[["service_robot","Robot de servicio"],["cleaning_robot","Robot de limpieza"],["amr","AMR / logística"],["cobot","Cobot / automatización industrial"],["ai_software","IA / software / integración"],["other","Otra tecnología"]],
     catalog:"Catálogo o ficha técnica (enlace)", application:"Caso de uso y sectores atendidos",
     integration:"Integración y conectividad", integrationHint:"APIs, ROS 2, Modbus, sistemas compatibles u otros protocolos.",
+    cyber:"Ciberseguridad, conexión a la nube y manejo de datos",
     safety:"Seguridad y certificaciones relevantes",
     support:"Soporte técnico, garantía y repuestos disponibles en Puerto Rico",
     training:"Capacitación para instalación, operación y servicio",
     trainings:[["onsite","Presencial en Puerto Rico"],["remote","Remota"],["both","Presencial y remota"],["not_available","Aún no disponible"]],
     commercial:"Modalidad comercial propuesta",
+    pricing:"Precio indicativo / cuota de alquiler o RaaS (opcional)",
     commercialOptions:[["project","Por proyecto / venta"],["rental","Alquiler o RaaS"],["reseller","Reventa / margen de integrador"],["referral","Referidos / comisión"],["distribution","Distribución"],["other","Otra modalidad"]],
     consent:"Autorizo a AxiomAI Solutions a revisar esta propuesta y contactarme sobre ella.",
     submit:"Enviar tecnología para evaluación", sending:"Enviando…",
@@ -297,11 +299,13 @@ export default function RoboticsExperience() {
     categories:[["service_robot","Service robot"],["cleaning_robot","Cleaning robot"],["amr","AMR / logistics"],["cobot","Cobot / industrial automation"],["ai_software","AI / software / integration"],["other","Other technology"]],
     catalog:"Catalog or technical sheet (link)", application:"Use case and industries served",
     integration:"Integration and connectivity", integrationHint:"APIs, ROS 2, Modbus, compatible systems, or other protocols.",
+    cyber:"Cybersecurity, cloud connectivity, and data handling",
     safety:"Relevant safety information and certifications",
     support:"Technical support, warranty, and spare parts available in Puerto Rico",
     training:"Training for installation, operation, and service",
     trainings:[["onsite","On-site in Puerto Rico"],["remote","Remote"],["both","On-site and remote"],["not_available","Not currently available"]],
     commercial:"Proposed commercial model",
+    pricing:"Indicative price / rental or RaaS fee (optional)",
     commercialOptions:[["project","Project-based / sale"],["rental","Rental or RaaS"],["reseller","Resale / integrator margin"],["referral","Referral / commission"],["distribution","Distribution"],["other","Other"]],
     consent:"I authorize AxiomAI Solutions to review this submission and contact me about it.",
     submit:"Submit technology for evaluation", sending:"Submitting…",
@@ -323,6 +327,8 @@ export default function RoboticsExperience() {
       `Catalog / technical sheet: ${data.get("partnerCatalog") || "Not provided"}`,
       `Use case / industries: ${data.get("partnerApplication") || ""}`,
       `Integration / connectivity: ${data.get("partnerIntegration") || "Not provided"}`,
+      `Cybersecurity / cloud / data handling: ${data.get("partnerCybersecurity") || "Not provided"}`,
+      `Indicative pricing: ${data.get("partnerPricing") || "Not provided"}`,
       `Safety / certifications: ${data.get("partnerSafety") || "Not provided"}`,
       `Puerto Rico support / warranty / parts: ${data.get("partnerSupport") || ""}`,
       `Training: ${data.get("partnerTraining") || ""}`,
@@ -535,6 +541,7 @@ export default function RoboticsExperience() {
             <label className="robotics-partner-wide">{partner.support}<textarea name="partnerSupport" required rows={3} maxLength={1800} /></label>
             <label>{partner.training}<select name="partnerTraining" defaultValue="" required><option value="" disabled>{partner.prompt}</option>{partner.trainings.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
             <label>{partner.commercial}<select name="partnerCommercial" defaultValue="" required><option value="" disabled>{partner.prompt}</option>{partner.commercialOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+            <label className="robotics-partner-wide">{partner.pricing}<input name="partnerPricing" maxLength={220} /></label>
           </div>
           <label className="robotics-partner-consent"><input name="partnerConsent" type="checkbox" required /><span>{partner.consent} <a href="/privacy" target="_blank" rel="noreferrer">{language === "es" ? "Política de privacidad" : "Privacy policy"}</a>.</span></label>
           <button className="robotics-btn robotics-btn-primary robotics-partner-submit" type="submit" disabled={partnerStatus === "sending"}>{partnerStatus === "sending" ? partner.sending : partner.submit}</button>
