@@ -63,6 +63,8 @@ export default function BrainBotFigure() {
         <path d="M79 127 Q84 130 88 128 M132 128 Q136 130 141 127" fill="none" stroke="#6edcea" strokeWidth="1.8" strokeLinecap="round" />
         <rect x="92" y="112" width="36" height="29" rx="9" fill="#09283a" stroke="#54d5e7" strokeWidth="2" />
         <rect x="96" y="116" width="28" height="21" rx="6" fill="#061722" stroke="#347284" strokeWidth="1" />
+        <clipPath id="bbChestClip"><rect x="96" y="116" width="28" height="21" rx="6" /></clipPath>
+        <image className="brainbot-chest-brand" href="/axiomai-mark.svg" x="97" y="117.5" width="26" height="18" clipPath="url(#bbChestClip)" preserveAspectRatio="xMidYMid meet" aria-hidden="true" />
         <circle className="brainbot-energy-core" cx="110" cy="126.5" r="6.5" fill="url(#bbCore)" filter="url(#bbGlow)" />
         <circle cx="110" cy="126.5" r="2.2" fill="#eaffff" />
         <g className="brainbot-energy-circuits" fill="none" strokeLinecap="round" aria-hidden="true">
