@@ -72,7 +72,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <i className="axiom-robot-mouth" />
               </span>
               <span className="axiom-robot-neck" />
-              <span className="axiom-robot-body"><i /></span>
+              <span className="axiom-robot-body">
+                <i />
+                <img
+                  className="axiom-robot-brand-display"
+                  src="/axiomai-logo-transparent.webp"
+                  alt=""
+                  aria-hidden="true"
+                />
+              </span>
               <span className="axiom-robot-pelvis" />
               <span className="axiom-robot-arm axiom-robot-arm-left">
                 <i className="axiom-robot-upper-arm" />
