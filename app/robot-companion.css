@@ -1356,3 +1356,30 @@
     bottom:1px;line-height:10px;
   }
 }
+
+
+/* Official AxiomAI mark pulses inside BrainBot's chest monitor. */
+.axiom-robotics-portal .axiom-robot-body .axiom-robot-brand-display{
+  position:absolute;
+  z-index:2;
+  left:25%;
+  top:16%;
+  width:50%;
+  height:41%;
+  object-fit:contain;
+  opacity:.18;
+  filter:drop-shadow(0 0 2px rgba(71,226,255,.55));
+  animation:axiom-chest-logo-pulse 4.2s ease-in-out infinite;
+  pointer-events:none;
+}
+.axiom-robotics-portal .axiom-robot-body > i{opacity:.14}
+@keyframes axiom-chest-logo-pulse{
+  0%,100%{opacity:.18;filter:drop-shadow(0 0 2px rgba(71,226,255,.45))}
+  50%{opacity:1;filter:drop-shadow(0 0 7px rgba(71,226,255,.95))}
+}
+@media(prefers-reduced-motion:reduce){
+  .axiom-robotics-portal .axiom-robot-body .axiom-robot-brand-display{
+    animation:none;
+    opacity:.82;
+  }
+}
