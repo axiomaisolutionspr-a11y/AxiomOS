@@ -197,6 +197,18 @@
 .ax-hero-brainbot[data-speaking="true"]{
   filter:drop-shadow(0 20px 20px rgba(0,0,0,.5)) drop-shadow(0 0 28px rgba(87,225,250,.5));
 }
+.ax-hero-brainbot .brainbot-chest-brand{
+  opacity:.08;
+  filter:drop-shadow(0 0 1px rgba(71,226,255,.7));
+  animation:brainbot-chest-brand-pulse 2.8s ease-in-out infinite;
+}
+@keyframes brainbot-chest-brand-pulse{
+  0%,100%{opacity:.08;filter:drop-shadow(0 0 1px rgba(71,226,255,.5))}
+  50%{opacity:1;filter:drop-shadow(0 0 5px rgba(71,226,255,1))}
+}
+@media(prefers-reduced-motion:reduce){
+  .ax-hero-brainbot .brainbot-chest-brand{animation:none!important;opacity:.9}
+}
 @media(max-width:900px){
   .ax-scene-machine-brainbot{
     right:-16vw!important;
