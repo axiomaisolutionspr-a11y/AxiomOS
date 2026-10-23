@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
     const telefono = getText(body, "telefono", 80);
     const negocio = getText(body, "negocio", 220);
     const email = getText(body, "email", 320);
-    const mensaje = getText(body, "mensaje", 5000);
+    const mensaje = getText(body, "mensaje", 10000);
 
     const submissionId =
       getText(body, "id_solicitud", 120) ||
