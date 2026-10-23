@@ -537,6 +537,7 @@ export default function RoboticsExperience() {
             <label className="robotics-partner-wide">{partner.catalog}<input name="partnerCatalog" type="url" placeholder="https://" maxLength={1200} /></label>
             <label className="robotics-partner-wide">{partner.application}<textarea name="partnerApplication" required rows={3} maxLength={1800} /></label>
             <label className="robotics-partner-wide">{partner.integration}<textarea name="partnerIntegration" rows={2} maxLength={1200} placeholder={partner.integrationHint} /></label>
+            <label className="robotics-partner-wide">{partner.cyber}<textarea name="partnerCybersecurity" rows={2} maxLength={1200} /></label>
             <label className="robotics-partner-wide">{partner.safety}<textarea name="partnerSafety" rows={2} maxLength={1200} /></label>
             <label className="robotics-partner-wide">{partner.support}<textarea name="partnerSupport" required rows={3} maxLength={1800} /></label>
             <label>{partner.training}<select name="partnerTraining" defaultValue="" required><option value="" disabled>{partner.prompt}</option>{partner.trainings.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
