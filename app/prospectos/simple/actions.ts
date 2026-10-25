@@ -32,5 +32,26 @@ export async function saveSimpleContact(data: FormData): Promise<{ok:boolean; er
     if (!rows.length) return {ok:false,error:"No se encontró este contacto."};
     revalidatePath("/prospectos"); revalidatePath("/prospectos/simple");
     return {ok:true};
-  } catch { return {ok:false,error:"No se pudo guardar. Tus cambios siguen en pantalla; intenta otra vez."}; }
+  } catch (error) { console.error("CRM_SAVE_FAILED", { error: error instanceof Error ? error.message : String(error) }); return {ok:false,error:"No se pudo guardar. Tus cambios siguen en pantalla; intenta otra vez."}; }
+}
+
+/** Updates only the review marker. It cannot overwrite stage, owner or follow-up. */
+export async function markContactReviewed(id: string): Promise<{ok:boolean; error?:string}> {
+  const pin = process.env.AXIOMOS_CRM_ACCESS_PIN;
+  const cookie = (await cookies()).get("axiomos_crm_session")?.value;
+  if (!pin || !cookie) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};
+  const expected = createHash("sha256").update(`axiomos-crm:${pin}`).digest("hex");
+  if (cookie.length !== expected.length || !timingSafeEqual(Buffer.from(cookie), Buffer.from(expected))) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};
+  if (!/^\\d+$/.test(id)) return {ok:false,error:"El contacto no es válido."};
+  if (!process.env.DATABASE_URL) return {ok:false,error:"No se pudo conectar con el CRM."};
+  try {
+    const sql = neon(process.env.DATABASE_URL);
+    const rows = await sql`UPDATE prospects SET last_reviewed_at=NOW(), updated_at=NOW() WHERE id=${id} RETURNING id, last_reviewed_at`;
+    if (!rows.length) return {ok:false,error:"No se encontró este contacto."};
+    revalidatePath("/prospectos/simple");
+    return {ok:true};
+  } catch (error) {
+    console.error("CRM_MARK_REVIEWED_FAILED", { error: error instanceof Error ? error.message : String(error) });
+    return {ok:false,error:"No se pudo marcar como revisado. Intenta otra vez."};
+  }
 }
