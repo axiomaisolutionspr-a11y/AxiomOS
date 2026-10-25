@@ -42,7 +42,7 @@ export async function markContactReviewed(id: string): Promise<{ok:boolean; erro
   if (!pin || !cookie) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};
   const expected = createHash("sha256").update(`axiomos-crm:${pin}`).digest("hex");
   if (cookie.length !== expected.length || !timingSafeEqual(Buffer.from(cookie), Buffer.from(expected))) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};
-  if (!/^\\d+$/.test(id)) return {ok:false,error:"El contacto no es válido."};
+  if (!/^\d+$/.test(id)) return {ok:false,error:"El contacto no es válido."};
   if (!process.env.DATABASE_URL) return {ok:false,error:"No se pudo conectar con el CRM."};
   try {
     const sql = neon(process.env.DATABASE_URL);
