@@ -7,7 +7,7 @@ import { SECTORS, demoContacts } from "../../lib/crm/demo-data";
 import { startSimpleCall } from "./calls";
 import WhatsAppAvisos from "../WhatsAppAvisos";
 import CerrarSesionButton from "../CerrarSesionButton";
-import { saveSimpleContact } from "./actions";
+import { saveSimpleContact, markContactReviewed } from "./actions";
 import "./workspace.css";
 
 type View = "inicio" | "clientes" | "seguimientos";
@@ -106,10 +106,9 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
   async function markReviewed(){
     if(!selected||saving)return;
     const patch:Partial<Contact>={unread:0};
-    const data=new FormData();data.set("id",selected.id);data.set("stage",selected.stage);data.set("assignee",selected.assignee);data.set("followUpAt",inputDate(selected.followUpAt));data.set("reviewed","true");
     if(mode==="demo"){update(selected.id,patch);setStatus("Consulta revisada. Los recordatorios se conservan.");return;}
     setSaving(true);
-    try{const result=await saveSimpleContact(data);if(result.ok){setStatus("Consulta revisada. Los recordatorios se conservan.");router.refresh();}else setStatus(result.error||"No se pudo guardar.");}catch{setStatus("No se pudo guardar. Intenta otra vez.");}finally{setSaving(false);}
+    try{const result=await markContactReviewed(selected.id);if(result.ok){setStatus("Consulta revisada. Los recordatorios se conservan.");router.refresh();}else setStatus(result.error||"No se pudo guardar.");}catch{setStatus("No se pudo guardar. Intenta otra vez.");}finally{setSaving(false);}
   }
   function openForm(value:"reminder"|"details"){setCalling(false);setFormMode(value);setEditing(true);setStatus("");}
   async function placeCall(event:React.FormEvent<HTMLFormElement>){event.preventDefault();if(!selected||saving)return;if(mode==="demo"){setCalling(false);setStatus("Llamada del asistente simulada. No se contactó a nadie.");return;}const data=new FormData(event.currentTarget);data.set("id",selected.id);setSaving(true);setStatus("");try{const result=await startSimpleCall(data);if(result.ok){setCalling(false);setStatus("Telnyx aceptó iniciar la llamada. Revisa el resultado en el historial.");}else setStatus(result.error||"No se pudo iniciar la llamada.");}catch{setStatus("No pudimos confirmar si se inició la llamada. Revisa el historial antes de intentar otra vez.");}finally{setSaving(false);}}
