@@ -25,7 +25,7 @@ export async function saveSimpleContact(data: FormData): Promise<{ok:boolean; er
     const rows = await sql`
       UPDATE prospects SET crm_stage=${stage}, assigned_to=${assigned || null},
         follow_up_at=${date?.toISOString() || null},
-        crm_notes=CASE WHEN ${note}='' THEN crm_notes ELSE CONCAT_WS(E'\n\n',crm_notes,${`Nota del equipo: ${note}`}) END,
+        crm_notes=CASE WHEN ${note}='' THEN crm_notes ELSE CONCAT_WS(E'\n\n',crm_notes,${`Nota del equipo: ${note}`}::text) END,
         last_reviewed_at=CASE WHEN ${data.get("reviewed")==="true"} THEN NOW() ELSE last_reviewed_at END,
         updated_at=NOW() WHERE id=${id} RETURNING id
     `;
