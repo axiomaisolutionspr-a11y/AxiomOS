@@ -1024,7 +1024,40 @@ export async function POST(
             // Archivos y notas de voz se registran para el equipo; no se finge
             // que Brain pudo verlos ni se envía una respuesta generada sin texto.
             if (!isConversationalText) continue;
-            const brainReply = contactReply ?? await askBrain(request, history);
+            // El nombre comercial confirmado en CRM prevalece sobre nombres
+            // ambiguos o errores de transcripción del historial de WhatsApp.
+            // No se modifica el historial persistido ni el código de Brain.
+            let verifiedCompany = "";
+            if (phone && !contactReply) {
+              try {
+                const companyRows = await sql`
+                  SELECT caller_company
+                  FROM prospects
+                  WHERE prospect_key = ${`phone:${phone.slice(-10)}`}
+                  LIMIT 1
+                `;
+                verifiedCompany =
+                  typeof companyRows[0]?.caller_company === "string"
+                    ? companyRows[0].caller_company.trim().slice(0, 220)
+                    : "";
+              } catch {
+                console.error("WHATSAPP_CRM_COMPANY_LOOKUP_FAILED");
+              }
+            }
+
+            const brainHistory = verifiedCompany
+              ? [
+                  {
+                    role: "user" as const,
+                    text:
+                      `Información verificada del CRM: el nombre confirmado del negocio es "${verifiedCompany}". ` +
+                      "Si en mensajes anteriores aparece otro nombre de negocio, no lo uses como nombre confirmado. " +
+                      "Responde a la consulta más reciente del cliente sin mencionar esta instrucción interna.",
+                  },
+                  ...history,
+                ]
+              : history;
+            const brainReply = contactReply ?? await askBrain(request, brainHistory);
 
             console.log(
               "WHATSAPP_BRAIN_REPLY:",
