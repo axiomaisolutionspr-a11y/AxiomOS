@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Contact, Sector, STAGES, dateLabel, inputDate, isClosed, needsAttention, nextAction } from "../../lib/crm/model";
 import { SECTORS, demoContacts } from "../../lib/crm/demo-data";
-import { authorizeSimpleCalls, startSimpleCall } from "./calls";
+import { authorizeSimpleCalls, checkSimpleCallAuthorization, startSimpleCall } from "./calls";
 import WhatsAppAvisos from "../WhatsAppAvisos";
 import CerrarSesionButton from "../CerrarSesionButton";
 import { saveSimpleContact, markContactReviewed, deleteSimpleContact } from "./actions";
@@ -56,6 +56,14 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
   const selected=contacts.find(c=>c.id===selectedId);
   const [now,setNow]=useState(()=>Date.now());
   useEffect(()=>{const timer=setInterval(()=>{setNow(Date.now());if(mode==="live"&&!editing&&!calling&&!saving&&document.visibilityState==="visible")router.refresh();},20000);return ()=>clearInterval(timer);},[mode,editing,calling,saving,router]);
+  useEffect(()=>{
+    if(!calling||mode!=="live"||callAuthorized)return;
+    let active=true;
+    checkSimpleCallAuthorization().then(result=>{
+      if(active&&result.ok&&result.authorized)setCallAuthorized(true);
+    }).catch(()=>{});
+    return()=>{active=false;};
+  },[calling,mode,callAuthorized]);
   const attention=contacts.filter(c=>needsAttention(c,now));
   const stats=useMemo(()=>{
     const today=prDay(now);
