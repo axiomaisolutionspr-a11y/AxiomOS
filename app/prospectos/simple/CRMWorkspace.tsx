@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Contact, Sector, STAGES, dateLabel, inputDate, isClosed, needsAttention, nextAction } from "../../lib/crm/model";
 import { SECTORS, demoContacts } from "../../lib/crm/demo-data";
-import { startSimpleCall } from "./calls";
+import { authorizeSimpleCalls, startSimpleCall } from "./calls";
 import WhatsAppAvisos from "../WhatsAppAvisos";
 import CerrarSesionButton from "../CerrarSesionButton";
 import { saveSimpleContact, markContactReviewed, deleteSimpleContact } from "./actions";
@@ -42,6 +42,7 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
   const [ownerFilter,setOwnerFilter]=useState("Todos");
   const [focusFilter,setFocusFilter]=useState<FocusFilter>("Todos");
   const [calling,setCalling]=useState(false);
+  const [callAuthorized,setCallAuthorized]=useState(false);
   const [selectedId,setSelectedId]=useState<string|null>(null);
   const [editing,setEditing]=useState(false);
   const [saving,setSaving]=useState(false);
@@ -131,6 +132,16 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
     finally{setSaving(false);}
   }
   function openForm(value:"reminder"|"details"){setCalling(false);setFormMode(value);setEditing(true);setStatus("");}
+  async function authorizeCalls(event:React.FormEvent<HTMLFormElement>){
+    event.preventDefault();if(saving||mode!=="live")return;
+    const data=new FormData(event.currentTarget);setSaving(true);setStatus("");
+    try{
+      const result=await authorizeSimpleCalls(data);
+      if(result.ok){setCallAuthorized(true);setStatus("PIN verificado. Las llamadas están autorizadas durante 10 minutos.");}
+      else setStatus(result.error||"No se pudo autorizar la llamada.");
+    }catch{setStatus("No se pudo verificar el PIN. Intenta otra vez.");}
+    finally{setSaving(false);}
+  }
   async function placeCall(event:React.FormEvent<HTMLFormElement>){event.preventDefault();if(!selected||saving)return;if(mode==="demo"){setCalling(false);setStatus("Llamada del asistente simulada. No se contactó a nadie.");return;}const data=new FormData(event.currentTarget);data.set("id",selected.id);setSaving(true);setStatus("");try{const result=await startSimpleCall(data);if(result.ok){setCalling(false);setStatus("Telnyx aceptó iniciar la llamada. Revisa el resultado en el historial.");}else setStatus(result.error||"No se pudo iniciar la llamada.");}catch{setStatus("No pudimos confirmar si se inició la llamada. Revisa el historial antes de intentar otra vez.");}finally{setSaving(false);}}
   const latestWA=contacts.flatMap(c=>c.messages).filter(m=>m.incoming&&m.channel==="WhatsApp"&&/^wa-\d+$/.test(m.id)).reduce((max,m)=>BigInt(m.id.slice(3))>BigInt(max)?m.id.slice(3):max,"0");
   const pendingWA=contacts.reduce((sum,c)=>sum+(c.channel==="WhatsApp"?c.unread:0),0);
@@ -167,7 +178,7 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
           {formMode==="reminder"?<><input type="hidden" name="stage" value={isClosed(selected)?selected.stage:"Seguimiento"}/><input type="hidden" name="assignee" value={selected.assignee}/><label>Fecha y hora · Puerto Rico<input type="datetime-local" name="followUpAt" required defaultValue={inputDate(selected.followUpAt)}/></label><label>Qué necesitas hacer <span>(opcional)</span><textarea name="note" placeholder="Ejemplo: confirmar si desea una cita" rows={2}/></label></>:<><label>Estado<select name="stage" defaultValue={selected.stage}>{STAGES.map(stage=><option key={stage}>{stage}</option>)}</select></label><label>Quién lo atiende<input name="assignee" defaultValue={selected.assignee} placeholder="Nombre del responsable"/></label><label>Próximo contacto · Puerto Rico<input type="datetime-local" name="followUpAt" defaultValue={inputDate(selected.followUpAt)}/></label><label>Añadir una nota<textarea name="note" rows={3}/></label></>}
           <div className="simple-actions"><button type="submit" className="simple-button primary" disabled={saving}>{saving?"Guardando…":formMode==="reminder"?"Guardar recordatorio":"Guardar cambios"}</button><button type="button" className="simple-button secondary" disabled={saving} onClick={()=>setEditing(false)}>Cancelar</button></div><p className="simple-help">{mode==="demo"?"Se guarda solo en este ejemplo.":"Se guarda en tu CRM. No envía mensajes al cliente."}</p>
         </form>}
-        {calling&&<form className="simple-form" onSubmit={placeCall}><h2>Llamar con AxiomAI</h2><p>{mode==="demo"?"Ejemplo de llamada del asistente. No contacta a nadie.":`El asistente llamará a ${selected.name} al ${selected.phone}.`}</p>{mode==="live"&&<label>PIN de llamada<input name="crm_call_pin" type="password" inputMode="numeric" autoComplete="off" required/></label>}<div className="simple-actions"><button type="submit" className="simple-button primary" disabled={saving}>{saving?"Iniciando…":mode==="demo"?"Simular llamada":"Iniciar llamada"}</button><button type="button" className="simple-button secondary" disabled={saving} onClick={()=>setCalling(false)}>Cancelar</button></div></form>}
+        {calling&&(!callAuthorized&&mode==="live"?<form className="simple-form" onSubmit={authorizeCalls}><h2>Autorizar llamadas</h2><p>Introduce el PIN de llamada en el formulario privado. Verificarlo no inicia ninguna llamada.</p><label>PIN de llamada<input name="crm_call_pin" type="password" inputMode="numeric" autoComplete="current-password" required/></label><div className="simple-actions"><button type="submit" className="simple-button primary" disabled={saving}>{saving?"Verificando…":"Autorizar llamadas"}</button><button type="button" className="simple-button secondary" disabled={saving} onClick={()=>setCalling(false)}>Cancelar</button></div></form>:<form className="simple-form" onSubmit={placeCall}><h2>Llamar con AxiomAI</h2><p>{mode==="demo"?"Ejemplo de llamada del asistente. No contacta a nadie.":`El asistente llamará a ${selected.name} al ${selected.phone}.`}</p>{mode==="live"&&<p className="simple-help">PIN verificado. La llamada todavía no se ha iniciado.</p>}<input type="hidden" name="id" value={selected.id}/><div className="simple-actions"><button type="submit" className="simple-button primary" disabled={saving}>{saving?"Iniciando…":mode==="demo"?"Simular llamada":"Iniciar llamada"}</button><button type="button" className="simple-button secondary" disabled={saving} onClick={()=>setCalling(false)}>Cancelar</button></div></form>)}
         <details className="simple-history" open={mode==="demo" && selected.id.startsWith("flow-") || undefined}><summary>Ver la conversación</summary><div className="simple-messages">{selected.messages.length===0?<p>No hay conversación guardada.</p>:[...selected.messages].reverse().map(m=><article className={m.incoming?"incoming":"outgoing"} key={m.id}><strong>{m.incoming?displayContactName(selected):"Brain"}</strong><p>{m.text}</p><small>{dateLabel(m.at)}</small></article>)}</div></details>
         <details className="simple-history"><summary>Ver notas y más detalles</summary><p className="simple-notes">{selected.notes||"Sin notas adicionales."}</p><p>Estado: {selected.stage} · Responsable: {selected.assignee||"Sin asignar"}</p><button type="button" disabled={saving} className="simple-button secondary" onClick={()=>openForm("details")}>Editar estos datos</button>
           {mode==="live"&&<div className="simple-delete-zone">{!confirmingDelete?<button type="button" disabled={saving} className="simple-button danger-outline" onClick={()=>setConfirmingDelete(true)}>Eliminar contacto</button>:<><p><strong>Esta acción es permanente.</strong> Eliminará el contacto y sus llamadas asociadas del CRM. Los mensajes originales de WhatsApp se conservarán para no alterar Brain.</p><div className="simple-actions"><button type="button" disabled={saving} className="simple-button danger" onClick={deleteContact}>{saving?"Eliminando…":"Eliminar definitivamente"}</button><button type="button" disabled={saving} className="simple-button secondary" onClick={()=>setConfirmingDelete(false)}>Cancelar</button></div></>}</div>}
