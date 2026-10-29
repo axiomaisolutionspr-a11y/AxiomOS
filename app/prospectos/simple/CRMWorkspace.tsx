@@ -7,7 +7,7 @@ import { SECTORS, demoContacts } from "../../lib/crm/demo-data";
 import { startSimpleCall } from "./calls";
 import WhatsAppAvisos from "../WhatsAppAvisos";
 import CerrarSesionButton from "../CerrarSesionButton";
-import { saveSimpleContact, markContactReviewed } from "./actions";
+import { saveSimpleContact, markContactReviewed, deleteSimpleContact } from "./actions";
 import "./workspace.css";
 
 type View = "inicio" | "clientes" | "seguimientos";
@@ -47,6 +47,7 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
   const [saving,setSaving]=useState(false);
   const [status,setStatus]=useState("");
   const [formMode,setFormMode]=useState<"reminder"|"details">("reminder");
+  const [confirmingDelete,setConfirmingDelete]=useState(false);
   const [flow,setFlow]=useState(0);
   const [runId,setRunId]=useState(0);
   const contacts=mode==="demo" ? demoRows : initialContacts;
@@ -77,7 +78,7 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
     return `${displayContactName(c)} ${c.name} ${c.phone} ${c.company} ${c.request}`.toLowerCase().includes(search.toLowerCase());
   }).sort((a,b)=>Number(needsAttention(b,now))-Number(needsAttention(a,now))||new Date(b.lastSeenAt).getTime()-new Date(a.lastSeenAt).getTime()),[contacts,view,search,now,channelFilter,stageFilter,ownerFilter,focusFilter]);
 
-  function choose(id:string){setSelectedId(id);setEditing(false);setCalling(false);setStatus("");}
+  function choose(id:string){setSelectedId(id);setEditing(false);setCalling(false);setConfirmingDelete(false);setStatus("");}
   function update(id:string,patch:Partial<Contact>){if(mode==="demo")setDemoRows(rows=>rows.map(c=>c.id===id?{...c,...patch}:c));}
   function changeSector(value:Sector){setSector(value);setDemoRows(demoContacts(value));setFlow(0);setRunId(0);setSelectedId(null);setEditing(false);setCalling(false);setStatus("");setSearch("");}
   function reset(){setDemoRows(demoContacts(sector));setFlow(0);setRunId(id=>id+1);setSelectedId(null);setEditing(false);setCalling(false);setStatus("Demo reiniciado. Todos los datos son ficticios.");}
@@ -116,6 +117,19 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
     setSaving(true);
     try{const result=await markContactReviewed(selected.id);if(result.ok){setStatus("Consulta revisada. Los recordatorios se conservan.");router.refresh();}else setStatus(result.error||"No se pudo guardar.");}catch{setStatus("No se pudo guardar. Intenta otra vez.");}finally{setSaving(false);}
   }
+  async function deleteContact(){
+    if(!selected||saving||mode!=="live")return;
+    setSaving(true);setStatus("");
+    try{
+      const result=await deleteSimpleContact(selected.id,selected.phone,selected.company);
+      if(result.ok){
+        setSelectedId(null);setConfirmingDelete(false);
+        setStatus(`Contacto eliminado del CRM. ${result.deletedCalls||0} registro(s) de llamada asociado(s) también se eliminaron. Los mensajes originales de WhatsApp se conservaron para no alterar Brain.`);
+        router.refresh();
+      }else setStatus(result.error||"No se pudo eliminar.");
+    }catch{setStatus("No se pudo eliminar. El registro permanece intacto.");}
+    finally{setSaving(false);}
+  }
   function openForm(value:"reminder"|"details"){setCalling(false);setFormMode(value);setEditing(true);setStatus("");}
   async function placeCall(event:React.FormEvent<HTMLFormElement>){event.preventDefault();if(!selected||saving)return;if(mode==="demo"){setCalling(false);setStatus("Llamada del asistente simulada. No se contactó a nadie.");return;}const data=new FormData(event.currentTarget);data.set("id",selected.id);setSaving(true);setStatus("");try{const result=await startSimpleCall(data);if(result.ok){setCalling(false);setStatus("Telnyx aceptó iniciar la llamada. Revisa el resultado en el historial.");}else setStatus(result.error||"No se pudo iniciar la llamada.");}catch{setStatus("No pudimos confirmar si se inició la llamada. Revisa el historial antes de intentar otra vez.");}finally{setSaving(false);}}
   const latestWA=contacts.flatMap(c=>c.messages).filter(m=>m.incoming&&m.channel==="WhatsApp"&&/^wa-\d+$/.test(m.id)).reduce((max,m)=>BigInt(m.id.slice(3))>BigInt(max)?m.id.slice(3):max,"0");
@@ -144,7 +158,7 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
         <div className="simple-filters"><label>Canal<select value={channelFilter} onChange={e=>setChannelFilter(e.target.value)}>{["Todos","WhatsApp","Llamada","Web"].map(v=><option key={v}>{v}</option>)}</select></label><label>Estado<select value={stageFilter} onChange={e=>setStageFilter(e.target.value)}>{["Todos",...STAGES].map(v=><option key={v}>{v}</option>)}</select></label><label>Responsable<select value={ownerFilter} onChange={e=>setOwnerFilter(e.target.value)}>{["Todos",...new Set(contacts.map(c=>c.assignee||"Sin asignar"))].map(v=><option key={v}>{v}</option>)}</select></label>{(channelFilter!=="Todos"||stageFilter!=="Todos"||ownerFilter!=="Todos"||focusFilter!=="Todos"||search)&&<button type="button" className="simple-clear" onClick={()=>{setChannelFilter("Todos");setStageFilter("Todos");setOwnerFilter("Todos");setFocusFilter("Todos");setSearch("");}}>Limpiar filtros</button>}</div><p className="simple-results">{visible.length} {visible.length===1?"cliente encontrado":"clientes encontrados"}</p>
         <section className="simple-list" aria-label="Lista de clientes">{visible.length===0?<div className="simple-empty"><Icon name="check" size={34}/><h2>{search?"No encontramos ese cliente":"No hay contactos en este filtro"}</h2><p>{search?"Prueba con su teléfono, empresa o necesidad.":"Cambia la prioridad o abre Todos los clientes."}</p><button className="simple-button secondary" onClick={()=>{setView("clientes");setFocusFilter("Todos");setSearch("");}} type="button">Ver todos los clientes</button></div>:visible.map(c=><button type="button" className="simple-client" key={c.id} onClick={()=>choose(c.id)}><span className="simple-avatar">{displayContactName(c).split(" ").slice(0,2).map(n=>n[0]).join("")}</span><span className="simple-client-copy"><span className="client-topline"><strong>{displayContactName(c)}</strong><em data-priority={priorityLabel(c,now)}>{priorityLabel(c,now)}</em></span>{c.company&&<span className="client-company">{c.company}</span>}<span>{c.request}</span><small>{c.unread>0?`${c.unread} ${c.unread===1?"consulta sin revisar":"consultas sin revisar"} · ${c.channel}`:c.followUpAt?`Recordatorio: ${dateLabel(c.followUpAt)}`:c.channel}</small><span className="client-next"><b>Próximo paso:</b> {c.nextAction}</span></span><span className="simple-open">Abrir<Icon name="arrow" size={20}/></span></button>)}</section>
       </>:<section className="simple-person" key={selected.id}>
-        <button type="button" className="simple-back" disabled={saving} onClick={()=>{setSelectedId(null);setEditing(false);setCalling(false);setStatus("");}}>← Volver a los clientes</button>
+        <button type="button" className="simple-back" disabled={saving} onClick={()=>{setSelectedId(null);setEditing(false);setCalling(false);setConfirmingDelete(false);setStatus("");}}>← Volver a los clientes</button>
         <header className="simple-person-heading"><span className="simple-avatar large">{displayContactName(selected).split(" ").slice(0,2).map(n=>n[0]).join("")}</span><div><p>{selected.channel}</p><h1>{displayContactName(selected)}</h1><span>{selected.company}{selected.phone?` · ${selected.phone}`:""}</span></div></header>
         <section className="simple-request"><span>LO QUE NECESITA</span><p>{selected.request}</p>{selected.followUpAt&&<small><Icon name="clock" size={18}/>Recordatorio: {dateLabel(selected.followUpAt)}</small>}</section>
         <section className="next-action-card"><span>PRÓXIMA MEJOR ACCIÓN</span><strong>{selected.nextAction}</strong><small>{priorityLabel(selected,now)} · {selected.stage}</small>{!selected.followUpAt&&!isClosed(selected)&&<small>Sin seguimiento programado. Define una fecha antes de dejar este contacto pendiente.</small>}</section>
@@ -155,7 +169,9 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
         </form>}
         {calling&&<form className="simple-form" onSubmit={placeCall}><h2>Llamar con AxiomAI</h2><p>{mode==="demo"?"Ejemplo de llamada del asistente. No contacta a nadie.":`El asistente llamará a ${selected.name} al ${selected.phone}.`}</p>{mode==="live"&&<label>PIN de llamada<input name="crm_call_pin" type="password" inputMode="numeric" autoComplete="off" required/></label>}<div className="simple-actions"><button type="submit" className="simple-button primary" disabled={saving}>{saving?"Iniciando…":mode==="demo"?"Simular llamada":"Iniciar llamada"}</button><button type="button" className="simple-button secondary" disabled={saving} onClick={()=>setCalling(false)}>Cancelar</button></div></form>}
         <details className="simple-history" open={mode==="demo" && selected.id.startsWith("flow-") || undefined}><summary>Ver la conversación</summary><div className="simple-messages">{selected.messages.length===0?<p>No hay conversación guardada.</p>:[...selected.messages].reverse().map(m=><article className={m.incoming?"incoming":"outgoing"} key={m.id}><strong>{m.incoming?displayContactName(selected):"Brain"}</strong><p>{m.text}</p><small>{dateLabel(m.at)}</small></article>)}</div></details>
-        <details className="simple-history"><summary>Ver notas y más detalles</summary><p className="simple-notes">{selected.notes||"Sin notas adicionales."}</p><p>Estado: {selected.stage} · Responsable: {selected.assignee||"Sin asignar"}</p><button type="button" disabled={saving} className="simple-button secondary" onClick={()=>openForm("details")}>Editar estos datos</button></details>
+        <details className="simple-history"><summary>Ver notas y más detalles</summary><p className="simple-notes">{selected.notes||"Sin notas adicionales."}</p><p>Estado: {selected.stage} · Responsable: {selected.assignee||"Sin asignar"}</p><button type="button" disabled={saving} className="simple-button secondary" onClick={()=>openForm("details")}>Editar estos datos</button>
+          {mode==="live"&&<div className="simple-delete-zone">{!confirmingDelete?<button type="button" disabled={saving} className="simple-button danger-outline" onClick={()=>setConfirmingDelete(true)}>Eliminar contacto</button>:<><p><strong>Esta acción es permanente.</strong> Eliminará el contacto y sus llamadas asociadas del CRM. Los mensajes originales de WhatsApp se conservarán para no alterar Brain.</p><div className="simple-actions"><button type="button" disabled={saving} className="simple-button danger" onClick={deleteContact}>{saving?"Eliminando…":"Eliminar definitivamente"}</button><button type="button" disabled={saving} className="simple-button secondary" onClick={()=>setConfirmingDelete(false)}>Cancelar</button></div></>}</div>}
+        </details>
       </section>}
       {mode==="live"&&<details className="simple-history"><summary>Avisos de WhatsApp</summary><WhatsAppAvisos pendientes={pendingWA} ultimoMensajeId={latestWA} autoRefresh={false}/></details>}
       <footer className="simple-footer"><span>{mode==="demo"?"Ejemplo con personas ficticias.":"Últimos 200 contactos · se actualiza automáticamente."}</span><details><summary>Otras opciones</summary><a href={mode==="demo"?"/prospectos/simple":"/prospectos/demo"}>{mode==="demo"?"Abrir nuestro CRM":"Probar la demostración"}</a><a href="/prospectos/anterior">Abrir el CRM anterior</a>{mode==="live"&&<CerrarSesionButton/>}{mode==="live"&&<button type="button" disabled={editing||saving} onClick={()=>router.refresh()}>Actualizar ahora</button>}</details></footer>
