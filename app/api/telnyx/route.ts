@@ -33,6 +33,8 @@ function cleanCallerName(value: unknown): string | null {
     if (fallback?.[1]) {
       return fallback[1].trim();
     }
+
+    return null;
   }
 
   const match =
@@ -263,9 +265,33 @@ export async function POST(request: NextRequest) {
       textValue(metadata?.call_control_id) ??
       textValue(payload?.call_control_id);
 
+    /*
+      En llamadas salientes, metadata.from es el número de AxiomAI.
+      telnyx_end_user_target identifica al prospecto real tanto en
+      llamadas salientes como entrantes. metadata.to queda como
+      respaldo para webhooks que no incluyan el campo específico.
+    */
+    const telnyxEndUserTarget = textValue(
+      metadata?.telnyx_end_user_target
+    );
+
+    const telnyxAgentTarget = textValue(
+      metadata?.telnyx_agent_target
+    );
+
+    const fromPhone = textValue(metadata?.from);
+    const toPhone = textValue(metadata?.to);
+
     const callerPhone =
-      textValue(metadata?.from) ??
-      textValue(metadata?.telnyx_end_user_target);
+      telnyxEndUserTarget ??
+      fromPhone ??
+      toPhone;
+
+    const isOutboundCall =
+      telnyxEndUserTarget !== null &&
+      normalizePhone(fromPhone) !== null &&
+      normalizePhone(fromPhone) ===
+        normalizePhone(telnyxAgentTarget);
 
     /*
       Los resultados de Telnyx se interpretan
@@ -291,9 +317,21 @@ export async function POST(request: NextRequest) {
       results?.[4]?.result
     );
 
-    const callerCompany = cleanBusinessName(
+    const extractedCallerCompany = cleanBusinessName(
       results?.[5]?.result
     );
+
+    /*
+      Conversation Insights puede identificar a AxiomAI como la
+      empresa del "caller" en una llamada saliente. No permitimos
+      que ese valor sobrescriba la empresa real del prospecto.
+    */
+    const callerCompany =
+      isOutboundCall &&
+      extractedCallerCompany &&
+      /axiomai solutions/i.test(extractedCallerCompany)
+        ? null
+        : extractedCallerCompany;
 
     const callerName = cleanCallerName(
       results?.[6]?.result
