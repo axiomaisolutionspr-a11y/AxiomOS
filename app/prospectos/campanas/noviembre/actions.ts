@@ -81,6 +81,9 @@ export async function createNovemberTemplate(formData: FormData) {
     );
   }
 
+  let createdStatus: string | null = null;
+  let creationError: string | null = null;
+
   try {
     const response = await fetch(
       `https://api.dualhook.com/v25.0/${encodeURIComponent(wabaId)}/message_templates`,
@@ -107,21 +110,25 @@ export async function createNovemberTemplate(formData: FormData) {
     };
 
     if (!response.ok) {
-      finish(
-        "error",
+      creationError =
         body.error?.message?.slice(0, 300) ||
-          `No se pudo crear la plantilla (HTTP ${response.status}).`
-      );
+        `No se pudo crear la plantilla (HTTP ${response.status}).`;
+    } else {
+      createdStatus = body.status || "PENDING";
     }
-
-    revalidatePath(CAMPAIGN_PATH);
-    finish(
-      "ok",
-      `Plantilla enviada a revisión. Estado: ${body.status || "PENDING"}.`
-    );
   } catch {
-    finish("error", "No se pudo conectar con Dualhook para crear la plantilla.");
+    creationError = "No se pudo conectar con Dualhook para crear la plantilla.";
   }
+
+  if (creationError) {
+    finish("error", creationError);
+  }
+
+  revalidatePath(CAMPAIGN_PATH);
+  finish(
+    "ok",
+    `Plantilla enviada a revisión. Estado: ${createdStatus || "PENDING"}.`
+  );
 }
 
 export async function sendNovemberCampaign(formData: FormData) {
