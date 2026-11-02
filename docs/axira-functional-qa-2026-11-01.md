@@ -1,5 +1,41 @@
 # Axira: recuperación y QA funcional aislado
 
+## Resultado verificado
+
+**17 casos funcionales aprobados con persistencia real en Neon QA** y **45
+pruebas locales/CI aprobadas**, sin TODO. GitHub Actions #20 terminó con éxito.
+
+- Commit probado: `458ab125ec871f21f34ce534f20e355178bda4be`.
+- Preview READY: `dpl_4EL6TGgXRnJU7QEGiiM3akuWTpvh`.
+- Run ID: `qa:axira:458ab125ec:90535394-9e2a-44af-907e-d7d6a496fd65`.
+- Una llamada real al proveedor de Brain, con contexto e identidad ficticios.
+- Cero llamadas reales a proveedores de WhatsApp, SMS o correo.
+- Lectura independiente posterior: 13 respuestas simuladas completadas, un
+  archivo sin respuesta y un envío simulado incierto bloqueado para revisión.
+- Verificador del runtime HTTP 200: hostname QA y SELECT 1 correctos; menú,
+  SMS y correos apagados y credencial de salida Dualhook ausente.
+
+Se confirmó que los seis intereses se anotan una sola vez y que el nombre y la
+empresa ficticios previamente confirmados permanecen intactos. El duplicado
+concurrente real generó una sola respuesta simulada. Un fallo de Brain devolvió
+503; su reentrega completó una sola respuesta y no duplicó el mensaje entrante.
+
+La prueba real detectó y corrigió un defecto que el SQL simulado no podía
+revelar: `CONCAT_WS` rechazaba el parámetro del interés con “could not determine
+data type of parameter $1”. Se añadió `::text` al parámetro. La consulta
+preparada se validó en PostgreSQL y la ejecución funcional completa aprobó.
+
+Brain respondió en la conversación ficticia: “Podemos ayudar a Empresa Ficticia
+QA Axira a organizar el inventario…” y preguntó por la cantidad de productos y
+el control de entradas/salidas. Se verificó el historial enviado y la respuesta
+persistida. No se modificó `app/api/brain/route.ts`.
+
+El detalle legible por máquinas se conserva en `axira-functional-qa-result.json`.
+El código queda listo para revisión y eventual prueba controlada del transporte.
+**No se probó entrega por el proveedor de WhatsApp ni se activó producción.**
+La tabla nueva existe solo en QA: su aplicación en producción y las banderas de
+recuperación/menú requieren una liberación posterior autorizada.
+
 ## Alcance de esta revisión
 
 Solo PR #55 / `feature/axira-whatsapp-service-menu`. No fusionar ni activar
@@ -39,7 +75,7 @@ El estado incierto impide duplicarlo; resolverlo exige revisar al proveedor.
 45 aprobadas: 3 del clasificador, 27 del webhook con proveedores/SQL simulados,
 10 del verificador de conexión y 5 de las barreras del ejecutor QA.
 No queda el TODO de recuperación de Brain. TypeScript y generación de tipos
-de Next.js deben pasar antes del commit de código.
+de Next.js aprobaron antes del commit de código.
 
 ## Ejecución con persistencia real
 
