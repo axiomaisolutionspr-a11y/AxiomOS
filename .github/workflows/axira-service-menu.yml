@@ -14,6 +14,13 @@ on:
       - 'app/api/qa/axira/route.ts'
       - 'tests/axira-qa-check.test.mjs'
       - 'app/lib/whatsapp-delivery.ts'
+      - 'app/lib/whatsapp-advisor-send.ts'
+      - 'app/lib/whatsapp-advisor-transport.ts'
+      - 'app/prospectos/simple/handoff.ts'
+      - 'app/prospectos/simple/HandoffPanel.tsx'
+      - 'db/migrations/20261102_advisor_outbound.sql'
+      - 'db/migrations/20261102_advisor_inbound_verified.sql'
+      - 'tests/whatsapp-advisor-send.test.cjs'
       - 'scripts/axira-qa-run.cjs'
       - 'tests/axira-qa-run-safety.test.cjs'
       - 'db/migrations/20261101_axira_delivery.sql'
@@ -39,5 +46,6 @@ jobs:
       - run: node --test tests/axira-commercial-guardrails.test.cjs
       - run: node --test tests/axira-qa-check.test.mjs
       - run: node --test tests/axira-qa-run-safety.test.cjs
+      - run: node --test tests/whatsapp-advisor-send.test.cjs
       - run: npx next typegen
       - run: npx tsc --noEmit
