@@ -43,6 +43,10 @@ verificable de alertas o transferencias, y se añadió una regla de recuperació
 reconocer la preocupación, identificar el obstáculo y proponer un próximo paso
 sin improvisar descuentos, garantías ni disponibilidad.
 
+También se retiraron las tarifas promocionales de octubre, vencidas el 31 de
+octubre de 2026. Axira debe pedir confirmación del alcance y de la propuesta
+comercial vigente en vez de cotizar una promoción caducada.
+
 El webhook real registra el mensaje en CRM antes de consultar Brain. Las
 solicitudes explícitas de evaluación o asesor usan una respuesta determinista
 del módulo CRM; esto es registro y aviso, no una transferencia humana en vivo.
@@ -123,9 +127,9 @@ El estado incierto impide duplicarlo; resolverlo exige revisar al proveedor.
 
 ## Pruebas locales
 
-49 aprobadas en la revisión posterior: 3 del clasificador, 27 del webhook con
+50 aprobadas en la revisión posterior: 3 del clasificador, 27 del webhook con
 proveedores/SQL simulados, 10 del verificador de conexión, 5 de las barreras del
-ejecutor QA, 3 de reglas comerciales y 1 suite de avisos con múltiples escenarios.
+ejecutor QA, 4 de reglas comerciales y 1 suite de avisos con múltiples escenarios.
 No queda el TODO de recuperación de Brain. TypeScript y generación de tipos
 de Next.js aprobaron antes del commit de código.
 
