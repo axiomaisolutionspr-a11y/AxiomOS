@@ -3,7 +3,7 @@ import {
   NextResponse,
 } from "next/server";
 
-import { neon } from "@neondatabase/serverless";
+import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
 import { classifyAxiraServiceSelection } from "../../lib/axira-service-menu";
 
@@ -52,6 +52,40 @@ type MetaApiErrorEnvelope = {
 
 function normalizePhone(value: string) {
   return value.replace(/\D/g, "");
+}
+
+// Shared by first delivery and duplicate delivery: a transient notes failure
+// can be repaired without sending the WhatsApp reply twice.
+async function recordAxiraServiceInterest(
+  sql: NeonQueryFunction<false, false>,
+  phone: string,
+  text: string,
+  messageId: string | null
+) {
+  const selection = process.env.AXIRA_WHATSAPP_MENU_ENABLED === "true" &&
+    phone &&
+    process.env.AXIRA_WHATSAPP_TEST_PHONES?.split(",")
+      .map((value) => normalizePhone(value)).includes(phone)
+      ? classifyAxiraServiceSelection(text)
+      : null;
+
+  if (selection && phone && messageId) {
+    const marker = `[WA_INTEREST:${messageId}]`;
+    try {
+      await sql`
+        UPDATE prospects
+        SET crm_notes = CONCAT_WS(E'\n\n', NULLIF(crm_notes, ''),
+          ${`${marker} Servicio de interés: ${selection.label}`}),
+          updated_at = NOW()
+        WHERE prospect_key = ${`phone:${phone.slice(-10)}`}
+          AND STRPOS(COALESCE(crm_notes, ''), ${marker}) = 0
+      `;
+    } catch {
+      console.error("AXIRA_SERVICE_INTEREST_SAVE_FAILED");
+    }
+  }
+
+  return selection;
 }
 
 function normalizeBsuid(value: string) {
@@ -856,6 +890,9 @@ export async function POST(
                     history:
                       retryHistory,
                   });
+                  await recordAxiraServiceInterest(
+                    sql, phone, text, whatsappMessageId
+                  );
                 }
 
                 continue;
@@ -1059,30 +1096,9 @@ export async function POST(
                 ]
               : history;
             // Opt-in seguro: no activar hasta completar pruebas.
-            const menuSelection = isConversationalText &&
-              process.env.AXIRA_WHATSAPP_MENU_ENABLED === "true" &&
-              phone &&
-              process.env.AXIRA_WHATSAPP_TEST_PHONES?.split(",")
-                .map((value) => normalizePhone(value))
-                .includes(phone)
-                ? classifyAxiraServiceSelection(text)
-                : null;
-
-            if (menuSelection && phone && whatsappMessageId) {
-              const marker = `[WA_INTEREST:${whatsappMessageId}]`;
-              try {
-                await sql`
-                  UPDATE prospects
-                  SET crm_notes = CONCAT_WS(E'\n\n', NULLIF(crm_notes, ''),
-                    ${`${marker} Servicio de interés: ${menuSelection.label}`}),
-                    updated_at = NOW()
-                  WHERE prospect_key = ${`phone:${phone.slice(-10)}`}
-                    AND STRPOS(COALESCE(crm_notes, ''), ${marker}) = 0
-                `;
-              } catch {
-                console.error("AXIRA_SERVICE_INTEREST_SAVE_FAILED");
-              }
-            }
+            const menuSelection = await recordAxiraServiceInterest(
+              sql, phone, text, whatsappMessageId
+            );
 
             const brainReply = contactReply ?? menuSelection?.reply ?? await askBrain(request, brainHistory);
 

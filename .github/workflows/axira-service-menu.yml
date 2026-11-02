@@ -4,7 +4,10 @@ on:
   pull_request:
     paths:
       - 'app/lib/axira-service-menu.ts'
+      - 'app/api/whatsapp/route.ts'
+      - 'app/lib/whatsapp-contact-request.ts'
       - 'tests/axira-service-menu.test.ts'
+      - 'tests/axira-webhook-isolated.test.mjs'
       - '.github/workflows/axira-service-menu.yml'
   push:
     branches:
@@ -22,5 +25,6 @@ jobs:
           node-version: '22'
       - run: npm ci
       - run: npx --yes tsx --test tests/axira-service-menu.test.ts
+      - run: node --test tests/axira-webhook-isolated.test.mjs
       - run: npx next typegen
       - run: npx tsc --noEmit
