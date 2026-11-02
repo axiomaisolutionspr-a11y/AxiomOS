@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import ts from 'typescript';
 
 const require = createRequire(import.meta.url);
@@ -15,7 +15,7 @@ const PHONE = '12025550101'; // Reserved fictional NANP number.
 const root = new URL('../', import.meta.url);
 
 function fixture(options = {}) {
-  const state = { messages: [], prospect: null, interest: [], calls: [], logs: [], dbDown: false, brainDown: false, outboundDown: false, interestDown: false };
+  const state = { messages: [], deliveries: new Map(), prospect: null, interest: [], calls: [], statuses: [], logs: [], dbDown: false, brainDown: false, outboundDown: false, interestDown: false };
   const env = {
     DATABASE_URL: 'postgresql://fictional.invalid/qa',
     WHATSAPP_PHONE_NUMBER_ID: 'fictional-phone-id', DUALHOOK_API_KEY: 'fictional-key',
@@ -25,6 +25,41 @@ function fixture(options = {}) {
   const sql = async (strings, ...values) => {
     const query = strings.join('?').replace(/\s+/g, ' ').trim();
     if (state.dbDown) throw new Error('Simulated Neon unavailable');
+    if (query.startsWith('INSERT INTO axira_whatsapp_delivery')) {
+      const [id, conversation_key, payload_hash, owner_token] = values;
+      const row = state.deliveries.get(id);
+      if (state.messages.some(m => m.whatsapp_message_id === id)) return [];
+      if (row && (row.conversation_key !== conversation_key || row.payload_hash !== payload_hash || !(row.state === 'retryable' || row.state === 'processing' && row.expired))) return [];
+      const next = { ...row, conversation_key, payload_hash, owner_token, state: 'processing', expired: false };
+      state.deliveries.set(id, next); return [{ reply_text: next.reply_text }];
+    }
+    if (query.startsWith('UPDATE axira_whatsapp_delivery SET owner_token')) {
+      const [token, id, key, hash] = values; const row = state.deliveries.get(id);
+      if (!row || row.conversation_key !== key || row.payload_hash !== hash || !(row.state === 'retryable' || row.state === 'processing' && row.expired)) return [];
+      Object.assign(row, { owner_token: token, state: 'processing', expired: false }); return [{ reply_text: row.reply_text }];
+    }
+    if (query.startsWith('SELECT conversation_key, payload_hash FROM axira_whatsapp_delivery')) {
+      const row = state.deliveries.get(values[0]); return row ? [row] : [];
+    }
+    if (query.startsWith('UPDATE axira_whatsapp_delivery SET state')) {
+      let id, token, next, reply;
+      if (query.includes("SET state = 'sending'")) { [reply, id, token] = values; next = 'sending'; }
+      else if (query.includes("SET state = 'sent'")) { [id, token] = values; next = 'sent'; }
+      else if (query.includes("SET state = 'ignored'")) { [id, token] = values; next = 'ignored'; }
+      else [next, id, token] = values;
+      const row = state.deliveries.get(id);
+      const expected = next === 'sent' ? ['sending'] : ['sending', 'processing'];
+      if (!row || row.owner_token !== token || !expected.includes(row.state)) return [];
+      row.state = next; if (reply !== undefined) row.reply_text = reply;
+      return [{ message_id: id }];
+    }
+    if (query.startsWith('INSERT INTO whatsapp_messages') && query.includes('FROM axira_whatsapp_delivery')) {
+      const [phone, replyId, id] = values; const row = state.deliveries.get(id);
+      if (row?.state === 'sent' && row.reply_text && !state.messages.some(m => m.whatsapp_message_id === replyId)) {
+        state.messages.push({ id: state.messages.length + 1, conversation_key: row.conversation_key, phone, role: 'assistant', message: row.reply_text, whatsapp_message_id: replyId });
+      }
+      return [];
+    }
     if (query.startsWith('SELECT id FROM whatsapp_messages')) return state.messages.filter(m => m.whatsapp_message_id === values[0]);
     if (query.startsWith('INSERT INTO whatsapp_messages')) {
       const [conversation_key, phone, role, message, whatsapp_message_id] = values;
@@ -73,8 +108,9 @@ function fixture(options = {}) {
     const imports = specifier => {
       if (specifier === 'next/server') return { NextRequest, NextResponse };
       if (specifier === '@neondatabase/serverless') return { neon: () => sql };
-      if (specifier === 'node:crypto') return { createHash };
+      if (specifier === 'node:crypto') return { createHash, randomUUID };
       if (specifier === '../../lib/whatsapp-contact-request') return load('app/lib/whatsapp-contact-request.ts');
+      if (specifier === '../../lib/whatsapp-delivery') return load('app/lib/whatsapp-delivery.ts');
       if (specifier === '../../lib/axira-service-menu') return load('app/lib/axira-service-menu.ts');
       throw new Error('Unapproved test import: ' + specifier);
     };
@@ -85,7 +121,8 @@ function fixture(options = {}) {
   async function send(text, id = 'qa-msg-1', extra = {}) {
     const message = { from: PHONE, type: 'text', text: { body: text }, id, ...extra };
     const request = new NextRequest('https://qa.invalid/api/whatsapp', { method: 'POST', body: JSON.stringify({ entry: [{ changes: [{ value: { messages: [message] } }] }] }) });
-    return (await route.POST(request)).json();
+    const response = await route.POST(request); state.statuses.push(response.status);
+    return response.json();
   }
   return { state, send, env, brainCalls: () => state.calls.filter(c => c.url.endsWith('/api/brain')), outbound: () => state.calls.filter(c => c.url.includes('dualhook.com')) };
 }
@@ -114,9 +151,10 @@ test('keycap selection reaches the webhook menu', async () => {
   const f = fixture(); await f.send('4️⃣');
   assert.equal(f.state.interest.length, 1); assert.equal(f.brainCalls().length, 0);
 });
-test('missing message id currently replies without a CRM record (documented limitation)', async () => {
+test('experimental flow rejects missing message id without reply or CRM write', async () => {
   const f = fixture(); const result = await f.send('4', undefined, { id: undefined });
-  assert.equal(result.repliesSent, 1); assert.equal(f.state.prospect, null);
+  assert.equal(result.repliesSent, 0); assert.equal(f.state.prospect, null);
+  assert.ok(result.errors.includes('WHATSAPP_MESSAGE_ID_REQUIRED'));
   assert.equal(f.state.interest.length, 0);
 });
 test('sequential duplicate does not repeat interest or outbound', async () => {
@@ -175,12 +213,38 @@ test('SMS and email disabled even with fictional provider configuration', async 
   assert.equal(f.state.calls.some(c => /telnyx|resend/.test(c.url)), false);
 });
 
-// These are documented failures in the existing implementation, not approvals.
-test('retry after Brain failure should eventually reply', { todo: 'Existing dedup skips messages persisted before a failed reply; requires delivery recovery design.' }, async () => {
-  const f = fixture(); f.state.brainDown = true; await f.send('Hola'); f.state.brainDown = false;
-  await f.send('Hola'); assert.equal(f.outbound().length, 1);
+test('opted-in retry after Brain failure replies once', async () => {
+  const f = fixture({ env: { AXIRA_WHATSAPP_RECOVERY_ENABLED: 'true' } }); f.state.brainDown = true; await f.send('Hola'); f.state.brainDown = false;
+  await f.send('Hola'); assert.equal(f.outbound().length, 1); assert.equal(f.state.statuses[0], 503); assert.equal(f.state.statuses[1], 200);
 });
 test('retry repairs failed interest annotation without repeating reply', async () => {
   const f = fixture(); f.state.interestDown = true; await f.send('4'); f.state.interestDown = false;
   await f.send('4'); assert.equal(f.state.interest.length, 1); assert.equal(f.outbound().length, 1);
+});
+
+// Recovery is explicitly opt-in, separate from the service menu flag.
+test('concurrent experimental duplicate generates only one reply', async () => {
+  const f = fixture({ env: { AXIRA_WHATSAPP_RECOVERY_ENABLED: 'true' } });
+  await Promise.all([f.send('4'), f.send('4')]);
+  assert.equal(f.outbound().length, 1);
+  assert.equal(f.state.messages.filter(m => m.role === 'user').length, 1);
+  assert.equal(f.state.messages.filter(m => m.role === 'assistant').length, 1);
+});
+test('uncertain provider outcome never automatically resends', async () => {
+  const f = fixture({ env: { AXIRA_WHATSAPP_RECOVERY_ENABLED: 'true' } });
+  f.state.outboundDown = true; await f.send('4'); f.state.outboundDown = false;
+  await f.send('4'); assert.equal(f.outbound().length, 1);
+  assert.equal(f.state.deliveries.get('qa-msg-1').state, 'uncertain');
+});
+test('payload mismatch cannot reuse a ledger identity', async () => {
+  const f = fixture({ env: { AXIRA_WHATSAPP_RECOVERY_ENABLED: 'true' } });
+  await f.send('4'); const result = await f.send('5');
+  assert.ok(result.errors.includes('WHATSAPP_DUPLICATE_PAYLOAD_MISMATCH'));
+  assert.equal(f.outbound().length, 1); assert.equal(f.state.interest.length, 1);
+});
+test('successful re-delivery repairs missing assistant history without a resend', async () => {
+  const f = fixture({ env: { AXIRA_WHATSAPP_RECOVERY_ENABLED: 'true' } });
+  await f.send('4'); f.state.messages = f.state.messages.filter(m => m.role !== 'assistant');
+  await f.send('4'); assert.equal(f.outbound().length, 1);
+  assert.equal(f.state.messages.filter(m => m.role === 'assistant').length, 1);
 });

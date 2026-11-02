@@ -10,6 +10,10 @@ on:
       - 'tests/axira-webhook-isolated.test.mjs'
       - 'app/api/qa/axira/route.ts'
       - 'tests/axira-qa-check.test.mjs'
+      - 'app/lib/whatsapp-delivery.ts'
+      - 'scripts/axira-qa-run.cjs'
+      - 'tests/axira-qa-run-safety.test.cjs'
+      - 'db/migrations/20261101_axira_delivery.sql'
       - '.github/workflows/axira-service-menu.yml'
   push:
     branches:
@@ -29,5 +33,6 @@ jobs:
       - run: npx --yes tsx --test tests/axira-service-menu.test.ts
       - run: node --test tests/axira-webhook-isolated.test.mjs
       - run: node --test tests/axira-qa-check.test.mjs
+      - run: node --test tests/axira-qa-run-safety.test.cjs
       - run: npx next typegen
       - run: npx tsc --noEmit
