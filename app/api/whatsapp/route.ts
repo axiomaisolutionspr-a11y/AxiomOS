@@ -78,7 +78,7 @@ async function recordAxiraServiceInterest(
       await sql`
         UPDATE prospects
         SET crm_notes = CONCAT_WS(E'\n\n', NULLIF(crm_notes, ''),
-          ${`${marker} Servicio de interés: ${selection.label}`}),
+          ${`${marker} Servicio de interés: ${selection.label}`}::text),
           updated_at = NOW()
         WHERE prospect_key = ${`phone:${phone.slice(-10)}`}
           AND STRPOS(COALESCE(crm_notes, ''), ${marker}) = 0
