@@ -23,3 +23,16 @@ Este cambio **no modifica producción**. Añade un clasificador puro para respue
 ## Seguridad
 
 No incluir credenciales en repositorio ni logs. No enviar mensajes promocionales no solicitados. No cambiar integraciones de WhatsApp Business App Coexistence.
+
+
+## QA aislado realizado (2026-11-01 PR)
+
+- Neon project: `axiomai-leads`. Rama de prueba: `axira-menu-qa-20261101` (`br-long-glitter-avo0yybm`).
+- Se verificaron 14 columnas en `prospects` y 7 en `whatsapp_messages`.
+- Se insertó solo el prospecto ficticio `qa:axira-menu-20261101` en la rama de prueba; la consulta devolvió nombre y empresa de prueba sin alteraciones y nota de interés presente.
+- Se repitió el intento de añadir el mismo marcador y no se actualizó ningún registro: verificación parcial de idempotencia.
+- Importante: la rama es una COPIA DE DATOS y sigue conteniendo datos confidenciales heredados del origen. No compartir su conexión ni usarla como demo pública. Eliminar datos reales de manera planificada y autorizada o utilizar un proyecto vacío antes de pruebas externas.
+- No se modificó la rama `main` de Neon. No se configuraron secretos de producción en Preview. No se alteró el webhook de Meta.
+- El Preview de Vercel actualmente hereda `DATABASE_URL` compartida entre production/preview. NO habilitar pruebas de escritura vía URL hasta aislarla.
+- Para una prueba futura, aislar `DATABASE_URL` en un despliegue dedicado, bloquear envíos reales (Dualhook/Telnyx/Resend) y verificar el comportamiento completo desde un entorno instrumentado.
+- `AXIRA_WHATSAPP_MENU_ENABLED` desactivado por defecto y `AXIRA_WHATSAPP_TEST_PHONES` obligatorio para activar el menú en un teléfono autorizado.
