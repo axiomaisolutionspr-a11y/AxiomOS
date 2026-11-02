@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS axira_advisor_outbound (
   recipient_kind text NOT NULL CHECK (recipient_kind IN ('phone', 'bsuid')),
   body text NOT NULL,
   advisor text NOT NULL,
-  state text NOT NULL CHECK (state IN ('sending', 'accepted', 'uncertain')),
+  state text NOT NULL CHECK (state IN ('draft', 'sending', 'accepted', 'uncertain')),
   provider_id text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
