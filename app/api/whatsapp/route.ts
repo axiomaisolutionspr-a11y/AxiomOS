@@ -1060,7 +1060,11 @@ export async function POST(
               : history;
             // Opt-in seguro: no activar hasta completar pruebas.
             const menuSelection = isConversationalText &&
-              process.env.AXIRA_WHATSAPP_MENU_ENABLED === "true"
+              process.env.AXIRA_WHATSAPP_MENU_ENABLED === "true" &&
+              phone &&
+              process.env.AXIRA_WHATSAPP_TEST_PHONES?.split(",")
+                .map((value) => normalizePhone(value))
+                .includes(phone)
                 ? classifyAxiraServiceSelection(text)
                 : null;
 
