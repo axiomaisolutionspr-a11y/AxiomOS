@@ -8,6 +8,8 @@ on:
       - 'app/lib/whatsapp-contact-request.ts'
       - 'tests/axira-service-menu.test.ts'
       - 'tests/axira-webhook-isolated.test.mjs'
+      - 'app/api/qa/axira/route.ts'
+      - 'tests/axira-qa-check.test.mjs'
       - '.github/workflows/axira-service-menu.yml'
   push:
     branches:
@@ -26,5 +28,6 @@ jobs:
       - run: npm ci
       - run: npx --yes tsx --test tests/axira-service-menu.test.ts
       - run: node --test tests/axira-webhook-isolated.test.mjs
+      - run: node --test tests/axira-qa-check.test.mjs
       - run: npx next typegen
       - run: npx tsc --noEmit
