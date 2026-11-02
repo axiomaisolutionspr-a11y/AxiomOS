@@ -25,11 +25,18 @@ export async function handoffAction(action: string, id: string, name: string, to
     const rows = await sql`DELETE FROM axira_qa_handoff WHERE phone=${qaHandoffPhone} AND token=${token} RETURNING phone`;
     if (rows.length) return {token:"",status:"Axira retomó el turno"};
   } else if (action === "send" && message.trim() && message.length <= 4000) {
-    const rows = await sql`INSERT INTO whatsapp_messages (conversation_key,phone,role,message)
-      SELECT m.conversation_key,h.phone,'assistant',concat(h.owner_name, ': ', ${message}::text)
-      FROM (SELECT * FROM axira_qa_handoff WHERE phone=${qaHandoffPhone} AND token=${token} FOR UPDATE) h
-      JOIN LATERAL (SELECT conversation_key FROM whatsapp_messages WHERE phone=h.phone AND role='user' ORDER BY id DESC LIMIT 1) m ON true RETURNING id`;
-    if (rows.length) return {token,status:"Respuesta simulada guardada"};
+    // A QA draft is not a WhatsApp delivery. Never insert it into the
+    // conversation history as an assistant message.
+    const rows = await sql`INSERT INTO axira_advisor_outbound
+      (request_id, conversation_key, recipient, recipient_kind, body, advisor, state)
+      SELECT ${randomUUID()}::uuid, m.conversation_key, h.phone, 'phone',
+        ${message.trim()}, h.owner_name, 'draft'
+      FROM axira_qa_handoff h
+      JOIN LATERAL (SELECT conversation_key FROM whatsapp_messages
+        WHERE phone=h.phone AND role='user' ORDER BY id DESC LIMIT 1) m ON true
+      WHERE h.phone=${qaHandoffPhone} AND h.token=${token} AND h.owner_name=${name}
+      RETURNING request_id`;
+    if (rows.length) return {token,status:"Borrador QA guardado. No enviado por WhatsApp."};
   }
   const [turn] = await sql`SELECT owner_name FROM axira_qa_handoff WHERE phone=${qaHandoffPhone}`;
   return {token,status:turn?.owner_name === "Axira"
