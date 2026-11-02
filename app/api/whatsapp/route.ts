@@ -742,6 +742,24 @@ export async function POST(
               ? message.id.trim() || null
               : null;
 
+          // Store the provider's original timestamp only for the isolated QA
+          // handoff contact; never use CRM created_at to open a 24h window.
+          if (qaHandoffEnabled() && phone === qaHandoffPhone &&
+              whatsappMessageId && typeof message?.timestamp === "string" &&
+              /^\\d{10,13}$/.test(message.timestamp)) {
+            const seconds = Number(message.timestamp) > 1e11
+              ? Number(message.timestamp) / 1000 : Number(message.timestamp);
+            const eventDate = new Date(seconds * 1000);
+            if (Number.isFinite(eventDate.getTime()) &&
+                eventDate.getTime() <= Date.now() + 30000 &&
+                eventDate.getTime() > Date.now() - 30 * 86400000) {
+              await sql`INSERT INTO axira_advisor_inbound_verified
+                (message_id, phone, provider_timestamp)
+                VALUES (${whatsappMessageId}, ${phone}, ${eventDate.toISOString()}::timestamptz)
+                ON CONFLICT (message_id) DO NOTHING`;
+            }
+          }
+
           const recipient:
             WhatsAppRecipient | null =
               phone
