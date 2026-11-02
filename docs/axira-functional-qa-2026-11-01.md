@@ -1,5 +1,24 @@
 # Axira: recuperación y QA funcional aislado
 
+## Verificación posterior del canal activo
+
+El usuario envió desde su teléfono un mensaje de prueba al WhatsApp corporativo
+el 1 de noviembre a las 23:51 (Puerto Rico) y confirmó haber recibido la respuesta.
+Los registros del despliegue de producción existente mostraron recepción del
+webhook, guardado CRM, respuesta de Brain y aceptación de Dualhook HTTP 200.
+Una lectura acotada posterior confirmó el mensaje, su respuesta persistida y
+la existencia del prospecto. No se modificó el despliegue activo para esta prueba.
+
+Esta comprobación valida el transporte del canal actual, no la entrega del menú
+experimental a través del proveedor: el PR sigue sin fusionar y sin activar.
+
+En la misma solicitud aparecieron `WHATSAPP_CONTACT_EMAIL_FAILED` y
+`WHATSAPP_CONTACT_SMS_FAILED_OR_UNKNOWN`. No hay constancia de aceptación de
+esos avisos en las notas del prospecto de prueba. No puede afirmarse su entrega
+ni su causa únicamente con esos datos. Los avisos internos requieren diagnóstico
+separado; la respuesta WhatsApp sí llegó según la confirmación del usuario.
+No se reintentaron avisos para evitar duplicados y no se cambiaron credenciales.
+
 ## Resultado verificado
 
 **17 casos funcionales aprobados con persistencia real en Neon QA** y **45
@@ -32,7 +51,7 @@ persistida. No se modificó `app/api/brain/route.ts`.
 
 El detalle legible por máquinas se conserva en `axira-functional-qa-result.json`.
 El código queda listo para revisión y eventual prueba controlada del transporte.
-**No se probó entrega por el proveedor de WhatsApp ni se activó producción.**
+**No se probó entrega del menú experimental por el proveedor de WhatsApp ni se activó producción.**
 La tabla nueva existe solo en QA: su aplicación en producción y las banderas de
 recuperación/menú requieren una liberación posterior autorizada.
 
