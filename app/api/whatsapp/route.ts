@@ -5,6 +5,7 @@ import {
 
 import { neon } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
+import { classifyAxiraServiceSelection } from "../../lib/axira-service-menu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -1057,7 +1058,29 @@ export async function POST(
                   ...history,
                 ]
               : history;
-            const brainReply = contactReply ?? await askBrain(request, brainHistory);
+            // Opt-in seguro: no activar hasta completar pruebas.
+            const menuSelection = isConversationalText &&
+              process.env.AXIRA_WHATSAPP_MENU_ENABLED === "true"
+                ? classifyAxiraServiceSelection(text)
+                : null;
+
+            if (menuSelection && phone && whatsappMessageId) {
+              const marker = `[WA_INTEREST:${whatsappMessageId}]`;
+              try {
+                await sql`
+                  UPDATE prospects
+                  SET crm_notes = CONCAT_WS(E'\n\n', NULLIF(crm_notes, ''),
+                    ${`${marker} Servicio de interés: ${menuSelection.label}`}),
+                    updated_at = NOW()
+                  WHERE prospect_key = ${`phone:${phone.slice(-10)}`}
+                    AND STRPOS(COALESCE(crm_notes, ''), ${marker}) = 0
+                `;
+              } catch {
+                console.error("AXIRA_SERVICE_INTEREST_SAVE_FAILED");
+              }
+            }
+
+            const brainReply = contactReply ?? menuSelection?.reply ?? await askBrain(request, brainHistory);
 
             console.log(
               "WHATSAPP_BRAIN_REPLY:",
