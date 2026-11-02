@@ -99,10 +99,14 @@ export async function registerWhatsAppContact(input: {
         });
         const result = await response.json() as { id?: unknown };
         if (!response.ok || typeof result.id !== "string") throw new Error("Email not accepted");
-        await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${sentMarker}),
-          updated_at = NOW() WHERE prospect_key = ${key}
-          AND STRPOS(COALESCE(crm_notes, ''), ${sentMarker}) = 0`;
         console.log("WHATSAPP_CONTACT_EMAIL_ACCEPTED", { prospectId: row.id });
+        try {
+          await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${sentMarker}::text),
+            updated_at = NOW() WHERE prospect_key = ${key}
+            AND STRPOS(COALESCE(crm_notes, ''), ${sentMarker}) = 0`;
+        } catch {
+          console.error("WHATSAPP_CONTACT_EMAIL_RECEIPT_SAVE_FAILED", { prospectId: row.id });
+        }
       } catch {
         console.error("WHATSAPP_CONTACT_EMAIL_FAILED", { prospectId: row.id });
       }
@@ -166,7 +170,7 @@ export async function registerWhatsAppContact(input: {
       // Conservamos el intento incluso si hay timeout: Telnyx podría haberlo aceptado.
       // Los intentos fallidos requieren revisión; no hay reintento automático.
       const claimed = await sql`
-        UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${smsAttemptMarker}),
+        UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${smsAttemptMarker}::text),
           updated_at = NOW()
         WHERE prospect_key = ${key}
           AND STRPOS(COALESCE(crm_notes, ''), ${smsAttemptMarker}) = 0
@@ -219,9 +223,13 @@ export async function registerWhatsAppContact(input: {
             prospectId: row.id, messageId: result.data.id,
           });
           const receipt = `${smsAcceptedMarker} Telnyx: ${result.data.id}`;
-          await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${receipt}),
-            updated_at = NOW() WHERE prospect_key = ${key}
-            AND STRPOS(COALESCE(crm_notes, ''), ${smsAcceptedMarker}) = 0`;
+          try {
+            await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${receipt}::text),
+              updated_at = NOW() WHERE prospect_key = ${key}
+              AND STRPOS(COALESCE(crm_notes, ''), ${smsAcceptedMarker}) = 0`;
+          } catch {
+            console.error("WHATSAPP_CONTACT_SMS_RECEIPT_SAVE_FAILED", { prospectId: row.id });
+          }
         }
       }
     } catch {

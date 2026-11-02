@@ -5,13 +5,25 @@ const vm = require('node:vm');
 const ts = require('typescript');
 const { createHash } = require('node:crypto');
 
-function harness({ email = true, sms = true, failSave = false } = {}) {
+function harness({ email = true, sms = true, failSave = false,
+  failEmailReceipt = false, failSmsReceipt = false } = {}) {
   let notes = '';
   const queries = [];
   const sent = [];
+  const logs = [];
   const sql = async (strings, ...values) => {
     const query = strings.join('?');
     queries.push({ query, values });
+    const concatMarker = values.find(value => typeof value === 'string' && /^\[WA_(?:EMAIL|SMS)_/.test(value));
+    if (concatMarker && query.includes('CONCAT_WS') && !query.includes('?::text')) {
+      throw new Error('simulated PostgreSQL: could not determine data type of marker parameter');
+    }
+    if (failEmailReceipt && concatMarker?.startsWith('[WA_EMAIL_ACCEPTED:')) {
+      throw new Error('simulated email receipt persistence failure');
+    }
+    if (failSmsReceipt && concatMarker?.startsWith('[WA_SMS_ACCEPTED:')) {
+      throw new Error('simulated SMS receipt persistence failure');
+    }
     if (query.includes('INSERT INTO prospects')) {
       if (failSave) throw new Error('simulated DB failure');
       const newNotes = values.find(value => typeof value === 'string' && value.includes('WHATSAPP —'));
@@ -37,14 +49,18 @@ function harness({ email = true, sms = true, failSave = false } = {}) {
     require: name => name === '@neondatabase/serverless' ? { neon: () => sql } : require(name),
     process: { env: { DATABASE_URL: 'mock', EMAIL_ENABLED: email ? ' true ' : 'false',
       RESEND_API_KEY: 'mock', EMAIL_ALERT_FROM: 'alerts@example.test', EMAIL_ALERT_TO: 'owner@example.test',
-      SMS_ENABLED: sms ? 'true' : 'false', TELNYX_API_KEY: 'mock', TELNYX_SMS_FROM: '+15550000000' } },
-    console: { log() {}, error() {} }, AbortSignal,
+      WHATSAPP_SMS_ALERTS_ENABLED: sms ? 'true' : 'false',
+      TELNYX_API_KEY: 'mock', TELNYX_SMS_FROM: '+15550000000' } },
+    console: {
+      log(label) { logs.push(label); },
+      error(label) { logs.push(label); },
+    }, AbortSignal,
     fetch: async (url, options) => {
       sent.push({ url, body: JSON.parse(options.body) });
       return { ok: true, status: 200, json: async () => url.includes('resend') ? { id: 'email-1' } : { data: { id: 'sms-1' } } };
     },
   });
-  return { ...module.exports, sent, queries };
+  return { ...module.exports, sent, queries, logs };
 }
 
 async function main() {
@@ -55,6 +71,8 @@ async function main() {
   assert.match(test.sent[0].body.subject, /nuevo mensaje/);
   assert.match(test.sent[1].body.text, /Nuevo mensaje/);
   assert.equal(test.sent[1].body.to, '+17872320132', 'Conservar destino autorizado');
+  assert.equal(test.queries.filter(({ query }) => query.includes('?::text')).length, 3,
+    'Correo, reserva SMS y recibo SMS deben tipar sus marcadores como texto');
   assert.ok(test.queries[0].values.includes('phone:7875550199'));
   assert.ok(test.queries[0].values.includes('Nuevo'));
   assert.ok(test.queries[0].values.includes(null), 'Sin cita ni seguimiento forzado para un saludo');
@@ -70,6 +88,15 @@ async function main() {
   await disabled.registerWhatsAppContact(normal);
   assert.equal(disabled.sent.length, 0);
   assert.ok(disabled.queries.length > 0, 'CRM debe guardar aunque los avisos estén desactivados');
+  const receiptFailure = harness({ failEmailReceipt: true, failSmsReceipt: true });
+  await receiptFailure.registerWhatsAppContact({ ...normal, messageId: 'wa-receipt-failure' });
+  assert.equal(receiptFailure.sent.length, 2, 'Los proveedores aceptaron ambos avisos');
+  assert.ok(receiptFailure.logs.includes('WHATSAPP_CONTACT_EMAIL_ACCEPTED'));
+  assert.ok(receiptFailure.logs.includes('WHATSAPP_CONTACT_EMAIL_RECEIPT_SAVE_FAILED'));
+  assert.ok(receiptFailure.logs.includes('WHATSAPP_CONTACT_SMS_ACCEPTED'));
+  assert.ok(receiptFailure.logs.includes('WHATSAPP_CONTACT_SMS_RECEIPT_SAVE_FAILED'));
+  assert.ok(!receiptFailure.logs.includes('WHATSAPP_CONTACT_EMAIL_FAILED'));
+  assert.ok(!receiptFailure.logs.includes('WHATSAPP_CONTACT_SMS_FAILED_OR_UNKNOWN'));
   const failed = harness({ failSave: true });
   assert.equal(await failed.registerWhatsAppContact(normal), null);
   assert.equal(failed.sent.length, 0);

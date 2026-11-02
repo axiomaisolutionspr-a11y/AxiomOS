@@ -19,6 +19,37 @@ ni su causa únicamente con esos datos. Los avisos internos requieren diagnósti
 separado; la respuesta WhatsApp sí llegó según la confirmación del usuario.
 No se reintentaron avisos para evitar duplicados y no se cambiaron credenciales.
 
+## Diagnóstico posterior de avisos y reglas comerciales
+
+El 2 de noviembre se reprodujo en Neon QA el defecto de los avisos internos:
+los parámetros usados para añadir los marcadores de correo y SMS dentro de
+`CONCAT_WS` no tenían tipo inferible. PostgreSQL devolvió `could not determine
+data type of parameter $1`; las mismas consultas con `::text` se prepararon
+correctamente. Se corrigieron los tres puntos: recibo de correo, reserva de
+intento SMS y recibo de SMS. La aceptación del proveedor y el fallo al guardar
+su recibo ahora tienen eventos distintos, para no volver a reportar como fallo
+del proveedor un error posterior de persistencia.
+
+No se reintentó el correo de la prueba real porque el proveedor pudo haberlo
+aceptado antes del error del marcador. El SMS sí se detenía antes de llamar a
+Telnyx, al fallar la reserva previa. Las pruebas nuevas usan proveedores
+simulados; Preview mantiene correo y SMS apagados.
+
+La revisión comercial confirmó además que el prompt autorizaba ofrecer un
+“demo gratuito” sin una política validada y que describía de forma contradictoria
+la relación con CRM. Se retiró esa oferta, se aclaró que el canal puede registrar
+mensajes fuera de la respuesta de Brain pero que Brain no recibe confirmación
+verificable de alertas o transferencias, y se añadió una regla de recuperación:
+reconocer la preocupación, identificar el obstáculo y proponer un próximo paso
+sin improvisar descuentos, garantías ni disponibilidad.
+
+El webhook real registra el mensaje en CRM antes de consultar Brain. Las
+solicitudes explícitas de evaluación o asesor usan una respuesta determinista
+del módulo CRM; esto es registro y aviso, no una transferencia humana en vivo.
+La comprobación del texto comercial fue estructural y de integración; no se
+reprodujeron las nueve conversaciones originales porque sus transcripciones no
+formaban parte del material disponible.
+
 ## Resultado verificado
 
 **17 casos funcionales aprobados con persistencia real en Neon QA** y **45
@@ -47,7 +78,8 @@ preparada se validó en PostgreSQL y la ejecución funcional completa aprobó.
 Brain respondió en la conversación ficticia: “Podemos ayudar a Empresa Ficticia
 QA Axira a organizar el inventario…” y preguntó por la cantidad de productos y
 el control de entradas/salidas. Se verificó el historial enviado y la respuesta
-persistida. No se modificó `app/api/brain/route.ts`.
+persistida. En esa ejecución inicial no se modificó `app/api/brain/route.ts`;
+la revisión comercial posterior sí ajustó sus reglas, todavía solo en el PR.
 
 El detalle legible por máquinas se conserva en `axira-functional-qa-result.json`.
 El código queda listo para revisión y eventual prueba controlada del transporte.
@@ -91,8 +123,9 @@ El estado incierto impide duplicarlo; resolverlo exige revisar al proveedor.
 
 ## Pruebas locales
 
-45 aprobadas: 3 del clasificador, 27 del webhook con proveedores/SQL simulados,
-10 del verificador de conexión y 5 de las barreras del ejecutor QA.
+49 aprobadas en la revisión posterior: 3 del clasificador, 27 del webhook con
+proveedores/SQL simulados, 10 del verificador de conexión, 5 de las barreras del
+ejecutor QA, 3 de reglas comerciales y 1 suite de avisos con múltiples escenarios.
 No queda el TODO de recuperación de Brain. TypeScript y generación de tipos
 de Next.js aprobaron antes del commit de código.
 
