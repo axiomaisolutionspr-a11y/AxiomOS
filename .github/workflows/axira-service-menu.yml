@@ -6,8 +6,11 @@ on:
       - 'app/lib/axira-service-menu.ts'
       - 'app/api/whatsapp/route.ts'
       - 'app/lib/whatsapp-contact-request.ts'
+      - 'app/api/brain/route.ts'
       - 'tests/axira-service-menu.test.ts'
       - 'tests/axira-webhook-isolated.test.mjs'
+      - 'tests/whatsapp-notifications.cjs'
+      - 'tests/axira-commercial-guardrails.test.cjs'
       - 'app/api/qa/axira/route.ts'
       - 'tests/axira-qa-check.test.mjs'
       - 'app/lib/whatsapp-delivery.ts'
@@ -32,6 +35,8 @@ jobs:
       - run: npm ci
       - run: npx --yes tsx --test tests/axira-service-menu.test.ts
       - run: node --test tests/axira-webhook-isolated.test.mjs
+      - run: node --test tests/whatsapp-notifications.cjs
+      - run: node --test tests/axira-commercial-guardrails.test.cjs
       - run: node --test tests/axira-qa-check.test.mjs
       - run: node --test tests/axira-qa-run-safety.test.cjs
       - run: npx next typegen
