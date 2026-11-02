@@ -10,10 +10,10 @@ export default function HandoffPanel({id}:{id:string}) {
     try {
       const result=await handoffAction(action,id,name,sessionStorage.getItem(key)||"",body);
       sessionStorage.setItem(key,result.token); setStatus(result.status);
-      if(result.status.startsWith("Borrador QA guardado")) setBody("");
+      if(result.status.startsWith("Borrador QA guardado") || result.status.startsWith("WhatsApp aceptó")) setBody("");
     } catch {setStatus("No se pudo completar la acción");} finally {setBusy(false);}
   }
   return <fieldset disabled={busy}><legend>Conversación QA · borradores sin envío</legend><select aria-label="Asesor" value={name} onChange={e=>setName(e.target.value)}><option>Alex</option><option>Rolando</option></select>
     <button onClick={()=>run("take")}>Tomar conversación</button><button onClick={()=>run("recover")}>Recuperar mi turno</button><textarea aria-label="Respuesta del asesor" value={body} onChange={e=>setBody(e.target.value)} maxLength={4000}/>
-    <button disabled={!body.trim()} onClick={()=>run("send")}>Guardar borrador (sin enviar)</button><button onClick={()=>run("release")}>Devolver a Axira</button><p role="status">{status}</p></fieldset>;
+    <button disabled={!body.trim()} onClick={()=>run("send")}>Guardar borrador (sin enviar)</button><button type="button" disabled title="Envío real requiere teléfono autorizado, timestamp del proveedor y credencial de pruebas">Enviar por WhatsApp (pendiente de habilitación)</button><button onClick={()=>run("release")}>Devolver a Axira</button><p role="status">{status}</p></fieldset>;
 }
