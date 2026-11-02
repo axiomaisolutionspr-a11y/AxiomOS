@@ -16,6 +16,11 @@ export async function handoffAction(action: string, id: string, name: string, to
     const key = randomUUID();
     const rows = await sql`INSERT INTO axira_qa_handoff VALUES (${qaHandoffPhone},${name},${key}) ON CONFLICT DO NOTHING RETURNING phone`;
     if (rows.length) return {token:key, status:"Turno de "+name};
+  } else if (action === "recover" && ["Alex","Rolando"].includes(name)) {
+    const key = randomUUID();
+    const rows = await sql`UPDATE axira_qa_handoff SET token=${key}
+      WHERE phone=${qaHandoffPhone} AND owner_name=${name} RETURNING phone`;
+    if (rows.length) return {token:key, status:"Turno recuperado de "+name};
   } else if (action === "release") {
     const rows = await sql`DELETE FROM axira_qa_handoff WHERE phone=${qaHandoffPhone} AND token=${token} RETURNING phone`;
     if (rows.length) return {token:"",status:"Axira retomó el turno"};
@@ -27,5 +32,7 @@ export async function handoffAction(action: string, id: string, name: string, to
     if (rows.length) return {token,status:"Respuesta simulada guardada"};
   }
   const [turn] = await sql`SELECT owner_name FROM axira_qa_handoff WHERE phone=${qaHandoffPhone}`;
-  return {token,status:turn ? "Turno de "+turn.owner_name : "Turno de Axira"};
+  return {token,status:turn?.owner_name === "Axira"
+    ? "Axira está procesando una respuesta. Espera a que termine."
+    : turn ? "Turno de "+turn.owner_name : "Turno de Axira"};
 }

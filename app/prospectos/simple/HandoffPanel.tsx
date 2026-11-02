@@ -14,6 +14,6 @@ export default function HandoffPanel({id}:{id:string}) {
     } catch {setStatus("No se pudo completar la acción");} finally {setBusy(false);}
   }
   return <fieldset disabled={busy}><legend>Conversación QA · envío simulado</legend><select aria-label="Asesor" value={name} onChange={e=>setName(e.target.value)}><option>Alex</option><option>Rolando</option></select>
-    <button onClick={()=>run("take")}>Tomar conversación</button><textarea aria-label="Respuesta del asesor" value={body} onChange={e=>setBody(e.target.value)} maxLength={4000}/>
+    <button onClick={()=>run("take")}>Tomar conversación</button><button onClick={()=>run("recover")}>Recuperar mi turno</button><textarea aria-label="Respuesta del asesor" value={body} onChange={e=>setBody(e.target.value)} maxLength={4000}/>
     <button disabled={!body.trim()} onClick={()=>run("send")}>Simular respuesta</button><button onClick={()=>run("release")}>Devolver a Axira</button><p role="status">{status}</p></fieldset>;
 }

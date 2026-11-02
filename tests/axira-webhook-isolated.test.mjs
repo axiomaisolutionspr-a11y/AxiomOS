@@ -25,7 +25,15 @@ function fixture(options = {}) {
   const sql = async (strings, ...values) => {
     const query = strings.join('?').replace(/\s+/g, ' ').trim();
     if (state.dbDown) throw new Error('Simulated Neon unavailable');
-    if (query.startsWith('SELECT phone FROM axira_qa_handoff')) return state.human ? [{phone:values[0]}] : [];
+    if (query.startsWith('INSERT INTO axira_qa_handoff')) {
+      if (state.human || state.botTurn) return [];
+      state.botTurn = values[2]; return [{phone:values[0]}];
+    }
+    if (query.startsWith('SELECT owner_name FROM axira_qa_handoff')) return state.human ? [{owner_name:'Alex'}] : state.botTurn ? [{owner_name:'Axira'}] : [];
+    if (query.startsWith('DELETE FROM axira_qa_handoff')) {
+      if (state.botTurn === values[2]) state.botTurn = null;
+      return [];
+    }
     if (query.startsWith('INSERT INTO axira_whatsapp_delivery')) {
       const [id, conversation_key, payload_hash, owner_token] = values;
       const row = state.deliveries.get(id);
@@ -148,6 +156,15 @@ test('a warehouse follow-up stays with Alex until release', async () => {
   f.state.human = false;
   await f.send('¿Qué capacidad necesito?', 'qa-capacity', identity);
   assert.equal(f.brainCalls().length,1);
+});
+test('a second incoming message waits while Axira owns the QA turn', async () => {
+  const f = fixture({env:{VERCEL_ENV:'preview', VERCEL_GIT_COMMIT_REF:'feature/axira-whatsapp-service-menu',
+    DATABASE_URL:'postgresql://ep-flat-art-av3pifin.c-11.us-east-1.aws.neon.tech/neondb', DUALHOOK_API_KEY:''}});
+  f.state.botTurn = randomUUID();
+  await f.send('Otra pregunta', 'qa-busy', {from:'12025550118'});
+  assert.equal(f.state.statuses[0],503);
+  assert.equal(f.state.messages.length,0);
+  assert.equal(f.brainCalls().length,0);
 });
 test('menu flag disabled routes numbers to Brain', async () => {
   const f = fixture({ env: { AXIRA_WHATSAPP_MENU_ENABLED: 'false' } }); await f.send('4');

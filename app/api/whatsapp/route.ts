@@ -4,6 +4,7 @@ import {
 } from "next/server";
 
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
+import { randomUUID } from "node:crypto";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
 import { classifyAxiraServiceSelection } from "../../lib/axira-service-menu";
 import { claimWhatsAppDelivery, beginWhatsAppSend, completeWhatsAppSend,
@@ -830,6 +831,8 @@ export async function POST(
           let deliveryLease: WhatsAppDeliveryLease | null = null;
           let sendStarted = false;
           let incomingStored = false;
+          let qaBotToken: string | null = null;
+          let qaBotCompleted = false;
           try {
             if (!whatsappMessageId && testPhoneAllowed &&
                 (recoveryEnabled || process.env.AXIRA_WHATSAPP_MENU_ENABLED === "true")) {
@@ -925,14 +928,22 @@ export async function POST(
 
             if (recoveryEnabled && !deliveryLease) continue;
             if (phone === qaHandoffPhone && qaHandoffEnabled()) {
-              const active = await sql`SELECT phone FROM axira_qa_handoff WHERE phone=${phone}`;
-              if (active.length) {
+              const token = randomUUID();
+              const reserved = await sql`INSERT INTO axira_qa_handoff (phone, owner_name, token)
+                VALUES (${phone}, ${"Axira"}, ${token}) ON CONFLICT DO NOTHING RETURNING phone`;
+              if (!reserved.length) {
+                const [active] = await sql`SELECT owner_name FROM axira_qa_handoff WHERE phone=${phone}`;
+                if (!active || active.owner_name === "Axira") {
+                  retryableFailure = true;
+                  throw new Error("AXIRA_QA_TURN_BUSY");
+                }
                 if (!incomingStored) await sql`INSERT INTO whatsapp_messages
                   (conversation_key,phone,role,message,whatsapp_message_id)
                   VALUES (${conversationKey},${phone},${"user"},${text},${whatsappMessageId}) ON CONFLICT DO NOTHING`;
                 if (deliveryLease) await ignoreWhatsAppDelivery(sql, deliveryLease);
                 continue;
               }
+              qaBotToken = token;
             }
 
             /*
@@ -996,6 +1007,7 @@ export async function POST(
                   }
 
                   repliesSent++;
+                  qaBotCompleted = true;
 
                   console.log(
                     "WHATSAPP_CONVERSATION_RESET:",
@@ -1198,6 +1210,7 @@ export async function POST(
             }
 
             repliesSent++;
+            qaBotCompleted = true;
 
             console.log(
               "AXIOMAI_BRAIN_REPLY_SENT"
@@ -1224,6 +1237,14 @@ export async function POST(
               "AXIOMAI_WHATSAPP_PROCESSING_ERROR:",
               messageError
             );
+          } finally {
+            if (qaBotToken && (qaBotCompleted || !sendStarted)) {
+              try {
+                await sql`DELETE FROM axira_qa_handoff WHERE phone=${phone} AND owner_name=${"Axira"} AND token=${qaBotToken}`;
+              } catch {
+                console.error("AXIRA_QA_TURN_RELEASE_FAILED");
+              }
+            }
           }
         }
       }
