@@ -1,0 +1,51 @@
+name: Axira WhatsApp menu tests
+
+on:
+  pull_request:
+    paths:
+      - 'app/lib/axira-service-menu.ts'
+      - 'app/api/whatsapp/route.ts'
+      - 'app/lib/whatsapp-contact-request.ts'
+      - 'app/api/brain/route.ts'
+      - 'tests/axira-service-menu.test.ts'
+      - 'tests/axira-webhook-isolated.test.mjs'
+      - 'tests/whatsapp-notifications.cjs'
+      - 'tests/axira-commercial-guardrails.test.cjs'
+      - 'app/api/qa/axira/route.ts'
+      - 'tests/axira-qa-check.test.mjs'
+      - 'app/lib/whatsapp-delivery.ts'
+      - 'app/lib/whatsapp-advisor-send.ts'
+      - 'app/lib/whatsapp-advisor-transport.ts'
+      - 'app/prospectos/simple/handoff.ts'
+      - 'app/prospectos/simple/HandoffPanel.tsx'
+      - 'db/migrations/20261102_advisor_outbound.sql'
+      - 'db/migrations/20261102_advisor_inbound_verified.sql'
+      - 'tests/whatsapp-advisor-send.test.cjs'
+      - 'scripts/axira-qa-run.cjs'
+      - 'tests/axira-qa-run-safety.test.cjs'
+      - 'db/migrations/20261101_axira_delivery.sql'
+      - '.github/workflows/axira-service-menu.yml'
+  push:
+    branches:
+      - 'feature/axira-whatsapp-service-menu'
+
+jobs:
+  menu-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npx --yes tsx --test tests/axira-service-menu.test.ts
+      - run: node --test tests/axira-webhook-isolated.test.mjs
+      - run: node --test tests/whatsapp-notifications.cjs
+      - run: node --test tests/axira-commercial-guardrails.test.cjs
+      - run: node --test tests/axira-qa-check.test.mjs
+      - run: node --test tests/axira-qa-run-safety.test.cjs
+      - run: node --test tests/whatsapp-advisor-send.test.cjs
+      - run: npx next typegen
+      - run: npx tsc --noEmit

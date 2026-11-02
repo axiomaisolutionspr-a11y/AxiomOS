@@ -3,8 +3,13 @@ import {
   NextResponse,
 } from "next/server";
 
-import { neon } from "@neondatabase/serverless";
+import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
+import { randomUUID } from "node:crypto";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
+import { classifyAxiraServiceSelection } from "../../lib/axira-service-menu";
+import { claimWhatsAppDelivery, beginWhatsAppSend, completeWhatsAppSend,
+  failWhatsAppDelivery, ignoreWhatsAppDelivery, repairSentWhatsAppHistory,
+  type WhatsAppDeliveryLease } from "../../lib/whatsapp-delivery";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -51,6 +56,40 @@ type MetaApiErrorEnvelope = {
 
 function normalizePhone(value: string) {
   return value.replace(/\D/g, "");
+}
+
+// Shared by first delivery and duplicate delivery: a transient notes failure
+// can be repaired without sending the WhatsApp reply twice.
+async function recordAxiraServiceInterest(
+  sql: NeonQueryFunction<false, false>,
+  phone: string,
+  text: string,
+  messageId: string | null
+) {
+  const selection = process.env.AXIRA_WHATSAPP_MENU_ENABLED === "true" &&
+    phone &&
+    process.env.AXIRA_WHATSAPP_TEST_PHONES?.split(",")
+      .map((value) => normalizePhone(value)).includes(phone)
+      ? classifyAxiraServiceSelection(text)
+      : null;
+
+  if (selection && phone && messageId) {
+    const marker = `[WA_INTEREST:${messageId}]`;
+    try {
+      await sql`
+        UPDATE prospects
+        SET crm_notes = CONCAT_WS(E'\n\n', NULLIF(crm_notes, ''),
+          ${`${marker} Servicio de interés: ${selection.label}`}::text),
+          updated_at = NOW()
+        WHERE prospect_key = ${`phone:${phone.slice(-10)}`}
+          AND STRPOS(COALESCE(crm_notes, ''), ${marker}) = 0
+      `;
+    } catch {
+      console.error("AXIRA_SERVICE_INTEREST_SAVE_FAILED");
+    }
+  }
+
+  return selection;
 }
 
 function normalizeBsuid(value: string) {
@@ -552,6 +591,7 @@ export async function POST(
 
     let messagesReceived = 0;
     let repliesSent = 0;
+    let retryableFailure = false;
 
     const errors: string[] = [];
 
@@ -699,8 +739,26 @@ export async function POST(
           const whatsappMessageId =
             typeof message?.id ===
             "string"
-              ? message.id
+              ? message.id.trim() || null
               : null;
+
+          // Store the provider's original timestamp only for the isolated QA
+          // handoff contact; never use CRM created_at to open a 24h window.
+          if (qaHandoffEnabled() && phone === qaHandoffPhone &&
+              whatsappMessageId && typeof message?.timestamp === "string" &&
+              /^\\d{10,13}$/.test(message.timestamp)) {
+            const seconds = Number(message.timestamp) > 1e11
+              ? Number(message.timestamp) / 1000 : Number(message.timestamp);
+            const eventDate = new Date(seconds * 1000);
+            if (Number.isFinite(eventDate.getTime()) &&
+                eventDate.getTime() <= Date.now() + 30000 &&
+                eventDate.getTime() > Date.now() - 30 * 86400000) {
+              await sql`INSERT INTO axira_advisor_inbound_verified
+                (message_id, phone, provider_timestamp)
+                VALUES (${whatsappMessageId}, ${phone}, ${eventDate.toISOString()}::timestamptz)
+                ON CONFLICT (message_id) DO NOTHING`;
+            }
+          }
 
           const recipient:
             WhatsAppRecipient | null =
@@ -785,7 +843,25 @@ export async function POST(
             text
           );
 
+          const testPhoneAllowed = Boolean(phone && process.env.AXIRA_WHATSAPP_TEST_PHONES?.split(",")
+            .map(normalizePhone).includes(phone));
+          const recoveryEnabled = testPhoneAllowed && process.env.AXIRA_WHATSAPP_RECOVERY_ENABLED === "true";
+          let deliveryLease: WhatsAppDeliveryLease | null = null;
+          let sendStarted = false;
+          let incomingStored = false;
+          let qaBotToken: string | null = null;
+          let qaBotCompleted = false;
           try {
+            if (!whatsappMessageId && testPhoneAllowed &&
+                (recoveryEnabled || process.env.AXIRA_WHATSAPP_MENU_ENABLED === "true")) {
+              errors.push("WHATSAPP_MESSAGE_ID_REQUIRED");
+              continue;
+            }
+            if (recoveryEnabled && whatsappMessageId) {
+              deliveryLease = await claimWhatsAppDelivery(sql, {
+                messageId: whatsappMessageId, conversationKey, text,
+              });
+            }
             /*
             ================================================
             EVITAR MENSAJES DUPLICADOS
@@ -805,6 +881,7 @@ export async function POST(
               if (
                 duplicate.length > 0
               ) {
+                incomingStored = true;
                 console.log(
                   "WHATSAPP_DUPLICATE_SKIPPED:",
                   whatsappMessageId
@@ -855,10 +932,36 @@ export async function POST(
                     history:
                       retryHistory,
                   });
+                  await recordAxiraServiceInterest(
+                    sql, phone, text, whatsappMessageId
+                  );
                 }
 
+                if (recoveryEnabled && whatsappMessageId) {
+                  await repairSentWhatsAppHistory(sql, whatsappMessageId, storedIdentity);
+                }
+                if (!deliveryLease) continue;
+              }
+            }
+
+            if (recoveryEnabled && !deliveryLease) continue;
+            if (phone === qaHandoffPhone && qaHandoffEnabled()) {
+              const token = randomUUID();
+              const reserved = await sql`INSERT INTO axira_qa_handoff (phone, owner_name, token)
+                VALUES (${phone}, ${"Axira"}, ${token}) ON CONFLICT DO NOTHING RETURNING phone`;
+              if (!reserved.length) {
+                const [active] = await sql`SELECT owner_name FROM axira_qa_handoff WHERE phone=${phone}`;
+                if (!active || active.owner_name === "Axira") {
+                  retryableFailure = true;
+                  throw new Error("AXIRA_QA_TURN_BUSY");
+                }
+                if (!incomingStored) await sql`INSERT INTO whatsapp_messages
+                  (conversation_key,phone,role,message,whatsapp_message_id)
+                  VALUES (${conversationKey},${phone},${"user"},${text},${whatsappMessageId}) ON CONFLICT DO NOTHING`;
+                if (deliveryLease) await ignoreWhatsAppDelivery(sql, deliveryLease);
                 continue;
               }
+              qaBotToken = token;
             }
 
             /*
@@ -875,6 +978,76 @@ export async function POST(
               const resetReply =
                 "Listo. Empezamos una conversación nueva. El historial anterior se conserva en AxiomOS, pero Brain no lo usará como contexto desde este punto.";
 
+              if (!incomingStored) {
+                  await sql`
+                    INSERT INTO whatsapp_messages (
+                      conversation_key,
+                      phone,
+                      role,
+                      message,
+                      whatsapp_message_id
+                    )
+                    VALUES (
+                      ${conversationKey},
+                      ${storedIdentity},
+                      ${"user"},
+                      ${text},
+                      ${whatsappMessageId}
+                    )
+                  `;
+                }
+
+                if (deliveryLease) await beginWhatsAppSend(sql, deliveryLease, resetReply);
+                sendStarted = true;
+                await sendWhatsAppMessage(
+                  recipient,
+                  resetReply
+                );
+
+                if (deliveryLease) {
+                  await completeWhatsAppSend(sql, deliveryLease, storedIdentity);
+                } else {
+                  await sql`
+                    INSERT INTO whatsapp_messages (
+                      conversation_key,
+                      phone,
+                      role,
+                      message
+                    )
+                    VALUES (
+                      ${conversationKey},
+                      ${storedIdentity},
+                      ${"assistant"},
+                      ${resetReply}
+                    )
+                  `;
+
+                  }
+
+                  repliesSent++;
+                  qaBotCompleted = true;
+
+                  console.log(
+                    "WHATSAPP_CONVERSATION_RESET:",
+                    {
+                      conversationKey,
+                      phone:
+                        phone || null,
+                      userId:
+                        userId || null,
+                    }
+                  );
+
+                  continue;
+              }
+
+              /*
+              ================================================
+              GUARDAR MENSAJE DEL CLIENTE
+              ================================================
+              */
+
+              if (!incomingStored) {
               await sql`
                 INSERT INTO whatsapp_messages (
                   conversation_key,
@@ -891,155 +1064,101 @@ export async function POST(
                   ${whatsappMessageId}
                 )
               `;
+              }
 
-              await sendWhatsAppMessage(
-                recipient,
-                resetReply
-              );
+              /*
+              ================================================
+              RECUPERAR HISTORIAL
+              ================================================
+              */
 
-              await sql`
-                INSERT INTO whatsapp_messages (
-                  conversation_key,
-                  phone,
-                  role,
-                  message
-                )
-                VALUES (
-                  ${conversationKey},
-                  ${storedIdentity},
-                  ${"assistant"},
-                  ${resetReply}
-                )
-              `;
+              const historyRows =
+                legacyConversationKey &&
+                legacyConversationKey !==
+                  conversationKey
+                  ? await sql`
+                      SELECT
+                        role,
+                        message
+                      FROM whatsapp_messages
+                      WHERE conversation_key IN (
+                        ${conversationKey},
+                        ${legacyConversationKey}
+                      )
+                      ORDER BY
+                        created_at DESC,
+                        id DESC
+                      LIMIT 12
+                    `
+                  : await sql`
+                      SELECT
+                        role,
+                        message
+                      FROM whatsapp_messages
+                      WHERE conversation_key =
+                        ${conversationKey}
+                      ORDER BY
+                        created_at DESC,
+                        id DESC
+                      LIMIT 12
+                    `;
 
-              repliesSent++;
+              const history =
+                buildBrainHistory(
+                  historyRows as Array<{
+                    role?: unknown;
+                    message?: unknown;
+                  }>
+                );
 
               console.log(
-                "WHATSAPP_CONVERSATION_RESET:",
-                {
-                  conversationKey,
-                  phone:
-                    phone || null,
-                  userId:
-                    userId || null,
-                }
+                "WHATSAPP_HISTORY_ITEMS:",
+                history.length
               );
 
-              continue;
-            }
+              /*
+              ================================================
+              CONSULTAR BRAIN
+              ================================================
+              */
 
-            /*
-            ================================================
-            GUARDAR MENSAJE DEL CLIENTE
-            ================================================
-            */
+              const profileName =
+                matchingContact?.profile?.name;
 
-            await sql`
-              INSERT INTO whatsapp_messages (
-                conversation_key,
-                phone,
-                role,
-                message,
-                whatsapp_message_id
-              )
-              VALUES (
-                ${conversationKey},
-                ${storedIdentity},
-                ${"user"},
-                ${text},
-                ${whatsappMessageId}
-              )
-            `;
-
-            /*
-            ================================================
-            RECUPERAR HISTORIAL
-            ================================================
-            */
-
-            const historyRows =
-              legacyConversationKey &&
-              legacyConversationKey !==
-                conversationKey
-                ? await sql`
-                    SELECT
-                      role,
-                      message
-                    FROM whatsapp_messages
-                    WHERE conversation_key IN (
-                      ${conversationKey},
-                      ${legacyConversationKey}
-                    )
-                    ORDER BY
-                      created_at DESC,
-                      id DESC
-                    LIMIT 12
-                  `
-                : await sql`
-                    SELECT
-                      role,
-                      message
-                    FROM whatsapp_messages
-                    WHERE conversation_key =
-                      ${conversationKey}
-                    ORDER BY
-                      created_at DESC,
-                      id DESC
-                    LIMIT 12
+              const contactReply =
+                phone
+                  ? await registerWhatsAppContact({
+                      phone,
+                      text,
+                      messageId:
+                        whatsappMessageId,
+                      profileName,
+                      history,
+                    })
+                  : null;
+              // Archivos y notas de voz se registran para el equipo; no se finge
+              // que Brain pudo verlos ni se envía una respuesta generada sin texto.
+              if (!isConversationalText) {
+                if (deliveryLease) await ignoreWhatsAppDelivery(sql, deliveryLease);
+                continue;
+              }
+              // El nombre comercial confirmado en CRM prevalece sobre nombres
+              // ambiguos o errores de transcripción del historial de WhatsApp.
+              // No se modifica el historial persistido ni el código de Brain.
+              let verifiedCompany = "";
+              if (phone && !contactReply) {
+                try {
+                  const companyRows = await sql`
+                    SELECT caller_company
+                    FROM prospects
+                    WHERE prospect_key = ${`phone:${phone.slice(-10)}`}
+                    LIMIT 1
                   `;
+                  verifiedCompany =
+                    typeof companyRows[0]?.caller_company === "string"
+                      ? companyRows[0].caller_company.trim().slice(0, 220)
+                      : "";
 
-            const history =
-              buildBrainHistory(
-                historyRows as Array<{
-                  role?: unknown;
-                  message?: unknown;
-                }>
-              );
-
-            console.log(
-              "WHATSAPP_HISTORY_ITEMS:",
-              history.length
-            );
-
-            /*
-            ================================================
-            CONSULTAR BRAIN
-            ================================================
-            */
-
-            const profileName =
-              matchingContact?.profile?.name;
-
-            const contactReply =
-              phone
-                ? await registerWhatsAppContact({
-                    phone,
-                    text,
-                    messageId:
-                      whatsappMessageId,
-                    profileName,
-                    history,
-                  })
-                : null;
-            // Archivos y notas de voz se registran para el equipo; no se finge
-            // que Brain pudo verlos ni se envía una respuesta generada sin texto.
-            if (!isConversationalText) continue;
-            // El nombre comercial confirmado en CRM prevalece sobre nombres
-            // ambiguos o errores de transcripción del historial de WhatsApp.
-            // No se modifica el historial persistido ni el código de Brain.
-            let verifiedCompany = "";
-            if (phone && !contactReply) {
-              try {
-                const companyRows = await sql`
-                  SELECT caller_company
-                  FROM prospects
-                  WHERE prospect_key = ${`phone:${phone.slice(-10)}`}
-                  LIMIT 1
-                `;
-                verifiedCompany =
-                  typeof companyRows[0]?.caller_company === "string"
-                    ? companyRows[0].caller_company.trim().slice(0, 220)
-                    : "";
               } catch {
                 console.error("WHATSAPP_CRM_COMPANY_LOOKUP_FAILED");
               }
@@ -1057,7 +1176,12 @@ export async function POST(
                   ...history,
                 ]
               : history;
-            const brainReply = contactReply ?? await askBrain(request, brainHistory);
+            // Opt-in seguro: no activar hasta completar pruebas.
+            const menuSelection = await recordAxiraServiceInterest(
+              sql, phone, text, whatsappMessageId
+            );
+
+            const brainReply = deliveryLease?.replyText ?? contactReply ?? menuSelection?.reply ?? await askBrain(request, brainHistory);
 
             console.log(
               "WHATSAPP_BRAIN_REPLY:",
@@ -1070,38 +1194,54 @@ export async function POST(
             ================================================
             */
 
+            if (deliveryLease) await beginWhatsAppSend(sql, deliveryLease, brainReply);
+            sendStarted = true;
             await sendWhatsAppMessage(
               recipient,
               brainReply
             );
 
-            /*
-            ================================================
-            GUARDAR RESPUESTA COMPLETA DE BRAIN
-            ================================================
-            */
+            if (deliveryLease) {
+              await completeWhatsAppSend(sql, deliveryLease, storedIdentity);
+            } else {
+              /*
+              ================================================
+              GUARDAR RESPUESTA COMPLETA DE BRAIN
+              ================================================
+              */
 
-            await sql`
-              INSERT INTO whatsapp_messages (
-                conversation_key,
-                phone,
-                role,
-                message
-              )
-              VALUES (
-                ${conversationKey},
-                ${storedIdentity},
-                ${"assistant"},
-                ${brainReply}
-              )
-            `;
+              await sql`
+                INSERT INTO whatsapp_messages (
+                  conversation_key,
+                  phone,
+                  role,
+                  message
+                )
+                VALUES (
+                  ${conversationKey},
+                  ${storedIdentity},
+                  ${"assistant"},
+                  ${brainReply}
+                )
+              `;
+
+            }
 
             repliesSent++;
+            qaBotCompleted = true;
 
             console.log(
               "AXIOMAI_BRAIN_REPLY_SENT"
             );
           } catch (error) {
+            if (recoveryEnabled && !sendStarted &&
+                !(error instanceof Error && error.message === "WHATSAPP_DUPLICATE_PAYLOAD_MISMATCH")) {
+              retryableFailure = true;
+            }
+            if (deliveryLease) {
+              try { await failWhatsAppDelivery(sql, deliveryLease, sendStarted); }
+              catch { console.error("WHATSAPP_DELIVERY_STATE_SAVE_FAILED"); }
+            }
             const messageError =
               error instanceof Error
                 ? error.message
@@ -1115,6 +1255,14 @@ export async function POST(
               "AXIOMAI_WHATSAPP_PROCESSING_ERROR:",
               messageError
             );
+          } finally {
+            if (qaBotToken && (qaBotCompleted || !sendStarted)) {
+              try {
+                await sql`DELETE FROM axira_qa_handoff WHERE phone=${phone} AND owner_name=${"Axira"} AND token=${qaBotToken}`;
+              } catch {
+                console.error("AXIRA_QA_TURN_RELEASE_FAILED");
+              }
+            }
           }
         }
       }
@@ -1128,7 +1276,7 @@ export async function POST(
         errors,
       },
       {
-        status: 200,
+        status: retryableFailure ? 503 : 200,
       }
     );
   } catch (error) {
@@ -1153,3 +1301,4 @@ export async function POST(
     );
   }
 }
+import { qaHandoffEnabled, qaHandoffPhone } from "../../lib/qa-handoff";

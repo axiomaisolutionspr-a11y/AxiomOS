@@ -1,0 +1,85 @@
+{
+  "runId": "qa:axira:458ab125ec:90535394-9e2a-44af-907e-d7d6a496fd65",
+  "commit": "458ab125ec871f21f34ce534f20e355178bda4be",
+  "passed": 17,
+  "failed": 0,
+  "liveBrainCalls": 1,
+  "realMessagingCalls": 0,
+  "cases": [
+    {
+      "name": "service-1-crm-and-duplicate",
+      "passed": true
+    },
+    {
+      "name": "service-2-crm-and-duplicate",
+      "passed": true
+    },
+    {
+      "name": "service-3-crm-and-duplicate",
+      "passed": true
+    },
+    {
+      "name": "service-4-crm-and-duplicate",
+      "passed": true
+    },
+    {
+      "name": "service-5-crm-and-duplicate",
+      "passed": true
+    },
+    {
+      "name": "service-6-crm-and-duplicate",
+      "passed": true
+    },
+    {
+      "name": "live-brain-continuity",
+      "passed": true
+    },
+    {
+      "name": "brain-failure-503-then-recovery",
+      "passed": true
+    },
+    {
+      "name": "concurrent-duplicate",
+      "passed": true
+    },
+    {
+      "name": "uncertain-send-is-not-repeated",
+      "passed": true
+    },
+    {
+      "name": "interest-write-recovery",
+      "passed": true
+    },
+    {
+      "name": "unlisted-phone-does-not-activate-menu",
+      "passed": true
+    },
+    {
+      "name": "database-outage-no-send",
+      "passed": true
+    },
+    {
+      "name": "missing-message-id-no-send",
+      "passed": true
+    },
+    {
+      "name": "missing-identity-no-send",
+      "passed": true
+    },
+    {
+      "name": "media-recorded-without-fabricated-reply",
+      "passed": true
+    },
+    {
+      "name": "reset-preserves-new-conversation",
+      "passed": true
+    }
+  ],
+  "deploymentId": "dpl_4EL6TGgXRnJU7QEGiiM3akuWTpvh",
+  "workflowRun": 41384448686,
+  "workflowConclusion": "success",
+  "localTestsPassed": 45,
+  "neonBranch": "br-long-glitter-avo0yybm",
+  "messagingProviders": "simulated",
+  "productionActivated": false
+}
