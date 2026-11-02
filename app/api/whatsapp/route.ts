@@ -924,6 +924,16 @@ export async function POST(
             }
 
             if (recoveryEnabled && !deliveryLease) continue;
+            if (phone === qaHandoffPhone && qaHandoffEnabled()) {
+              const active = await sql`SELECT phone FROM axira_qa_handoff WHERE phone=${phone}`;
+              if (active.length) {
+                if (!incomingStored) await sql`INSERT INTO whatsapp_messages
+                  (conversation_key,phone,role,message,whatsapp_message_id)
+                  VALUES (${conversationKey},${phone},${"user"},${text},${whatsappMessageId}) ON CONFLICT DO NOTHING`;
+                if (deliveryLease) await ignoreWhatsAppDelivery(sql, deliveryLease);
+                continue;
+              }
+            }
 
             /*
             ================================================
@@ -1252,3 +1262,4 @@ export async function POST(
     );
   }
 }
+import { qaHandoffEnabled, qaHandoffPhone } from "../../lib/qa-handoff";

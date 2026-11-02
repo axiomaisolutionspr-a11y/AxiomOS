@@ -25,6 +25,7 @@ function fixture(options = {}) {
   const sql = async (strings, ...values) => {
     const query = strings.join('?').replace(/\s+/g, ' ').trim();
     if (state.dbDown) throw new Error('Simulated Neon unavailable');
+    if (query.startsWith('SELECT phone FROM axira_qa_handoff')) return state.human ? [{phone:values[0]}] : [];
     if (query.startsWith('INSERT INTO axira_whatsapp_delivery')) {
       const [id, conversation_key, payload_hash, owner_token] = values;
       const row = state.deliveries.get(id);
@@ -111,6 +112,7 @@ function fixture(options = {}) {
       if (specifier === 'node:crypto') return { createHash, randomUUID };
       if (specifier === '../../lib/whatsapp-contact-request') return load('app/lib/whatsapp-contact-request.ts');
       if (specifier === '../../lib/whatsapp-delivery') return load('app/lib/whatsapp-delivery.ts');
+      if (specifier === '../../lib/qa-handoff') return load('app/lib/qa-handoff.ts');
       if (specifier === '../../lib/axira-service-menu') return load('app/lib/axira-service-menu.ts');
       throw new Error('Unapproved test import: ' + specifier);
     };
@@ -135,6 +137,18 @@ for (let choice = 1; choice <= 6; choice++) {
     assert.equal(f.brainCalls().length, 0); assert.equal(f.outbound().length, 1);
   });
 }
+test('a warehouse follow-up stays with Alex until release', async () => {
+  const f = fixture({env:{VERCEL_ENV:'preview', VERCEL_GIT_COMMIT_REF:'feature/axira-whatsapp-service-menu',
+    DATABASE_URL:'postgresql://ep-flat-art-av3pifin.c-11.us-east-1.aws.neon.tech/neondb', DUALHOOK_API_KEY:''}});
+  const identity = {from:'12025550118'};
+  f.state.human = true;
+  await f.send('¿Sirve para mover palés?', 'qa-warehouse', identity);
+  assert.equal(f.state.messages[0].message,'¿Sirve para mover palés?');
+  assert.equal(f.state.calls.length,0);
+  f.state.human = false;
+  await f.send('¿Qué capacidad necesito?', 'qa-capacity', identity);
+  assert.equal(f.brainCalls().length,1);
+});
 test('menu flag disabled routes numbers to Brain', async () => {
   const f = fixture({ env: { AXIRA_WHATSAPP_MENU_ENABLED: 'false' } }); await f.send('4');
   assert.equal(f.state.interest.length, 0); assert.equal(f.brainCalls().length, 1);

@@ -34,6 +34,7 @@ export default async function SimpleCRMPage() {
     contacts = [];
     return loadError();
   }
-  return <CRMWorkspace mode="live" initialContacts={contacts} />;
+  return <CRMWorkspace mode="live" initialContacts={contacts} handoffPhone={qaHandoffEnabled()?qaHandoffPhone:undefined} />;
 }
 function loadError() { return <main style={{padding:32}}><h1>No pudimos cargar tus contactos</h1><p>Puedes continuar en el CRM actual o abrir la demostración.</p><a href="/prospectos/anterior">CRM actual</a> · <a href="/prospectos/demo">Ver demo</a></main>; }
+import { qaHandoffEnabled, qaHandoffPhone } from "../../lib/qa-handoff";
