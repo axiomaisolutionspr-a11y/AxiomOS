@@ -112,3 +112,6 @@ export async function assertQaRuntimeRestricted(): Promise<void> {
     throw new Error("POS QA runtime requires a non-privileged Postgres role with RLS enforced.");
   }
 }
+
+/** Scoped Neon HTTP transaction: tenant context is applied in the same transaction.
+ * Never accept merchantId from a body or query parameter. */
