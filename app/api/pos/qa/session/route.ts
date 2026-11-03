@@ -8,8 +8,11 @@ const headers = { "Cache-Control": "no-store" };
 async function operatorActive(merchantId: string, actorId: string) {
   await assertQaRuntimeRestricted();
   const sql = qaDatabase();
-  const rows = await sql`SELECT role FROM pos_operators WHERE merchant_id=${merchantId}::uuid
-    AND id=${actorId}::uuid AND disabled_at IS NULL LIMIT 1`;
+  const [,rows] = await sql.transaction([
+    sql`SELECT set_config('axiomos.merchant_id', ${merchantId}, true)`,
+    sql`SELECT role FROM pos_operators WHERE merchant_id=${merchantId}::uuid
+      AND id=${actorId}::uuid AND disabled_at IS NULL LIMIT 1`,
+  ]);
   return rows.length === 1 && ["owner", "manager", "cashier"].includes(String(rows[0].role));
 }
 
