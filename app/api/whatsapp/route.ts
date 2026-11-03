@@ -5,6 +5,7 @@ import {
 
 import { neon } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
+import { verifyMetaWebhook, isExpectedDualhookWhatsAppPayload } from "../../lib/webhook-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -532,25 +533,32 @@ RECIBIR MENSAJES DE WHATSAPP
 export async function POST(
   request: NextRequest
 ) {
+  // This security gate is opt-in. Do not enable Meta HMAC for Dualhook
+  // Embedded Signup: it is signed with Dualhook's (unshared) app secret.
+  const mode = process.env.AXIOMOS_WHATSAPP_WEBHOOK_AUTH_MODE || "off";
+  if (!["off","meta-direct","dualhook-managed"].includes(mode))
+    return NextResponse.json({ok:false,error:"Webhook security mode invalid"},{status:503});
+  let raw: string, body: unknown;
+  try { raw=await request.text(); body=JSON.parse(raw); }
+  catch { return NextResponse.json({ok:false,error:"Invalid webhook body"},{status:400}); }
+  if (mode==="meta-direct") {
+    if (!process.env.WHATSAPP_META_APP_SECRET)
+      return NextResponse.json({ok:false,error:"Webhook auth not configured"},{status:503});
+    if (!verifyMetaWebhook(raw,request.headers.get("x-hub-signature-256"),process.env.WHATSAPP_META_APP_SECRET))
+      return NextResponse.json({ok:false,error:"Invalid webhook signature"},{status:401});
+  } else if (mode==="dualhook-managed") {
+    if (!process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || !process.env.WHATSAPP_PHONE_NUMBER_ID)
+      return NextResponse.json({ok:false,error:"Webhook identity not configured"},{status:503});
+    if (!isExpectedDualhookWhatsAppPayload(body,process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,process.env.WHATSAPP_PHONE_NUMBER_ID))
+      return NextResponse.json({ok:false,error:"Unexpected webhook identity"},{status:401});
+  }
   try {
-    const databaseUrl =
-      process.env.DATABASE_URL;
-
-    if (!databaseUrl) {
-      throw new Error(
-        "DATABASE_URL is not configured"
-      );
-    }
-
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) throw new Error("DATABASE_URL is not configured");
     const sql = neon(databaseUrl);
 
-    const body =
-      await request.json();
-
-    const entries =
-      Array.isArray(body?.entry)
-        ? body.entry
-        : [];
+    const payload = body as {entry?: unknown};
+    const entries = Array.isArray(payload?.entry) ? payload.entry : [];
 
     let messagesReceived = 0;
     let repliesSent = 0;
