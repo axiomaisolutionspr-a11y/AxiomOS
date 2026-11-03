@@ -97,3 +97,49 @@ test("Bounded public request bodies preserve UTF-8 and reject oversized streamin
   const empty=new Request("https://qa.invalid/receiver",{method:"POST"});
   assert.equal(await m.readLimitedUtf8Body(empty,64),"");
 });
+
+test("CRM HTTP handler rejects cross-origin, oversized body, invalid PIN and revokes session",async()=>{
+  const answers={};
+  const next={NextResponse:{
+    json:(body,opts={})=>({status:opts.status||200,body,headers:opts.headers||{},
+      cookies:{set:(name,value,attributes)=>{answers[name]={value,attributes};}}})
+  }};
+  let claims=0, issued=0, revocations=0;
+  const sec={
+    CRM_COOKIE:"axiomos_crm_session",
+    crmV2Enabled:()=>true,
+    crmCookieOptions:(maxAge=43200)=>({httpOnly:true,secure:true,sameSite:"strict",path:"/",maxAge}),
+    claimCrmLoginAttempt:async()=>{claims++;return claims<=2;},
+    resetCrmLoginAttempts:async()=>{},
+    createCrmSession:async()=>{issued++;return "v2."+"c".repeat(64);},
+    revokeCrmSession:async()=>{revocations++;return true;}
+  };
+  const bodyReader={
+    RequestBodyTooLargeError:class RequestBodyTooLargeError extends Error{},
+    readLimitedUtf8Body:async(request)=>request.raw
+  };
+  const env={AXIOMOS_CRM_ACCESS_PIN:"qa-only-pin"};
+  const route=importTs("app/api/crm-auth/route.ts",{
+    "next/server":next,
+    "node:crypto":crypto,
+    "../../lib/crm/security":sec,
+    "../../lib/limited-request-body":bodyReader
+  },env);
+  const req=(origin,raw,cookie)=>({
+    url:"https://qa.example/api/crm-auth",
+    headers:new Headers(origin?{origin}:{}),
+    raw,
+    cookies:{get:()=>cookie?{value:cookie}:undefined}
+  });
+  assert.equal((await route.POST(req("https://other.example",'{"pin":"qa-only-pin"}'))).status,403);
+  assert.equal((await route.POST(req("https://qa.example",'{"pin":"wrong"}'))).status,401);
+  assert.equal((await route.POST(req("https://qa.example",'{"pin":"qa-only-pin"}'))).status,200);
+  assert.equal(issued,1);
+  assert.equal(answers.axiomos_crm_session.attributes.httpOnly,true);
+  assert.equal(answers.axiomos_crm_session.attributes.secure,true);
+  assert.equal((await route.POST(req("https://qa.example",'{"pin":"qa-only-pin"}'))).status,429);
+  assert.equal((await route.DELETE(req("https://qa.example","", "v2."+"c".repeat(64)))).status,200);
+  assert.equal(revocations,1);
+  assert.equal(answers.axiomos_crm_session.attributes.maxAge,0);
+  assert.equal((await route.DELETE(req("https://other.example","", "v2."+"c".repeat(64)))).status,403);
+});
