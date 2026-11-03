@@ -1,16 +1,11 @@
 "use server";
 import { cookies } from "next/headers";
-import { createHash, timingSafeEqual } from "node:crypto";
+import { validCrmSession, CRM_COOKIE } from "../../lib/crm/security";
 import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
 import { STAGES } from "../../lib/crm/model";
 export async function saveSimpleContact(data: FormData): Promise<{ok:boolean; error?:string}> {
-  const pin = process.env.AXIOMOS_CRM_ACCESS_PIN;
-  const cookie = (await cookies()).get("axiomos_crm_session")?.value;
-  if (!pin || !cookie) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};
-  const expected = createHash("sha256").update(`axiomos-crm:${pin}`).digest("hex");
-  if (cookie.length !== expected.length || !timingSafeEqual(Buffer.from(cookie),Buffer.from(expected))) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};
-  const id = String(data.get("id") || "");
+  if (!(await validCrmSession((await cookies()).get(CRM_COOKIE)?.value))) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};\n  const id = String(data.get("id") || "");
   const stage = String(data.get("stage") || "");
   if (!/^\d+$/.test(id) || !STAGES.some(s=>s===stage)) return {ok:false,error:"Revisa el contacto y su estado."};
   const assigned = String(data.get("assignee") || "").trim().slice(0,180);
@@ -37,12 +32,7 @@ export async function saveSimpleContact(data: FormData): Promise<{ok:boolean; er
 
 /** Updates only the review marker. It cannot overwrite stage, owner or follow-up. */
 export async function markContactReviewed(id: string): Promise<{ok:boolean; error?:string}> {
-  const pin = process.env.AXIOMOS_CRM_ACCESS_PIN;
-  const cookie = (await cookies()).get("axiomos_crm_session")?.value;
-  if (!pin || !cookie) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};
-  const expected = createHash("sha256").update(`axiomos-crm:${pin}`).digest("hex");
-  if (cookie.length !== expected.length || !timingSafeEqual(Buffer.from(cookie), Buffer.from(expected))) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};
-  if (!/^\d+$/.test(id)) return {ok:false,error:"El contacto no es válido."};
+  if (!(await validCrmSession((await cookies()).get(CRM_COOKIE)?.value))) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};\n  if (!/^\d+$/.test(id)) return {ok:false,error:"El contacto no es válido."};
   if (!process.env.DATABASE_URL) return {ok:false,error:"No se pudo conectar con el CRM."};
   try {
     const sql = neon(process.env.DATABASE_URL);
@@ -62,14 +52,7 @@ export async function deleteSimpleContact(
   expectedPhone: string,
   expectedCompany: string
 ): Promise<{ok:boolean; error?:string; deletedCalls?:number}> {
-  const pin = process.env.AXIOMOS_CRM_ACCESS_PIN;
-  const cookie = (await cookies()).get("axiomos_crm_session")?.value;
-  if (!pin || !cookie) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};
-  const expected = createHash("sha256").update(`axiomos-crm:${pin}`).digest("hex");
-  if (cookie.length !== expected.length || !timingSafeEqual(Buffer.from(cookie),Buffer.from(expected))) {
-    return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};
-  }
-  if (!/^\d+$/.test(id)) return {ok:false,error:"El contacto no es válido."};
+  if (!(await validCrmSession((await cookies()).get(CRM_COOKIE)?.value))) return {ok:false,error:"Tu sesión venció. Vuelve a ingresar al CRM."};\n  if (!/^\d+$/.test(id)) return {ok:false,error:"El contacto no es válido."};
   if (!process.env.DATABASE_URL) return {ok:false,error:"No se pudo conectar con el CRM."};
 
   const normalizePhone = (value: string) => value.replace(/\D/g, "").slice(-10);
