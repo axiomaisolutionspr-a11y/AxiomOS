@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { POS_QA_COOKIE, qaConfigured, qaDatabase, sameOrigin, verifyQaSession } from "../../../../lib/pos/qa-auth";
+import { POS_QA_COOKIE, qaConfigured, qaDatabase, assertQaRuntimeRestricted, sameOrigin, verifyQaSession } from "../../../../lib/pos/qa-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
   const session = authorized(request);
   if (!session) return NextResponse.json({ ok: false, reason: "qa_disabled_or_unauthorized" }, { status: 401, headers });
   try {
+    await assertQaRuntimeRestricted();
     const sql = qaDatabase();
     const operator = await sql`SELECT 1 FROM pos_operators
       WHERE merchant_id=${session.merchantId}::uuid AND id=${session.actorId}::uuid
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
   const items = (input.items as Array<{sku:string;quantity:number}>)
     .map((v) => ({ sku: v.sku, quantity: v.quantity }));
   try {
+    await assertQaRuntimeRestricted();
     const sql = qaDatabase();
     const rows = await sql`SELECT pos_qa_create_draft_order(
       ${session.merchantId}::uuid,${input.locationId}::uuid,${input.stationId}::uuid,
