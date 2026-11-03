@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "no-store" };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function authorized(request: NextRequest) {
+async function authorized(request: NextRequest) {
   if (!qaConfigured()) return null;
   return await verifyActiveQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
 }
