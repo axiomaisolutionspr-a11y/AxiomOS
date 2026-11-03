@@ -17,14 +17,17 @@ export async function GET(request: NextRequest) {
   try {
     await assertQaRuntimeRestricted();
     const sql = qaDatabase();
-    const operator = await sql`SELECT 1 FROM pos_operators
-      WHERE merchant_id=${session.merchantId}::uuid AND id=${session.actorId}::uuid
-      AND disabled_at IS NULL AND role IN ('owner','manager','cashier')`;
+    const [,operator,orders] = await sql.transaction([
+      sql`SELECT set_config('axiomos.merchant_id', ${session.merchantId}, true)`,
+      sql`SELECT 1 FROM pos_operators WHERE merchant_id=${session.merchantId}::uuid
+        AND id=${session.actorId}::uuid AND disabled_at IS NULL
+        AND role IN ('owner','manager','cashier')`,
+      sql`SELECT id::text,idempotency_key,status,subtotal_cents::text,
+        tax_cents::text,total_cents::text,created_at FROM pos_orders
+        WHERE merchant_id=${session.merchantId}::uuid
+          AND created_by=${session.actorId}::uuid ORDER BY created_at DESC LIMIT 30`,
+    ]);
     if (!operator.length) return NextResponse.json({ ok: false }, { status: 403, headers });
-    const orders = await sql`SELECT id::text, idempotency_key, status,
-      subtotal_cents::text, tax_cents::text, total_cents::text, created_at
-      FROM pos_orders WHERE merchant_id=${session.merchantId}::uuid
-      AND created_by=${session.actorId}::uuid ORDER BY created_at DESC LIMIT 30`;
     return NextResponse.json({ ok: true, orders }, { headers });
   } catch { return NextResponse.json({ ok: false, error: "QA database unavailable." }, { status: 503, headers }); }
 }
@@ -60,15 +63,20 @@ export async function POST(request: NextRequest) {
   try {
     await assertQaRuntimeRestricted();
     const sql = qaDatabase();
-    const rows = await sql`SELECT pos_qa_create_draft_order(
-      ${session.merchantId}::uuid,${input.locationId}::uuid,${input.stationId}::uuid,
-      ${session.actorId}::uuid,${input.idempotencyKey},${JSON.stringify(items)}::jsonb
-    )::text AS id`;
+    const [,rows] = await sql.transaction([
+      sql`SELECT set_config('axiomos.merchant_id', ${session.merchantId}, true)`,
+      sql`SELECT pos_qa_create_draft_order(
+        ${session.merchantId}::uuid,${input.locationId}::uuid,${input.stationId}::uuid,
+        ${session.actorId}::uuid,${input.idempotencyKey},${JSON.stringify(items)}::jsonb
+      )::text AS id`,
+    ]);
     const id = String(rows[0].id);
-    const saved = await sql`SELECT id::text,status,subtotal_cents::text,tax_cents::text,
-      total_cents::text, created_at FROM pos_orders
-      WHERE id=${id}::uuid AND merchant_id=${session.merchantId}::uuid
-        AND created_by=${session.actorId}::uuid LIMIT 1`;
+    const [,saved] = await sql.transaction([
+      sql`SELECT set_config('axiomos.merchant_id', ${session.merchantId}, true)`,
+      sql`SELECT id::text,status,subtotal_cents::text,tax_cents::text,total_cents::text,created_at
+        FROM pos_orders WHERE id=${id}::uuid AND merchant_id=${session.merchantId}::uuid
+          AND created_by=${session.actorId}::uuid LIMIT 1`,
+    ]);
     return NextResponse.json({ ok: true, order: saved[0] }, { status: 201, headers });
   } catch {
     // Fail closed; do not expose merchant data, SQL statements or any secret in error responses.
