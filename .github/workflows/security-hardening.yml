@@ -1,0 +1,40 @@
+name: AxiomOS security hardening QA
+
+on:
+  push:
+    branches:
+      - security/crm-webhooks-hardening-20261103
+  pull_request:
+    paths:
+      - app/lib/crm/security.ts
+      - app/lib/webhook-auth.ts
+      - app/api/crm-auth/route.ts
+      - app/api/whatsapp/route.ts
+      - app/api/telnyx/route.ts
+      - app/prospectos/simple/actions.ts
+      - app/prospectos/simple/calls.ts
+      - proxy.ts
+      - db/migrations/20261103_crm_sessions.sql
+      - tests/security-hardening.test.cjs
+      - .github/workflows/security-hardening.yml
+
+permissions:
+  contents: read
+jobs:
+  security-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: node --test tests/security-hardening.test.cjs
+      - run: npx next typegen
+      - run: npx tsc --noEmit
+      - run: npm run build
+        env:
+          AXIOMOS_CRM_SESSION_V2_ENABLED: "false"
+          AXIOMOS_TELNYX_SIGNATURE_REQUIRED: "false"
+          AXIOMOS_WHATSAPP_WEBHOOK_AUTH_MODE: "off"
