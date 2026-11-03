@@ -8,6 +8,7 @@ on:
     paths:
       - app/lib/crm/security.ts
       - app/lib/webhook-auth.ts
+      - app/lib/limited-request-body.ts
       - app/api/crm-auth/route.ts
       - app/api/whatsapp/route.ts
       - app/api/telnyx/route.ts
