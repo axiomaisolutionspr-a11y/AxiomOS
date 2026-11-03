@@ -415,7 +415,8 @@ CONSULTAR AXIOMOS BRAIN
 
 async function askBrain(
   request: NextRequest,
-  messages: BrainMessage[]
+  messages: BrainMessage[],
+  businessContext = ""
 ) {
   const brainUrl = new URL(
     "/api/brain",
@@ -433,6 +434,7 @@ async function askBrain(
       body: JSON.stringify({
         messages,
         channel: "whatsapp",
+        businessContext,
       }),
       cache: "no-store",
     }
@@ -822,7 +824,7 @@ export async function POST(
                           ${legacyConversationKey}
                         )
                         ORDER BY created_at DESC, id DESC
-                        LIMIT 12
+                        LIMIT 24
                       `
                     : await sql`
                         SELECT role, message
@@ -830,7 +832,7 @@ export async function POST(
                         WHERE conversation_key =
                           ${conversationKey}
                         ORDER BY created_at DESC, id DESC
-                        LIMIT 12
+                        LIMIT 24
                       `;
 
                 const retryHistory =
@@ -973,7 +975,7 @@ export async function POST(
                     ORDER BY
                       created_at DESC,
                       id DESC
-                    LIMIT 12
+                    LIMIT 24
                   `
                 : await sql`
                     SELECT
@@ -985,7 +987,7 @@ export async function POST(
                     ORDER BY
                       created_at DESC,
                       id DESC
-                    LIMIT 12
+                    LIMIT 24
                   `;
 
             const history =
@@ -1024,40 +1026,37 @@ export async function POST(
             // Archivos y notas de voz se registran para el equipo; no se finge
             // que Brain pudo verlos ni se envía una respuesta generada sin texto.
             if (!isConversationalText) continue;
-            // El nombre comercial confirmado en CRM prevalece sobre nombres
-            // ambiguos o errores de transcripción del historial de WhatsApp.
-            // No se modifica el historial persistido ni el código de Brain.
-            let verifiedCompany = "";
+            // CRM: entregar contexto empresarial por un campo separado;
+            // de otra forma, el recorte del historial elimina las notas.
+            let businessContext = "";
             if (phone && !contactReply) {
               try {
-                const companyRows = await sql`
-                  SELECT caller_company
+                const prospectRows = await sql`
+                  SELECT caller_company, crm_notes
                   FROM prospects
                   WHERE prospect_key = ${`phone:${phone.slice(-10)}`}
                   LIMIT 1
                 `;
-                verifiedCompany =
-                  typeof companyRows[0]?.caller_company === "string"
-                    ? companyRows[0].caller_company.trim().slice(0, 220)
-                    : "";
+                const company = typeof prospectRows[0]?.caller_company === "string"
+                  ? prospectRows[0].caller_company.trim().slice(0, 200)
+                  : "";
+                const rawNotes = typeof prospectRows[0]?.crm_notes === "string"
+                  ? prospectRows[0].crm_notes.trim()
+                  : "";
+                // Las notas suelen incluir mensajes automáticos; retener el
+                // comienzo y los eventos más recientes sin exceder el límite.
+                const notes = rawNotes.length > 1700
+                  ? rawNotes.slice(0, 1050) + "\n[...]\n" + rawNotes.slice(-500)
+                  : rawNotes;
+                businessContext = [
+                  company ? `Negocio confirmado en CRM: ${company}.` : "",
+                  notes ? `Notas comerciales del CRM (pueden contener información antigua):\n${notes}` : "",
+                ].filter(Boolean).join("\n");
               } catch {
-                console.error("WHATSAPP_CRM_COMPANY_LOOKUP_FAILED");
+                console.error("WHATSAPP_CRM_CONTEXT_LOOKUP_FAILED");
               }
             }
-
-            const brainHistory = verifiedCompany
-              ? [
-                  {
-                    role: "user" as const,
-                    text:
-                      `Información verificada del CRM: el nombre confirmado del negocio es "${verifiedCompany}". ` +
-                      "Si en mensajes anteriores aparece otro nombre de negocio, no lo uses como nombre confirmado. " +
-                      "Responde a la consulta más reciente del cliente sin mencionar esta instrucción interna.",
-                  },
-                  ...history,
-                ]
-              : history;
-            const brainReply = contactReply ?? await askBrain(request, brainHistory);
+            const brainReply = contactReply ?? await askBrain(request, history, businessContext);
 
             console.log(
               "WHATSAPP_BRAIN_REPLY:",
