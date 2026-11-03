@@ -8,7 +8,12 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function authorized(request: NextRequest) {
   if (!qaConfigured()) return null;
-  return await verifyActiveQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
+  try {
+    return await verifyActiveQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
+  } catch {
+    // Authentication fails closed if Neon is unavailable; never expose driver errors.
+    return null;
+  }
 }
 
 export async function GET(request: NextRequest) {
