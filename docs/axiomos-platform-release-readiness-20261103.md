@@ -8,6 +8,7 @@ Status: QA ONLY — NOT CERTIFIED FOR PRODUCTION
 - PR #64 is a separate draft branch and remains uncertified for HTTP end-to-end POS authentication.
 - Neon project has main and isolated POS QA branches; production CRM snapshot snap-restless-leaf-av4bp0og is present.
 - Vercel environment inventory showed DATABASE_URL assigned to both production and generic preview, and a branch-specific POS_QA_DATABASE_URL with no value on the POS QA branch. This does not establish database isolation for generic Preview. DO NOT run write tests on Preview until its database target is independently verified.
+- QA isolation follow-up: Neon branch `br-floral-bonus-av79kbh4`, database `axiomos_security_qa`, role `axiomos_security_qa_app` created. Only CRM auth tables exist in this clean database, with zero initial session and attempt records. Read-only SQL under the restricted role verified `current_database()` and `current_user`. Vercel branch-scoped **sensitive** `DATABASE_URL` was added to Preview for `security/crm-webhooks-hardening-20261103`, without changing the generic Production/Preview variable. The Preview runtime binding must still be checked via protected deployment before asserting E2E isolation.
 
 ## Release blockers, in priority order
 1. Verify Preview database isolation by branch-specific environment assignment and read-only identity checks. Never run write tests against production data.
