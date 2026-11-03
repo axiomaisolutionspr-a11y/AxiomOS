@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { POS_QA_COOKIE, qaConfigured, qaDatabase, assertQaRuntimeRestricted, verifyQaSession } from "../../../../lib/pos/qa-auth";
+import { POS_QA_COOKIE, qaConfigured, qaDatabase, assertQaRuntimeRestricted, verifyActiveQaSession } from "../../../../lib/pos/qa-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
