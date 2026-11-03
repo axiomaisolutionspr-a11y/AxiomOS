@@ -1,0 +1,3 @@
+{
+  "buildCommand": "npm run build && node tests/pos-http-e2e.mjs"
+}
