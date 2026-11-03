@@ -12,10 +12,10 @@ La manera preferente es usar el CLI oficial con el alcance, proyecto y rama corr
 git switch feature/pos-qa-session-revocation-20261103
 npm ci
 vercel pull --yes --environment=preview --git-branch=feature/pos-qa-session-revocation-20261103 --scope axiomai-solutions
-vercel env run -- node tests/pos-http-e2e.mjs
+vercel env run -e preview --git-branch feature/pos-qa-session-revocation-20261103 -- node tests/pos-http-e2e.mjs
 ```
 
-**Importante:** confirmar en las instrucciones actuales del CLI si `vercel env run` permite seleccionar la rama Preview; si no, usar `vercel env pull` con `--environment=preview --git-branch=...` para cargar el entorno en un proceso local autorizado, con archivo .env.local ignorado por Git. No ejecutar el CLI contra Production. No ejecutar si el rol no es `pos_qa_app_login`.
+**Confirmado en la documentación oficial del CLI:** `vercel env run -e preview --git-branch ... --` permite seleccionar la rama Preview sin escribir secretos a disco. Si no está disponible en la versión instalada, usar `vercel env pull` con `--environment=preview --git-branch=...` para cargar el entorno en un proceso local autorizado, con archivo .env.local ignorado por Git. No ejecutar el CLI contra Production. No ejecutar si el rol no es `pos_qa_app_login`.
 
 El test requiere un build local disponible. Ejecutar `npm run build` antes del test si todavía no existe `.next`. El script utiliza credenciales efímeras generadas en memoria y el role no privilegiado. Usa la rama QA autorizada y nunca marca pagos reales.
 
