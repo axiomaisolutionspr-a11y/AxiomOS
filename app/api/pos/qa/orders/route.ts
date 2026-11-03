@@ -8,7 +8,7 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function authorized(request: NextRequest) {
   if (!qaConfigured()) return null;
-  return verifyQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
+  return await verifyActiveQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
 }
 
 export async function GET(request: NextRequest) {
