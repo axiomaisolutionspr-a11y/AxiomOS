@@ -103,3 +103,12 @@ export function sameOrigin(request: Request) {
   try { return new URL(origin).origin === new URL(request.url).origin; }
   catch { return false; }
 }
+
+/** Reject Neon-generated elevated users; RLS bypass invalidates tenant separation. */
+export async function assertQaRuntimeRestricted(): Promise<void> {
+  const sql = qaDatabase();
+  const role = await sql`SELECT rolbypassrls, rolsuper FROM pg_roles WHERE rolname=current_user LIMIT 1`;
+  if (role.length !== 1 || role[0].rolbypassrls !== false || role[0].rolsuper !== false) {
+    throw new Error("POS QA runtime requires a non-privileged Postgres role with RLS enforced.");
+  }
+}
