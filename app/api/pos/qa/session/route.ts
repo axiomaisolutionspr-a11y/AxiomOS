@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { POS_QA_COOKIE, authenticateQa, issueQaSession, qaConfigured, qaDatabase, sameOrigin, verifyQaSession } from "../../../../lib/pos/qa-auth";
+import { POS_QA_COOKIE, authenticateQa, issueQaSession, qaConfigured, qaDatabase, assertQaRuntimeRestricted, sameOrigin, verifyQaSession } from "../../../../lib/pos/qa-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "no-store" };
 
 async function operatorActive(merchantId: string, actorId: string) {
+  await assertQaRuntimeRestricted();
   const sql = qaDatabase();
   const rows = await sql`SELECT role FROM pos_operators WHERE merchant_id=${merchantId}::uuid
     AND id=${actorId}::uuid AND disabled_at IS NULL LIMIT 1`;
