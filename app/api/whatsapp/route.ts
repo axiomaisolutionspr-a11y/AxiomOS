@@ -1046,12 +1046,12 @@ export async function POST(
                 // Las notas suelen incluir mensajes automáticos; retener el
                 // comienzo y los eventos más recientes sin exceder el límite.
                 const notes = rawNotes.length > 1700
-                  ? rawNotes.slice(0, 1050) + "\\n[...]\\n" + rawNotes.slice(-500)
+                  ? rawNotes.slice(0, 1050) + "\n[...]\n" + rawNotes.slice(-500)
                   : rawNotes;
                 businessContext = [
                   company ? `Negocio confirmado en CRM: ${company}.` : "",
-                  notes ? `Notas comerciales del CRM (pueden contener información antigua):\\n${notes}` : "",
-                ].filter(Boolean).join("\\n");
+                  notes ? `Notas comerciales del CRM (pueden contener información antigua):\n${notes}` : "",
+                ].filter(Boolean).join("\n");
               } catch {
                 console.error("WHATSAPP_CRM_CONTEXT_LOOKUP_FAILED");
               }
