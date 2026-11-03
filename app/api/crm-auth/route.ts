@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash, timingSafeEqual } from "node:crypto";
+import { readLimitedUtf8Body, RequestBodyTooLargeError } from "../../lib/limited-request-body";
 import {
   CRM_COOKIE, crmV2Enabled, crmCookieOptions, claimCrmLoginAttempt,
   resetCrmLoginAttempts, createCrmSession, revokeCrmSession
@@ -21,13 +22,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ok:false,error:"Origen no autorizado."},{status:403});
   let submitted = "";
   try {
-    if (Number(request.headers.get("content-length") || 0) > 1024)
-      return NextResponse.json({ok:false,error:"Solicitud demasiado grande."},{status:413});
-    const body = await request.json();
+    const body = JSON.parse(await readLimitedUtf8Body(request, 1024));
     submitted = typeof body?.pin === "string" ? body.pin.trim() : "";
     if (!submitted || submitted.length > 256)
       return NextResponse.json({ok:false,error:"PIN no válido."},{status:400});
-  } catch {
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError)
+      return NextResponse.json({ok:false,error:"Solicitud demasiado grande."},{status:413});
     return NextResponse.json({ok:false,error:"Solicitud inválida."},{status:400});
   }
   try {
