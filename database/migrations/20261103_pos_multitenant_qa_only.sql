@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS pos_stations (
   display_name text NOT NULL,
   active boolean NOT NULL DEFAULT true,
   FOREIGN KEY (merchant_id,location_id) REFERENCES pos_locations(merchant_id,id),
-  UNIQUE (merchant_id,id)
+  UNIQUE (merchant_id,id),
+  UNIQUE (merchant_id,location_id,id)
 );
 
 CREATE TABLE IF NOT EXISTS pos_catalog (
@@ -65,7 +66,7 @@ CREATE TABLE IF NOT EXISTS pos_orders (
   total_cents bigint GENERATED ALWAYS AS (subtotal_cents + tax_cents) STORED,
   created_at timestamptz NOT NULL DEFAULT now(),
   FOREIGN KEY (merchant_id,location_id) REFERENCES pos_locations(merchant_id,id),
-  FOREIGN KEY (merchant_id,station_id) REFERENCES pos_stations(merchant_id,id),
+  FOREIGN KEY (merchant_id,location_id,station_id) REFERENCES pos_stations(merchant_id,location_id,id),
   FOREIGN KEY (merchant_id,created_by) REFERENCES pos_operators(merchant_id,id),
   UNIQUE (merchant_id,idempotency_key),
   UNIQUE (merchant_id,id)
