@@ -557,7 +557,7 @@ export async function POST(
     if (!databaseUrl) throw new Error("DATABASE_URL is not configured");
     const sql = neon(databaseUrl);
 
-    const payload = body as {entry?: unknown};
+    const payload = body as {entry?: any[]};
     const entries = Array.isArray(payload?.entry) ? payload.entry : [];
 
     let messagesReceived = 0;
