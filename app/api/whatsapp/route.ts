@@ -6,6 +6,7 @@ import {
 import { neon } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
 import { verifyMetaWebhook, isExpectedDualhookWhatsAppPayload } from "../../lib/webhook-auth";
+import { readLimitedUtf8Body, RequestBodyTooLargeError } from "../../lib/limited-request-body";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -539,8 +540,12 @@ export async function POST(
   if (!["off","meta-direct","dualhook-managed"].includes(mode))
     return NextResponse.json({ok:false,error:"Webhook security mode invalid"},{status:503});
   let raw: string, body: unknown;
-  try { raw=await request.text(); body=JSON.parse(raw); }
-  catch { return NextResponse.json({ok:false,error:"Invalid webhook body"},{status:400}); }
+  try { raw=await readLimitedUtf8Body(request, 2 * 1024 * 1024); body=JSON.parse(raw); }
+  catch (error) {
+    if (error instanceof RequestBodyTooLargeError)
+      return NextResponse.json({ok:false,error:"Webhook body too large"},{status:413});
+    return NextResponse.json({ok:false,error:"Invalid webhook body"},{status:400});
+  }
   if (mode==="meta-direct") {
     if (!process.env.WHATSAPP_META_APP_SECRET)
       return NextResponse.json({ok:false,error:"Webhook auth not configured"},{status:503});
