@@ -71,3 +71,29 @@ test("CRM sessions issue independent tokens, expire/revoke individually, and rat
   assert.equal(await m.claimCrmLoginAttempt(h),false);
   await m.resetCrmLoginAttempts(h);assert.equal(await m.claimCrmLoginAttempt(h),true);
 });
+
+test("Bounded public request bodies preserve UTF-8 and reject oversized streaming bodies",async()=>{
+  const m=importTs("app/lib/limited-request-body.ts",{});
+  const valid=new Request("https://qa.invalid/receiver",{method:"POST",body:'{"name":"Axira","lang":"es"}'});
+  assert.equal(await m.readLimitedUtf8Body(valid,1024),'{"name":"Axira","lang":"es"}');
+
+  // Do not trust Content-Length: an attacker may omit it and stream data.
+  const stream=new ReadableStream({
+    start(controller) {
+      controller.enqueue(Buffer.alloc(40,65));
+      controller.enqueue(Buffer.alloc(40,66));
+      controller.close();
+    }
+  });
+  const unbounded=new Request("https://qa.invalid/receiver",{
+    method:"POST",body:stream,duplex:"half"
+  });
+  await assert.rejects(m.readLimitedUtf8Body(unbounded,64),err=>err?.name==="RequestBodyTooLargeError");
+
+  const declared=new Request("https://qa.invalid/receiver",{
+    method:"POST",body:"oversized",headers:{"content-length":"9999"}
+  });
+  await assert.rejects(m.readLimitedUtf8Body(declared,64),err=>err?.name==="RequestBodyTooLargeError");
+  const empty=new Request("https://qa.invalid/receiver",{method:"POST"});
+  assert.equal(await m.readLimitedUtf8Body(empty,64),"");
+});
