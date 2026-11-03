@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHmac } from "node:crypto";
 import { POS_QA_COOKIE, authenticateQa, issueQaSession, qaConfigured, qaDatabase, assertQaRuntimeRestricted, sameOrigin, verifyQaSession } from "../../../../lib/pos/qa-auth";
 
 export const runtime = "nodejs";
@@ -38,6 +39,30 @@ export async function POST(request: NextRequest) {
   } catch { return NextResponse.json({ ok: false }, { status: 400, headers }); }
   if (typeof input.username !== "string" || typeof input.password !== "string")
     return NextResponse.json({ ok: false }, { status: 400, headers });
+  // QA login fixed-window gate: count attempts BEFORE expensive scrypt verification.
+  // A failed or successful attempt counts; unknown usernames are rate-limited too.
+  // Only the trusted server derives this opaque key; no raw password or IP is retained.
+  try {
+    await assertQaRuntimeRestricted();
+    const sql = qaDatabase();
+    const normalized = input.username.toLowerCase().slice(0, 60);
+    const keyHash = createHmac("sha256", process.env.POS_QA_SESSION_SECRET!)
+      .update("pos-qa-login:" + normalized).digest("hex");
+    const bucket = Math.floor(Date.now() / 900000);
+    const attempts = await sql`INSERT INTO pos_qa_login_limiter(key_hash,window_bucket,attempts)
+      VALUES(${keyHash},${bucket},1)
+      ON CONFLICT (key_hash,window_bucket) DO UPDATE SET
+      attempts = LEAST(100000,pos_qa_login_limiter.attempts + 1)
+      RETURNING attempts`;
+    if (!attempts.length || Number(attempts[0].attempts) > 5) {
+      return NextResponse.json({ ok: false, error: "Demasiados intentos. Inténtalo más tarde." },
+        { status: 429, headers: { ...headers, "Retry-After": "900" } });
+    }
+  } catch {
+    // No bypass when limiter database is unavailable.
+    return NextResponse.json({ ok: false, reason: "qa_login_temporarily_unavailable" },
+      { status: 503, headers });
+  }
   const session = authenticateQa(input.username, input.password);
   if (!session) return NextResponse.json({ ok: false, error: "Credenciales incorrectas." }, { status: 401, headers });
   try {
