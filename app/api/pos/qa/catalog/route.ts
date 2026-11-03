@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { POS_QA_COOKIE, qaConfigured, qaDatabase, verifyQaSession } from "../../../../lib/pos/qa-auth";
+import { POS_QA_COOKIE, qaConfigured, qaDatabase, assertQaRuntimeRestricted, verifyQaSession } from "../../../../lib/pos/qa-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
   const session = verifyQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
   if (!session) return NextResponse.json({ ok: false }, { status: 401, headers });
   try {
+    await assertQaRuntimeRestricted();
     const sql = qaDatabase();
     const actor = await sql`SELECT role FROM pos_operators
       WHERE id=${session.actorId}::uuid AND merchant_id=${session.merchantId}::uuid
