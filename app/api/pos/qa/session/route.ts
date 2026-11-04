@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "node:crypto";
-import { POS_QA_COOKIE, authenticateQa, issueQaSession, qaConfigured, qaDatabase, assertQaRuntimeRestricted, sameOrigin, verifyQaSession } from "../../../../lib/pos/qa-auth";
+import { POS_QA_COOKIE, authenticateQa, issueQaSession, qaConfigured, qaDatabase, assertQaRuntimeRestricted, sameOrigin, verifyActiveQaSession, persistQaSession, revokeQaSession } from "../../../../lib/pos/qa-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,13 +19,13 @@ async function operatorActive(merchantId: string, actorId: string) {
 
 export async function GET(request: NextRequest) {
   if (!qaConfigured()) return NextResponse.json({ ok: false, reason: "qa_not_configured" }, { status: 503, headers });
-  const session = verifyQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
-  if (!session) return NextResponse.json({ ok: false, authenticated: false }, { status: 401, headers });
   try {
-    if (!await operatorActive(session.merchantId, session.actorId))
-      return NextResponse.json({ ok: false, authenticated: false }, { status: 403, headers });
+    const session = await verifyActiveQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
+    if (!session) return NextResponse.json({ ok: false, authenticated: false }, { status: 401, headers });
     return NextResponse.json({ ok: true, authenticated: true, username: session.username }, { headers });
-  } catch { return NextResponse.json({ ok: false, reason: "qa_db_unavailable" }, { status: 503, headers }); }
+  } catch {
+    return NextResponse.json({ ok: false, reason: "qa_db_unavailable" }, { status: 503, headers });
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
     if (!await operatorActive(session.merchantId, session.actorId))
       return NextResponse.json({ ok: false }, { status: 403, headers });
     const signed = issueQaSession(session);
+    await persistQaSession(signed.value, session);
     const response = NextResponse.json({ ok: true, username: session.username }, { headers });
     response.cookies.set(POS_QA_COOKIE, signed.value, {
       httpOnly: true, secure: true, sameSite: "strict", path: "/", maxAge: signed.maxAge,
@@ -79,7 +80,19 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   if (!sameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403, headers });
+  const oldCookie = request.cookies.get(POS_QA_COOKIE)?.value;
+  if (oldCookie) {
+    try {
+      // Even a copied cookie becomes invalid after this server-side update.
+      await revokeQaSession(oldCookie);
+    } catch {
+      return NextResponse.json({ ok: false, error: "No se pudo revocar la sesión. Inténtalo de nuevo." },
+        { status: 503, headers });
+    }
+  }
   const response = NextResponse.json({ ok: true }, { headers });
-  response.cookies.set(POS_QA_COOKIE, "", { maxAge: 0, httpOnly: true, secure: true, sameSite: "strict", path: "/" });
+  response.cookies.set(POS_QA_COOKIE, "", {
+    maxAge: 0, httpOnly: true, secure: true, sameSite: "strict", path: "/",
+  });
   return response;
 }

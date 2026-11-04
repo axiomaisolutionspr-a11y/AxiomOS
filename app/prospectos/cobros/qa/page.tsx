@@ -78,8 +78,16 @@ export default function PosQaWorkspace() {
   }
 
   async function logout() {
-    await fetch("/api/pos/qa/session", { method: "DELETE", credentials: "same-origin" });
-    setAuth("logged_out"); setData(null); setCart([]); setMessage(""); setPassword("");
+    setBusy(true); setMessage("");
+    try {
+      const response = await fetch("/api/pos/qa/session", {
+        method: "DELETE", credentials: "same-origin",
+      });
+      if (!response.ok) throw Error("No se pudo revocar la sesión. Inténtalo de nuevo.");
+      setAuth("logged_out"); setData(null); setCart([]); setPassword("");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No se pudo cerrar sesión.");
+    } finally { setBusy(false); }
   }
 
   function add(sku: string) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { POS_QA_COOKIE, qaConfigured, qaDatabase, assertQaRuntimeRestricted, verifyQaSession } from "../../../../lib/pos/qa-auth";
+import { POS_QA_COOKIE, qaConfigured, qaDatabase, assertQaRuntimeRestricted, verifyActiveQaSession } from "../../../../lib/pos/qa-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -7,7 +7,7 @@ const headers = { "Cache-Control": "no-store" };
 
 export async function GET(request: NextRequest) {
   if (!qaConfigured()) return NextResponse.json({ ok: false, reason: "qa_not_configured" }, { status: 503, headers });
-  const session = verifyQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
+  const session = await verifyActiveQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
   if (!session) return NextResponse.json({ ok: false }, { status: 401, headers });
   try {
     await assertQaRuntimeRestricted();

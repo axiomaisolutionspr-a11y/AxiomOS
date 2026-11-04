@@ -1,0 +1,36 @@
+name: POS authenticated QA E2E
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pos-auth-qa
+  cancel-in-progress: false
+jobs:
+  authenticated-e2e:
+    if: github.ref == 'refs/heads/feature/pos-qa-session-revocation-20261103'
+    runs-on: ubuntu-latest
+    environment: axiomos-qa
+    timeout-minutes: 15
+    env:
+      POS_QA_DATABASE_URL: ${{ secrets.POS_QA_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify isolated secret presence without revealing it
+        shell: bash
+        run: |
+          if [ -z "$POS_QA_DATABASE_URL" ]; then
+            echo '::error::Add POS_QA_DATABASE_URL environment secret in axiomos-qa; test not run.'
+            exit 2
+          fi
+      - run: npm ci --no-fund
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run build
+        env:
+          POS_QA_ENABLED: 'false'
+      - name: Execute authenticated QA HTTP flow
+        run: node tests/pos-http-e2e.mjs

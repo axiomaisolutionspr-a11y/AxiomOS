@@ -1,0 +1,28 @@
+name: POS QA HTTP safety checks
+on:
+  push:
+    branches:
+      - feature/pos-qa-session-revocation-20261103
+  pull_request:
+    paths:
+      - 'app/api/pos/**'
+      - 'app/lib/pos/**'
+      - 'tests/pos-http-negative.mjs'
+      - '.github/workflows/pos-qa-http.yml'
+permissions:
+  contents: read
+jobs:
+  pos-qa-negative:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run build
+        env:
+          POS_QA_ENABLED: "false"
+      - run: node tests/pos-http-negative.mjs

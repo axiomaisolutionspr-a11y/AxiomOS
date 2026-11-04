@@ -1,5 +1,5 @@
 import "server-only";
-import { createHmac, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 export const POS_QA_COOKIE = "axiomos_pos_qa_session";
@@ -74,6 +74,7 @@ export function issueQaSession(session: QaSession) {
     merchantId: session.merchantId,
     actorId: session.actorId,
     exp: Math.floor(Date.now() / 1000) + cookieMaxAgeSeconds,
+    nonce: randomBytes(24).toString("base64url"),
   })).toString("base64url");
   return { value: payload + "." + mac(payload), maxAge: cookieMaxAgeSeconds };
 }
@@ -99,9 +100,15 @@ export function verifyQaSession(value: string | undefined): QaSession | null {
 
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
-  if (!origin) return false;
-  try { return new URL(origin).origin === new URL(request.url).origin; }
-  catch { return false; }
+  const host = request.headers.get("host");
+  if (!origin || !host || host.includes(",") || /[\\/\\s]/.test(host)) return false;
+  try {
+    // Next.js may normalize request.url to localhost while preserving the actual Host header.
+    // Browsers cannot choose Host independently, so matching Origin to it still rejects CSRF.
+    const protocol = new URL(request.url).protocol;
+    if (protocol !== "http:" && protocol !== "https:") return false;
+    return new URL(origin).origin === new URL(protocol + "//" + host).origin;
+  } catch { return false; }
 }
 
 /** Reject Neon-generated elevated users; RLS bypass invalidates tenant separation. */
@@ -113,5 +120,61 @@ export async function assertQaRuntimeRestricted(): Promise<void> {
   }
 }
 
-/** Scoped Neon HTTP transaction: tenant context is applied in the same transaction.
- * Never accept merchantId from a body or query parameter. */
+/** Only hashes of session cookies are kept in Neon. No raw cookie or password. */
+export function qaSessionHash(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+/** A valid HMAC cookie alone is NOT a session: Neon must confirm it remains active. */
+export async function verifyActiveQaSession(value: string | undefined): Promise<QaSession | null> {
+  const session = verifyQaSession(value);
+  if (!session || !value) return null;
+  await assertQaRuntimeRestricted();
+  const sql = qaDatabase();
+  const hash = qaSessionHash(value);
+  const [,rows] = await sql.transaction([
+    sql`SELECT set_config('axiomos.merchant_id', ${session.merchantId}, true)`,
+    sql`SELECT s.token_hash FROM pos_qa_sessions s
+      JOIN pos_operators o ON o.merchant_id=s.merchant_id AND o.id=s.actor_id
+      WHERE s.token_hash=${hash} AND s.merchant_id=${session.merchantId}::uuid
+        AND s.actor_id=${session.actorId}::uuid AND s.username=${session.username}
+        AND s.revoked_at IS NULL AND s.expires_at>now() AND o.disabled_at IS NULL
+        AND o.role IN ('owner','manager','cashier') LIMIT 1`,
+  ]);
+  return rows.length === 1 ? session : null;
+}
+
+export async function persistQaSession(value: string, session: QaSession): Promise<void> {
+  const verified = verifyQaSession(value);
+  if (!verified || verified.username !== session.username ||
+    verified.actorId !== session.actorId || verified.merchantId !== session.merchantId) {
+    throw Error("QA session identity mismatch");
+  }
+  await assertQaRuntimeRestricted();
+  const sql = qaDatabase();
+  const hash = qaSessionHash(value);
+  const [,saved] = await sql.transaction([
+    sql`SELECT set_config('axiomos.merchant_id', ${session.merchantId}, true)`,
+    sql`INSERT INTO pos_qa_sessions
+      (token_hash,merchant_id,actor_id,username,expires_at)
+      VALUES (${hash},${session.merchantId}::uuid,${session.actorId}::uuid,
+        ${session.username},now() + interval '4 hours') RETURNING token_hash`,
+  ]);
+  if (saved.length !== 1) throw Error("Failed to persist QA session");
+}
+
+export async function revokeQaSession(value: string): Promise<boolean> {
+  const session = verifyQaSession(value);
+  if (!session) return false;
+  await assertQaRuntimeRestricted();
+  const sql = qaDatabase();
+  const hash = qaSessionHash(value);
+  const [,revoked] = await sql.transaction([
+    sql`SELECT set_config('axiomos.merchant_id', ${session.merchantId}, true)`,
+    sql`UPDATE pos_qa_sessions SET revoked_at=now()
+      WHERE token_hash=${hash} AND merchant_id=${session.merchantId}::uuid
+        AND actor_id=${session.actorId}::uuid AND username=${session.username}
+        AND revoked_at IS NULL RETURNING token_hash`,
+  ]);
+  return revoked.length === 1;
+}

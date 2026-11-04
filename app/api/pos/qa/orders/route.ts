@@ -1,18 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { POS_QA_COOKIE, qaConfigured, qaDatabase, assertQaRuntimeRestricted, sameOrigin, verifyQaSession } from "../../../../lib/pos/qa-auth";
+import { POS_QA_COOKIE, qaConfigured, qaDatabase, assertQaRuntimeRestricted, sameOrigin, verifyActiveQaSession } from "../../../../lib/pos/qa-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "no-store" };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function authorized(request: NextRequest) {
+async function authorized(request: NextRequest) {
   if (!qaConfigured()) return null;
-  return verifyQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
+  try {
+    return await verifyActiveQaSession(request.cookies.get(POS_QA_COOKIE)?.value);
+  } catch {
+    // Authentication fails closed if Neon is unavailable; never expose driver errors.
+    return null;
+  }
 }
 
 export async function GET(request: NextRequest) {
-  const session = authorized(request);
+  const session = await authorized(request);
   if (!session) return NextResponse.json({ ok: false, reason: "qa_disabled_or_unauthorized" }, { status: 401, headers });
   try {
     await assertQaRuntimeRestricted();
@@ -34,7 +39,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403, headers });
-  const session = authorized(request);
+  const session = await authorized(request);
   if (!session) return NextResponse.json({ ok: false, reason: "qa_disabled_or_unauthorized" }, { status: 401, headers });
   let body: unknown;
   try {
