@@ -18,6 +18,7 @@ on:
       - db/migrations/20261103_crm_sessions.sql
       - tests/security-hardening.test.cjs
       - tests/http-negative-e2e.mjs
+      - tests/crm-security-http-e2e.mjs
       - .github/workflows/security-hardening.yml
 
 permissions:
