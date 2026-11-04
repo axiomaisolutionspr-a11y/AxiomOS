@@ -3,7 +3,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { readLimitedUtf8Body, RequestBodyTooLargeError } from "../../lib/limited-request-body";
 import {
   CRM_COOKIE, crmV2Enabled, crmCookieOptions, claimCrmLoginAttempt,
-  resetCrmLoginAttempts, createCrmSession, revokeCrmSession
+  resetCrmLoginAttempts, createCrmSession, revokeCrmSession, validCrmSession
 } from "../../lib/crm/security";
 
 export const runtime = "nodejs";
@@ -14,11 +14,39 @@ function validPin(submitted: string, configured: string): boolean {
   const b = createHash("sha256").update(configured).digest();
   return timingSafeEqual(a, b);
 }
+
+function sameOrigin(request: NextRequest): boolean {
+  const origin = request.headers.get("origin");
+  const host = request.headers.get("host");
+  if (!origin || !host || host.includes(",") || /[\\/\s]/.test(host)) return false;
+  try {
+    // Next.js may normalize request.url to localhost while preserving the actual Host header.
+    // Browsers cannot select Host independently, so this comparison still rejects CSRF.
+    const protocol = new URL(request.url).protocol;
+    if (protocol !== "http:" && protocol !== "https:") return false;
+    return new URL(origin).origin === new URL(protocol + "//" + host).origin;
+  } catch { return false; }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const accepted = await validCrmSession(request.cookies.get(CRM_COOKIE)?.value);
+    return NextResponse.json(
+      accepted ? {ok:true,authenticated:true} : {ok:false,authenticated:false},
+      {status:accepted?200:401,headers:{"Cache-Control":"no-store"}}
+    );
+  } catch {
+    return NextResponse.json(
+      {ok:false,error:"No se pudo verificar la sesión."},
+      {status:503,headers:{"Cache-Control":"no-store"}}
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   const accessPin = process.env.AXIOMOS_CRM_ACCESS_PIN;
   if (!accessPin) return NextResponse.json({ok:false,error:"El acceso privado no está configurado."},{status:503});
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin)
+  if (!sameOrigin(request))
     return NextResponse.json({ok:false,error:"Origen no autorizado."},{status:403});
   let submitted = "";
   try {
@@ -47,9 +75,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ok:false,error:"No se pudo verificar el acceso."},{status:503});
   }
 }
+
 export async function DELETE(request: NextRequest) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin)
+  if (!sameOrigin(request))
     return NextResponse.json({ok:false,error:"Origen no autorizado."},{status:403});
   let verified = true;
   if (crmV2Enabled()) {
