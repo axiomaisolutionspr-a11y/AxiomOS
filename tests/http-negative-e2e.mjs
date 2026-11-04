@@ -34,9 +34,9 @@ try {
   const results={};
   results.crmOrigin=await call("/api/crm-auth","POST",JSON.stringify({pin:"fake"}),{origin:"https://untrusted.invalid"});
   assert.equal(results.crmOrigin,403);
-  results.crmWrongPinNoDatabase=await call("/api/crm-auth","POST",JSON.stringify({pin:"wrong"}));
+  results.crmWrongPinNoDatabase=await call("/api/crm-auth","POST",JSON.stringify({pin:"wrong"}),{origin});
   assert.equal(results.crmWrongPinNoDatabase,503,"No database => 503 fail closed");
-  results.crmOversized=await call("/api/crm-auth","POST",JSON.stringify({pin:"a".repeat(2048)}));
+  results.crmOversized=await call("/api/crm-auth","POST",JSON.stringify({pin:"a".repeat(2048)}),{origin});
   assert.equal(results.crmOversized,413,"Oversized CRM request => 413");
   results.crmUnauthorizedPage=await call("/prospectos/simple");
   assert.ok([302,303,307,308,503].includes(results.crmUnauthorizedPage));
