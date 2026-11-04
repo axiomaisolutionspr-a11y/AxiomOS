@@ -42,7 +42,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Audit production dependencies and block high/critical advisories
-        run: npm audit --omit=dev --audit-level=high
+        run: npm audit --audit-level=moderate
       - run: node --test tests/security-hardening.test.cjs
       - run: npx next typegen
       - run: npx tsc --noEmit
