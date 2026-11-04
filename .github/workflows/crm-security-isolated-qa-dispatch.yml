@@ -1,0 +1,48 @@
+name: CRM security isolated QA E2E
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: crm-security-isolated-qa
+  cancel-in-progress: false
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    environment: axiomos-qa
+    timeout-minutes: 15
+    env:
+      CRM_QA_DATABASE_HOST: ep-wandering-recipe-avweoa3b-pooler.c-11.us-east-1.aws.neon.tech
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 300a4b42179dcbe80ff68b98b8c85be0d02a5780
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check QA-only secret availability
+        shell: bash
+        env:
+          CRM_QA_DATABASE_URL: ${{ secrets.CRM_QA_DATABASE_URL }}
+        run: |
+          if [ -z "$CRM_QA_DATABASE_URL" ]; then
+            echo '::error::CRM_QA_DATABASE_URL not configured as axiomos-qa environment secret.'
+            exit 2
+          fi
+      - run: npm ci --no-fund
+      - run: npm audit --omit=dev --audit-level=high
+      - run: node --test tests/security-hardening.test.cjs
+      - run: npx next typegen
+      - run: npx tsc --noEmit
+      - name: Build production bundle with external gates disabled
+        run: npm run build
+        env:
+          AXIOMOS_CRM_SESSION_V2_ENABLED: "false"
+          AXIOMOS_TELNYX_SIGNATURE_REQUIRED: "false"
+          AXIOMOS_WHATSAPP_WEBHOOK_AUTH_MODE: "off"
+      - name: Run isolated CRM authentication E2E
+        run: node tests/crm-security-http-e2e.mjs
+        env:
+          CRM_QA_DATABASE_URL: ${{ secrets.CRM_QA_DATABASE_URL }}
