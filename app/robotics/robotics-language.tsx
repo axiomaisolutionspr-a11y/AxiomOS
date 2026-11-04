@@ -15,10 +15,12 @@ const RoboticsLanguageContext = createContext<RoboticsLanguageContextValue | nul
 export function RoboticsLanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<RoboticsLanguage>("es");
 
+  /* eslint-disable react-hooks/set-state-in-effect -- Restore a browser-only language preference after hydration. */
   useEffect(() => {
     const saved = window.localStorage.getItem("axiomai-robotics-language");
     if (saved === "en" || saved === "es") setLanguage(saved);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     window.localStorage.setItem("axiomai-robotics-language", language);

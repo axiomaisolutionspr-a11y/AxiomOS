@@ -6,14 +6,14 @@ const ts=require("typescript");
 const crypto=require("node:crypto");
 function importTs(filename, imports, env={}) {
   const code=ts.transpileModule(readFileSync(filename,"utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-  const module={exports:{}};
+  const testModule={exports:{}};
   vm.runInNewContext("(function(require,module,exports){"+code+"\n})",
     {Buffer,Date,Number,Error,process:{env},URL,Headers})(name=>{
       if(name==="node:crypto")return crypto;
       if(name in imports)return imports[name];
       throw new Error("Unapproved test import: "+name);
-    },module,module.exports);
-  return module.exports;
+    },testModule,testModule.exports);
+  return testModule.exports;
 }
 test("Meta HMAC verifies raw bytes and rejects tampering/unsigned",()=>{
   const m=importTs("app/lib/webhook-auth.ts",{}, {});

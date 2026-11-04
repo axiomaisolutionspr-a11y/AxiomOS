@@ -562,7 +562,46 @@ export async function POST(
     if (!databaseUrl) throw new Error("DATABASE_URL is not configured");
     const sql = neon(databaseUrl);
 
-    const payload = body as {entry?: any[]};
+    type WhatsAppMessage = {
+      from?: unknown;
+      from_user_id?: unknown;
+      id?: unknown;
+      type?: string;
+      text?: { body?: unknown };
+      button?: { text?: unknown };
+      interactive?: {
+        button_reply?: { title?: unknown };
+        list_reply?: { title?: unknown };
+      };
+      image?: { caption?: unknown };
+      video?: { caption?: unknown };
+      document?: { caption?: unknown };
+    };
+    type WhatsAppContact = {
+      wa_id?: unknown;
+      user_id?: unknown;
+      profile?: { name?: unknown };
+    };
+    type WhatsAppStatus = {
+      errors?: unknown[];
+      id?: unknown;
+      status?: unknown;
+      recipient_id?: unknown;
+      recipient_user_id?: unknown;
+    };
+    type WhatsAppWebhookPayload = {
+      entry?: Array<{
+        changes?: Array<{
+          value?: {
+            messages?: WhatsAppMessage[];
+            contacts?: WhatsAppContact[];
+            statuses?: WhatsAppStatus[];
+          };
+        }>;
+      }>;
+    };
+
+    const payload = body as WhatsAppWebhookPayload;
     const entries = Array.isArray(payload?.entry) ? payload.entry : [];
 
     let messagesReceived = 0;
@@ -655,10 +694,7 @@ export async function POST(
 
           const matchingContact =
             contacts.find(
-              (contact: {
-                wa_id?: unknown;
-                user_id?: unknown;
-              }) =>
+              (contact) =>
                 (
                   fromPhoneRaw &&
                   contact?.wa_id ===
@@ -704,11 +740,16 @@ export async function POST(
             sticker: "Sticker recibido", location: "Ubicación recibida",
             contacts: "Contacto recibido",
           };
-          const isConversationalText = typeof incomingText === "string" && Boolean(incomingText.trim());
+          const conversationalText =
+            typeof incomingText === "string"
+              ? incomingText.trim()
+              : "";
+          const isConversationalText = Boolean(conversationalText);
           const caption = message?.image?.caption ?? message?.video?.caption ?? message?.document?.caption;
-          const text = isConversationalText ? incomingText.trim()
-            : mediaLabels[message?.type]
-              ? `[${mediaLabels[message.type]}]${typeof caption === "string" ? ` ${caption.trim()}` : ""}`
+          const text = conversationalText
+            ? conversationalText
+            : mediaLabels[message?.type ?? ""]
+              ? `[${mediaLabels[message.type ?? ""]}]${typeof caption === "string" ? ` ${caption.trim()}` : ""}`
               : "";
 
           const whatsappMessageId =

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export const metadata = {
   title: "Privacy Policy | AxiomAI Solutions",
   description:
@@ -25,7 +27,7 @@ export default function PrivacyPolicyPage() {
           lineHeight: 1.7,
         }}
       >
-        <a
+        <Link
           href="/"
           style={{
             color: "#43b8ff",
@@ -34,7 +36,7 @@ export default function PrivacyPolicyPage() {
           }}
         >
           ← AxiomAI Solutions
-        </a>
+        </Link>
 
         <h1
           style={{
@@ -52,8 +54,8 @@ export default function PrivacyPolicyPage() {
         <section>
           <h2>1. Introduction</h2>
           <p>
-            AxiomAI Solutions LLC ("AxiomAI Solutions," "we," "us," or
-            "our") respects your privacy. This Privacy Policy explains how
+            AxiomAI Solutions LLC (&quot;AxiomAI Solutions,&quot; &quot;we,&quot; &quot;us,&quot; or
+            &quot;our&quot;) respects your privacy. This Privacy Policy explains how
             we collect, use, protect, and disclose information in connection
             with our website, AxiomOS, artificial intelligence services,
             customer communications, and related business services.

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export const metadata = {
   title: "Terms and Conditions | AxiomAI Solutions",
   description:
@@ -25,7 +27,7 @@ export default function TermsPage() {
           lineHeight: 1.7,
         }}
       >
-        <a
+        <Link
           href="/"
           style={{
             color: "#43b8ff",
@@ -34,7 +36,7 @@ export default function TermsPage() {
           }}
         >
           ← AxiomAI Solutions
-        </a>
+        </Link>
 
         <h1
           style={{
@@ -53,8 +55,8 @@ export default function TermsPage() {
           <h2>1. Agreement to Terms</h2>
           <p>
             These Terms and Conditions govern your use of services provided
-            by AxiomAI Solutions LLC ("AxiomAI Solutions," "we," "us," or
-            "our"), including our website, AxiomOS, artificial intelligence
+            by AxiomAI Solutions LLC (&quot;AxiomAI Solutions,&quot; &quot;we,&quot; &quot;us,&quot; or
+            &quot;our&quot;), including our website, AxiomOS, artificial intelligence
             solutions, telecommunications services, CRM tools, and related
             services.
           </p>
@@ -66,7 +68,7 @@ export default function TermsPage() {
             AxiomAI Solutions provides technology, artificial intelligence,
             automation, software, communications, CRM, and related business
             solutions. Features and availability may vary depending on the
-            customer's configuration and selected services.
+            customer&apos;s configuration and selected services.
           </p>
         </section>
 

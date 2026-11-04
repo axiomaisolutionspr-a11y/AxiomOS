@@ -275,6 +275,7 @@ export default function Home() {
   const isEnglish = language === "en";
   const t = (es: string, en: string) => (isEnglish ? en : es);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- Client-only preference hydration after SSR; avoids reading localStorage during render. */
   useEffect(() => {
     try {
       const savedLanguage = localStorage.getItem("axiomai_site_language");
@@ -288,6 +289,7 @@ export default function Home() {
       document.documentElement.lang = "es";
     }
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function changeLanguage(nextLanguage: "es" | "en") {
     setLanguage(nextLanguage);
@@ -324,6 +326,7 @@ export default function Home() {
     }
   }
 
+  /* eslint-disable react-hooks/set-state-in-effect -- Restore the Brain handoff from sessionStorage after hydration. */
   useEffect(() => {
     try {
       const storedCase = sessionStorage.getItem("axiomai_brain_case");
@@ -413,6 +416,7 @@ export default function Home() {
       );
     }
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     const shouldOpenEvaluation =

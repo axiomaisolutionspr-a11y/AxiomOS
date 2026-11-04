@@ -28,23 +28,24 @@ function harness({ email = true, sms = true, failSave = false } = {}) {
     if (marker && !notes.includes(marker)) notes += '\n' + marker;
     return [];
   };
-  const module = { exports: {} };
+  const testModule = { exports: {} };
   const code = ts.transpileModule(fs.readFileSync('app/lib/whatsapp-contact-request.ts', 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
   vm.runInNewContext(code, {
-    module, exports: module.exports,
+    module: testModule, exports: testModule.exports,
     require: name => name === '@neondatabase/serverless' ? { neon: () => sql } : require(name),
     process: { env: { DATABASE_URL: 'mock', EMAIL_ENABLED: email ? ' true ' : 'false',
       RESEND_API_KEY: 'mock', EMAIL_ALERT_FROM: 'alerts@example.test', EMAIL_ALERT_TO: 'owner@example.test',
-      SMS_ENABLED: sms ? 'true' : 'false', TELNYX_API_KEY: 'mock', TELNYX_SMS_FROM: '+15550000000' } },
+      WHATSAPP_SMS_ALERTS_ENABLED: sms ? 'true' : 'false',
+      TELNYX_API_KEY: 'mock', TELNYX_SMS_FROM: '+15550000000' } },
     console: { log() {}, error() {} }, AbortSignal,
     fetch: async (url, options) => {
       sent.push({ url, body: JSON.parse(options.body) });
       return { ok: true, status: 200, json: async () => url.includes('resend') ? { id: 'email-1' } : { data: { id: 'sms-1' } } };
     },
   });
-  return { ...module.exports, sent, queries };
+  return { ...testModule.exports, sent, queries };
 }
 
 async function main() {

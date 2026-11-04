@@ -14,12 +14,20 @@ on:
       - app/api/telnyx/route.ts
       - app/prospectos/simple/actions.ts
       - app/prospectos/simple/calls.ts
+      - app/page.tsx
+      - app/brain/page.tsx
+      - app/privacy/page.tsx
+      - app/terms/page.tsx
+      - app/robotics/robotics-client.tsx
+      - app/robotics/robotics-language.tsx
       - proxy.ts
       - db/migrations/20261103_crm_sessions.sql
       - tests/security-hardening.test.cjs
       - tests/http-negative-e2e.mjs
       - tests/crm-security-http-e2e.mjs
       - .github/workflows/security-hardening.yml
+      - eslint.config.mjs
+      - package.json
 
 permissions:
   contents: read
@@ -38,6 +46,7 @@ jobs:
       - run: node --test tests/security-hardening.test.cjs
       - run: npx next typegen
       - run: npx tsc --noEmit
+      - run: npm run lint
       - run: npm run build
         env:
           AXIOMOS_CRM_SESSION_V2_ENABLED: "false"
