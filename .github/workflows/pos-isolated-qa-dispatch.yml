@@ -13,10 +13,11 @@ jobs:
     timeout-minutes: 15
     env:
       POS_QA_DATABASE_URL: ${{ secrets.POS_QA_DATABASE_URL }}
+      POS_QA_DATABASE_HOST: ep-sweet-base-avnvvgcd.c-11.us-east-1.aws.neon.tech
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 3dad5a32bc1ce643f1de9a48eb40182b956aa51d
+          ref: 95c6c69be60bf650f316fad5740b9970c02fbea7
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
