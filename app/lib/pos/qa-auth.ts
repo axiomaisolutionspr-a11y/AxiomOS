@@ -100,9 +100,15 @@ export function verifyQaSession(value: string | undefined): QaSession | null {
 
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
-  if (!origin) return false;
-  try { return new URL(origin).origin === new URL(request.url).origin; }
-  catch { return false; }
+  const host = request.headers.get("host");
+  if (!origin || !host || host.includes(",") || /[\\/\\s]/.test(host)) return false;
+  try {
+    // Next.js may normalize request.url to localhost while preserving the actual Host header.
+    // Browsers cannot choose Host independently, so matching Origin to it still rejects CSRF.
+    const protocol = new URL(request.url).protocol;
+    if (protocol !== "http:" && protocol !== "https:") return false;
+    return new URL(origin).origin === new URL(protocol + "//" + host).origin;
+  } catch { return false; }
 }
 
 /** Reject Neon-generated elevated users; RLS bypass invalidates tenant separation. */
