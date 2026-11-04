@@ -14,6 +14,8 @@ if (!qaUrl) throw Error("POS_QA_DATABASE_URL is required in isolated QA process"
 const parsed = new URL(qaUrl);
 assert.equal(parsed.username, "pos_qa_app_login", "QA app role only");
 assert.ok(parsed.hostname.endsWith(".neon.tech"), "Neon host only");
+assert.equal(parsed.hostname, process.env.POS_QA_DATABASE_HOST, "Independently verified Neon QA host required");
+assert.equal(parsed.pathname, "/neondb", "QA database only");
 
 const port = Number(process.env.POS_E2E_PORT || "3247");
 const base = "http://127.0.0.1:" + port;
@@ -29,7 +31,7 @@ const env = {
   ...process.env,
   VERCEL_ENV: "preview",
   POS_QA_ENABLED: "true",
-  POS_QA_DATABASE_HOST: parsed.hostname,
+  POS_QA_DATABASE_HOST: process.env.POS_QA_DATABASE_HOST,
   POS_QA_SESSION_SECRET: randomBytes(48).toString("hex"),
   POS_QA_USERS_JSON: JSON.stringify([{username, passwordHash, merchantId, actorId}]),
   AXIOMOS_CRM_ACCESS_PIN: fakeCrmPin,
