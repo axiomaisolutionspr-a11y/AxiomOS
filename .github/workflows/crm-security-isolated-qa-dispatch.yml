@@ -42,6 +42,8 @@ jobs:
           AXIOMOS_CRM_SESSION_V2_ENABLED: "false"
           AXIOMOS_TELNYX_SIGNATURE_REQUIRED: "false"
           AXIOMOS_WHATSAPP_WEBHOOK_AUTH_MODE: "off"
+      - name: Run fail-closed negative HTTP E2E
+        run: node tests/http-negative-e2e.mjs
       - name: Run isolated CRM authentication E2E
         run: node tests/crm-security-http-e2e.mjs
         env:
