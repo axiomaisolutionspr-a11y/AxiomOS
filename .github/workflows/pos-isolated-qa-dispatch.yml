@@ -1,0 +1,37 @@
+name: POS isolated QA authenticated E2E
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pos-isolated-qa
+  cancel-in-progress: false
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    environment: axiomos-qa
+    timeout-minutes: 15
+    env:
+      POS_QA_DATABASE_URL: ${{ secrets.POS_QA_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/pos-qa-session-revocation-20261103
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check QA-only secret availability
+        shell: bash
+        run: |
+          if [ -z "$POS_QA_DATABASE_URL" ]; then
+            echo '::error::POS_QA_DATABASE_URL not configured as axiomos-qa environment secret.'
+            exit 2
+          fi
+      - run: npm ci --no-fund
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run build
+        env:
+          POS_QA_ENABLED: 'false'
+      - run: node tests/pos-http-e2e.mjs
