@@ -17,6 +17,7 @@ on:
       - proxy.ts
       - db/migrations/20261103_crm_sessions.sql
       - tests/security-hardening.test.cjs
+      - tests/http-negative-e2e.mjs
       - .github/workflows/security-hardening.yml
 
 permissions:
@@ -39,3 +40,11 @@ jobs:
           AXIOMOS_CRM_SESSION_V2_ENABLED: "false"
           AXIOMOS_TELNYX_SIGNATURE_REQUIRED: "false"
           AXIOMOS_WHATSAPP_WEBHOOK_AUTH_MODE: "off"
+      - run: node tests/http-negative-e2e.mjs
+        env:
+          DATABASE_URL: ""
+          DATABASE_URL_UNPOOLED: ""
+          AXIOMOS_CRM_RATE_LIMIT_SECRET: ""
+          TELNYX_API_KEY: ""
+          WHATSAPP_ACCESS_TOKEN: ""
+          DUALHOOK_API_KEY: ""
