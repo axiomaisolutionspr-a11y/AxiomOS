@@ -112,7 +112,8 @@ test("CRM HTTP handler rejects cross-origin, oversized body, invalid PIN and rev
     claimCrmLoginAttempt:async()=>{claims++;return claims<=2;},
     resetCrmLoginAttempts:async()=>{},
     createCrmSession:async()=>{issued++;return "v2."+"c".repeat(64);},
-    revokeCrmSession:async()=>{revocations++;return true;}
+    revokeCrmSession:async()=>{revocations++;return true;},
+    validCrmSession:async(cookie)=>Boolean(cookie)
   };
   const bodyReader={
     RequestBodyTooLargeError:class RequestBodyTooLargeError extends Error{},
@@ -127,14 +128,17 @@ test("CRM HTTP handler rejects cross-origin, oversized body, invalid PIN and rev
   },env);
   const req=(origin,raw,cookie)=>({
     url:"https://qa.example/api/crm-auth",
-    headers:new Headers(origin?{origin}:{}),
+    headers:new Headers({host:"qa.example",...(origin?{origin}:{})}),
     raw,
     cookies:{get:()=>cookie?{value:cookie}:undefined}
   });
+  assert.equal((await route.POST(req(undefined,'{"pin":"qa-only-pin"}'))).status,403);
   assert.equal((await route.POST(req("https://other.example",'{"pin":"qa-only-pin"}'))).status,403);
   assert.equal((await route.POST(req("https://qa.example",'{"pin":"wrong"}'))).status,401);
   assert.equal((await route.POST(req("https://qa.example",'{"pin":"qa-only-pin"}'))).status,200);
   assert.equal(issued,1);
+  assert.equal((await route.GET(req("https://qa.example","", "v2."+"c".repeat(64)))).status,200);
+  assert.equal((await route.GET(req("https://qa.example",""))).status,401);
   assert.equal(answers.axiomos_crm_session.attributes.httpOnly,true);
   assert.equal(answers.axiomos_crm_session.attributes.secure,true);
   assert.equal((await route.POST(req("https://qa.example",'{"pin":"qa-only-pin"}'))).status,429);
