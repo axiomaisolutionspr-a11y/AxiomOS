@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: feature/pos-qa-session-revocation-20261103
+          ref: 3dad5a32bc1ce643f1de9a48eb40182b956aa51d
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
