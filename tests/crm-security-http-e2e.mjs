@@ -101,6 +101,14 @@ async function cleanup() {
   await sql`DELETE FROM crm_auth_attempts WHERE client_hash=${rateHash}`;
 }
 async function main() {
+  const preflight=neon(qaUrl);
+  const roles=await preflight`SELECT rolsuper, rolcreaterole, rolcreatedb, rolreplication, rolbypassrls
+    FROM pg_roles WHERE rolname=current_user LIMIT 1`;
+  assert.equal(roles.length,1,"runtime role exists");
+  for(const key of ["rolsuper","rolcreaterole","rolcreatedb","rolreplication","rolbypassrls"])
+    assert.equal(roles[0][key],false,"runtime role must not have "+key);
+  outcomes.runtimeRoleRestricted=true;
+
   server=spawn(process.execPath,["node_modules/next/dist/bin/next","start","-p",String(port)],{
     cwd:process.cwd(),env,stdio:["ignore","ignore","pipe"],
   });
