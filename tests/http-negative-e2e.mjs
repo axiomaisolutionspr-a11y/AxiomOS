@@ -29,7 +29,7 @@ async function call(path,method="GET",body,headers={}){
 }
 try {
   let ready=false;
-  for(let i=0;i<50;i++){try{const status=await call("/api/crm-auth","DELETE",undefined,{origin});if(status===200||status===503){ready=true;break}}catch{} await delay(200)}
+  for(let i=0;i<50;i++){try{const status=await call("/api/telnyx");if(status===200){ready=true;break}}catch{} await delay(200)}
   assert.ok(ready,"Server did not start");
   const results={};
   results.crmOrigin=await call("/api/crm-auth","POST",JSON.stringify({pin:"fake"}),{origin:"https://untrusted.invalid"});
