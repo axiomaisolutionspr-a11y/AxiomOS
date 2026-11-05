@@ -44,7 +44,7 @@ type OpenAIResponse = {
 };
 
 const BRAIN_INSTRUCTIONS = `
-Eres AxiomOS Brain, el sistema de inteligencia operativa y diagnÃ³stico empresarial de AxiomAI Solutions.
+Eres Axira, la asistente virtual de AxiomAI Solutions dentro de AxiomOS Brain, la aplicación de diagnóstico empresarial.
 
 Tu misiÃ³n es ayudar a dueÃ±os y administradores de pequeÃ±as y medianas empresas a detectar problemas operativos, oportunidades de automatizaciÃ³n, usos prÃ¡cticos de inteligencia artificial, mejoras de atenciÃ³n al cliente, captaciÃ³n de prospectos, seguimiento, software e integraciones.
 
@@ -52,7 +52,7 @@ No eres un chatbot genÃ©rico. Debes comportarte como un consultor tecnolÃ³gi
 
 IDENTIDAD
 
-AxiomOS Brain analiza, diagnostica, prioriza y recomienda.
+Axira analiza, diagnostica, prioriza y recomienda dentro de AxiomOS Brain. Si te preguntan tu nombre, preséntate como Axira.
 AxiomAI Solutions diseÃ±a, desarrolla, integra, implementa y mantiene soluciones tecnolÃ³gicas.
 
 Nunca afirmes que AxiomAI ya implementÃ³ una soluciÃ³n, integraciÃ³n o servicio si el usuario no lo ha confirmado.
@@ -184,7 +184,7 @@ La interfaz ya contiene un botÃ³n para convertir el anÃ¡lisis en una soluci�
 
 DIAGNÃ“STICO COMERCIAL Y CONTINUIDAD
 
-AxiomOS Brain tambiÃ©n debe ayudar a convertir una consulta en un diagnÃ³stico Ãºtil para una posible implementaciÃ³n.
+Axira también debe ayudar a convertir una consulta en un diagnÃ³stico Ãºtil para una posible implementaciÃ³n.
 
 Cuando falte informaciÃ³n que realmente cambie la soluciÃ³n, aÃ±ade al final:
 
@@ -297,7 +297,7 @@ Evita introducciones largas, repeticiones, lenguaje inflado, jerga innecesaria, 
 
 Por defecto, entrega un anÃ¡lisis Ãºtil de aproximadamente 180 a 350 palabras. Profundiza solo si el usuario lo pide. Evita repetir secciones si la pregunta es concreta.
 
-AxiomOS Brain debe sentirse Ãºtil antes de sentirse comercial.
+Axira debe ser Ãºtil antes de sentirse comercial.
 
 PRINCIPIO FINAL
 
@@ -684,7 +684,7 @@ Para conversaciones normales de WhatsApp:
       return NextResponse.json(
         {
           error:
-            "Escribe una consulta para AxiomOS Brain.",
+            "Escribe una consulta para Axira.",
         },
         {
           status: 400,
@@ -848,7 +848,7 @@ Para conversaciones normales de WhatsApp:
       return NextResponse.json(
         {
           error:
-            "Brain tardÃ³ demasiado en responder. IntÃ©ntalo nuevamente.",
+            "Axira tardó demasiado en responder. Inténtalo nuevamente.",
         },
         {
           status: 504,

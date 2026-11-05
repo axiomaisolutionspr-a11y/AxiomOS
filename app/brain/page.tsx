@@ -367,8 +367,8 @@ const profileEnglishValues: Record<string, string> = {
   "Media a alta": "Medium to high",
   "Media a baja": "Medium to low",
 
-  "Brain seguirá refinando este perfil a medida que avance la conversación.":
-    "Brain will continue refining this profile as the conversation progresses.",
+  "Axira seguirá refinando este perfil a medida que avance la conversación.":
+    "Axira will continue refining this profile as the conversation progresses.",
 };
 
 function translateProfileValue(
@@ -433,7 +433,7 @@ function buildBusinessProfile(
   const summary =
     currentSummary ||
     previousSummary ||
-    "Brain seguirá refinando este perfil a medida que avance la conversación.";
+    "Axira seguirá refinando este perfil a medida que avance la conversación.";
 
   const confirmedCount = [
     businessType !== "Por identificar",
@@ -2208,8 +2208,8 @@ export default function BrainPage() {
               fontSize: "17px",
             }}
           >            {t(
-              "Describe un problema de tu negocio. Brain identificará qué conviene mejorar primero y cómo convertirlo en una solución práctica.",
-              "Describe a problem in your business. Brain will identify what should be improved first and how to turn it into a practical solution."
+              "Describe un problema de tu negocio. Axira identificará qué conviene mejorar primero y cómo convertirlo en una solución práctica.",
+              "Describe a problem in your business. Axira will identify what should be improved first and how to turn it into a practical solution."
             )}
           </p>
         </section>
@@ -2288,8 +2288,8 @@ export default function BrainPage() {
                 color: "#dcecff",
               }}
             >              {t(
-                "¿En qué quieres que Brain te ayude?",
-                "What would you like Brain to help you with?"
+                "¿En qué puede ayudarte Axira?",
+                "How can Axira help you?"
               )}
             </label>
 
@@ -2390,8 +2390,8 @@ export default function BrainPage() {
                 }}
               >
                 {loading
-                  ? t("Brain está analizando...", "Brain is analyzing...")
-                  : t("Consultar a Brain", "Ask Brain")}
+                  ? t("Axira está analizando...", "Axira is analyzing...")
+                  : t("Pregúntale a Axira", "Ask Axira")}
               </button>
             </div>
           </form>
@@ -2419,7 +2419,7 @@ export default function BrainPage() {
                   color: "#dff6ff",
                 }}
               >
-                {t("Brain está trabajando en tu análisis", "Brain is working on your analysis")}
+                {t("Axira está trabajando en tu análisis", "Axira is working on your analysis")}
               </div>
 
               <div
@@ -2483,7 +2483,7 @@ export default function BrainPage() {
                   marginBottom: "10px",
                 }}
               >
-                {t("Brain no pudo completar el análisis.", "Brain could not complete the analysis.")}
+                {t("Axira no pudo completar el análisis.", "Axira could not complete the analysis.")}
               </div>
 
               <div
@@ -2754,7 +2754,7 @@ export default function BrainPage() {
                           fontWeight: 900,
                         }}
                       >
-                        {t("Brain está construyendo contexto operativo", "Brain is building operational context")}
+                        {t("Axira está construyendo contexto operativo", "Axira is building operational context")}
                       </h3>
 
                       <p
@@ -2965,7 +2965,7 @@ export default function BrainPage() {
                           marginBottom: "7px",
                         }}
                       >
-                        {t("Lectura principal de Brain", "Brain main assessment")}
+                        {t("Lectura principal de Axira", "Axira’s main assessment")}
                       </div>
                       <p
                         style={{
@@ -3075,7 +3075,7 @@ export default function BrainPage() {
                         fontWeight: 780,
                       }}
                     >
-                      ✓ Perfil base confirmado. Brain puede profundizar sin volver a pedir estos datos.
+                      {t("✓ Perfil base confirmado. Axira puede profundizar sin volver a pedir estos datos.", "✓ Basic profile confirmed. Axira can go deeper without asking for these details again.")}
                     </div>
                   )}
                 </div>
@@ -3109,7 +3109,7 @@ export default function BrainPage() {
                       fontSize: "13px",
                     }}
                   >
-                    {t("Brain conserva el contexto de este análisis. Elige una dirección y continuará desde aquí.", "Brain keeps the context of this analysis. Choose a direction and it will continue from here.")}
+                    {t("Axira conserva el contexto de este análisis. Elige una dirección para continuar.", "Axira retains the context of this analysis. Choose a direction to continue.")}
                   </p>
 
                   <div

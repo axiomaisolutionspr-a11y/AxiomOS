@@ -99,6 +99,8 @@ export async function POST(request: NextRequest) {
             },
             body: JSON.stringify({
               message: text.trim(),
+              mode: "social",
+              channel: "instagram",
             }),
           })
         );
