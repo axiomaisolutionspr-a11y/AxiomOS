@@ -37,6 +37,7 @@ type SocialChannel = "messenger" | "instagram";
 type IncomingSocialMessage = {
   channel: SocialChannel;
   senderId: string;
+  messengerPageId?: string;
   messageId: string;
   text: string;
 };
@@ -122,6 +123,13 @@ function getIncomingMessages(
       continue;
     }
 
+    const messengerPageId =
+      channel === "messenger" &&
+      typeof entry.id === "string" &&
+      /^\d{1,32}$/.test(entry.id)
+        ? entry.id
+        : undefined;
+
     for (const rawEvent of entry.messaging) {
       const event = getRecord(rawEvent);
       const sender = getRecord(event?.sender);
@@ -153,6 +161,7 @@ function getIncomingMessages(
       messages.push({
         channel,
         senderId,
+        messengerPageId,
         messageId,
         text,
       });
@@ -179,12 +188,13 @@ function markAsProcessed(messageId: string) {
 }
 
 function getChannelConfiguration(
-  channel: SocialChannel
+  channel: SocialChannel,
+  messengerPageId?: string
 ): MetaChannelConfiguration {
   const isInstagram = channel === "instagram";
   const accountId = isInstagram
     ? process.env.META_INSTAGRAM_ACCOUNT_ID?.trim()
-    : process.env.META_PAGE_ID?.trim();
+    : messengerPageId || process.env.META_PAGE_ID?.trim();
 
   const accessToken = isInstagram
     ? (
@@ -242,9 +252,10 @@ function getChannelConfiguration(
 async function sendMetaText(
   channel: SocialChannel,
   recipientId: string,
-  text: string
+  text: string,
+  messengerPageId?: string
 ) {
-  const configuration = getChannelConfiguration(channel);
+  const configuration = getChannelConfiguration(channel, messengerPageId);
 
   const body =
     channel === "messenger"
@@ -452,7 +463,8 @@ async function processIncomingMessage(
   await sendMetaText(
     message.channel,
     message.senderId,
-    reply
+    reply,
+    message.messengerPageId
   );
 
   try {
