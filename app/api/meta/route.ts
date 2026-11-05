@@ -37,6 +37,7 @@ type SocialChannel = "messenger" | "instagram";
 type IncomingSocialMessage = {
   channel: SocialChannel;
   senderId: string;
+  messengerPageId?: string;
   messageId: string;
   text: string;
 };
@@ -122,6 +123,13 @@ function getIncomingMessages(
       continue;
     }
 
+    const messengerPageId =
+      channel === "messenger" &&
+      typeof entry.id === "string" &&
+      /^\d{1,32}$/.test(entry.id)
+        ? entry.id
+        : undefined;
+
     for (const rawEvent of entry.messaging) {
       const event = getRecord(rawEvent);
       const sender = getRecord(event?.sender);
@@ -153,6 +161,7 @@ function getIncomingMessages(
       messages.push({
         channel,
         senderId,
+        messengerPageId,
         messageId,
         text,
       });
@@ -179,12 +188,13 @@ function markAsProcessed(messageId: string) {
 }
 
 function getChannelConfiguration(
-  channel: SocialChannel
+  channel: SocialChannel,
+  messengerPageId?: string
 ): MetaChannelConfiguration {
   const isInstagram = channel === "instagram";
   const accountId = isInstagram
     ? process.env.META_INSTAGRAM_ACCOUNT_ID?.trim()
-    : process.env.META_PAGE_ID?.trim();
+    : messengerPageId || process.env.META_PAGE_ID?.trim();
 
   const accessToken = isInstagram
     ? (
@@ -198,6 +208,11 @@ function getChannelConfiguration(
     : process.env.META_MESSENGER_SEND_URL?.trim();
 
   if (!accountId && !explicitEndpoint) {
+    if (!isInstagram) {
+      console.error("META_MESSENGER_SEND_CONFIG_MISSING", {
+        variable: "META_PAGE_ID",
+      });
+    }
     throw new Error(
       isInstagram
         ? "META_INSTAGRAM_ACCOUNT_ID no está configurado."
@@ -206,6 +221,11 @@ function getChannelConfiguration(
   }
 
   if (!accessToken) {
+    if (!isInstagram) {
+      console.error("META_MESSENGER_SEND_CONFIG_MISSING", {
+        variable: "META_PAGE_ACCESS_TOKEN",
+      });
+    }
     throw new Error(
       isInstagram
         ? "META_INSTAGRAM_ACCESS_TOKEN o META_PAGE_ACCESS_TOKEN no está configurado."
@@ -232,9 +252,10 @@ function getChannelConfiguration(
 async function sendMetaText(
   channel: SocialChannel,
   recipientId: string,
-  text: string
+  text: string,
+  messengerPageId?: string
 ) {
-  const configuration = getChannelConfiguration(channel);
+  const configuration = getChannelConfiguration(channel, messengerPageId);
 
   const body =
     channel === "messenger"
@@ -255,9 +276,26 @@ async function sendMetaText(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+  }).catch((error: unknown) => {
+    if (channel === "messenger") {
+      console.error("META_MESSENGER_SEND_TRANSPORT_FAILED");
+    }
+    throw error;
   });
 
   if (!response.ok) {
+    if (channel === "messenger") {
+      const payload: unknown = await response.json().catch(() => null);
+      const graphError = getRecord(getRecord(payload)?.error);
+      const code = graphError?.code;
+      const subcode = graphError?.error_subcode;
+
+      console.error("META_MESSENGER_SEND_REJECTED", {
+        status: response.status,
+        code: typeof code === "number" && Number.isInteger(code) ? code : undefined,
+        subcode: typeof subcode === "number" && Number.isInteger(subcode) ? subcode : undefined,
+      });
+    }
     throw new Error(
       `Meta rechazó la respuesta de ${labelForChannel(
         channel
@@ -425,7 +463,8 @@ async function processIncomingMessage(
   await sendMetaText(
     message.channel,
     message.senderId,
-    reply
+    reply,
+    message.messengerPageId
   );
 
   try {
