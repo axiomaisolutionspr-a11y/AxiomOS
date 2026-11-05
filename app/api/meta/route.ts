@@ -282,8 +282,8 @@ function getBrainUrl(requestOrigin: string): string {
 
 function fallbackReply(): string {
   return (
-    "¡Hola! Gracias por escribir a AxiomAI Solutions. " +
-    "Brain recibió tu mensaje. Cuéntame qué tipo de negocio tienes y qué proceso te gustaría mejorar."
+    "¡Hola! Soy Axira, la asistente virtual de AxiomAI Solutions. " +
+    "Gracias por escribirnos. Cuéntame qué tipo de negocio tienes y qué proceso te gustaría mejorar."
   );
 }
 
@@ -361,7 +361,7 @@ async function registerSocialProspect(
     "Mensaje del prospecto:",
     message.text,
     "",
-    "Respuesta de Brain:",
+    "Respuesta de Axira:",
     reply,
   ]
     .join("\n")

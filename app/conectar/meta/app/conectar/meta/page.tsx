@@ -10,7 +10,7 @@ export default function MetaConnectionPage() {
       <section className="meta-connect-card" aria-labelledby="meta-connect-title">
         <div className="meta-connect-eyebrow">AxiomAI Brain</div>
         <h1 id="meta-connect-title">Conecta tus conversaciones de Meta</h1>
-        <p className="meta-connect-lead">Conecta una Página de Facebook y su cuenta profesional de Instagram para recibir mensajes y responderlos automáticamente con AxiomAI Brain.</p>
+        <p className="meta-connect-lead">Conecta tu página de Facebook y su cuenta profesional de Instagram a AxiomAI Brain para que Axira responda los mensajes.</p>
         <div className="meta-connect-list">
           <div><span>1</span><p><strong>Autoriza Meta</strong><br />Inicia sesión con Facebook y elige la Página.</p></div>
           <div><span>2</span><p><strong>Selecciona los canales</strong><br />Messenger e Instagram quedan vinculados a tu negocio.</p></div>

@@ -6586,8 +6586,8 @@ export default function Home() {
               <h3>{t("Empieza con un diagnóstico inteligente.", "Start with an intelligent diagnosis.")}</h3>
               <p>
                 {t(
-                  "Describe cómo funciona tu negocio y Brain te ayuda a identificar qué áreas pueden beneficiarse de automatización, IA o software.",
-                  "Describe how your business works and Brain helps identify which areas could benefit from automation, AI, or software."
+                  "Describe cómo funciona tu negocio y Axira te ayudará a identificar qué áreas pueden beneficiarse de automatización, IA o software.",
+                  "Describe how your business works and Axira will help identify which areas could benefit from automation, AI, or software."
                 )}
               </p>
               <a className="primary" href={`/brain?lang=${language}`}>{t("Abrir Brain gratis →", "Open Brain free →")}</a>
