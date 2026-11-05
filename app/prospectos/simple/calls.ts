@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { createHash, timingSafeEqual } from "node:crypto";
+import { validCrmSession, CRM_COOKIE, crmV2Enabled } from "../../lib/crm/security";
 import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
 
@@ -24,13 +25,12 @@ function matchesSecret(value: string | undefined, expected: string) {
 }
 
 async function authenticatedCrmSession() {
-  const accessPin = process.env.AXIOMOS_CRM_ACCESS_PIN;
   const cookieStore = await cookies();
-  const session = cookieStore.get("axiomos_crm_session")?.value;
-  if (!accessPin || !matchesSecret(session, hash(`axiomos-crm:${accessPin}`))) {
-    return { ok: false as const, cookieStore };
-  }
-  return { ok: true as const, cookieStore, session: session! };
+  const session = cookieStore.get(CRM_COOKIE)?.value;
+  try {
+    if (!session || !(await validCrmSession(session))) return { ok: false as const, cookieStore };
+  } catch { return { ok: false as const, cookieStore }; }
+  return { ok: true as const, cookieStore, session };
 }
 
 async function hasDatabaseCallAuthorization(sessionHash: string) {
@@ -68,12 +68,12 @@ export async function authorizeSimpleCalls(
   try {
     const sql = neon(db);
     await sql`CREATE TABLE IF NOT EXISTS crm_call_authorizations (session_hash text PRIMARY KEY, expires_at timestamptz NOT NULL, created_at timestamptz NOT NULL DEFAULT NOW())`;
-    await sql`INSERT INTO crm_call_authorizations (session_hash, expires_at) VALUES (${crm.session}, NOW() + INTERVAL '10 minutes') ON CONFLICT (session_hash) DO UPDATE SET expires_at=EXCLUDED.expires_at, created_at=NOW()`;
+    await sql`INSERT INTO crm_call_authorizations (session_hash, expires_at) VALUES (${hash(crm.session)}, NOW() + INTERVAL '10 minutes') ON CONFLICT (session_hash) DO UPDATE SET expires_at=EXCLUDED.expires_at, created_at=NOW()`;
   } catch {
     return { ok: false, error: "No se pudo registrar la autorización. Intenta otra vez." };
   }
 
-  crm.cookieStore.set("axiomos_crm_call_session", hash(`axiomos-call:${callPin}`), {
+  if (!crmV2Enabled()) crm.cookieStore.set("axiomos_crm_call_session", hash(`axiomos-call:${callPin}`), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -91,8 +91,8 @@ export async function checkSimpleCallAuthorization(): Promise<{ok:boolean;author
   if (!callPin) return {ok:false,authorized:false,error:"El PIN de llamada no está configurado."};
   const cookieSession = crm.cookieStore.get("axiomos_crm_call_session")?.value;
   const authorized =
-    matchesSecret(cookieSession, hash(`axiomos-call:${callPin}`)) ||
-    (await hasDatabaseCallAuthorization(crm.session));
+    (!crmV2Enabled() && matchesSecret(cookieSession, hash(`axiomos-call:${callPin}`))) ||
+    (await hasDatabaseCallAuthorization(hash(crm.session)));
   return {ok:true,authorized};
 }
 
@@ -109,9 +109,9 @@ export async function startSimpleCall(
   const callSession = crm.cookieStore.get("axiomos_crm_call_session")?.value;
   const provided = String(data.get("crm_call_pin") || "").trim();
   const isAuthorized =
-    matchesSecret(callSession, expectedCallSession) ||
-    matchesSecret(provided, callPin) ||
-    (await hasDatabaseCallAuthorization(crm.session));
+    (!crmV2Enabled() && matchesSecret(callSession, expectedCallSession)) ||
+    (!crmV2Enabled() && matchesSecret(provided, callPin)) ||
+    (await hasDatabaseCallAuthorization(hash(crm.session)));
 
   if (!isAuthorized) {
     return { ok: false, error: "Autoriza las llamadas con tu PIN antes de continuar." };

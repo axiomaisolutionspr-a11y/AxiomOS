@@ -1,72 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const COOKIE_NAME = "axiomos_crm_session";
-
-async function crearToken(pin: string) {
-  const contenido = new TextEncoder().encode(
-    `axiomos-crm:${pin}`
-  );
-
-  const hash = await crypto.subtle.digest(
-    "SHA-256",
-    contenido
-  );
-
-  return Array.from(new Uint8Array(hash))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
+import { CRM_COOKIE, validCrmSession } from "./app/lib/crm/security";
 
 export async function proxy(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
-
-  /*
-    La pantalla de acceso y el icono de marca (sin datos CRM) son públicos.
-  */
-  if (pathname === "/prospectos/acceso" || pathname === "/prospectos/icon") {
-    return NextResponse.next();
+  const pathname=request.nextUrl.pathname;
+  if (pathname==="/prospectos/acceso" || pathname==="/prospectos/icon") return NextResponse.next();
+  if (!process.env.AXIOMOS_CRM_ACCESS_PIN)
+    return new NextResponse("El acceso privado de AxiomOS no está configurado.", {status:503,headers:{"Cache-Control":"no-store"}});
+  try {
+    const accepted=await validCrmSession(request.cookies.get(CRM_COOKIE)?.value);
+    if (accepted) {
+      const res=NextResponse.next();
+      res.headers.set("Cache-Control","private, no-store");
+      return res;
+    }
+  } catch {
+    // Database unavailable in v2: never silently fall back to the shared PIN.
+    return new NextResponse("La verificación del CRM no está disponible.", {status:503,headers:{"Cache-Control":"no-store"}});
   }
-
-  const accessPin =
-    process.env.AXIOMOS_CRM_ACCESS_PIN;
-
-  if (!accessPin) {
-    return new NextResponse(
-      "El acceso privado de AxiomOS no está configurado.",
-      {
-        status: 503,
-        headers: {
-          "Content-Type":
-            "text/plain; charset=utf-8",
-          "Cache-Control": "no-store",
-        },
-      }
-    );
-  }
-
-  const expectedToken =
-    await crearToken(accessPin);
-
-  const currentToken =
-    request.cookies.get(COOKIE_NAME)?.value;
-
-  if (currentToken === expectedToken) {
-    return NextResponse.next();
-  }
-
-  const loginUrl = new URL(
-    "/prospectos/acceso",
-    request.url
-  );
-
-  loginUrl.searchParams.set(
-    "from",
-    `${pathname}${request.nextUrl.search}`
-  );
-
-  return NextResponse.redirect(loginUrl);
+  const url=new URL("/prospectos/acceso",request.url);
+  url.searchParams.set("from",`${pathname}${request.nextUrl.search}`);
+  return NextResponse.redirect(url);
 }
-
-export const config = {
-  matcher: ["/prospectos/:path*"],
-};
+export const config={matcher:["/prospectos/:path*"]};

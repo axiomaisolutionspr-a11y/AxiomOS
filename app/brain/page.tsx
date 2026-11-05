@@ -35,6 +35,10 @@ type SavedBrainSession = {
   savedAt: string;
 };
 
+function createSubmissionId(prefix: string) {
+  return `${prefix}-${globalThis.crypto.randomUUID()}`;
+}
+
 const BRAIN_SESSION_STORAGE_KEY = "axiomai_brain_session_v1";
 
 function readSavedBrainSession(): SavedBrainSession | null {
@@ -1056,6 +1060,7 @@ export default function BrainPage() {
     );
   }
 
+  /* eslint-disable react-hooks/set-state-in-effect -- Resolve URL/localStorage language after hydration to avoid server/client markup mismatch. */
   useEffect(() => {
     const urlLanguage =
       new URLSearchParams(
@@ -1103,6 +1108,7 @@ export default function BrainPage() {
       );
     }
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const inputRef =
     useRef<HTMLTextAreaElement | null>(null);
@@ -1117,6 +1123,7 @@ export default function BrainPage() {
 
   const profileNextQuestion = getProfileNextQuestion(businessProfile);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- Restore browser-only saved conversation after hydration. */
   useEffect(() => {
     const savedSession = readSavedBrainSession();
 
@@ -1127,6 +1134,7 @@ export default function BrainPage() {
 
     setStorageReady(true);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (!storageReady) {
@@ -1448,8 +1456,7 @@ export default function BrainPage() {
             telefono: cleanPhone,
             negocio: leadCompany.trim(),
             origen: "AxiomOS Brain",
-            id_solicitud:
-              `BRAIN-${Date.now()}`,
+            id_solicitud: createSubmissionId("BRAIN"),
             mensaje: t(
               `El prospecto solicitó una evaluación gratuita directamente desde AxiomOS Brain. Mejor hora para contactar: ${contactTimeLabel}.`,
               `The prospect requested a free evaluation directly from AxiomOS Brain. Best time to contact: ${contactTimeLabel}.`

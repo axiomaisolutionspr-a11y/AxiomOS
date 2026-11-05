@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import { sendSmsAlert } from "../../lib/send-sms-alert";
 import { sendEmailAlert } from "../../lib/send-email-alert";
+import { verifyTelnyxWebhook } from "../../lib/webhook-auth";
+import { readLimitedUtf8Body, RequestBodyTooLargeError } from "../../lib/limited-request-body";
 
 export const runtime = "nodejs";
 
@@ -227,8 +229,25 @@ export async function GET() {
    ========================================================= */
 
 export async function POST(request: NextRequest) {
+  // Opt-in until the signing key and real Telnyx traffic are validated in QA.
+  // The raw body is mandatory: parsing/re-serializing breaks the signature.
+  let raw: string;
+  try { raw = await readLimitedUtf8Body(request, 1024 * 1024); }
+  catch (error) {
+    if (error instanceof RequestBodyTooLargeError)
+      return NextResponse.json({ok:false,error:"Request body too large"},{status:413});
+    return NextResponse.json({ok:false,error:"Invalid request"},{status:400});
+  }
+  if (process.env.AXIOMOS_TELNYX_SIGNATURE_REQUIRED === "true") {
+    if (!process.env.TELNYX_PUBLIC_KEY) {
+      return NextResponse.json({ok:false,error:"Webhook authentication not configured"},{status:503});
+    }
+    if (!verifyTelnyxWebhook(raw,request.headers,process.env.TELNYX_PUBLIC_KEY)) {
+      return NextResponse.json({ok:false,error:"Invalid webhook signature"},{status:401});
+    }
+  }
   try {
-    const webhook = await request.json();
+    const webhook = JSON.parse(raw);
 
     const eventType = webhook?.event_type ?? null;
 

@@ -5,6 +5,8 @@ import {
 
 import { neon } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
+import { verifyMetaWebhook, isExpectedDualhookWhatsAppPayload } from "../../lib/webhook-auth";
+import { readLimitedUtf8Body, RequestBodyTooLargeError } from "../../lib/limited-request-body";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -532,25 +534,75 @@ RECIBIR MENSAJES DE WHATSAPP
 export async function POST(
   request: NextRequest
 ) {
+  // This security gate is opt-in. Do not enable Meta HMAC for Dualhook
+  // Embedded Signup: it is signed with Dualhook's (unshared) app secret.
+  const mode = process.env.AXIOMOS_WHATSAPP_WEBHOOK_AUTH_MODE || "off";
+  if (!["off","meta-direct","dualhook-managed"].includes(mode))
+    return NextResponse.json({ok:false,error:"Webhook security mode invalid"},{status:503});
+  let raw: string, body: unknown;
+  try { raw=await readLimitedUtf8Body(request, 2 * 1024 * 1024); body=JSON.parse(raw); }
+  catch (error) {
+    if (error instanceof RequestBodyTooLargeError)
+      return NextResponse.json({ok:false,error:"Webhook body too large"},{status:413});
+    return NextResponse.json({ok:false,error:"Invalid webhook body"},{status:400});
+  }
+  if (mode==="meta-direct") {
+    if (!process.env.WHATSAPP_META_APP_SECRET)
+      return NextResponse.json({ok:false,error:"Webhook auth not configured"},{status:503});
+    if (!verifyMetaWebhook(raw,request.headers.get("x-hub-signature-256"),process.env.WHATSAPP_META_APP_SECRET))
+      return NextResponse.json({ok:false,error:"Invalid webhook signature"},{status:401});
+  } else if (mode==="dualhook-managed") {
+    if (!process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || !process.env.WHATSAPP_PHONE_NUMBER_ID)
+      return NextResponse.json({ok:false,error:"Webhook identity not configured"},{status:503});
+    if (!isExpectedDualhookWhatsAppPayload(body,process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,process.env.WHATSAPP_PHONE_NUMBER_ID))
+      return NextResponse.json({ok:false,error:"Unexpected webhook identity"},{status:401});
+  }
   try {
-    const databaseUrl =
-      process.env.DATABASE_URL;
-
-    if (!databaseUrl) {
-      throw new Error(
-        "DATABASE_URL is not configured"
-      );
-    }
-
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) throw new Error("DATABASE_URL is not configured");
     const sql = neon(databaseUrl);
 
-    const body =
-      await request.json();
+    type WhatsAppMessage = {
+      from?: unknown;
+      from_user_id?: unknown;
+      id?: unknown;
+      type?: string;
+      text?: { body?: unknown };
+      button?: { text?: unknown };
+      interactive?: {
+        button_reply?: { title?: unknown };
+        list_reply?: { title?: unknown };
+      };
+      image?: { caption?: unknown };
+      video?: { caption?: unknown };
+      document?: { caption?: unknown };
+    };
+    type WhatsAppContact = {
+      wa_id?: unknown;
+      user_id?: unknown;
+      profile?: { name?: unknown };
+    };
+    type WhatsAppStatus = {
+      errors?: unknown[];
+      id?: unknown;
+      status?: unknown;
+      recipient_id?: unknown;
+      recipient_user_id?: unknown;
+    };
+    type WhatsAppWebhookPayload = {
+      entry?: Array<{
+        changes?: Array<{
+          value?: {
+            messages?: WhatsAppMessage[];
+            contacts?: WhatsAppContact[];
+            statuses?: WhatsAppStatus[];
+          };
+        }>;
+      }>;
+    };
 
-    const entries =
-      Array.isArray(body?.entry)
-        ? body.entry
-        : [];
+    const payload = body as WhatsAppWebhookPayload;
+    const entries = Array.isArray(payload?.entry) ? payload.entry : [];
 
     let messagesReceived = 0;
     let repliesSent = 0;
@@ -642,10 +694,7 @@ export async function POST(
 
           const matchingContact =
             contacts.find(
-              (contact: {
-                wa_id?: unknown;
-                user_id?: unknown;
-              }) =>
+              (contact) =>
                 (
                   fromPhoneRaw &&
                   contact?.wa_id ===
@@ -691,11 +740,16 @@ export async function POST(
             sticker: "Sticker recibido", location: "Ubicación recibida",
             contacts: "Contacto recibido",
           };
-          const isConversationalText = typeof incomingText === "string" && Boolean(incomingText.trim());
+          const conversationalText =
+            typeof incomingText === "string"
+              ? incomingText.trim()
+              : "";
+          const isConversationalText = Boolean(conversationalText);
           const caption = message?.image?.caption ?? message?.video?.caption ?? message?.document?.caption;
-          const text = isConversationalText ? incomingText.trim()
-            : mediaLabels[message?.type]
-              ? `[${mediaLabels[message.type]}]${typeof caption === "string" ? ` ${caption.trim()}` : ""}`
+          const text = conversationalText
+            ? conversationalText
+            : mediaLabels[message?.type ?? ""]
+              ? `[${mediaLabels[message.type ?? ""]}]${typeof caption === "string" ? ` ${caption.trim()}` : ""}`
               : "";
 
           const whatsappMessageId =

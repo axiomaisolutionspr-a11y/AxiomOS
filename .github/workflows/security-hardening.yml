@@ -1,0 +1,63 @@
+name: AxiomOS security hardening QA
+
+on:
+  push:
+    branches:
+      - security/crm-webhooks-hardening-20261103
+  pull_request:
+    paths:
+      - app/lib/crm/security.ts
+      - app/lib/webhook-auth.ts
+      - app/lib/limited-request-body.ts
+      - app/api/crm-auth/route.ts
+      - app/api/whatsapp/route.ts
+      - app/api/telnyx/route.ts
+      - app/prospectos/simple/actions.ts
+      - app/prospectos/simple/calls.ts
+      - app/page.tsx
+      - app/brain/page.tsx
+      - app/privacy/page.tsx
+      - app/terms/page.tsx
+      - app/robotics/robotics-client.tsx
+      - app/robotics/robotics-language.tsx
+      - proxy.ts
+      - db/migrations/20261103_crm_sessions.sql
+      - tests/security-hardening.test.cjs
+      - tests/http-negative-e2e.mjs
+      - tests/crm-security-http-e2e.mjs
+      - .github/workflows/security-hardening.yml
+      - eslint.config.mjs
+      - package.json
+
+permissions:
+  contents: read
+jobs:
+  security-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Audit production dependencies and block high/critical advisories
+        run: npm audit --audit-level=moderate
+      - run: node --test tests/security-hardening.test.cjs
+      - run: npx next typegen
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm run build
+        env:
+          AXIOMOS_CRM_SESSION_V2_ENABLED: "false"
+          AXIOMOS_TELNYX_SIGNATURE_REQUIRED: "false"
+          AXIOMOS_WHATSAPP_WEBHOOK_AUTH_MODE: "off"
+      - run: node tests/http-negative-e2e.mjs
+        env:
+          DATABASE_URL: ""
+          DATABASE_URL_UNPOOLED: ""
+          AXIOMOS_CRM_RATE_LIMIT_SECRET: ""
+          TELNYX_API_KEY: ""
+          WHATSAPP_ACCESS_TOKEN: ""
+          DUALHOOK_API_KEY: ""
+

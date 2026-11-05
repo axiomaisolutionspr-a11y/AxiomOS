@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRoboticsLanguage } from "./robotics-language";
 import RoiCalculator from "./roi-calculator";
 
@@ -33,6 +34,9 @@ function RoboticsIcon({ name, className }: { name: string; className?: string })
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths.map((d, i) => <path key={i} d={d} />)}</svg>;
 }
 const matchIconNames = ["industry", "task", "environment", "scale", "priority"];
+function createSubmissionId(prefix: string) {
+  return `${prefix}-${globalThis.crypto.randomUUID()}`;
+}
 const brainIconNames = ["orchestration", "leads", "alerts", "reports"];
 
 
@@ -341,7 +345,7 @@ export default function RoboticsExperience() {
           nombre:data.get("partnerContact"), telefono:data.get("partnerPhone"),
           negocio:data.get("partnerCompany"), email:data.get("partnerEmail"),
           mensaje:details, origen:"Robotics / Technology Partner Intake",
-          id_solicitud:`PARTNER-${Date.now()}`,
+          id_solicitud:createSubmissionId("PARTNER"),
         }),
       });
       const result = await response.json();
@@ -364,10 +368,10 @@ export default function RoboticsExperience() {
   return (
     <main className="robotics-page">
       <nav className="robotics-nav">
-        <a href="/" className="robotics-brand" aria-label="AxiomAI Solutions home">
+        <Link href="/" className="robotics-brand" aria-label="AxiomAI Solutions home">
           <img src="/logo.png" alt="AxiomAI Solutions" />
           <span>AxiomAI Robotics</span>
-        </a>
+        </Link>
         <div className="robotics-nav-links">
           <a href="#solutions">{copy.nav.solutions}</a>
           <a href="#roi">{copy.nav.roi}</a>
