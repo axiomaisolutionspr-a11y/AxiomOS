@@ -16,11 +16,13 @@ Estado: prototipo aislado. La autenticación de AxiomOS comercial sigue en la ru
 
 La gestión de ofertas del propietario requiere además `AXIOMOS_IDENTITY_QA_OFFERS_WRITER_URL`, también **sensible y solo Preview**, del rol `axiomos_autopilot_qa_offer_writer` en la misma rama/base. Se verifica usuario, host y base en cada conexión. Este rol solo lee el esquema comercial, inserta ofertas/auditoría y actualiza `status` y `revision`; no puede borrar ofertas, leer membresías ni leer usuarios de Neon Auth. La sesión y membresía siempre se comprueban primero con el rol lector.
 
+`AXIRA_OFFERS_QA_DATABASE_URL` (rol lector) y `AXIRA_OFFERS_QA_DATABASE_HOST` apuntan ahora a esa **misma rama hija**; `AXIRA_OFFERS_QA_ENABLED=true` y `AXIRA_OFFERS_QA_REVIEW_ONLY=true`. Así, la ruta QA `/api/brain` y la revisión `/prospectos/ofertas` consultan el catálogo administrado en `/prospectos/autopilot`. El cambio se aplicó solo al proyecto aislado de Vercel Preview; no se configuraron variables de producción ni se conectaron WhatsApp, Messenger o Telnyx. Para revertirlo, restablecer las dos variables `AXIRA_OFFERS_QA_DATABASE_*` de Preview a la rama anterior `axira-menu-qa-20261101` y redesplegar. Verificar el host de esa rama antes de hacerlo.
+
 ## Personas y acceso
 
-Rolando confirmó ambos correos. Se crearon dos identidades en la rama hija de Neon Auth y sus membresías por UUID: Rolando `owner`, Alex `operator`. Las cuentas aún no tienen correo verificado ni contraseña; cada titular debe solicitar e introducir en el Preview un código de un solo uso recibido en su propio correo. No compartir códigos. La pantalla inicia sesión mediante Email OTP del proveedor, sin asignar contraseñas por terceros. El acceso real por cada cuenta aún requiere una prueba con el titular.
+Rolando confirmó ambos correos. Se crearon dos identidades en la rama hija de Neon Auth y sus membresías por UUID: Rolando `owner`, Alex `operator`. Ambos completaron el acceso por código de un solo uso en sus propios correos; Neon registró los correos verificados y una sesión activa por persona. No compartir códigos. La pantalla inicia sesión mediante Email OTP del proveedor, sin asignar contraseñas por terceros.
 
-El origen exacto del Preview está en los dominios confiables. Después de iniciar sesión se debe probar cierre, recuperación de sesión y desactivación de una membresía. La pantalla comprueba la membresía en cada solicitud, sin caché de permiso.
+El origen exacto del Preview está en los dominios confiables. Quedan pendientes las pruebas del cierre, recuperación de sesión y desactivación de una membresía. La pantalla comprueba la membresía en cada solicitud, sin caché de permiso.
 
 ## Recuperación
 
@@ -28,7 +30,7 @@ Desactivar `AXIOMOS_INDIVIDUAL_AUTH_QA_ENABLED` o revertir el despliegue Preview
 
 Antes de habilitar las acciones comerciales se creó una copia verificable de la rama hija: `backup-identity-qa-20261107` (`br-plain-mouse-avouv163`, sin compute, estado `ready`). Neon rechazó snapshots de una rama no raíz, por eso se usó una rama hija de respaldo. Para detener escrituras sin afectar la lectura, quitar la variable Preview del escritor o revertir el despliegue. Para recuperar datos de QA, crear una rama nueva desde el respaldo y verificar cuentas, sesiones y ofertas antes de cambiar variables; no restaurar sobre producción.
 
-## Panel comercial de solo lectura
+## Panel comercial QA
 
 Tras validar sesión y membresía, `/prospectos/autopilot` consulta el catálogo de ofertas de la misma rama hija mediante el rol lector. Muestra estado calculado al momento de lectura, borradores, vencimientos y fuente. Los dos registros heredados de QA son sintéticos; no se presentan como promociones comerciales reales. Si la lectura falla, el panel no muestra cifras ni recomendaciones.
 
@@ -44,4 +46,4 @@ El PR #65 (`security/crm-webhooks-hardening-20261103`) ya prepara sesiones revoc
 
 ## Límites de este prototipo
 
-Rolando y Alex iniciaron sesión con OTP; Neon registró ambos correos verificados, membresías separadas y una sesión activa por persona. El formulario comercial QA está preparado y sus operaciones SQL se probaron en transacciones revertidas; todavía falta la prueba E2E del formulario desde la sesión del propietario y la denegación desde la sesión del operador. El panel no expone prospectos. El PIN actual sigue protegiendo las demás rutas; una migración de producción exige integrar la identidad nueva en **cada** consulta y Server Action, y verificar las firmas de los canales antes del corte.
+Rolando y Alex iniciaron sesión con OTP; Neon registró ambos correos verificados, membresías separadas y una sesión activa por persona. El formulario comercial QA está preparado y sus operaciones SQL se probaron en transacciones revertidas; todavía falta la prueba E2E del formulario desde la sesión del propietario y la denegación desde la sesión del operador. El Preview y su CI están listos, y las variables de Brain y del panel apuntan a la misma rama hija. Se consultó en `/brain` «¿Cuál es la promoción vigente y hasta cuándo?»; Axira respondió «Para esa consulta no tenemos una promoción vigente confirmada. Podemos prepararte una cotización.» Esto comprueba el caso negativo en el Preview, pero falta comprobar la respuesta positiva de `/api/brain` tras una aprobación hecha en el panel. No se ha aprobado ninguna oferta QA real: los dos registros existentes son sintéticos, uno borrador y otro pausado. El panel no expone prospectos. El PIN actual sigue protegiendo las demás rutas; una migración de producción exige integrar la identidad nueva en **cada** consulta y Server Action, y verificar las firmas de los canales antes del corte.
