@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "feature/axiomos-autopilot-commercial-qa-20261106": false
+    }
+  }
+}

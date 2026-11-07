@@ -1,11 +1,10 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { createHash, timingSafeEqual } from "node:crypto";
-import { neon } from "@neondatabase/serverless";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
-import { puertoRicoDateISO, validateOfferInput } from "../../lib/axira-offers-policy.js";
+import { validateOfferInput } from "../../lib/axira-offers-policy.js";
+import { offersPilotDatabase, saveOfferDraft, setOfferStatus } from "../../lib/axira-offers-store.js";
+
+import { hasCatalogSession, matchesSecret } from "./access";
 
 const PATH = "/prospectos/ofertas";
 
@@ -13,96 +12,75 @@ function done(type: "ok" | "error", message: string): never {
   redirect(`${PATH}?${new URLSearchParams({ [type]: message })}`);
 }
 
-async function authorized() {
-  const pin = process.env.AXIOMOS_CRM_ACCESS_PIN;
-  const token = (await cookies()).get("axiomos_crm_session")?.value;
-  if (!pin || !token) return false;
-  const expected = createHash("sha256").update(`axiomos-crm:${pin}`).digest("hex");
-  return token.length === expected.length &&
-    timingSafeEqual(Buffer.from(token), Buffer.from(expected));
-}
+async function requireCatalogSession() {
+  const sql = offersPilotDatabase();
+  if (!sql) done("error", "El catálogo requiere una conexión QA aislada.");
+  if (process.env.AXIRA_OFFERS_QA_REVIEW_ONLY === "true") {
+    done("error", "La vista de revisión permite únicamente consultar el catálogo.");
+  }
 
-function correctApprovalKey(input: string): boolean {
-  const configured = process.env.AXIOMOS_OFFERS_APPROVAL_KEY || "";
-  if (configured.length < 16 || !input) return false;
-  const provided = createHash("sha256").update(input).digest();
-  const expected = createHash("sha256").update(configured).digest();
-  return timingSafeEqual(provided, expected);
+  if (!(await hasCatalogSession())) {
+    done("error", "Inicia sesión en el CRM para administrar las ofertas.");
+  }
+  return sql;
 }
 
 export async function createOffer(formData: FormData) {
-  if (!(await authorized())) done("error", "La sesión privada no es válida.");
-  const result = validateOfferInput({
-    name: formData.get("name"), description: formData.get("description"),
-    monthly: formData.get("monthly"), activation: formData.get("activation"),
-    startDate: formData.get("startDate"), endDate: formData.get("endDate"),
-    terms: formData.get("terms"), maxClients: formData.get("maxClients"),
-  });
-  if (!result.ok || !result.value) done("error", result.error || "Revisa los datos.");
-  if (!process.env.DATABASE_URL) done("error", "La base de datos no está configurada.");
-  const o = result.value;
-  try {
-    const sql = neon(process.env.DATABASE_URL);
-    await sql`
-      INSERT INTO axiomai_offers
-        (name, description, monthly_usd, activation_usd, start_date, end_date, terms, max_clients, status)
-      VALUES
-        (${o.name}, ${o.description}, ${o.monthly}, ${o.activation},
-         ${o.startDate}::date, ${o.endDate}::date, ${o.terms}, ${o.maxClients}, 'draft')
-    `;
-  } catch (error) {
-    console.error("OFFERS_CREATE_FAILED", error instanceof Error ? error.message : "error");
-    done("error", "No se pudo guardar. Verifica que se haya aplicado la migración en QA.");
+  const sql = await requireCatalogSession();
+  const requestId = String(formData.get("requestId") ?? "");
+  if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(requestId)) {
+    done("error", "Recarga la página e intenta guardar el borrador otra vez.");
   }
-  revalidatePath(PATH);
-  done("ok", "Oferta guardada como borrador. Todavía NO es visible para los clientes.");
+  const result = validateOfferInput({
+    name: formData.get("name"), product: formData.get("product"),
+    normal: formData.get("normal"), promo: formData.get("promo"), activation: formData.get("activation"),
+    start: formData.get("start"), end: formData.get("end"),
+    tax: formData.get("tax"), termsEs: formData.get("termsEs"), termsEn: formData.get("termsEn"),
+    externalEs: formData.get("externalEs"), externalEn: formData.get("externalEn"),
+    maxClients: formData.get("maxClients"), channels: formData.getAll("channels"),
+  });
+  if (!result.ok || !result.value) done("error", result.error || "Revisa los datos de la oferta.");
+
+  let rows;
+  try {
+    rows = await saveOfferDraft(sql, result.value, requestId);
+  } catch (error) {
+    console.error("AXIRA_OFFERS_DRAFT_FAILED", (error as { code?: string })?.code ?? "unknown");
+    done("error", "No se pudo guardar el borrador en el catálogo QA.");
+  }
+  done("ok", rows.length ? "Borrador guardado. Revisa los datos antes de aprobarlo." : "Esta solicitud ya se registró.");
 }
 
 export async function changeOfferStatus(formData: FormData) {
-  if (!(await authorized())) done("error", "La sesión privada no es válida.");
-  const id = String(formData.get("id") || "");
-  const target = String(formData.get("target") || "");
-  const confirmation = String(formData.get("confirmation") || "").trim();
-  if (!/^\d+$/.test(id) || !["approved", "paused"].includes(target)) {
-    done("error", "Solicitud inválida.");
+  const sql = await requireCatalogSession();
+  const id = String(formData.get("id") ?? "");
+  const revision = Number(formData.get("revision"));
+  const target = String(formData.get("target") ?? "");
+  if (!/^[1-9]\d{0,17}$/.test(id) || !Number.isInteger(revision) || revision < 1 || revision > 2147483647 ||
+    (target !== "approved" && target !== "paused")) {
+    done("error", "Recarga el catálogo y selecciona una versión válida.");
   }
-  if (!correctApprovalKey(String(formData.get("approvalKey") || ""))) {
-    done("error", "Se requiere la clave de administración para publicar o pausar.");
+
+  const key = process.env.AXIOMOS_OFFERS_APPROVAL_KEY;
+  const provided = String(formData.get("approvalKey") ?? "");
+  if (!key || key.length < 24 || !provided || !matchesSecret(provided, key)) {
+    done("error", "Se requiere la clave de administración del catálogo QA.");
   }
-  if (target === "approved" && confirmation !== "APROBAR") {
-    done("error", "Para publicar escribe APROBAR.");
+  const confirm = target === "approved" ? "APROBAR" : "PAUSAR";
+  if (String(formData.get("confirmation") ?? "").trim() !== confirm) {
+    done("error", `Escribe ${confirm} para confirmar el cambio.`);
   }
-  if (target === "paused" && confirmation !== "PAUSAR") {
-    done("error", "Para desactivar escribe PAUSAR.");
-  }
-  if (!process.env.DATABASE_URL) done("error", "La base de datos no está configurada.");
+
+  let rows;
   try {
-    const sql = neon(process.env.DATABASE_URL);
-    const today = puertoRicoDateISO();
-    const rows = target === "approved"
-      ? await sql`
-          UPDATE axiomai_offers SET status='approved', updated_at=now()
-          WHERE id=${id} AND end_date >= ${today}::date
-            AND NOT EXISTS (
-              SELECT 1 FROM axiomai_offers AS other
-              WHERE other.id <> axiomai_offers.id
-                AND other.status = 'approved'
-                AND lower(other.name) = lower(axiomai_offers.name)
-                AND other.start_date <= axiomai_offers.end_date
-                AND other.end_date >= axiomai_offers.start_date
-            )
-          RETURNING id
-        `
-      : await sql`
-          UPDATE axiomai_offers SET status='paused', updated_at=now()
-          WHERE id=${id} AND status <> 'paused'
-          RETURNING id
-        `;
-    if (!rows.length) done("error", "La oferta no existe, venció o hay otra oferta aprobada con el mismo nombre y fechas superpuestas.");
+    rows = await setOfferStatus(sql, id, revision, target);
   } catch (error) {
-    console.error("OFFERS_STATUS_FAILED", error instanceof Error ? error.message : "error");
+    const code = (error as { code?: string })?.code;
+    if (code === "23P01") done("error", "Ya hay una oferta aprobada para ese servicio con horarios superpuestos.");
+    console.error("AXIRA_OFFERS_STATUS_FAILED", code ?? "unknown");
     done("error", "No se pudo cambiar el estado de la oferta.");
   }
-  revalidatePath(PATH);
-  done("ok", target === "approved" ? "Oferta aprobada. Axira la anunciará únicamente dentro de las fechas indicadas." : "Oferta pausada. Axira dejará de anunciarla.");
+  if (!rows.length) done("error", "La versión cambió, la oferta venció o el cambio ya se procesó. Recarga el catálogo.");
+  done("ok", target === "approved" ? "Oferta aprobada para los canales y el horario seleccionados."
+    : "Oferta pausada. Quedó fuera de las consultas vigentes.");
 }
