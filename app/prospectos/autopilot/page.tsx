@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getOfferState, offerMoney, OFFER_CHANNELS, OFFER_PRODUCTS, puertoRicoLocalDateTime } from "../../lib/axira-offers-policy.js";
 import { listOffers } from "../../lib/axira-offers-store.js";
@@ -60,6 +61,7 @@ export default async function AutopilotQaPage({ searchParams }: {
       </div>
     </header>
     <div className="mx-auto grid max-w-6xl gap-6 px-5 py-7">
+      <nav aria-label="Autopilot QA" className="rounded-xl bg-white p-4 shadow-sm"><Link href="/prospectos/autopilot/operaciones" className="inline-flex min-h-11 items-center rounded-lg bg-blue-700 px-5 py-3 font-semibold text-white">Ver operaciones y tareas de Axira (QA)</Link><p className="mt-2 text-sm text-slate-600">Solo información sintética; las funciones de atención real no están conectadas.</p></nav>
       {feedback.ok && <p role="status" className="rounded-xl bg-green-100 p-4 text-green-950">{feedback.ok}</p>}
       {feedback.error && <p role="alert" className="rounded-xl bg-red-100 p-4 text-red-950">{feedback.error}</p>}
       <section aria-label="Resumen de Axira" className="rounded-2xl border border-blue-200 bg-white p-6 shadow-sm">
