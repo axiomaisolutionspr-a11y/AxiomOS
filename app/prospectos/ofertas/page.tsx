@@ -96,6 +96,7 @@ export default async function OffersPage({
                 <form action={changeOfferStatus} className="mt-4 flex flex-wrap items-end gap-3">
                   <input type="hidden" name="id" value={offer.id}/><input type="hidden" name="target" value="paused"/>
                   <div><label className={labelClass}>Escribe PAUSAR</label><input className={inputClass} name="confirmation" autoComplete="off" required placeholder="PAUSAR"/></div>
+                  <div><label className={labelClass}>Clave de administración</label><input className={inputClass} type="password" name="approvalKey" autoComplete="off" required/></div>
                   <button type="submit" className="rounded-xl bg-amber-700 px-4 py-3 font-bold text-white">Pausar oferta</button>
                 </form>
               }
