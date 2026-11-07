@@ -34,6 +34,10 @@ test("isolated review preview exposes only the fictional CRM demo without the sh
     const crm = await fetch(origin + "/prospectos/simple");
     assert.equal(crm.status, 503);
     assert.match(await crm.text(), /no está configurado/i);
+    const auth = await fetch(origin + "/api/auth/get-session");
+    assert.equal(auth.status, 503);
+    const individual = await fetch(origin + "/prospectos/autopilot");
+    assert.equal(individual.status, 503);
   } finally {
     child.kill("SIGTERM");
     if (child.exitCode === null) await once(child, "exit");
