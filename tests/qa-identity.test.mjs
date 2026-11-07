@@ -4,7 +4,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { qaIdentityAuthConfig, qaIdentityDatabase, qaIdentityEnabled, qaMember } from "../app/lib/qa-identity.ts";
+import { qaIdentityAuthConfig, qaIdentityDatabase, qaIdentityEnabled, qaMember, qaOfferWriterDatabase } from "../app/lib/qa-identity.ts";
 
 test("identity pilot fails closed outside QA and without dedicated endpoints", () => {
   const env={VERCEL_ENV:"preview",AXIOMOS_INDIVIDUAL_AUTH_QA_ENABLED:"true",
@@ -12,12 +12,17 @@ test("identity pilot fails closed outside QA and without dedicated endpoints", (
     AXIOMOS_IDENTITY_QA_DATABASE_HOST:"ep-identity.example",
     NEON_AUTH_BASE_URL:"https://ep-identity.neonauth.example/axiomos_offers_qa/auth",
     AXIOMOS_IDENTITY_QA_AUTH_HOST:"ep-identity.neonauth.example",
-    NEON_AUTH_COOKIE_SECRET:"a-synthetic-qa-cookie-secret-longer-than-32-characters"};
+    NEON_AUTH_COOKIE_SECRET:"a-synthetic-qa-cookie-secret-longer-than-32-characters",
+    AXIOMOS_IDENTITY_QA_OFFERS_WRITER_URL:"postgresql://axiomos_autopilot_qa_offer_writer:synthetic@ep-identity.example/axiomos_offers_qa"};
   assert.ok(qaIdentityEnabled(env));
   assert.ok(qaIdentityDatabase(env));
   assert.ok(qaIdentityAuthConfig(env));
+  assert.ok(qaOfferWriterDatabase(env));
   assert.equal(qaIdentityAuthConfig(env).cookies.sessionDataTtl,5);
   assert.equal(qaIdentityAuthConfig({...env,VERCEL_ENV:"production"}),null);
+  assert.equal(qaOfferWriterDatabase({...env,VERCEL_ENV:"production"}),null);
+  assert.equal(qaOfferWriterDatabase({...env,AXIOMOS_IDENTITY_QA_OFFERS_WRITER_URL:"postgresql://owner:password@ep-identity.example/axiomos_offers_qa"}),null);
+  assert.equal(qaOfferWriterDatabase({...env,AXIOMOS_IDENTITY_QA_OFFERS_WRITER_URL:"postgresql://axiomos_autopilot_qa_offer_writer:password@ep-production.example/axiomos_offers_qa"}),null);
   assert.equal(qaIdentityDatabase({...env,DATABASE_URL:"postgresql://legacy@ep-identity.example/neondb"}),null);
   assert.equal(qaIdentityDatabase({...env,AXIOMOS_IDENTITY_QA_DATABASE_HOST:"another.example"}),null);
   assert.equal(qaIdentityAuthConfig({...env,AXIOMOS_IDENTITY_QA_AUTH_HOST:"other.example"}),null);

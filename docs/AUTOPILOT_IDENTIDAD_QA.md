@@ -14,6 +14,8 @@ Estado: prototipo aislado. La autenticación de AxiomOS comercial sigue en la ru
 
 `AXIOMOS_INDIVIDUAL_AUTH_QA_ENABLED=true`, `NEON_AUTH_BASE_URL` de la rama hija, `NEON_AUTH_COOKIE_SECRET` aleatorio (32+ caracteres), `AXIOMOS_IDENTITY_QA_AUTH_HOST`, `AXIOMOS_IDENTITY_QA_DATABASE_URL` de rol lector y `AXIOMOS_IDENTITY_QA_DATABASE_HOST`. Todas pertenecen solo al proyecto aislado y al entorno Preview. No guardar valores secretos en el repositorio.
 
+La gestión de ofertas del propietario requiere además `AXIOMOS_IDENTITY_QA_OFFERS_WRITER_URL`, también **sensible y solo Preview**, del rol `axiomos_autopilot_qa_offer_writer` en la misma rama/base. Se verifica usuario, host y base en cada conexión. Este rol solo lee el esquema comercial, inserta ofertas/auditoría y actualiza `status` y `revision`; no puede borrar ofertas, leer membresías ni leer usuarios de Neon Auth. La sesión y membresía siempre se comprueban primero con el rol lector.
+
 ## Personas y acceso
 
 Rolando confirmó ambos correos. Se crearon dos identidades en la rama hija de Neon Auth y sus membresías por UUID: Rolando `owner`, Alex `operator`. Las cuentas aún no tienen correo verificado ni contraseña; cada titular debe solicitar e introducir en el Preview un código de un solo uso recibido en su propio correo. No compartir códigos. La pantalla inicia sesión mediante Email OTP del proveedor, sin asignar contraseñas por terceros. El acceso real por cada cuenta aún requiere una prueba con el titular.
@@ -24,9 +26,13 @@ El origen exacto del Preview está en los dominios confiables. Después de inici
 
 Desactivar `AXIOMOS_INDIVIDUAL_AUTH_QA_ENABLED` o revertir el despliegue Preview. La rama hija puede eliminarse tras exportar cualquier configuración QA que se quiera conservar. No eliminar la rama QA anterior ni la base de producción. Deshabilitar un usuario en `memberships` corta el acceso de aplicación mientras se revocan sus sesiones con la administración de Neon Auth.
 
+Antes de habilitar las acciones comerciales se creó una copia verificable de la rama hija: `backup-identity-qa-20261107` (`br-plain-mouse-avouv163`, sin compute, estado `ready`). Neon rechazó snapshots de una rama no raíz, por eso se usó una rama hija de respaldo. Para detener escrituras sin afectar la lectura, quitar la variable Preview del escritor o revertir el despliegue. Para recuperar datos de QA, crear una rama nueva desde el respaldo y verificar cuentas, sesiones y ofertas antes de cambiar variables; no restaurar sobre producción.
+
 ## Panel comercial de solo lectura
 
 Tras validar sesión y membresía, `/prospectos/autopilot` consulta el catálogo de ofertas de la misma rama hija mediante el rol lector. Muestra estado calculado al momento de lectura, borradores, vencimientos y fuente. Los dos registros heredados de QA son sintéticos; no se presentan como promociones comerciales reales. Si la lectura falla, el panel no muestra cifras ni recomendaciones.
+
+Solo el rol `owner` puede crear borradores y aprobar o pausar ofertas en esa rama. Las acciones verifican de nuevo la sesión y membresía, validan condiciones comerciales, exigen la palabra `APROBAR` o `PAUSAR`, controlan revisión y solapamiento, y atribuyen auditoría al UUID autenticado. `operator` y `viewer` solo leen. No se publica nada en canales reales por usar este formulario QA.
 
 La conexión de prospectos se marca expresamente como pendiente porque esta base aislada no tiene tablas de prospectos. El panel no permite escrituras, mensajes ni aprobaciones. No usarlo como prueba de que el CRM comercial ya fue migrado a la identidad nueva.
 

@@ -19,6 +19,23 @@ export function qaIdentityDatabase(env = process.env) {
   } catch { return null; }
 }
 
+// Separate credential: it can change only the QA commercial tables granted in Neon.
+export function qaOfferWriterDatabase(env = process.env) {
+  const reader = qaIdentityDatabase(env);
+  const value = env.AXIOMOS_IDENTITY_QA_OFFERS_WRITER_URL;
+  if (!reader || !value) return null;
+  try {
+    const url = new URL(value);
+    const readerUrl = new URL(env.AXIOMOS_IDENTITY_QA_DATABASE_URL!);
+    const canonical = (host: string) => host.replace(/-pooler(?=\.)/, "");
+    if (!["postgres:", "postgresql:"].includes(url.protocol) ||
+        url.pathname !== DATABASE || url.username !== "axiomos_autopilot_qa_offer_writer" ||
+        canonical(url.hostname) !== canonical(readerUrl.hostname) ||
+        !url.password || url.href === readerUrl.href) return null;
+    return neon(url.href, { fetchOptions: { signal: AbortSignal.timeout(5000) } });
+  } catch { return null; }
+}
+
 export function qaIdentityAuthConfig(env = process.env) {
   if (!qaIdentityEnabled(env) || !env.NEON_AUTH_BASE_URL || !env.NEON_AUTH_COOKIE_SECRET ||
       env.NEON_AUTH_COOKIE_SECRET.length < 32 || !env.AXIOMOS_IDENTITY_QA_AUTH_HOST) return null;
