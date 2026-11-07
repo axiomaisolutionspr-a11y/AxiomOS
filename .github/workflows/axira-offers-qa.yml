@@ -6,6 +6,9 @@ on:
       - 'app/lib/axira-offers-*'
       - 'app/lib/crm/model.ts'
       - 'app/lib/qa-identity.ts'
+      - 'app/lib/axiomos-autopilot-*'
+      - 'tests/axiomos-autopilot-*'
+      - 'database/migrations/20261107_axiomos_autopilot_storage_qa.sql'
       - 'app/lib/qa-identity-auth.ts'
       - 'app/api/auth/**'
       - 'app/prospectos/autopilot/**'
@@ -40,6 +43,8 @@ jobs:
       - run: npm ci
       - name: Test offer rules and existing reply policy
         run: node --experimental-strip-types --test tests/axira-offers-policy.test.mjs tests/axira-offers-database.test.mjs tests/axira-reply-policy.test.mjs tests/crm-priority.test.mjs tests/qa-identity.test.mjs
+      - name: Verify Autopilot isolated QA units
+        run: node --test tests/axiomos-autopilot-core.test.mjs tests/axiomos-autopilot-storage-qa.test.mjs tests/axiomos-autopilot-panel-qa.test.mjs
       - name: Generate Next.js 16 route and layout types
         run: npx next typegen
       - name: TypeScript check
