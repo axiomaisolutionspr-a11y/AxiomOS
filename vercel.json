@@ -8,7 +8,8 @@
       "feature/axiomos-autopilot-kernel-qa-20261107": false,
       "feature/axiomos-autopilot-storage-qa-20261107": false,
       "feature/axiomos-autopilot-panel-qa-20261107": false,
-      "feature/axiomos-autopilot-panel-hardening-qa-20261107": false
+      "feature/axiomos-autopilot-panel-hardening-qa-20261107": false,
+      "feature/axiomos-autopilot-rls-qa-20261107": false
     }
   }
 }
