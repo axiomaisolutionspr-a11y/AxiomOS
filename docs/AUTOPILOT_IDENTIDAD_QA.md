@@ -14,13 +14,11 @@ Estado: prototipo aislado. La autenticación de AxiomOS comercial sigue en la ru
 
 `AXIOMOS_INDIVIDUAL_AUTH_QA_ENABLED=true`, `NEON_AUTH_BASE_URL` de la rama hija, `NEON_AUTH_COOKIE_SECRET` aleatorio (32+ caracteres), `AXIOMOS_IDENTITY_QA_AUTH_HOST`, `AXIOMOS_IDENTITY_QA_DATABASE_URL` de rol lector y `AXIOMOS_IDENTITY_QA_DATABASE_HOST`. Todas pertenecen solo al proyecto aislado y al entorno Preview. No guardar valores secretos en el repositorio.
 
-## Habilitar personas reales
+## Personas y acceso
 
-1. Confirmar los correos de Rolando y Alex con ellos. No inferir el correo de Alex ni compartir una credencial.
-2. Crear cada usuario mediante el flujo administrativo de Neon Auth de la rama hija. Completar la verificación del correo y configurar contraseña individual; no enviar invitaciones durante pruebas sin autorización.
-3. Obtener el UUID devuelto por Neon Auth y registrar una membresía activa con `tenant_id='axiomai'` y rol `owner`, `operator` o `viewer` mediante una operación de administración en la base QA. Nunca otorgar permisos por coincidencia de nombre o correo mostrado.
-4. Añadir el origen exacto del Preview a dominios confiables de Neon Auth antes de iniciar sesión.
-5. Probar inicio, cierre y recuperación de sesión; después desactivar una membresía y confirmar que se deniega `/prospectos/autopilot` de inmediato. La pantalla comprueba la membresía en cada solicitud, sin caché de permiso.
+Rolando confirmó ambos correos. Se crearon dos identidades en la rama hija de Neon Auth y sus membresías por UUID: Rolando `owner`, Alex `operator`. Las cuentas aún no tienen correo verificado ni contraseña; cada titular debe solicitar e introducir en el Preview un código de un solo uso recibido en su propio correo. No compartir códigos. La pantalla inicia sesión mediante Email OTP del proveedor, sin asignar contraseñas por terceros. El acceso real por cada cuenta aún requiere una prueba con el titular.
+
+El origen exacto del Preview está en los dominios confiables. Después de iniciar sesión se debe probar cierre, recuperación de sesión y desactivación de una membresía. La pantalla comprueba la membresía en cada solicitud, sin caché de permiso.
 
 ## Recuperación
 
@@ -28,4 +26,4 @@ Desactivar `AXIOMOS_INDIVIDUAL_AUTH_QA_ENABLED` o revertir el despliegue Preview
 
 ## Límites de este prototipo
 
-No se crearon cuentas de Rolando ni Alex. El panel nuevo prueba identidad y rol, pero todavía no expone datos de prospectos ni habilita escritura comercial. El PIN actual sigue protegiendo las demás rutas; una migración de producción exige integrar la identidad nueva en **cada** consulta y Server Action, y verificar las firmas de los canales antes del corte.
+Las identidades están creadas, pero el acceso autenticado mediante OTP y la entrega de correo no se han probado con sus titulares. El panel nuevo prueba identidad y rol, pero todavía no expone datos de prospectos ni habilita escritura comercial. El PIN actual sigue protegiendo las demás rutas; una migración de producción exige integrar la identidad nueva en **cada** consulta y Server Action, y verificar las firmas de los canales antes del corte.
