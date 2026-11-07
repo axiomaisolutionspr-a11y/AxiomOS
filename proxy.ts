@@ -20,6 +20,12 @@ async function crearToken(pin: string) {
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Individual QA authentication is enforced by the page and its data access layer.
+  if ((pathname === "/prospectos/autopilot" || pathname.startsWith("/prospectos/autopilot/")) &&
+    process.env.AXIOMOS_INDIVIDUAL_AUTH_QA_ENABLED === "true" && process.env.VERCEL_ENV === "preview") {
+    return NextResponse.next();
+  }
+
   // This read-only pilot uses the isolated project's Vercel Authentication.
   if ((pathname === "/prospectos/ofertas" || pathname === "/prospectos/demo") && request.method === "GET" &&
     process.env.VERCEL_ENV === "preview" &&

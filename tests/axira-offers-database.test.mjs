@@ -31,10 +31,10 @@ test("PostgreSQL catalog stores, approves, isolates channels, audits and blocks 
       termsEn: "QA contract.", externalEs: "Sin gastos.", externalEn: "No fees.", maxClients: 3,
     };
     const request = randomUUID();
-    const [first] = await saveOfferDraft(sql, offer, request);
+    const [first] = await saveOfferDraft(sql, offer, request, "qa-user:synthetic-owner");
     assert.equal((await saveOfferDraft(sql, offer, request)).length, 0);
     assert.deepEqual((await loadCurrentOffers("whatsapp", sql)).offers, []);
-    assert.equal((await setOfferStatus(sql, first.id, 1, "approved"))[0].revision, 2);
+    assert.equal((await setOfferStatus(sql, first.id, 1, "approved", "qa-user:synthetic-owner"))[0].revision, 2);
     assert.equal((await loadCurrentOffers("whatsapp", sql)).offers[0].promo_cents, 999);
     assert.equal((await loadCurrentOffers("messenger", sql)).offers.length, 1);
     assert.deepEqual((await loadCurrentOffers("instagram", sql)).offers, []);
@@ -46,6 +46,7 @@ test("PostgreSQL catalog stores, approves, isolates channels, audits and blocks 
     const audit = await listOfferAudit(sql);
     assert.equal(audit.length, 4);
     assert.deepEqual(audit.filter((event) => event.offer_id === first.id).map((event) => event.status), ["paused", "approved", "draft"]);
+    assert.equal(audit.find((event) => event.offer_id === first.id && event.status === "approved").actor, "qa-user:synthetic-owner");
 
   } finally {
     await db.close();

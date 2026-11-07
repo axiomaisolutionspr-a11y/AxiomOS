@@ -70,7 +70,7 @@ export function listOfferAudit(sql) {
   `;
 }
 
-export function saveOfferDraft(sql, offer, requestId) {
+export function saveOfferDraft(sql, offer, requestId, actor = QA_ACTOR) {
   return sql`
     WITH created AS (
       INSERT INTO axiomos_commercial.offers
@@ -84,12 +84,12 @@ export function saveOfferDraft(sql, offer, requestId) {
       RETURNING tenant_id, id, revision, status
     )
     INSERT INTO axiomos_commercial.offer_audit (tenant_id, offer_id, revision, status, actor)
-    SELECT tenant_id, id, revision, status, ${QA_ACTOR} FROM created
+    SELECT tenant_id, id, revision, status, ${actor} FROM created
     RETURNING offer_id::text AS id
   `;
 }
 
-export function setOfferStatus(sql, id, revision, target) {
+export function setOfferStatus(sql, id, revision, target, actor = QA_ACTOR) {
   return sql`
     WITH changed AS (
       UPDATE axiomos_commercial.offers
@@ -102,7 +102,7 @@ export function setOfferStatus(sql, id, revision, target) {
       RETURNING tenant_id, id, revision, status
     )
     INSERT INTO axiomos_commercial.offer_audit (tenant_id, offer_id, revision, status, actor)
-    SELECT tenant_id, id, revision, status, ${QA_ACTOR} FROM changed
+    SELECT tenant_id, id, revision, status, ${actor} FROM changed
     RETURNING offer_id::text AS id, revision
   `;
 }
