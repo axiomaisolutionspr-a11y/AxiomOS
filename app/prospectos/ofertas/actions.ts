@@ -66,9 +66,11 @@ export async function changeOfferStatus(formData: FormData) {
   if (!/^\d+$/.test(id) || !["approved", "paused"].includes(target)) {
     done("error", "Solicitud inválida.");
   }
-  if (target === "approved" && (confirmation !== "APROBAR" ||
-      !correctApprovalKey(String(formData.get("approvalKey") || "")))) {
-    done("error", "Para publicar escribe APROBAR y la clave de aprobación correcta.");
+  if (!correctApprovalKey(String(formData.get("approvalKey") || ""))) {
+    done("error", "Se requiere la clave de administración para publicar o pausar.");
+  }
+  if (target === "approved" && confirmation !== "APROBAR") {
+    done("error", "Para publicar escribe APROBAR.");
   }
   if (target === "paused" && confirmation !== "PAUSAR") {
     done("error", "Para desactivar escribe PAUSAR.");
