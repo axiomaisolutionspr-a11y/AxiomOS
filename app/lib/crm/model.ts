@@ -6,13 +6,31 @@ export type Contact = {
   id: string; name: string; company: string; phone: string; stage: Stage;
   assignee: string; followUpAt: string | null; lastSeenAt: string;
   notes: string; request: string; nextAction: string; unread: number;
-  channel: Channel; messages: Message[];
+  channel: Channel; messages: Message[]; oldestUnreadAt?: string | null;
 };
 export type Sector = "optica" | "dealer";
 export function phoneKey(value: string) { return value.replace(/\D/g, "").slice(-10); }
 export function isClosed(contact: Contact) { return contact.stage === "Vendido" || contact.stage === "Perdido"; }
 export function needsAttention(contact: Contact, now = Date.now()) {
   return contact.unread > 0 || (!isClosed(contact) && Boolean(contact.followUpAt) && new Date(contact.followUpAt!).getTime() <= now);
+}
+export function compareContactPriority(a: Contact, b: Contact, now = Date.now()) {
+  const rank = (contact: Contact) => {
+    if (contact.unread > 0) return 0;
+    if (!isClosed(contact) && contact.followUpAt && Date.parse(contact.followUpAt) <= now) return 1;
+    if (!isClosed(contact) && contact.followUpAt) return 2;
+    if (contact.stage === "Interesado" || contact.stage === "Cita agendada" || contact.stage === "Cotización enviada" || contact.stage === "Negociación") return 3;
+    return 4;
+  };
+  const aRank = rank(a), bRank = rank(b);
+  if (aRank !== bRank) return aRank - bRank;
+  if (aRank === 0) {
+    const aWaiting = Date.parse(a.oldestUnreadAt || a.lastSeenAt);
+    const bWaiting = Date.parse(b.oldestUnreadAt || b.lastSeenAt);
+    return aWaiting - bWaiting;
+  }
+  if (aRank === 1 || aRank === 2) return Date.parse(a.followUpAt || "") - Date.parse(b.followUpAt || "");
+  return Date.parse(b.lastSeenAt) - Date.parse(a.lastSeenAt);
 }
 export function nextAction(contact: Pick<Contact, "stage" | "unread" | "followUpAt">) {
   if (contact.unread > 0) return "Revisar la conversación y decidir cómo responder.";

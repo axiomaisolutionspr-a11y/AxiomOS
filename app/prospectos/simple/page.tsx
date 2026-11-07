@@ -21,11 +21,13 @@ export default async function SimpleCRMPage() {
         ...wa.map(w=>({id:`wa-${w.id}`,text:String(w.message),at:new Date(w.created_at).toISOString(),incoming:w.role==="user",channel:"WhatsApp" as Channel})),
         ...cs.map(c=>({id:`call-${c.id}`,text:String(c.call_summary || c.call_reason || "Llamada recibida"),at:new Date(c.created_at).toISOString(),incoming:true,channel:"Llamada" as Channel})),
       ].sort((a,b)=>new Date(b.at).getTime()-new Date(a.at).getTime());
+      const unreadMessages = messages.filter(m=>m.incoming && new Date(m.at).getTime()>reviewed);
       const notes = String(p.crm_notes || "");
       const contact: Contact = {id:p.id,name:p.caller_name || "Contacto sin identificar",company:p.caller_company || "",phone:p.caller_phone || "",
         stage:STAGES.includes(p.crm_stage) ? p.crm_stage : "Nuevo",assignee:p.assigned_to || "",followUpAt:p.follow_up_at ? new Date(p.follow_up_at).toISOString() : null,
         lastSeenAt:new Date(p.last_seen_at).toISOString(),notes:cleanNotes(notes),request:messages.find(m=>m.incoming)?.text.slice(0,220) || summaryFromNotes(notes),
-        nextAction:"",unread:messages.filter(m=>m.incoming && new Date(m.at).getTime()>reviewed).length,
+        nextAction:"",unread:unreadMessages.length,
+        oldestUnreadAt:unreadMessages.length?unreadMessages.reduce((oldest,m)=>new Date(m.at).getTime()<new Date(oldest.at).getTime()?m:oldest).at:null,
         channel:messages[0]?.channel || "Web",messages:messages.slice(0,30)};
       contact.nextAction = String(cs[0]?.next_action || nextAction(contact));
       return contact;
