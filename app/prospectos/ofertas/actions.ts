@@ -81,6 +81,14 @@ export async function changeOfferStatus(formData: FormData) {
       ? await sql`
           UPDATE axiomai_offers SET status='approved', updated_at=now()
           WHERE id=${id} AND end_date >= ${today}::date
+            AND NOT EXISTS (
+              SELECT 1 FROM axiomai_offers AS other
+              WHERE other.id <> axiomai_offers.id
+                AND other.status = 'approved'
+                AND lower(other.name) = lower(axiomai_offers.name)
+                AND other.start_date <= axiomai_offers.end_date
+                AND other.end_date >= axiomai_offers.start_date
+            )
           RETURNING id
         `
       : await sql`
@@ -88,7 +96,7 @@ export async function changeOfferStatus(formData: FormData) {
           WHERE id=${id} AND status <> 'paused'
           RETURNING id
         `;
-    if (!rows.length) done("error", "La oferta no existe o su fecha ya venció.");
+    if (!rows.length) done("error", "La oferta no existe, venció o hay otra oferta aprobada con el mismo nombre y fechas superpuestas.");
   } catch (error) {
     console.error("OFFERS_STATUS_FAILED", error instanceof Error ? error.message : "error");
     done("error", "No se pudo cambiar el estado de la oferta.");
