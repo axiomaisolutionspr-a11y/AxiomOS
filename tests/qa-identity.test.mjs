@@ -16,6 +16,7 @@ test("identity pilot fails closed outside QA and without dedicated endpoints", (
   assert.ok(qaIdentityEnabled(env));
   assert.ok(qaIdentityDatabase(env));
   assert.ok(qaIdentityAuthConfig(env));
+  assert.equal(qaIdentityAuthConfig(env).cookies.sessionDataTtl,5);
   assert.equal(qaIdentityAuthConfig({...env,VERCEL_ENV:"production"}),null);
   assert.equal(qaIdentityDatabase({...env,DATABASE_URL:"postgresql://legacy@ep-identity.example/neondb"}),null);
   assert.equal(qaIdentityDatabase({...env,AXIOMOS_IDENTITY_QA_DATABASE_HOST:"another.example"}),null);

@@ -26,7 +26,7 @@ export function qaIdentityAuthConfig(env = process.env) {
     const url = new URL(env.NEON_AUTH_BASE_URL);
     if (url.protocol !== "https:" || url.hostname !== env.AXIOMOS_IDENTITY_QA_AUTH_HOST ||
         url.pathname !== `${DATABASE}/auth`) return null;
-    return {baseUrl:url.href,cookies:{secret:env.NEON_AUTH_COOKIE_SECRET,sessionDataTtl:0}};
+    return {baseUrl:url.href,cookies:{secret:env.NEON_AUTH_COOKIE_SECRET,sessionDataTtl:5}};
   } catch { return null; }
 }
 
