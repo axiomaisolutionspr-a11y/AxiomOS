@@ -12,6 +12,7 @@ on:
       - 'app/prospectos/simple/page.tsx'
       - 'app/prospectos/simple/CRMWorkspace.tsx'
       - 'tests/axira-offers-*'
+      - 'tests/axira-preview-demo-access.test.mjs'
       - 'tests/crm-priority.test.mjs'
       - 'tests/fixtures/axira-offers-*'
       - '.github/workflows/axira-offers-qa.yml'
@@ -41,4 +42,4 @@ jobs:
         run: npm run build
 
       - name: Verify catalog through HTTP forms and Brain
-        run: node --test tests/axira-offers-http.test.mjs
+        run: node --test tests/axira-offers-http.test.mjs tests/axira-preview-demo-access.test.mjs
