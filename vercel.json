@@ -4,7 +4,10 @@
     "deploymentEnabled": {
       "feature/axiomos-autopilot-commercial-qa-20261106": false,
       "feature/axiomos-autopilot-priority-qa-20261107": false,
-      "feature/axiomos-individual-auth-qa-20261107": false
+      "feature/axiomos-individual-auth-qa-20261107": false,
+      "feature/axiomos-autopilot-kernel-qa-20261107": false,
+      "feature/axiomos-autopilot-storage-qa-20261107": false,
+      "feature/axiomos-autopilot-panel-qa-20261107": false
     }
   }
 }
