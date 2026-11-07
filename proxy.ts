@@ -20,6 +20,14 @@ async function crearToken(pin: string) {
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // This read-only pilot uses the isolated project's Vercel Authentication.
+  if (pathname === "/prospectos/ofertas" && request.method === "GET" &&
+    process.env.VERCEL_ENV === "preview" &&
+    process.env.AXIRA_OFFERS_QA_ENABLED === "true" &&
+    process.env.AXIRA_OFFERS_QA_REVIEW_ONLY === "true") {
+    return NextResponse.next();
+  }
+
   /*
     La pantalla de acceso y el icono de marca (sin datos CRM) son públicos.
   */
