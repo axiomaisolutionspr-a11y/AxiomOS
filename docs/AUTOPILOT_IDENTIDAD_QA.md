@@ -34,8 +34,14 @@ Tras validar sesión y membresía, `/prospectos/autopilot` consulta el catálogo
 
 Solo el rol `owner` puede crear borradores y aprobar o pausar ofertas en esa rama. Las acciones verifican de nuevo la sesión y membresía, validan condiciones comerciales, exigen la palabra `APROBAR` o `PAUSAR`, controlan revisión y solapamiento, y atribuyen auditoría al UUID autenticado. `operator` y `viewer` solo leen. No se publica nada en canales reales por usar este formulario QA.
 
-La conexión de prospectos se marca expresamente como pendiente porque esta base aislada no tiene tablas de prospectos. El panel no permite escrituras, mensajes ni aprobaciones. No usarlo como prueba de que el CRM comercial ya fue migrado a la identidad nueva.
+La conexión de prospectos se marca expresamente como pendiente porque esta base aislada no tiene tablas de prospectos. Las únicas escrituras previstas son borradores y cambios de estado de ofertas QA por el propietario; el panel no envía mensajes. No usarlo como prueba de que el CRM comercial ya fue migrado a la identidad nueva.
+
+### Bloqueo concreto de prospectos y canales
+
+Lectura de metadatos en la rama principal de Neon: `prospects`, `call_leads` y `whatsapp_messages` no tienen columna `tenant_id`. Las rutas actuales de formularios y Telnyx escriben en `prospects` mediante `DATABASE_URL`; WhatsApp escribe mensajes en la base comercial. Sus datos no pueden exponerse en un CRM multiempresa con una simple consulta desde este panel. La rama hija de identidad carece de esas tablas por diseño.
+
+El PR #65 (`security/crm-webhooks-hardening-20261103`) ya prepara sesiones revocables, validación Meta/Telnyx y pruebas aisladas; no se debe duplicar ni fusionar a ciegas con este piloto. Su propia documentación exige eventos auténticos de los proveedores y resolver la autenticación del relay Dualhook antes de producción. Integrar prospectos requiere una tabla o proyección con `tenant_id`, identidad de evento por canal, consentimiento, permisos de fila y una migración aditiva probada en QA. No copiar clientes reales a esta rama para simular la integración.
 
 ## Límites de este prototipo
 
-Rolando inició sesión con OTP y Neon registró su correo verificado, membresía de propietario y una sesión activa. Alex aún no ha probado su acceso. El panel no expone prospectos ni habilita escritura comercial. El PIN actual sigue protegiendo las demás rutas; una migración de producción exige integrar la identidad nueva en **cada** consulta y Server Action, y verificar las firmas de los canales antes del corte.
+Rolando y Alex iniciaron sesión con OTP; Neon registró ambos correos verificados, membresías separadas y una sesión activa por persona. El formulario comercial QA está preparado y sus operaciones SQL se probaron en transacciones revertidas; todavía falta la prueba E2E del formulario desde la sesión del propietario y la denegación desde la sesión del operador. El panel no expone prospectos. El PIN actual sigue protegiendo las demás rutas; una migración de producción exige integrar la identidad nueva en **cada** consulta y Server Action, y verificar las firmas de los canales antes del corte.
