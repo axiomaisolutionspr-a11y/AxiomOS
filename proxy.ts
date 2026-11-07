@@ -21,7 +21,7 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // This read-only pilot uses the isolated project's Vercel Authentication.
-  if (pathname === "/prospectos/ofertas" && request.method === "GET" &&
+  if ((pathname === "/prospectos/ofertas" || pathname === "/prospectos/demo") && request.method === "GET" &&
     process.env.VERCEL_ENV === "preview" &&
     process.env.AXIRA_OFFERS_QA_ENABLED === "true" &&
     process.env.AXIRA_OFFERS_QA_REVIEW_ONLY === "true") {

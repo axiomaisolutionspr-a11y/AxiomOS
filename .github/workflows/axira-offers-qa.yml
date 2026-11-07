@@ -4,11 +4,16 @@ on:
     paths:
       - 'app/api/brain/route.ts'
       - 'app/lib/axira-offers-*'
+      - 'app/lib/crm/model.ts'
       - 'database/migrations/20261106_axira_offers.sql'
       - 'proxy.ts'
       - 'package*.json'
       - 'app/prospectos/ofertas/**'
+      - 'app/prospectos/simple/page.tsx'
+      - 'app/prospectos/simple/CRMWorkspace.tsx'
       - 'tests/axira-offers-*'
+      - 'tests/axira-preview-demo-access.test.mjs'
+      - 'tests/crm-priority.test.mjs'
       - 'tests/fixtures/axira-offers-*'
       - '.github/workflows/axira-offers-qa.yml'
   workflow_dispatch:
@@ -28,7 +33,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Test offer rules and existing reply policy
-        run: node --test tests/axira-offers-policy.test.mjs tests/axira-offers-database.test.mjs tests/axira-reply-policy.test.mjs
+        run: node --experimental-strip-types --test tests/axira-offers-policy.test.mjs tests/axira-offers-database.test.mjs tests/axira-reply-policy.test.mjs tests/crm-priority.test.mjs
       - name: Generate Next.js 16 route and layout types
         run: npx next typegen
       - name: TypeScript check
@@ -37,4 +42,4 @@ jobs:
         run: npm run build
 
       - name: Verify catalog through HTTP forms and Brain
-        run: node --test tests/axira-offers-http.test.mjs
+        run: node --test tests/axira-offers-http.test.mjs tests/axira-preview-demo-access.test.mjs
