@@ -24,6 +24,12 @@ El origen exacto del Preview está en los dominios confiables. Después de inici
 
 Desactivar `AXIOMOS_INDIVIDUAL_AUTH_QA_ENABLED` o revertir el despliegue Preview. La rama hija puede eliminarse tras exportar cualquier configuración QA que se quiera conservar. No eliminar la rama QA anterior ni la base de producción. Deshabilitar un usuario en `memberships` corta el acceso de aplicación mientras se revocan sus sesiones con la administración de Neon Auth.
 
+## Panel comercial de solo lectura
+
+Tras validar sesión y membresía, `/prospectos/autopilot` consulta el catálogo de ofertas de la misma rama hija mediante el rol lector. Muestra estado calculado al momento de lectura, borradores, vencimientos y fuente. Los dos registros heredados de QA son sintéticos; no se presentan como promociones comerciales reales. Si la lectura falla, el panel no muestra cifras ni recomendaciones.
+
+La conexión de prospectos se marca expresamente como pendiente porque esta base aislada no tiene tablas de prospectos. El panel no permite escrituras, mensajes ni aprobaciones. No usarlo como prueba de que el CRM comercial ya fue migrado a la identidad nueva.
+
 ## Límites de este prototipo
 
-Las identidades están creadas, pero el acceso autenticado mediante OTP y la entrega de correo no se han probado con sus titulares. El panel nuevo prueba identidad y rol, pero todavía no expone datos de prospectos ni habilita escritura comercial. El PIN actual sigue protegiendo las demás rutas; una migración de producción exige integrar la identidad nueva en **cada** consulta y Server Action, y verificar las firmas de los canales antes del corte.
+Rolando inició sesión con OTP y Neon registró su correo verificado, membresía de propietario y una sesión activa. Alex aún no ha probado su acceso. El panel no expone prospectos ni habilita escritura comercial. El PIN actual sigue protegiendo las demás rutas; una migración de producción exige integrar la identidad nueva en **cada** consulta y Server Action, y verificar las firmas de los canales antes del corte.
