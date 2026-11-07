@@ -1,0 +1,33 @@
+name: Axira offers isolated QA
+on:
+  pull_request:
+    paths:
+      - 'app/api/brain/route.ts'
+      - 'app/lib/axira-offers-*'
+      - 'app/prospectos/ofertas/**'
+      - 'tests/axira-offers-policy.test.mjs'
+      - '.github/workflows/axira-offers-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - name: Test offer rules and existing reply policy
+        run: node --test tests/axira-offers-policy.test.mjs tests/axira-reply-policy.test.mjs
+      - name: Generate Next.js 16 route and layout types
+        run: npx next typegen
+      - name: TypeScript check
+        run: npx tsc --noEmit
+      - name: Check production build
+        run: npm run build
