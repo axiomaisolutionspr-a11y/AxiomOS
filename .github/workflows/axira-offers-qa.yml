@@ -25,6 +25,8 @@ jobs:
       - run: npm ci
       - name: Test offer rules and existing reply policy
         run: node --test tests/axira-offers-policy.test.mjs tests/axira-reply-policy.test.mjs
+      - name: Generate Next.js 16 route and layout types
+        run: npx next typegen
       - name: TypeScript check
         run: npx tsc --noEmit
       - name: Check production build
