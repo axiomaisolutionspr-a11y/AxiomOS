@@ -47,8 +47,7 @@ export default async function AutopilotQaPage({ searchParams }: {
   const role = { owner: "Propietario", operator: "Operador", viewer: "Consulta" }[membership.role];
   const canEdit = membership.role === "owner" && !catalogError && Boolean(commercialOfferWriterDatabase());
   const isQa = process.env.VERCEL_ENV === "preview";
-  // Read-only summary. The commercial reader role needs SELECT on public.prospects
-  // before this is enabled; until then fail closed without exposing customer data.
+  // Read-only summary through a restricted aggregate view. The reader role must never get direct access to public.prospects.
   let legacyProspectCount: number | null = null;
   if (process.env.AXIOMOS_AUTOPILOT_PROSPECTS_READ_ENABLED === "true" && process.env.VERCEL_ENV === "production") {
     try {
@@ -76,7 +75,7 @@ export default async function AutopilotQaPage({ searchParams }: {
   if (process.env.VERCEL_ENV === "production" && process.env.AXIOMOS_AUTOPILOT_FOLLOWUP_REVIEW_ENABLED === "true") {
     try {
       const rows = await sql`SELECT prospect_id, stage, due_at, priority FROM axiomos_commercial.legacy_followup_review LIMIT 50`;
-      if (rows.length <= 50 && rows.every(row => /^\\d{1,18}$/.test(String(row.prospect_id)) && ["Interesado", "Seguimiento"].includes(String(row.stage)) && ["overdue", "upcoming"].includes(String(row.priority)) && !Number.isNaN(Date.parse(String(row.due_at))))) {
+      if (rows.length <= 50 && rows.every(row => /^\d{1,18}$/.test(String(row.prospect_id)) && ["Interesado", "Seguimiento"].includes(String(row.stage)) && ["overdue", "upcoming"].includes(String(row.priority)) && !Number.isNaN(Date.parse(String(row.due_at))))) {
         followupReview = rows.map(row => ({ prospect_id: String(row.prospect_id), stage: String(row.stage), due_at: String(row.due_at), priority: String(row.priority) }));
       }
     } catch (cause) {
