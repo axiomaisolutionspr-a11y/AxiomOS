@@ -4,7 +4,8 @@
     "deploymentEnabled": {
       "fix/crm-show-all-contacts-qa-20261107": false,
       "fix/axira-expired-promotions-20261108": false,
-      "fix/axira-commercial-failclosed-20261108": false
+      "fix/axira-commercial-failclosed-20261108": false,
+      "fix/axira-commercial-followups-20261108": false
     }
   }
 }

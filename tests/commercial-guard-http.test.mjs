@@ -33,6 +33,7 @@ test("compiled Brain routes price questions from all channels without contacting
     const cases = [
       { channel: "web", message: "¿Cuánto cuesta el CRM?" },
       { channel: "whatsapp", message: "¿Sigue vigente la promoción de octubre?" },
+      { channel: "whatsapp", message: "¿Sigue la de 39 al mes?" },
       { channel: "messenger", mode: "social", message: "What are your current prices?", language: "en" },
       { channel: "instagram", mode: "social", message: "¿Cuánto vale WhatsApp?" },
     ];
