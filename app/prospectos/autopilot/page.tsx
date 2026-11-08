@@ -76,11 +76,23 @@ export default async function AutopilotQaPage({ searchParams }: {
   if (process.env.VERCEL_ENV === "production" && process.env.AXIOMOS_AUTOPILOT_FOLLOWUP_REVIEW_ENABLED === "true") {
     try {
       const rows = await sql`SELECT prospect_id, stage, due_at, priority FROM axiomos_commercial.legacy_followup_review LIMIT 50`;
-      if (rows.length <= 50 && rows.every(row => /^\\d{1,18}$/.test(String(row.prospect_id)) && ["Interesado", "Seguimiento"].includes(String(row.stage)) && ["overdue", "upcoming"].includes(String(row.priority)) && !Number.isNaN(Date.parse(String(row.due_at))))) {
+      if (rows.length <= 50 && rows.every(row => /^\d{1,18}$/.test(String(row.prospect_id)) && ["Interesado", "Seguimiento"].includes(String(row.stage)) && ["overdue", "upcoming"].includes(String(row.priority)) && !Number.isNaN(Date.parse(String(row.due_at))))) {
         followupReview = rows.map(row => ({ prospect_id: String(row.prospect_id), stage: String(row.stage), due_at: String(row.due_at), priority: String(row.priority) }));
       }
     } catch (cause) {
       console.error("AUTOPILOT_FOLLOWUP_REVIEW_UNAVAILABLE", (cause as {code?: string})?.code ?? "unknown");
+    }
+  }
+  type Assignment = { prospect_id: string; assignee_user_id: string; status: string; revision: number };
+  let assignments: Assignment[] = [];
+  let assignmentEnabled = false;
+  if (process.env.VERCEL_ENV === "production" && process.env.AXIOMOS_AUTOPILOT_ASSIGNMENTS_ENABLED === "true") {
+    try {
+      const rows = await sql`SELECT prospect_id::text, assignee_user_id::text, status, revision FROM axiomos_commercial.followup_assignments WHERE tenant_id='axiomai' AND (${membership.role === "owner"} OR assignee_user_id=${data.user.id}::uuid) ORDER BY updated_at DESC LIMIT 50`;
+      assignments = rows.map(row => ({prospect_id: String(row.prospect_id), assignee_user_id: String(row.assignee_user_id), status:String(row.status), revision:Number(row.revision)}));
+      assignmentEnabled = true;
+    } catch (cause) {
+      console.error("AUTOPILOT_ASSIGNMENTS_UNAVAILABLE", (cause as {code?: string})?.code ?? "unknown");
     }
   }
   const feedback = await searchParams;
@@ -132,6 +144,13 @@ export default async function AutopilotQaPage({ searchParams }: {
         {followupReview.length === 0 ? <p className="mt-3">No hay seguimientos con fecha pendientes de revisión.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="py-2">Referencia</th><th>Etapa</th><th>Fecha PR</th><th>Prioridad</th></tr></thead><tbody>
           {followupReview.map(item => <tr key={item.prospect_id} className="border-b"><td className="py-2">#{item.prospect_id}</td><td>{item.stage}</td><td>{new Intl.DateTimeFormat("es-PR", {timeZone:"America/Puerto_Rico",dateStyle:"medium",timeStyle:"short"}).format(new Date(item.due_at))}</td><td>{item.priority === "overdue" ? "Vencido · revisar" : "Próximo"}</td></tr>)}
         </tbody></table></div>}
+      </section>}
+      {assignmentEnabled && <section aria-label="Asignaciones de seguimiento" className="rounded-2xl border border-blue-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-bold">Asignaciones internas</h2>
+        <p className="mt-2 text-sm text-slate-600">Las asignaciones no envían mensajes y no cambian el CRM anterior. Solo el propietario puede asignar.</p>
+        <ul className="mt-4 grid gap-2">{assignments.map(item => <li key={item.prospect_id} className="rounded border p-3 text-sm">Prospecto #{item.prospect_id} · {item.assignee_user_id === "ee187087-e461-47aa-8af2-9aadabc57812" ? "Alex" : item.assignee_user_id === "4d732997-747d-4f21-8f5c-e86f210997d6" ? "Rolando" : "Usuario autorizado"} · {item.status}</li>)}</ul>
+        {assignments.length === 0 && <p className="mt-2 text-sm">Sin asignaciones registradas.</p>}
+        {membership.role === "owner" && <p className="mt-2 text-sm text-amber-800">La asignación interactiva se habilitará tras validar la escritura con auditoría.</p>}
       </section>}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold">Catálogo comercial</h2>
