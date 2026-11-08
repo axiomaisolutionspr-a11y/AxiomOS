@@ -1,5 +1,6 @@
 ﻿import { NextResponse } from "next/server";
 import { conciseWhatsAppReply } from "../../lib/axira-reply-policy.js";
+import { commercialUnavailableReply, hasUnverifiedCommercialClaim, isUnverifiedOfferQuestion } from "../../lib/commercial-guard.mjs";
 
 export const runtime = "nodejs";
 
@@ -695,6 +696,16 @@ Para conversaciones normales de WhatsApp:
       );
     }
 
+    const latestUserIndex = history.findLastIndex((item) => item.role === "user");
+    const latestCustomerMessage = history[latestUserIndex]?.text ?? "";
+    const priorMessages = history.slice(0, latestUserIndex);
+    if (isUnverifiedOfferQuestion(latestCustomerMessage, priorMessages)) {
+      return NextResponse.json(
+        { result: commercialUnavailableReply(body.language, latestCustomerMessage) },
+        { headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
     const apiKey =
       process.env.OPENAI_API_KEY;
 
@@ -797,6 +808,12 @@ Para conversaciones normales de WhatsApp:
     }
 
     const rawResult = extractOutputText(data);
+    if (hasUnverifiedCommercialClaim(rawResult)) {
+      return NextResponse.json(
+        { result: commercialUnavailableReply(body.language, latestCustomerMessage) },
+        { headers: { "Cache-Control": "no-store" } }
+      );
+    }
     const result =
       mode === "social"
         ? sanitizeSocialReply(rawResult)
