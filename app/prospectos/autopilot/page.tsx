@@ -47,6 +47,18 @@ export default async function AutopilotQaPage({ searchParams }: {
   const role = { owner: "Propietario", operator: "Operador", viewer: "Consulta" }[membership.role];
   const canEdit = membership.role === "owner" && !catalogError && Boolean(commercialOfferWriterDatabase());
   const isQa = process.env.VERCEL_ENV === "preview";
+  // Read-only summary. The commercial reader role needs SELECT on public.prospects
+  // before this is enabled; until then fail closed without exposing customer data.
+  let legacyProspectCount: number | null = null;
+  if (process.env.AXIOMOS_AUTOPILOT_PROSPECTS_READ_ENABLED === "true" && process.env.VERCEL_ENV === "production") {
+    try {
+      const rows = await sql`SELECT total FROM axiomos_commercial.legacy_prospect_count`;
+      const value = Number(rows[0]?.total);
+      if (Number.isSafeInteger(value) && value >= 0) legacyProspectCount = value;
+    } catch (cause) {
+      console.error("AUTOPILOT_PROSPECTS_READ_UNAVAILABLE", (cause as {code?: string})?.code ?? "unknown");
+    }
+  }
   const feedback = await searchParams;
 
   return <main className="min-h-screen bg-slate-100 text-slate-950">
@@ -77,7 +89,7 @@ export default async function AutopilotQaPage({ searchParams }: {
       <section aria-label="Indicadores" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {([
           ["Promociones vigentes", active.length], ["Por revisar", drafts.length],
-          ["Vencen en 72 horas", expiring.length], ["Prospectos", "Sin conexión"],
+          ["Vencen en 72 horas", expiring.length], ["Prospectos", legacyProspectCount ?? "Sin conexión"],
         ] as const).map(([label, value]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-5">
           <p className="text-sm font-medium text-slate-600">{label}</p>
           <p className="mt-2 text-2xl font-bold">{catalogError && label !== "Prospectos" ? "—" : value}</p>
