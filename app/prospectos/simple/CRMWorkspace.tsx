@@ -35,7 +35,7 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
   const router=useRouter();
   const [sector,setSector]=useState<Sector>("optica");
   const [demoRows,setDemoRows]=useState<Contact[]>(()=>demoContacts("optica"));
-  const [view,setView]=useState<View>("inicio");
+  const [view,setView]=useState<View>("clientes");
   const [search,setSearch]=useState("");
   const [channelFilter,setChannelFilter]=useState("Todos");
   const [stageFilter,setStageFilter]=useState("Todos");
@@ -171,7 +171,7 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
           </div>
           <div className="crm-pipeline" aria-label="Resumen del embudo"><span>Embudo activo</span><div><i style={{width:`${Math.min(100,contacts.length?((stats.opportunities+stats.won)/contacts.length)*100:0)}%`}}/></div><strong>{stats.won} ventas cerradas</strong></div>
         </section>
-        <nav className="simple-tabs" aria-label="Ver clientes">{([{id:"inicio",label:"Por atender"},{id:"clientes",label:"Todos los clientes"},{id:"seguimientos",label:"Recordatorios"}] as const).map(item=><button type="button" key={item.id} aria-pressed={view===item.id} className={view===item.id?"active":""} onClick={()=>{setView(item.id);setSearch("");setStatus("");}}>{item.label}{item.id==="inicio"&&attention.length>0&&<b>{attention.length}</b>}</button>)}</nav>
+        <nav className="simple-tabs" aria-label="Ver clientes">{([{id:"inicio",label:"Por atender"},{id:"clientes",label:`Todos los clientes (${contacts.length})`},{id:"seguimientos",label:"Recordatorios"}] as const).map(item=><button type="button" key={item.id} aria-pressed={view===item.id} className={view===item.id?"active":""} onClick={()=>{setView(item.id);setSearch("");setStatus("");if(item.id==="clientes"){setFocusFilter("Todos");setChannelFilter("Todos");setStageFilter("Todos");setOwnerFilter("Todos");}}}>{item.label}{item.id==="inicio"&&attention.length>0&&<b>{attention.length}</b>}</button>)}</nav>
         <label className="simple-search"><Icon name="search"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar por nombre, empresa, teléfono o necesidad…" aria-label="Buscar un cliente"/></label>
         <div className="focus-filters" aria-label="Prioridad">{(["Todos","Sin revisar","Vencidos","Oportunidades"] as FocusFilter[]).map(value=><button type="button" key={value} className={focusFilter===value?"active":""} aria-pressed={focusFilter===value} onClick={()=>setFocusFilter(value)}>{value}</button>)}</div>
         <div className="simple-filters"><label>Canal<select value={channelFilter} onChange={e=>setChannelFilter(e.target.value)}>{["Todos","WhatsApp","Llamada","Web"].map(v=><option key={v}>{v}</option>)}</select></label><label>Estado<select value={stageFilter} onChange={e=>setStageFilter(e.target.value)}>{["Todos",...STAGES].map(v=><option key={v}>{v}</option>)}</select></label><label>Responsable<select value={ownerFilter} onChange={e=>setOwnerFilter(e.target.value)}>{["Todos",...new Set(contacts.map(c=>c.assignee||"Sin asignar"))].map(v=><option key={v}>{v}</option>)}</select></label>{(channelFilter!=="Todos"||stageFilter!=="Todos"||ownerFilter!=="Todos"||focusFilter!=="Todos"||search)&&<button type="button" className="simple-clear" onClick={()=>{setChannelFilter("Todos");setStageFilter("Todos");setOwnerFilter("Todos");setFocusFilter("Todos");setSearch("");}}>Limpiar filtros</button>}</div><p className="simple-results">{visible.length} {visible.length===1?"cliente encontrado":"clientes encontrados"}</p>
