@@ -20,3 +20,11 @@ The SECURITY DEFINER function trusts p_actor supplied by its caller. Checking th
 4. The feature flag `AXIOMOS_AUTOPILOT_ASSIGNMENTS_ENABLED` must remain absent/false. Keep PR #89 draft; no migrations or assignments to production until gates pass.
 
 No WhatsApp/SMS/call sends should be enabled.
+
+## Mitigation added in PR #89 (QA re-test, 2026-11-08)
+- Revoked EXECUTE on legacy `assign_followup(bigint,uuid,uuid,integer)` from commercial writer.
+- Added HMAC-SHA256 signed, one-time claim to `assign_followup_signed`: binds actor UUID, prospect ID, assignee UUID, optimistic revision, expiration epoch, and UUID nonce.
+- Secret stored in database owner-only configuration, not readable by scoped commercial writer. Separate matching server environment secret is required for deployment; none was installed in production.
+- Signed claim is issued only by the authenticated Next.js server action after verifying active owner membership. SHA256 signature is checked by the SQL SECURITY DEFINER function; nonce is single use and assignment/audit commit atomically.
+- Verified in Neon QA: valid claim advanced revision once; replay returned zero rows; forged signature returned zero rows; validly signed operator claim returned zero rows; expired claim returned zero rows. Invalid requests left audit count and revision unchanged, with 33 prospects still present.
+- **Remaining release gate**: configure production secret independently, validate actual authenticated owner/operator HTTP E2E and sign-out/revocation; PR stays draft and feature flag OFF.
