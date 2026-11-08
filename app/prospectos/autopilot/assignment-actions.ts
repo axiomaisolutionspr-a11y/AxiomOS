@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { createHmac, randomUUID } from "node:crypto";
 import { commercialIdentityAuth } from "../../lib/commercial-identity-auth";
 import { commercialIdentityDatabase, commercialMember, commercialOfferWriterDatabase } from "../../lib/commercial-identity";
 
@@ -24,9 +25,15 @@ export async function assignFollowup(formData: FormData) {
   if (!/^[1-9]\d{0,17}$/.test(id) || !/^[a-f\d-]{36}$/i.test(assignee) || !Number.isSafeInteger(revision) || revision<0 || revision>2147483646) fail("Datos de asignación no válidos.");
   const writer=commercialOfferWriterDatabase();
   if (!writer) fail("Escritura no disponible.");
+  const signingKey=process.env.AXIOMOS_ASSIGNMENT_SIGNING_KEY;
+  if (!signingKey || !/^[0-9a-f]{64}$/i.test(signingKey)) fail("Firma de asignaciones no configurada.");
+  const expires=Math.floor(Date.now()/1000)+60;
+  const nonce=randomUUID();
+  const signedPayload=`${data.user.id.toLowerCase()}:${id}:${assignee.toLowerCase()}:${revision}:${expires}:${nonce}`;
+  const signature=createHmac("sha256",Buffer.from(signingKey,"hex")).update(signedPayload).digest("hex");
   let changes;
   try {
-    changes=await writer`SELECT prospect_id,revision FROM axiomos_commercial.assign_followup(${id}::bigint,${assignee}::uuid,${data.user.id}::uuid,${revision}::integer)`;
+    changes=await writer`SELECT prospect_id,revision FROM axiomos_commercial.assign_followup_signed(${id}::bigint,${assignee}::uuid,${data.user.id}::uuid,${revision}::integer,${expires}::bigint,${nonce}::uuid,${signature}::text)`;
   } catch (cause) {
     console.error("AUTOPILOT_ASSIGNMENT_FAILED",(cause as {code?:string})?.code ?? "unknown");
     fail("No se pudo registrar la asignación.");
