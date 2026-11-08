@@ -5,6 +5,7 @@ import {
 
 import { neon } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
+import { classifyDualhookWebhook, dualhookValidationQaEnabled } from "../../lib/dualhook-webhook-qa.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -546,6 +547,19 @@ export async function POST(
 
     const body =
       await request.json();
+
+    if (dualhookValidationQaEnabled()) {
+      if (!process.env.WHATSAPP_WABA_ID_QA || !PHONE_NUMBER_ID) {
+        return NextResponse.json({ok:false,error:"QA webhook routing unavailable"},{status:503});
+      }
+      const classification = classifyDualhookWebhook(body,process.env.WHATSAPP_WABA_ID_QA,PHONE_NUMBER_ID);
+      if (classification === "reject") {
+        return NextResponse.json({ok:false,error:"Unexpected QA webhook account or number"},{status:401});
+      }
+      if (classification === "ignore") {
+        return NextResponse.json({ok:true,received:true,processed:false},{status:200});
+      }
+    }
 
     const entries =
       Array.isArray(body?.entry)
