@@ -1,4 +1,6 @@
 ﻿import { NextResponse } from "next/server";
+import { loadCurrentOffers } from "../../lib/axira-offers-store.js";
+import { formatOffersReply, offerLanguage } from "../../lib/axira-offers-policy.js";
 import { conciseWhatsAppReply } from "../../lib/axira-reply-policy.js";
 import { commercialUnavailableReply, hasUnverifiedCommercialClaim, isUnverifiedOfferQuestion } from "../../lib/commercial-guard.mjs";
 
@@ -700,8 +702,14 @@ Para conversaciones normales de WhatsApp:
     const latestCustomerMessage = history[latestUserIndex]?.text ?? "";
     const priorMessages = history.slice(0, latestUserIndex);
     if (isUnverifiedOfferQuestion(latestCustomerMessage, priorMessages)) {
+      const offerChannel = mode === "social" ? socialChannel.toLowerCase() : channel;
+      const catalog = await loadCurrentOffers(offerChannel);
+      const reply = catalog.status === "ok"
+        ? formatOffersReply(catalog, { language: offerLanguage(body.language, latestCustomerMessage),
+            message: latestCustomerMessage, history: priorMessages, maxChars: mode === "social" ? MAX_SOCIAL_REPLY_LENGTH : 480 })
+        : commercialUnavailableReply(body.language, latestCustomerMessage);
       return NextResponse.json(
-        { result: commercialUnavailableReply(body.language, latestCustomerMessage) },
+        { result: reply },
         { headers: { "Cache-Control": "no-store" } }
       );
     }

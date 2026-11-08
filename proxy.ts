@@ -20,6 +20,12 @@ async function crearToken(pin: string) {
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Autopilot verifies Neon Auth and the active tenant membership on every request.
+  // Its own routes fail closed when the commercial release is not configured.
+  if (pathname === "/prospectos/autopilot" || pathname.startsWith("/prospectos/autopilot/")) {
+    return NextResponse.next();
+  }
+
   /*
     La pantalla de acceso y el icono de marca (sin datos CRM) son públicos.
   */
