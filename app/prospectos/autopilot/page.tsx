@@ -52,7 +52,7 @@ export default async function AutopilotQaPage({ searchParams }: {
   let legacyProspectCount: number | null = null;
   if (process.env.AXIOMOS_AUTOPILOT_PROSPECTS_READ_ENABLED === "true" && process.env.VERCEL_ENV === "production") {
     try {
-      const rows = await sql`SELECT COUNT(*)::int AS total FROM public.prospects`;
+      const rows = await sql`SELECT total FROM axiomos_commercial.legacy_prospect_count`;
       const value = Number(rows[0]?.total);
       if (Number.isSafeInteger(value) && value >= 0) legacyProspectCount = value;
     } catch (cause) {
