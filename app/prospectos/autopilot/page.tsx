@@ -59,6 +59,18 @@ export default async function AutopilotQaPage({ searchParams }: {
       console.error("AUTOPILOT_PROSPECTS_READ_UNAVAILABLE", (cause as {code?: string})?.code ?? "unknown");
     }
   }
+  let prospectSummary: Record<string, number> | null = null;
+  if (process.env.VERCEL_ENV === "production" && process.env.AXIOMOS_AUTOPILOT_PROSPECT_SUMMARY_ENABLED === "true") {
+    try {
+      const rows = await sql`SELECT total, new_count, interested_count, followup_count, lost_count, overdue_count, due_next_7_days, with_notes, unassigned FROM axiomos_commercial.legacy_prospect_summary`;
+      const value = rows[0];
+      if (value && Object.values(value).every(v => Number.isSafeInteger(Number(v)) && Number(v) >= 0)) {
+        prospectSummary = Object.fromEntries(Object.entries(value).map(([k,v]) => [k, Number(v)]));
+      }
+    } catch (cause) {
+      console.error("AUTOPILOT_PROSPECT_SUMMARY_UNAVAILABLE", (cause as {code?: string})?.code ?? "unknown");
+    }
+  }
   const feedback = await searchParams;
 
   return <main className="min-h-screen bg-slate-100 text-slate-950">
@@ -95,6 +107,13 @@ export default async function AutopilotQaPage({ searchParams }: {
           <p className="mt-2 text-2xl font-bold">{catalogError && label !== "Prospectos" ? "—" : value}</p>
         </div>)}
       </section>
+      {prospectSummary && <section aria-label="Resumen de seguimiento" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-bold">Resumen de prospectos</h2>
+        <p className="mt-2 text-sm text-slate-600">Solo lectura: sin datos personales ni envíos automáticos.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {([["Total", "total"], ["Nuevos", "new_count"], ["Interesados", "interested_count"], ["En seguimiento", "followup_count"], ["Perdidos", "lost_count"], ["Seguimientos vencidos", "overdue_count"], ["Próximos 7 días", "due_next_7_days"], ["Sin asignar", "unassigned"]] as const).map(([label, key]) => <div key={key} className="rounded-lg border border-slate-200 p-3"><div className="text-sm text-slate-600">{label}</div><div className="text-2xl font-bold">{prospectSummary![key]}</div></div>)}
+        </div>
+      </section>}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold">Catálogo comercial</h2>
         <p className="mt-1 text-sm text-slate-600">El estado se calcula al consultar la base. Horarios en Puerto Rico.</p>
