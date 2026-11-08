@@ -6,6 +6,7 @@ import { commercialIdentityDatabase, commercialMember, commercialOfferWriterData
 import { commercialIdentityAuth } from "../../lib/commercial-identity-auth";
 import { changeQaOfferStatus, createQaOffer } from "./offer-actions";
 import SignOut from "./sign-out";
+import { assignFollowup } from "./assignment-actions";
 
 export const dynamic = "force-dynamic";
 type Offer = {
@@ -95,6 +96,13 @@ export default async function AutopilotQaPage({ searchParams }: {
       console.error("AUTOPILOT_ASSIGNMENTS_UNAVAILABLE", (cause as {code?: string})?.code ?? "unknown");
     }
   }
+  let activeAssignees: Array<{user_id:string; role:string}> = [];
+  if (assignmentEnabled && membership.role === "owner") {
+    try {
+      const rows=await sql`SELECT user_id::text,role FROM axiomos_identity.memberships WHERE tenant_id='axiomai' AND status='active' AND role IN ('owner','operator') ORDER BY role`;
+      activeAssignees=rows.map(r=>({user_id:String(r.user_id),role:String(r.role)}));
+    } catch { assignmentEnabled=false; }
+  }
   const feedback = await searchParams;
 
   return <main className="min-h-screen bg-slate-100 text-slate-950">
@@ -150,7 +158,19 @@ export default async function AutopilotQaPage({ searchParams }: {
         <p className="mt-2 text-sm text-slate-600">Las asignaciones no envían mensajes y no cambian el CRM anterior. Solo el propietario puede asignar.</p>
         <ul className="mt-4 grid gap-2">{assignments.map(item => <li key={item.prospect_id} className="rounded border p-3 text-sm">Prospecto #{item.prospect_id} · {item.assignee_user_id === "ee187087-e461-47aa-8af2-9aadabc57812" ? "Alex" : item.assignee_user_id === "4d732997-747d-4f21-8f5c-e86f210997d6" ? "Rolando" : "Usuario autorizado"} · {item.status}</li>)}</ul>
         {assignments.length === 0 && <p className="mt-2 text-sm">Sin asignaciones registradas.</p>}
-        {membership.role === "owner" && <p className="mt-2 text-sm text-amber-800">La asignación interactiva se habilitará tras validar la escritura con auditoría.</p>}
+        {membership.role === "owner" && <div className="mt-4 space-y-3">{followupReview?.map(item => {
+          const existing=assignments.find(a=>a.prospect_id===item.prospect_id);
+          return <form key={item.prospect_id} action={assignFollowup} className="flex flex-wrap items-center gap-3 rounded border p-3">
+            <strong>#{item.prospect_id}</strong><span>{item.stage} · {item.priority === "overdue" ? "Vencido" : "Próximo"}</span>
+            <input type="hidden" name="prospectId" value={item.prospect_id}/>
+            <input type="hidden" name="revision" value={existing?.revision ?? 0}/>
+            <select name="assignee" defaultValue={existing?.assignee_user_id ?? ""} required className="rounded border p-2">
+              <option value="" disabled>Seleccionar responsable</option>
+              {activeAssignees.map(a=><option key={a.user_id} value={a.user_id}>{a.role === "owner" ? "Rolando" : "Alex"}</option>)}
+            </select>
+            <button type="submit" className="rounded bg-blue-700 px-3 py-2 text-white">Asignar</button>
+          </form>;
+        })}</div>}
       </section>}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold">Catálogo comercial</h2>
