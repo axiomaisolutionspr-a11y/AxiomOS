@@ -10,12 +10,13 @@ test("routes expired-promotion questions and follow-ups to a verified fallback",
   assert.equal(isUnverifiedOfferQuestion("¿Todavía sigue vigente?", [
     { role: "user", text: "¿Cuál es la promoción de CRM?" },
   ]), true);
+  assert.equal(isUnverifiedOfferQuestion("¿Sigue la de 39 al mes?"), true);
   assert.equal(isUnverifiedOfferQuestion("Tengo $500 de presupuesto para automatizar citas"), false);
   assert.equal(isUnverifiedOfferQuestion("¿Puedo reservar para mañana?"), false);
 });
 
 test("blocks model-generated commercial figures even in a non-pricing conversation", () => {
-  for (const claim of ["El plan cuesta $39 al mes.", "La activación es 49.", "Tres meses gratis.", "Hay cupos disponibles.", "Promoción con 20% de descuento."]) {
+  for (const claim of ["El plan cuesta $39 al mes.", "La activación es 49.", "39 al mes.", "Tres meses gratis.", "Hay cupos disponibles.", "Promoción con 20% de descuento."]) {
     assert.equal(hasUnverifiedCommercialClaim(claim), true, claim);
   }
   assert.equal(hasUnverifiedCommercialClaim("Podemos analizar tus procesos y coordinar una llamada."), false);
