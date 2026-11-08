@@ -24,12 +24,13 @@ export async function assignFollowup(formData: FormData) {
   if (!/^[1-9]\d{0,17}$/.test(id) || !/^[a-f\d-]{36}$/i.test(assignee) || !Number.isSafeInteger(revision) || revision<0 || revision>2147483646) fail("Datos de asignación no válidos.");
   const writer=commercialOfferWriterDatabase();
   if (!writer) fail("Escritura no disponible.");
+  let changes;
   try {
-    const changes=await writer`SELECT prospect_id,revision FROM axiomos_commercial.assign_followup(${id}::bigint,${assignee}::uuid,${data.user.id}::uuid,${revision}::integer)`;
-    if (!changes.length) fail("La asignación no se aplicó. Revisa la versión y los permisos.");
+    changes=await writer`SELECT prospect_id,revision FROM axiomos_commercial.assign_followup(${id}::bigint,${assignee}::uuid,${data.user.id}::uuid,${revision}::integer)`;
   } catch (cause) {
     console.error("AUTOPILOT_ASSIGNMENT_FAILED",(cause as {code?:string})?.code ?? "unknown");
     fail("No se pudo registrar la asignación.");
   }
+  if (!changes.length) fail("La asignación no se aplicó. Revisa la versión y los permisos.");
   redirect(PATH+"?"+new URLSearchParams({ok:"Asignación registrada y auditada."}));
 }
