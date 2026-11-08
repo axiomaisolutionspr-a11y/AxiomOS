@@ -71,6 +71,18 @@ export default async function AutopilotQaPage({ searchParams }: {
       console.error("AUTOPILOT_PROSPECT_SUMMARY_UNAVAILABLE", (cause as {code?: string})?.code ?? "unknown");
     }
   }
+  type FollowupReview = {prospect_id: string; stage: string; due_at: string; priority: string};
+  let followupReview: FollowupReview[] | null = null;
+  if (process.env.VERCEL_ENV === "production" && process.env.AXIOMOS_AUTOPILOT_FOLLOWUP_REVIEW_ENABLED === "true") {
+    try {
+      const rows = await sql`SELECT prospect_id, stage, due_at, priority FROM axiomos_commercial.legacy_followup_review LIMIT 50`;
+      if (rows.length <= 50 && rows.every(row => /^\\d{1,18}$/.test(String(row.prospect_id)) && ["Interesado", "Seguimiento"].includes(String(row.stage)) && ["overdue", "upcoming"].includes(String(row.priority)) && !Number.isNaN(Date.parse(String(row.due_at))))) {
+        followupReview = rows.map(row => ({ prospect_id: String(row.prospect_id), stage: String(row.stage), due_at: String(row.due_at), priority: String(row.priority) }));
+      }
+    } catch (cause) {
+      console.error("AUTOPILOT_FOLLOWUP_REVIEW_UNAVAILABLE", (cause as {code?: string})?.code ?? "unknown");
+    }
+  }
   const feedback = await searchParams;
 
   return <main className="min-h-screen bg-slate-100 text-slate-950">
@@ -113,6 +125,13 @@ export default async function AutopilotQaPage({ searchParams }: {
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {([["Total", "total"], ["Nuevos", "new_count"], ["Interesados", "interested_count"], ["En seguimiento", "followup_count"], ["Perdidos", "lost_count"], ["Seguimientos vencidos", "overdue_count"], ["Próximos 7 días", "due_next_7_days"], ["Sin asignar", "unassigned"]] as const).map(([label, key]) => <div key={key} className="rounded-lg border border-slate-200 p-3"><div className="text-sm text-slate-600">{label}</div><div className="text-2xl font-bold">{prospectSummary![key]}</div></div>)}
         </div>
+      </section>}
+      {followupReview && <section aria-label="Cola de revisión de seguimiento" className="rounded-2xl border border-amber-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-bold">Seguimientos por revisar · Solo lectura</h2>
+        <p className="mt-2 text-sm text-slate-700">Ninguna acción envía mensajes ni altera datos. Verifica consentimiento, identidad y contexto en el CRM anterior antes de contactar a alguien.</p>
+        {followupReview.length === 0 ? <p className="mt-3">No hay seguimientos con fecha pendientes de revisión.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="py-2">Referencia</th><th>Etapa</th><th>Fecha PR</th><th>Prioridad</th></tr></thead><tbody>
+          {followupReview.map(item => <tr key={item.prospect_id} className="border-b"><td className="py-2">#{item.prospect_id}</td><td>{item.stage}</td><td>{new Intl.DateTimeFormat("es-PR", {timeZone:"America/Puerto_Rico",dateStyle:"medium",timeStyle:"short"}).format(new Date(item.due_at))}</td><td>{item.priority === "overdue" ? "Vencido · revisar" : "Próximo"}</td></tr>)}
+        </tbody></table></div>}
       </section>}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold">Catálogo comercial</h2>
