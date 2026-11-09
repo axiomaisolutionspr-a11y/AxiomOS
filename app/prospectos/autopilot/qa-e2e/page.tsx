@@ -26,7 +26,7 @@ const messages:Record<string,string>={
  provider_status_unknown:"Estado del proveedor desconocido; no se supone entrega."
 };
 export default async function QaE2eSms({searchParams}:{
- searchParams:Promise<{resultado?:string}>
+ searchParams:Promise<{resultado?:string;firma?:string}>
 }){
  if(process.env.VERCEL_ENV!=="preview"||
     process.env.AXIOMOS_AUTOPILOT_E2E_QA_ENABLED!=="true")
