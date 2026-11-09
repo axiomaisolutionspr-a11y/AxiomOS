@@ -1,8 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { commercialIdentityAuth } from "../../../../lib/commercial-identity-auth";
-import { commercialIdentityDatabase, commercialMember } from "../../../../lib/commercial-identity";
+import { commercialIdentityAuth } from "../../../lib/commercial-identity-auth";
+import { commercialIdentityDatabase, commercialMember } from "../../../lib/commercial-identity";
 
 const PATH = "/prospectos/autopilot/certificacion-sesion";
 const QA_BASE = "https://ep-muddy-cloud-avprxkpx.neonauth.c-11.us-east-1.aws.neon.tech/neondb/auth";
