@@ -31,7 +31,7 @@ try {
   const rl=createInterface({input,output});
   const otp=(await rl.question("Código OTP: ")).trim();
   rl.close();
-  if(!/^\\d{6}$/.test(otp))throw new Error("OTP must have 6 digits");
+  if(!/^\d{6}$/.test(otp))throw new Error("OTP must have 6 digits");
   const login=await request("/sign-in/email-otp",{method:"POST",body:JSON.stringify({email:EMAIL,otp})});
   await requireOk(login,"QA sign-in");
   sessionCookie=cookies(login);
