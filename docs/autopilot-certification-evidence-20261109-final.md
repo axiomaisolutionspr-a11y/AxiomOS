@@ -20,3 +20,15 @@
 - Nunca habilitar campañas/prospectos reales por asumir equivalencia entre SMS manual de prueba y envío autónomo.
 
 **Conclusión:** el SMS de certificación manual pasó; revocación HTTP y entrega autónoma aún no. No se alteraron registros de prospectos durante estas pruebas.
+
+
+## Ejecución complementaria de QA — 2026-11-09, post-SMS
+Rama aislada: `br-raspy-boat-aveu0gky`, clonada de main; producción intacta.
+- 8 seguimientos vencidos; ejecutando `generate_followup_drafts_dryrun()` como rol escritor insertó 8 propuestas en QA.
+- La vista de elegibilidad para una propuesta devolvió inicialmente `blocked_no_consent`; al registrar consentimiento sintético en QA cambió a `consent_recorded_requires_review`, y al registrar baja posterior cambió a `blocked_opt_out`.
+- Reejecución del generador: 0 propuestas nuevas (idempotencia).
+- QA final: 8 propuestas, 0 approved. La base prohíbe transicionar a approved.
+- Rol lector: no puede ejecutar generador ni leer tabla privada de consentimientos. Rol escritor: no tiene UPDATE de cola.
+- Sesión QA sintética insertada y revocada en base de datos; 0 tokens sintéticos remanentes. **No hubo replay HTTP de cookie después de invalidación.**
+- La prueba SMS manual realizada a número autorizado sí pasó y quedó cerrada; **no** hubo envío automático de propuestas de la cola.
+- **Certificación actual**: GO para generación/revisión sin enviar, PASS en reglas DB; NO-GO en revocación autenticada HTTP y dispatch autónomo. No afirmar E2E de esas dos funciones.
