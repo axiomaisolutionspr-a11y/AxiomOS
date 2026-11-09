@@ -5,12 +5,21 @@ type CommercialEnv = NodeJS.ProcessEnv;
 const canonical = (host: string) => host.replace(/-pooler(?=\.)/, "");
 
 export function commercialIdentityEnabled(env: CommercialEnv = process.env) {
+  if (env.VERCEL_ENV === "preview" && env.AXIOMOS_AUTOPILOT_E2E_QA_ENABLED === "true") return true;
   if (env.VERCEL_ENV === "production") return env.AXIOMOS_COMMERCIAL_ENABLED === "true";
   if (env.VERCEL_ENV === "preview") return env.AXIOMOS_INDIVIDUAL_AUTH_QA_ENABLED === "true";
   return false;
 }
 
 function settings(env: CommercialEnv) {
+  if (env.VERCEL_ENV === "preview" && env.AXIOMOS_AUTOPILOT_E2E_QA_ENABLED === "true") {
+    return {
+      database:"neondb",readerUser:"axiomos_autopilot_e2e_reader",writerUser:"axiomos_autopilot_e2e_worker",
+      readerUrl:env.AXIOMOS_QA_E2E_READER_URL,writerUrl:env.AXIOMOS_QA_E2E_WORKER_URL,
+      host:env.AXIOMOS_QA_E2E_DB_HOST,authUrl:env.AXIOMOS_QA_E2E_AUTH_BASE_URL,
+      authHost:env.AXIOMOS_QA_E2E_AUTH_HOST,cookieSecret:env.AXIOMOS_QA_E2E_COOKIE_SECRET,
+    };
+  }
   return env.VERCEL_ENV === "production" ? {
     database: "neondb", readerUser: "axiomos_commercial_reader", writerUser: "axiomos_commercial_writer",
     readerUrl: env.AXIOMOS_COMMERCIAL_DATABASE_URL, writerUrl: env.AXIOMOS_COMMERCIAL_WRITER_URL,
