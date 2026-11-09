@@ -29,3 +29,18 @@
 6. Las acciones actuales *solo* generan borradores; una decisión de revisión no concede autorización para envío.
 
 **Decisión:** GO para generación y revisión sin envío, NO-GO para envío automático. Mantener el bloqueo SQL CHECK(status <> 'approved'), no introducir un worker hasta certificación y autorización explícita.
+
+
+## Evidencia complementaria — 2026-11-09
+
+- Snapshot adicional antes de pruebas: `snap-square-darkness-avi5d0cs`.
+- QA nueva creada desde rama main: `br-odd-scene-avgbjflt`. Producción sin cambios de contenido.
+- Inventario producción: `33 public.prospects`, `20 public.call_leads`, `162 public.whatsapp_messages`, `0` propuestas, `0` aprobaciones.
+- `neon_auth.user`: ambas cuentas verificadas, `owner` y `operator` activos, una sesión activa cada uno. Esto **no** prueba revocación E2E.
+- Pruebas negativas SQL con rol `axiomos_commercial_reader` (PASS): ejecución de función generadora denegada, lectura de bitácora denegada, lectura de consentimiento denegada (`42501`).
+- Rol `axiomos_commercial_writer`: eliminación de decisión denegada (`42501`).
+- Intento sintético de INSERT con estado `approved`: denegado por `followup_queue_no_live_dispatch` (`23514`), `0 approved` tras prueba.
+- Registro del operador verificado a nivel DB como `operator`; rechazo *HTTP autenticado* de server action pendiente.
+- No se ejecutaron cambios de token, envíos, ni llamadas a prospectos reales.
+
+**Certificación adicional:** bloqueo SQL/roles PASS; autenticación de navegador con sesiones de prueba, revocación real y entrega de proveedor permanecen NO CERTIFICADAS. No levantar prohibición de envíos.
