@@ -41,3 +41,12 @@ Se usó solo una propuesta de la rama QA, con autorización ficticia del propiet
 5. Superar la prueba de revocación HTTP con una sesión legítima de QA.
 
 **Decisión:** GO de la preparación/revisión sin enviar; NO-GO de envío automático. Este PR es QA-only; no habilita ni modifica producción.
+
+## Prueba HTTP autenticada preparada (requiere ingreso local de OTP)
+Se añadió `scripts/qa-neon-auth-session-revocation.mjs`: ejecuta `GET /get-session` sin cookie, envía OTP al correo QA autorizado, pide ingresar el código **solo en la terminal**, hace `POST /sign-in/email-otp`, confirma la sesión, hace `POST /sign-out`, vuelve a consultar `GET /get-session` reutilizando la cookie anterior y exige JSON `null`. Solo usa Neon Auth de la rama QA y no imprime el OTP ni la cookie.
+
+Ejecutar en un entorno con Node 22 y acceso al correo QA:
+```bash
+node scripts/qa-neon-auth-session-revocation.mjs
+```
+La ejecución completa sigue **pendiente de OTP manual**. No marcar `QA_HTTP_SESSION_REVOCATION_PASS` hasta observar ese resultado real.
