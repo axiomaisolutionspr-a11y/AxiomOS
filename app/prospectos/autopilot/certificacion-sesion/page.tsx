@@ -10,7 +10,13 @@ const message: Record<string, string> = {
   envio_otp_fallido: "No se pudo enviar el código desde QA.",
   no_autorizado: "No estás autorizado a ejecutar esta prueba.",
   codigo_invalido: "El código debe contener seis dígitos.",
-  otp_rechazado: "Neon Auth no aceptó el código. Solicita uno nuevo en caso necesario.",
+  otp_rechazado: "Neon Auth rechazó el código; estamos registrando únicamente la categoría técnica del error, sin revelar el OTP.",
+  otp_incorrecto: "Código incorrecto. Usa solamente el último código enviado al correo de QA.",
+  otp_expirado: "El código venció. Solicita uno nuevo y utilízalo antes de cinco minutos.",
+  demasiados_intentos: "Límite de intentos alcanzado. Solicita un nuevo código después del bloqueo temporal.",
+  correo_qa_no_verificado: "La cuenta QA necesita completar la verificación del correo antes de iniciar sesión.",
+  usuario_qa_no_registrado: "El usuario QA no se encontró; hay que revisar la cuenta en Neon Auth.",
+  correo_qa_invalido: "La configuración del correo QA es inválida.",
   sin_cookie: "Neon Auth inició el proceso pero no entregó cookie de sesión a la prueba.",
   sesion_no_confirmada: "No se pudo confirmar una sesión QA del usuario previsto.",
   revocacion_aprobada: "QA_HTTP_SESSION_REVOCATION_PASS: la sesión existía y su cookie anterior fue rechazada tras cerrar sesión.",
@@ -45,7 +51,7 @@ export default async function QaSessionCertification({
     <div className="mt-6 space-y-6">
       <section className="rounded-xl border bg-white p-5">
         <h2 className="font-semibold">Paso 1 · Recibir código en el correo</h2>
-        <p className="my-2 text-sm">Se enviará a axiomaisolutionspr@gmail.com.</p>
+        <p className="my-2 text-sm">Se enviará a axiomaisolutionspr@gmail.com. Usa únicamente el último código y no solicites varios seguidos: el anterior puede quedar invalidado. El OTP vence aproximadamente a los cinco minutos.</p>
         <form action={requestQaSignInOtp}>
           <button className="rounded-lg bg-blue-900 px-4 py-3 text-white">Enviar código QA</button>
         </form>
