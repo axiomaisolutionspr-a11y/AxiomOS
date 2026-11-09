@@ -50,3 +50,15 @@
 
 ## Reversión
 La rama de QA está aislada; desactivar `AXIOMOS_QA_E2E_SMS_SEND_ENABLED` en la Preview específica basta para impedir nuevos disparos. La restricción original `followup_queue_no_live_dispatch` no ha sido eliminada.
+
+## Auditoría final adicional — 09-nov-2026 (webhooks y WhatsApp)
+
+- Reconsulta Neon QA hijo: SMS `state=delivered`, `attempts=1`, `qa_e2e_delivery_events=0`. No existe evidencia de que el webhook QA recibiera un evento Telnyx real firmado. No reenviar SMS para forzar la prueba.
+- La documentación Telnyx confirma prioridad de `webhook_url` **por mensaje** sobre el perfil. El SMS ya enviado no incluyó una URL QA específica; no redirigir retroactivamente ni alterar la URL del perfil de producción. Ref: https://support.telnyx.com/en/articles/4334722-how-to-leverage-webhooks
+- El proyecto Vercel Preview está protegido por Vercel Authentication. No desactivar esa protección para permitir un callback externo: expondría el panel de propietario. Se requiere una entrada webhook pública segregada, verificadora de firma y con un scope de evento sintético, en un despliegue independiente cuando se autorice una nueva prueba.
+- La rama de pruebas no contiene `DUALHOOK_API_KEY` de envío ni `META_APP_SECRET` para recibir eventos reales. Sus valores productivos permanecen en Producción. No duplicarlos silenciosamente a Preview ni modificar Webhook Override de WhatsApp.
+- Dualhook documenta `POST https://api.dualhook.com/v25.0/<PHONE_NUMBER_ID>/messages` y mensajes de plantilla para apertura fuera de 24 horas; el adaptador existente usa la ruta documentada, pero un envío real necesita un token de conexión QA independiente y una plantilla aprobada o ventana vigente. Refs: https://dualhook.com/docs/messaging-overview, https://dualhook.com/docs/coexistence
+- **Hallazgo de seguridad:** `app/api/whatsapp/route.ts` previamente ejecutaba `await request.json()` sin verificar `X-Hub-Signature-256` en ese punto. Se añadió verificación HMAC-SHA256 del cuerpo crudo antes de procesar eventos y se prepararon regresiones contra firmas falsas. Cambio solo en PR draft sin merge; requiere revisión y despliegue controlado antes de producción.
+- `tests/whatsapp-signature-route.test.mjs` y el workflow de Autopilot QA validan que la firma se comprueba antes de parsear y que cuerpo modificado/sin firma es rechazado. Esto **no prueba** un webhook real ni la ruta de producción.
+
+**Decisión vigente:** `SMS_REAL_PASS`; `TELNYX_SIGNED_WEBHOOK_REAL_PENDING`; `WHATSAPP_REAL_PENDING`; `AUTONOMOUS_CUSTOMER_DISPATCH_NO_GO`. No activar flags comerciales ni mutar credenciales productivas. 
