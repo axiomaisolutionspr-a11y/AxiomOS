@@ -32,3 +32,14 @@ Rama aislada: `br-raspy-boat-aveu0gky`, clonada de main; producción intacta.
 - Sesión QA sintética insertada y revocada en base de datos; 0 tokens sintéticos remanentes. **No hubo replay HTTP de cookie después de invalidación.**
 - La prueba SMS manual realizada a número autorizado sí pasó y quedó cerrada; **no** hubo envío automático de propuestas de la cola.
 - **Certificación actual**: GO para generación/revisión sin enviar, PASS en reglas DB; NO-GO en revocación autenticada HTTP y dispatch autónomo. No afirmar E2E de esas dos funciones.
+
+
+## ACTUALIZACIÓN DE CERTIFICACIÓN — 2026-11-09 16:05 AST (prevalece sobre estados anteriores)
+
+**HTTP SESSION REVOCATION: PASS en QA.** El usuario inició la prueba desde la ruta protegida `/prospectos/autopilot/certificacion-sesion` y aportó captura del resultado `QA_HTTP_SESSION_REVOCATION_PASS`. La prueba implementada en `app/prospectos/autopilot/certificacion-sesion/actions.ts` realiza: `POST /sign-in/email-otp` con OTP introducido únicamente en el formulario, `GET /get-session` con la cookie obtenida, comprueba el ID previsto del usuario QA, `POST /sign-out` con esa cookie y `GET /get-session` reutilizando exactamente la misma cookie, que debe devolver JSON `null`. La etiqueta PASS requiere que las dos verificaciones se cumplan.
+
+Corroboración independiente en Neon rama `br-raspy-boat-aveu0gky` después de la prueba: cuenta QA `emailVerified=true`, **0 sesiones QA activas**, **0 OTP pendientes**. Vercel no mostró errores de runtime en la ruta durante el intervalo comprobado.
+
+Producción tras la prueba: 33 prospectos, 20 registros de llamadas, 162 mensajes WhatsApp, 0 seguimientos aprobados y 1 SMS manual de certificación previamente recibido. No se tocó la sesión normal de Rolando ni la de Alex.
+
+**Alcance de PASS:** revocación por cierre de sesión y rechazo de replay de la cookie autenticada de prueba de Neon Auth. No implica prueba de bloqueo de todas las server actions de Autopilot tras revocación ni certificación del despachador autónomo SMS/WhatsApp. Mantener **NO-GO** para envíos autónomos a prospectos hasta implementar y probar ese flujo.
