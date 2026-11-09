@@ -3,6 +3,7 @@ import {commercialIdentityAuth} from "../../../lib/commercial-identity-auth";
 import {commercialIdentityDatabase,commercialOfferWriterDatabase,commercialMember} from "../../../lib/commercial-identity";
 import {sendQaAutopilotSmsOnce} from "./sms-action";
 import {checkQaSmsDeliveryStatus} from "./status-action";
+import {executeOneSignedTelnyxProbe} from "./signed-probe-action";
 export const dynamic="force-dynamic";
 const messages:Record<string,string>={
  disabled:"Prueba desactivada.",not_configured:"Configuración de QA incompleta.",
@@ -38,6 +39,17 @@ export default async function QaE2eSms({searchParams}:{
  if(member?.role!=="owner")
   return <main className="p-8">Solo propietario; sin envíos.</main>;
  const p=await searchParams;
+ let signedProbeStatus="unavailable";
+ let signedProbeAttempts=0;
+ try {
+   const writer=commercialOfferWriterDatabase();
+   if(writer){
+     const rows=await writer`SELECT id,state,attempts,provider_message_id
+       FROM axiomos_commercial.qa_telnyx_signed_probe_status(CAST(${data.user.id} AS uuid))`;
+     signedProbeStatus=String(rows[0]?.state??"unavailable");
+     signedProbeAttempts=Number(rows[0]?.attempts??0);
+   }
+ } catch {console.error("QA_TELNYX_SIGNED_PROBE_STATUS_UNAVAILABLE");}
  let deliveryState="unavailable";
  try {
    const writer=commercialOfferWriterDatabase();
@@ -77,6 +89,34 @@ export default async function QaE2eSms({searchParams}:{
    <button className="rounded border border-blue-900 px-4 py-3 font-semibold text-blue-900">
     Consultar estado real del SMS en Telnyx (sin reenviar)</button>
   </form>
+  <section className="mt-7 rounded-xl border border-slate-300 p-5">
+    <h2 className="text-xl font-bold">Verificar webhook firmado de Telnyx</h2>
+    <p className="mt-2 text-sm">Una sola prueba adicional autorizada al teléfono interno terminado en 0132.
+    El recibo va exclusivamente a un verificador público QA, separado del CRM. No modifica el webhook actual.</p>
+    <p className="mt-2 font-medium">Estado: {signedProbeStatus} · Intentos: {signedProbeAttempts} de 1</p>
+    {p.firma && <p role="status" className="mt-3 rounded border p-3">{({
+      disabled:"Prueba desactivada.",not_configured:"Falta configuración QA.",
+      not_authenticated:"Se requiere sesión.",not_owner:"Acceso exclusivo del propietario.",
+      provider_unavailable:"Falta la configuración de Telnyx en Preview.",
+      not_claimable:"Reserva no disponible, ya consumida o fuera de horario.",
+      invalid_claim:"Reserva rechazada por seguridad.",
+      accepted:"Telnyx aceptó el SMS. Falta verificar webhook real firmado.",
+      rejected:"Telnyx rechazó el SMS; no se reintentará.",
+      uncertain:"Resultado incierto: no se volverá a enviar.",
+      reconcile_manually:"No está confirmada la respuesta. No reintentar."
+    } as Record<string,string>)[p.firma]??"Estado registrado."}</p>}
+    {signedProbeStatus==="ready" &&
+      process.env.AXIOMOS_QA_TELNYX_SIGNED_PROBE_ENABLED==="true" ?
+      <form className="mt-3" action={executeOneSignedTelnyxProbe}>
+        <button className="rounded bg-blue-900 px-4 py-3 font-semibold text-white">
+          Autorizar y ejecutar el único SMS para probar firma Telnyx
+        </button>
+      </form>:
+      <p className="mt-3 rounded border p-3">
+        {signedProbeAttempts>0?"Esta autorización ya se usó; no se permite otro envío.":
+         "Prueba pendiente de habilitación final. No se ha enviado el mensaje."}
+      </p>}
+  </section>
   <p className="mt-4 text-sm">No compartir códigos de acceso. La aceptación del proveedor
     no demuestra entrega y ningún fallo dispara un reintento.</p>
  </main>;
