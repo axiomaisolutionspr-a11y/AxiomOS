@@ -5,6 +5,7 @@ import {
 
 import { neon } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
+import { verifyMetaSignedEvent } from "../../lib/autopilot-provider-bridge.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -544,8 +545,22 @@ export async function POST(
 
     const sql = neon(databaseUrl);
 
-    const body =
-      await request.json();
+    // Verify Meta's raw-body HMAC before parsing or processing messages.
+    const appSecret = process.env.META_APP_SECRET;
+    if (!appSecret) {
+      console.error("WHATSAPP_SIGNATURE_CONFIG_MISSING");
+      return NextResponse.json({ error: "Webhook unavailable" }, { status: 503 });
+    }
+    const rawBody = await request.text();
+    if (!rawBody || Buffer.byteLength(rawBody, "utf8") > 262144) {
+      return NextResponse.json({ error: "Invalid payload" }, { status: 413 });
+    }
+    if (!verifyMetaSignedEvent({
+      rawBody, signature: request.headers.get("x-hub-signature-256") || "", appSecret
+    })) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
+    const body = JSON.parse(rawBody);
 
     const entries =
       Array.isArray(body?.entry)
