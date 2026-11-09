@@ -44,9 +44,10 @@ export async function sendQaAutopilotSmsOnce() {
    const result=await sendQaTestOnce({job,now:new Date().toISOString(),
      config:{scope:"qa",vercelEnvironment:"preview",enabled:true,recipient:SMS_TO,
        from,telnyxApiKey:key}});
-   const status=result.state==="accepted"?"accepted":
-     result.state==="rejected"?"rejected":"uncertain";
-   const providerId=result.state==="accepted"?result.providerMessageId:null;
+   const accepted=result.state==="accepted" && "providerMessageId" in result &&
+     typeof result.providerMessageId==="string";
+   const status=accepted?"accepted":result.state==="rejected"?"rejected":"uncertain";
+   const providerId=accepted?result.providerMessageId:null;
    const saved=await writer`SELECT axiomos_commercial.qa_e2e_finish_once(
      CAST(${id} AS BIGINT),${status},${providerId}) AS saved`;
    outcome=saved[0]?.saved==="RECORDED_NO_RETRY"?status:"receipt_not_saved";
