@@ -2,6 +2,7 @@ import {redirect} from "next/navigation";
 import {commercialIdentityAuth} from "../../../lib/commercial-identity-auth";
 import {commercialIdentityDatabase,commercialMember} from "../../../lib/commercial-identity";
 import {sendQaAutopilotSmsOnce} from "./sms-action";
+import {checkQaSmsDeliveryStatus} from "./status-action";
 export const dynamic="force-dynamic";
 const messages:Record<string,string>={
  disabled:"Prueba desactivada.",not_configured:"Configuración de QA incompleta.",
@@ -13,7 +14,15 @@ const messages:Record<string,string>={
  rejected:"Proveedor rechazó el envío. No habrá reintento.",
  uncertain:"Resultado incierto. Reenvío automático bloqueado.",
  receipt_not_saved:"Aceptación posible sin registro: conciliación manual obligatoria.",
- manual_reconciliation:"Error tras la reserva. Conciliar manualmente; no reintentar."
+ manual_reconciliation:"Error tras la reserva. Conciliar manualmente; no reintentar.",
+ delivered_api:"Telnyx confirmó el estado delivered mediante consulta autenticada a su API. No equivale al webhook firmado.",
+ pending_api:"Telnyx aún no confirma la entrega final. Puedes consultar el estado nuevamente sin enviar otro SMS.",
+ failed_api:"Telnyx reportó que el SMS falló. No habrá reenvío automático.",
+ unconfirmed_api:"Telnyx no pudo confirmar la entrega final.",
+ lookup_failed:"No se pudo consultar el estado de Telnyx.",
+ lookup_mismatch:"Telnyx no devolvió el identificador o destinatario esperado.",
+ no_provider_receipt:"Aún no existe un envío aceptado por Telnyx.",
+ provider_status_unknown:"Estado del proveedor desconocido; no se supone entrega."
 };
 export default async function QaE2eSms({searchParams}:{
  searchParams:Promise<{resultado?:string}>
@@ -40,6 +49,10 @@ export default async function QaE2eSms({searchParams}:{
     <button className="rounded bg-blue-900 px-4 py-3 font-semibold text-white">
       Ejecutar un SMS de certificación</button>
    </form>:<p className="rounded border p-4">Envío real desactivado hasta validar Preview.</p>}
+  <form action={checkQaSmsDeliveryStatus} className="mt-4">
+   <button className="rounded border border-blue-900 px-4 py-3 font-semibold text-blue-900">
+    Consultar estado real del SMS en Telnyx (sin reenviar)</button>
+  </form>
   <p className="mt-4 text-sm">No compartir códigos de acceso. La aceptación del proveedor
     no demuestra entrega y ningún fallo dispara un reintento.</p>
  </main>;
