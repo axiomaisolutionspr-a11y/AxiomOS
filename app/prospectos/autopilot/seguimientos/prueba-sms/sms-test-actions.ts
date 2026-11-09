@@ -16,8 +16,9 @@ export async function sendOneAuthorizedSmsTest() {
  if(membership?.role!=="owner") finish("Solo el propietario puede ejecutar la prueba");
  if(!process.env.TELNYX_SMS_FROM||!process.env.TELNYX_API_KEY) finish("Telnyx no esta configurado");
  let claimed=false;
- try { const rows=await writer`SELECT axiomos_commercial.claim_one_sms_cert_test(${data.user.id}::uuid) AS claimed`;claimed=rows[0]?.claimed===true; }
- catch(err) {console.error("SMS_CERT_CLAIM_FAILED",(err as {code?:string})?.code??"unknown");finish("No se pudo reservar la prueba");}
+ try { const rows=await writer`SELECT axiomos_commercial.claim_one_sms_cert_test(CAST(${data.user.id} AS uuid)) AS claimed`;claimed=rows[0]?.claimed===true; }
+ catch(err) {const dbError=err as {code?:string;message?:string;detail?:string;hint?:string};
+  console.error("SMS_CERT_CLAIM_FAILED",{code:dbError?.code??"unknown",message:String(dbError?.message??"").slice(0,350),hint:String(dbError?.hint??"").slice(0,180)});finish("No se pudo reservar la prueba");}
  if(!claimed) finish("La prueba ya se intento una vez. No se volvera a enviar");
  try {
   const result=await fetch("https://api.telnyx.com/v2/messages",{
