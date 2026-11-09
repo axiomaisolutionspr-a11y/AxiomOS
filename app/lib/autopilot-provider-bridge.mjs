@@ -165,3 +165,41 @@ export function whatsAppDeliveryEvents(rawBody) {
     return result.slice(0,100);
   } catch {return [];}
 }
+
+
+/**
+ * Verify before dispatching an event to a persistence adapter.
+ * The adapter must atomically persist (provider,eventKey) and enforce monotonic
+ * state transitions; the QA database functions do this separately.
+ * No public endpoint, production wiring or credentials are provided here.
+ */
+export async function ingestQaVerifiedWebhook({
+  provider,rawBody,headers={},config={},onVerifiedEvent,nowMs=Date.now()
+}) {
+  if (config.scope!=="qa" || config.vercelEnvironment!=="preview" ||
+      config.enabled!==true || typeof onVerifiedEvent!=="function")
+    return {ok:false,status:403,reason:"qa_guard"};
+  const raw=bytes(rawBody);
+  if (!raw.length || raw.length>262144)
+    return {ok:false,status:413,reason:"payload_size"};
+  let valid=false;
+  if (provider==="telnyx") {
+    valid=verifyTelnyxSignedEvent({
+      rawBody:raw,signature:headers["telnyx-signature-ed25519"],
+      timestamp:headers["telnyx-timestamp"],
+      publicKey:config.telnyxPublicKey,nowMs
+    });
+  } else if (provider==="whatsapp") {
+    valid=verifyMetaSignedEvent({rawBody:raw,signature:headers["x-hub-signature-256"],appSecret:config.metaAppSecret});
+  } else return {ok:false,status:400,reason:"provider_not_supported"};
+  if (!valid) return {ok:false,status:401,reason:"invalid_signature"};
+  const events=provider==="telnyx"?telnyxDeliveryEvents(raw):whatsAppDeliveryEvents(raw);
+  if(events.length===0) return {ok:true,status:200,processed:0};
+  let processed=0;
+  for (const evt of events) {
+    // No automatic message send or retry can occur here.
+    await onVerifiedEvent(evt);
+    processed++;
+  }
+  return {ok:true,status:200,processed};
+}
