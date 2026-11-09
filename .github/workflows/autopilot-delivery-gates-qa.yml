@@ -6,6 +6,8 @@ on:
       - 'tests/autopilot-delivery-gates.test.mjs'
       - 'app/lib/autopilot-provider-bridge.mjs'
       - 'tests/autopilot-provider-bridge.test.mjs'
+      - 'app/api/whatsapp/route.ts'
+      - 'tests/whatsapp-signature-route.test.mjs'
       - '.github/workflows/autopilot-delivery-gates-qa.yml'
   workflow_dispatch:
 permissions:
