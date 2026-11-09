@@ -79,7 +79,28 @@ export async function verifyRevokeQaSession(form: FormData) {
       body: JSON.stringify({ email: QA_EMAIL, otp }),
     });
     if (!login.ok) {
-      outcome = "otp_rechazado";
+      // Do not log/store the code, cookie, or response body. Only a known error category.
+      let errorCode = "";
+      try {
+        const payload: unknown = await login.json();
+        if (payload && typeof payload === "object" && "code" in payload) {
+          const code = (payload as { code?: unknown }).code;
+          if (typeof code === "string") errorCode = code;
+        }
+      } catch {}
+      const knownCodes: Record<string, string> = {
+        INVALID_OTP: "otp_incorrecto",
+        OTP_EXPIRED: "otp_expirado",
+        EXPIRED_OTP: "otp_expirado",
+        TOO_MANY_ATTEMPTS: "demasiados_intentos",
+        EMAIL_NOT_VERIFIED: "correo_qa_no_verificado",
+        USER_NOT_FOUND: "usuario_qa_no_registrado",
+        INVALID_EMAIL: "correo_qa_invalido",
+      };
+      const safeCode = Object.prototype.hasOwnProperty.call(knownCodes, errorCode)
+        ? errorCode : "OTRO";
+      console.warn("QA_AUTH_OTP_SIGNIN_REJECTED", { status: login.status, code: safeCode });
+      outcome = knownCodes[errorCode] ?? "otp_rechazado";
     } else {
       cookie = responseCookies(login);
       if (!cookie) {
