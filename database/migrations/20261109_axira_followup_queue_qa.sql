@@ -36,3 +36,21 @@ CREATE VIEW axiomos_commercial.followup_review_dashboard WITH (security_barrier 
  WHERE tenant_id='axiomai' AND status IN ('needs_review','blocked','cancelled');
 GRANT SELECT ON axiomos_commercial.followup_review_dashboard TO axiomos_commercial_reader;
 -- Never grant read or write to the underlying queue; do not expose draft_body or consent metadata in the view.
+
+-- Only the owner-authenticated server action may insert a review decision.
+-- A decision documents review; it never approves or dispatches a message.
+CREATE TABLE axiomos_commercial.followup_review_decisions (
+ id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ tenant_id text NOT NULL DEFAULT 'axiomai' CHECK(tenant_id='axiomai'),
+ queue_id bigint NOT NULL REFERENCES axiomos_commercial.followup_queue(id) ON DELETE RESTRICT,
+ decision text NOT NULL CHECK(decision IN ('reviewed_only','blocked')),
+ actor_id uuid NOT NULL,
+ decided_at timestamptz NOT NULL DEFAULT statement_timestamp(),
+ UNIQUE(tenant_id,queue_id)
+);
+REVOKE ALL PRIVILEGES ON axiomos_commercial.followup_review_decisions FROM axiomos_commercial_reader,axiomos_commercial_writer;
+GRANT INSERT ON axiomos_commercial.followup_review_decisions TO axiomos_commercial_writer;
+GRANT SELECT (tenant_id,queue_id) ON axiomos_commercial.followup_review_decisions TO axiomos_commercial_writer;
+GRANT USAGE ON SEQUENCE axiomos_commercial.followup_review_decisions_id_seq TO axiomos_commercial_writer;
+GRANT SELECT ON axiomos_commercial.followup_review_dashboard TO axiomos_commercial_writer;
+-- No DELETE or UPDATE. No provider API / worker. No approval/send transition.
