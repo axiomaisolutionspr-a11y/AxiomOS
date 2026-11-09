@@ -4,6 +4,8 @@ on:
     paths:
       - 'app/lib/autopilot-delivery-gates.mjs'
       - 'tests/autopilot-delivery-gates.test.mjs'
+      - 'app/lib/autopilot-provider-bridge.mjs'
+      - 'tests/autopilot-provider-bridge.test.mjs'
       - '.github/workflows/autopilot-delivery-gates-qa.yml'
   workflow_dispatch:
 permissions:
@@ -20,4 +22,4 @@ jobs:
         with:
           node-version: '22'
       - name: Verify fail-closed QA policy (NO SEND)
-        run: node --test tests/autopilot-delivery-gates.test.mjs
+        run: node --test tests/autopilot-delivery-gates.test.mjs tests/autopilot-provider-bridge.test.mjs
