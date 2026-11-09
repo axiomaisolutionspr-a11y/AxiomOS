@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import { sendSmsAlert } from "../../lib/send-sms-alert";
 import { sendEmailAlert } from "../../lib/send-email-alert";
+import { telnyxVerificationQaEnabled, verifyTelnyxWebhook } from "../../lib/telnyx-webhook-auth.mjs";
 
 export const runtime = "nodejs";
 
@@ -228,7 +229,22 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const webhook = await request.json();
+    // Preview-only gate while verifying the signing key and delivery format.
+    // Never enable this in production before a live signed delivery is confirmed.
+    const verifyQa = telnyxVerificationQaEnabled();
+    if (verifyQa && !process.env.TELNYX_WEBHOOK_PUBLIC_KEY_QA) {
+      return NextResponse.json({ok:false,error:"QA signing key unavailable"},{status:503});
+    }
+    let webhook;
+    if (verifyQa) {
+      const rawBody = await request.text();
+      if (!verifyTelnyxWebhook(rawBody,request.headers,process.env.TELNYX_WEBHOOK_PUBLIC_KEY_QA)) {
+        return NextResponse.json({ok:false,error:"Invalid webhook signature"},{status:401});
+      }
+      webhook = JSON.parse(rawBody);
+    } else {
+      webhook = await request.json();
+    }
 
     const eventType = webhook?.event_type ?? null;
 
