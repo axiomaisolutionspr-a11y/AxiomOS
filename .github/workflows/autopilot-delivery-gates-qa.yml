@@ -24,4 +24,4 @@ jobs:
         with:
           node-version: '22'
       - name: Verify fail-closed QA policy (NO SEND)
-        run: node --test tests/autopilot-delivery-gates.test.mjs tests/autopilot-provider-bridge.test.mjs
+        run: node --test tests/autopilot-delivery-gates.test.mjs tests/autopilot-provider-bridge.test.mjs tests/whatsapp-signature-route.test.mjs
