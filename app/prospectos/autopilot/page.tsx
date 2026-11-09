@@ -45,7 +45,8 @@ export default async function AutopilotQaPage({ searchParams }: {
   const drafts = catalog.filter(({ state }) => state === "draft");
   const expiring = active.filter(({ offer }) => Date.parse(offer.ends_at) - now <= 72 * 60 * 60 * 1000);
   const role = { owner: "Propietario", operator: "Operador", viewer: "Consulta" }[membership.role];
-  const canEdit = membership.role === "owner" && !catalogError && Boolean(commercialOfferWriterDatabase());
+  const isIsolatedE2E = process.env.VERCEL_ENV === "preview" && process.env.AXIOMOS_AUTOPILOT_E2E_QA_ENABLED === "true";
+  const canEdit = !isIsolatedE2E && membership.role === "owner" && !catalogError && Boolean(commercialOfferWriterDatabase());
   const isQa = process.env.VERCEL_ENV === "preview";
   // Read-only summary through a restricted aggregate view. The reader role must never get direct access to public.prospects.
   let legacyProspectCount: number | null = null;
@@ -98,6 +99,11 @@ export default async function AutopilotQaPage({ searchParams }: {
     <div className="mx-auto grid max-w-6xl gap-6 px-5 py-7">
       {feedback.ok && <p role="status" className="rounded-xl bg-green-100 p-4 text-green-950">{feedback.ok}</p>}
       {feedback.error && <p role="alert" className="rounded-xl bg-red-100 p-4 text-red-950">{feedback.error}</p>}
+      {isIsolatedE2E && <section aria-label="Certificación aislada" className="rounded-2xl border border-blue-300 bg-blue-50 p-6">
+        <h2 className="text-xl font-bold text-blue-950">Certificación de autonomía · QA aislado</h2>
+        <p className="mt-2 text-sm text-blue-950">El catálogo de este entorno no tiene ofertas registradas y los prospectos reales están bloqueados por seguridad. Tu CRM de producción no se ha desconectado.</p>
+        <a className="mt-4 inline-block rounded bg-blue-900 px-5 py-3 font-semibold text-white" href="/prospectos/autopilot/qa-e2e">Ir a la prueba única de SMS y verificación de entrega</a>
+      </section>}
       <section aria-label="Resumen de Axira" className="rounded-2xl border border-blue-200 bg-white p-6 shadow-sm">
         <p className="text-sm font-bold uppercase tracking-wider text-blue-700">Resumen verificable</p>
         <h2 className="mt-2 text-2xl font-bold">Estado comercial</h2>
@@ -112,7 +118,7 @@ export default async function AutopilotQaPage({ searchParams }: {
       <section aria-label="Indicadores" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {([
           ["Promociones vigentes", active.length], ["Por revisar", drafts.length],
-          ["Vencen en 72 horas", expiring.length], ["Prospectos", legacyProspectCount ?? "Sin conexión"],
+          ["Vencen en 72 horas", expiring.length], ["Prospectos", legacyProspectCount ?? (isIsolatedE2E ? "Aislados en QA" : "Sin conexión")],
         ] as const).map(([label, value]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-5">
           <p className="text-sm font-medium text-slate-600">{label}</p>
           <p className="mt-2 text-2xl font-bold">{catalogError && label !== "Prospectos" ? "—" : value}</p>
@@ -134,7 +140,7 @@ export default async function AutopilotQaPage({ searchParams }: {
       </section>}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold">Catálogo comercial</h2>
-        <p className="mt-1 text-sm text-slate-600">El estado se calcula al consultar la base. Horarios en Puerto Rico.</p>
+        <p className="mt-1 text-sm text-slate-600">El estado se calcula al consultar la base. Horarios en Puerto Rico. {isIsolatedE2E ? "Catálogo de prueba vacío; solo lectura." : ""}</p>
         {!catalogError && catalog.length === 0 && <p className="mt-4">No hay ofertas registradas .</p>}
         {!catalogError && <ul className="mt-4 grid gap-3">
           {catalog.map(({ offer, state }) => <li key={offer.id} className="rounded-xl border border-slate-200 p-4">
