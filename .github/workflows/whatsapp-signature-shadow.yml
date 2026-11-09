@@ -1,0 +1,24 @@
+name: WhatsApp webhook signature shadow checks
+on:
+  pull_request:
+    paths:
+      - 'app/api/whatsapp/route.ts'
+      - 'app/lib/meta-signature-policy.ts'
+      - 'tests/whatsapp-webhook-signature-shadow.test.mjs'
+      - '.github/workflows/whatsapp-signature-shadow.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  shadow-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Signature and deployment gating regression
+        run: node --experimental-strip-types --test tests/whatsapp-webhook-signature-shadow.test.mjs

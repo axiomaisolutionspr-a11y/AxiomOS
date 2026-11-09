@@ -5,6 +5,7 @@ import {
 
 import { neon } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
+import {assessMetaWebhookSignature} from "../../lib/meta-signature-policy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -544,8 +545,25 @@ export async function POST(
 
     const sql = neon(databaseUrl);
 
-    const body =
-      await request.json();
+    const rawBody = await request.text();
+    if (Buffer.byteLength(rawBody,"utf8") > 3*1024*1024) {
+      return NextResponse.json({error:"Payload too large"},{status:413});
+    }
+    const signatureAssessment = assessMetaWebhookSignature(
+      rawBody,request.headers.get("x-hub-signature-256"),process.env.META_APP_SECRET
+    );
+    // Safe rollout: observation only until signed production events are confirmed.
+    // If the provider strips Meta's signature, fail-closed would disrupt Axira.
+    if(!signatureAssessment.valid) {
+      console.warn("WHATSAPP_SIGNATURE_SHADOW",{
+        result:signatureAssessment.reason,
+        enforcement:process.env.AXIOMOS_WHATSAPP_SIGNATURE_ENFORCE==="true"
+      });
+      if(process.env.AXIOMOS_WHATSAPP_SIGNATURE_ENFORCE==="true") {
+        return NextResponse.json({error:"Invalid webhook signature"},{status:401});
+      }
+    }
+    const body = JSON.parse(rawBody);
 
     const entries =
       Array.isArray(body?.entry)
