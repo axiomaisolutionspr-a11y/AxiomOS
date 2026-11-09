@@ -1,0 +1,14 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {generateKeyPairSync,sign} from "node:crypto";
+import {verifyTelnyxWebhook} from "../api/telnyx.js";
+const {publicKey,privateKey}=generateKeyPairSync("ed25519");
+const pub=publicKey.export({format:"der",type:"spki"}).subarray(-32).toString("base64");
+const ts="1794254400";
+const payload=Buffer.from(JSON.stringify({data:{event_type:"message.finalized",payload:{id:"qa-test-message-123",to:[{status:"delivered"}]}}}));
+const sig=sign(null,Buffer.concat([Buffer.from(ts+"|"),payload]),privateKey).toString("base64");
+test("valid signature with exact timestamp and raw bytes",()=>assert.equal(verifyTelnyxWebhook(payload,ts,sig,pub,Number(ts)*1000),true));
+test("tampering fails",()=>assert.equal(verifyTelnyxWebhook(Buffer.from(payload.toString()+" "),ts,sig,pub,Number(ts)*1000),false));
+test("replay expires",()=>assert.equal(verifyTelnyxWebhook(payload,ts,sig,pub,Number(ts)*1000+301000),false));
+test("no signature fails",()=>assert.equal(verifyTelnyxWebhook(payload,ts,"",pub,Number(ts)*1000),false));
+test("no verification key fails",()=>assert.equal(verifyTelnyxWebhook(payload,ts,sig,"",Number(ts)*1000),false));
