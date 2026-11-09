@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {generateKeyPairSync, sign, createHmac} from "node:crypto";
 import {
   sendQaTestOnce, verifyTelnyxSignedEvent, verifyMetaSignedEvent,
-  telnyxDeliveryEvents, whatsAppDeliveryEvents
+  telnyxDeliveryEvents, whatsAppDeliveryEvents, ingestQaVerifiedWebhook
 } from "../app/lib/autopilot-provider-bridge.mjs";
 const now="2026-11-09T16:00:00Z";
 const job={
@@ -150,4 +150,54 @@ test("WhatsApp delivery event is extracted with stable dedupe key",()=>{
 test("Unexpected webhook event types are ignored",()=>{
  assert.deepEqual(telnyxDeliveryEvents(JSON.stringify({data:{event_type:"call.answered"}})),[]);
  assert.deepEqual(whatsAppDeliveryEvents(JSON.stringify({object:"other"})),[]);
+});
+
+
+test("valid signed Telnyx event persists exactly through verified callback",async()=>{
+ let count=0;
+ const outcome=await ingestQaVerifiedWebhook({
+   provider:"telnyx",rawBody:body,
+   headers:{"telnyx-signature-ed25519":signature,"telnyx-timestamp":ts},
+   config:{scope:"qa",vercelEnvironment:"preview",enabled:true,telnyxPublicKey:publicKey64},
+   nowMs:Number(ts)*1000,
+   onVerifiedEvent:async(event)=>{
+     count++;assert.equal(event.providerMessageId,"message-12345678");
+   }
+ });
+ assert.equal(outcome.ok,true);assert.equal(outcome.processed,1);assert.equal(count,1);
+});
+test("invalid Telnyx signature never invokes persistence",async()=>{
+ let count=0;
+ const outcome=await ingestQaVerifiedWebhook({
+   provider:"telnyx",rawBody:body+" ",
+   headers:{"telnyx-signature-ed25519":signature,"telnyx-timestamp":ts},
+   config:{scope:"qa",vercelEnvironment:"preview",enabled:true,telnyxPublicKey:publicKey64},
+   nowMs:Number(ts)*1000,onVerifiedEvent:async()=>{count++;}
+ });
+ assert.equal(outcome.status,401);assert.equal(count,0);
+});
+test("valid Meta signed WhatsApp event uses persistence callback",async()=>{
+ let count=0;
+ const outcome=await ingestQaVerifiedWebhook({
+   provider:"whatsapp",rawBody:metaBody,
+   headers:{"x-hub-signature-256":metaSignature},
+   config:{scope:"qa",vercelEnvironment:"preview",enabled:true,metaAppSecret:secret},
+   onVerifiedEvent:async(event)=>{
+      count++;assert.equal(event.providerMessageId,"wamid.HBgMNTk3NzAw");
+   }
+ });
+ assert.equal(outcome.ok,true);assert.equal(count,1);
+});
+test("invalid Meta signature and production mode never persist",async()=>{
+ let count=0;
+ for (const [signature,env] of [["sha256="+"0".repeat(64),"preview"],[metaSignature,"production"]]){
+   const outcome=await ingestQaVerifiedWebhook({
+     provider:"whatsapp",rawBody:metaBody,
+     headers:{"x-hub-signature-256":signature},
+     config:{scope:"qa",vercelEnvironment:env,enabled:true,metaAppSecret:secret},
+     onVerifiedEvent:async()=>{count++;}
+   });
+   assert.equal(outcome.ok,false);
+ }
+ assert.equal(count,0);
 });
