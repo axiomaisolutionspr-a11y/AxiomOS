@@ -48,7 +48,7 @@ BEGIN
  IF actual<>'BLOCKED_NO_CONSENT' THEN RAISE EXCEPTION 'missing consent %',actual; END IF;
  SELECT axiomos_commercial.qa_audit_followup_transaction(4,'2026-11-10T16:00:00Z') INTO actual;
  IF actual<>'BLOCKED_REVIEW' THEN RAISE EXCEPTION 'blocked review %',actual; END IF;
- SELECT axiomos_commercial.qa_audit_followup_transaction(5,'2026-11-10T01:00:00Z') INTO actual;
+ SELECT axiomos_commercial.qa_audit_followup_transaction(5,'2026-11-11T01:00:00Z') INTO actual;
  IF actual<>'BLOCKED_QUIET_HOURS' THEN RAISE EXCEPTION 'quiet hours %',actual; END IF;
  SELECT axiomos_commercial.qa_audit_followup_transaction(6,'2026-11-10T16:00:00Z') INTO actual;
  IF actual<>'BLOCKED_INVALID_EVIDENCE' THEN RAISE EXCEPTION 'expired consent %',actual; END IF;
