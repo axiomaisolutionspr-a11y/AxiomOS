@@ -62,3 +62,19 @@ La rama de QA está aislada; desactivar `AXIOMOS_QA_E2E_SMS_SEND_ENABLED` en la 
 - `tests/whatsapp-signature-route.test.mjs` y el workflow de Autopilot QA validan que la firma se comprueba antes de parsear y que cuerpo modificado/sin firma es rechazado. Esto **no prueba** un webhook real ni la ruta de producción.
 
 **Decisión vigente:** `SMS_REAL_PASS`; `TELNYX_SIGNED_WEBHOOK_REAL_PENDING`; `WHATSAPP_REAL_PENDING`; `AUTONOMOUS_CUSTOMER_DISPATCH_NO_GO`. No activar flags comerciales ni mutar credenciales productivas. 
+
+## Revisión de preparación sin envíos — 10-nov-2026
+
+Esta revisión fue de solo lectura sobre Vercel, GitHub y Neon QA, sin rearmar reservas, modificar credenciales ni tocar producción.
+
+- Vercel: el proyecto segregado `axiomos-qa-telnyx-webhook` tiene despliegue `READY` y alias `axiomos-qa-telnyx-webhook.vercel.app`. Esto **no acredita** por sí solo acceso HTTP externo ni recepción de eventos reales.
+- Configuración: la variable `TELNYX_SIGNING_PUBLIC_KEY` existe en el proyecto receptor con destino production; no se leyó ni copió su valor. La Preview de la rama tiene `AXIOMOS_QA_TELNYX_PUBLIC_KEY` y otros parámetros QA configurados; no se divulgaron valores.
+- Código revisado: el receptor segrega GET de estado y POST; POST exige Ed25519 sobre bytes crudos y timestamp; evita registrar teléfonos y cuerpos de mensajes. Los tests con claves sintéticas prueban firma válida, alteración de cuerpo, expiración, falta de firma y falta de clave.
+- GitHub Actions, rama QA PR #101: `AxiomOS Autopilot QA dispatch policy` y `AxiomOS QA transactional outbox` terminaron `success` el 09-nov. La segunda ejecuta dos procesos PostgreSQL concurrentes contra un trabajo sintético, validando reserva única, horarios, opt-out, permisos y recibos simulados.
+- Neon QA rama hija `br-lively-band-avj6yz8x`: `qa_telnyx_signed_probe` contiene **1** reserva `ready`, `attempts=0`, aún vigente en la consulta; **no** se consumió. `qa_e2e_delivery_events` tiene **0** eventos registrados. El SMS anterior de `qa_e2e_one_shot` permanece `delivered`, `attempts=1`.
+- No se pudieron obtener logs históricos del receptor (retención de plan limitada); la consulta de logs de los últimos 30 minutos no encontró registros. El estado `READY` tampoco demuestra recepción por Telnyx.
+- La comprobación GET en vivo no se pudo confirmar desde el entorno de herramientas de esta ejecución; **NO** registrar `PUBLIC_INGRESS_PASS`.
+
+**Decisión:** `QA_CODE_AND_CONFIG_REVIEW_PASS`; `PUBLIC_INGRESS_UNVERIFIED`; `REAL_ED25519_WEBHOOK_PENDING`; `WHATSAPP_REAL_PENDING`; `AUTONOMOUS_CUSTOMER_DISPATCH_NO_GO`.
+
+**Próximo ensayo condicionado:** verificar GET público al receptor desde un cliente externo, revisar que Telnyx tenga configurada la URL específica por mensaje, y obtener autorización **explícita para un segundo SMS real** si se decide consumir la reserva independiente de firma. No habilitar flags ni enviar un mensaje sin esa autorización. Registrar un evento real autenticado correlacionado con el identificador de proveedor antes de marcar PASS. No cambiar perfil ni webhooks productivos.
