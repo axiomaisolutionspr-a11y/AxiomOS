@@ -4,6 +4,8 @@ on:
     paths:
       - 'app/lib/autopilot-delivery-gates.mjs'
       - 'tests/autopilot-delivery-gates.test.mjs'
+      - 'app/lib/qa-followup-readonly.mjs'
+      - 'tests/qa-followup-readonly.test.mjs'
       - '.github/workflows/axiomos-qa-no-send-policy.yml'
   workflow_dispatch:
 permissions:
@@ -20,4 +22,4 @@ jobs:
         with:
           node-version: '22'
       - name: Verify static QA policy (no network and no providers)
-        run: node --test tests/autopilot-delivery-gates.test.mjs
+        run: node --test tests/autopilot-delivery-gates.test.mjs tests/qa-followup-readonly.test.mjs
