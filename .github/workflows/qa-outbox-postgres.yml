@@ -23,6 +23,8 @@ on:
       - 'database/migrations/20261110_qa_followup_suppression_gate_v3.sql'
       - 'scripts/test-qa-suppression-provenance-postgres.sh'
       - 'scripts/test-qa-followup-suppression-integration-postgres.sh'
+      - 'database/migrations/20261110_qa_worker_cycle_no_send.sql'
+      - 'scripts/test-qa-worker-cycle-postgres.sh'
       - 'app/lib/qa-whatsapp-status-ingress.mjs'
       - 'app/lib/qa-telnyx-ingress.mjs'
       - 'app/lib/autopilot-webhook-verification.mjs'
@@ -87,3 +89,6 @@ jobs:
 
       - name: Transactional CRM + suppression source (QA NO SEND)
         run: bash scripts/test-qa-followup-suppression-integration-postgres.sh
+
+      - name: Idempotent CRM worker cycle with audited no-send decisions (QA)
+        run: bash scripts/test-qa-worker-cycle-postgres.sh
