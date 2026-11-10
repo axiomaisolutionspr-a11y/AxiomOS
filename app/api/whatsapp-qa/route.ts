@@ -32,7 +32,7 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 function safeId(value: unknown): string | null {
   if (typeof value !== "string" && typeof value !== "number") return null;
   const text = String(value);
-  return /^\\d{1,64}$/.test(text) ? text : null;
+  return /^\d{1,64}$/.test(text) ? text : null;
 }
 
 function countArray(value: unknown): number {
