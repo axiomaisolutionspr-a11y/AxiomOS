@@ -33,7 +33,7 @@ INSERT INTO axiomos_commercial.followup_contact_permissions VALUES
  (4,'axiomai',105,'whatsapp','followup','opt_in','synthetic QA consent','2026-11-10T13:00:00Z'),
  (5,'axiomai',106,'whatsapp','followup','opt_in','synthetic QA consent','2026-08-01T13:00:00Z');
 INSERT INTO axiomos_commercial.followup_review_decisions VALUES
- (1,'axiomai',104,'blocked');
+ (1,'axiomai',4,'blocked');
 SQL
 psql -X -v ON_ERROR_STOP=1 -f database/migrations/20261110_qa_followup_transactional_gate.sql >/dev/null
 psql -X -v ON_ERROR_STOP=1 <<'SQL'
