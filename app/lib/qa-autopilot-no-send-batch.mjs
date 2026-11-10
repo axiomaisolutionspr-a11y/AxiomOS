@@ -16,7 +16,7 @@ export async function runQaNoSendBatch(sql,{environment="qa",maxItems=100}={}) {
       FROM axiomos_commercial.qa_followup_preflight_readonly
       WHERE tenant_id='axiomai'
         AND status IN ('needs_review','blocked','cancelled')
-      ORDER BY id ASC LIMIT ${maxItems}`;
+      ORDER BY queue_id::bigint ASC LIMIT ${maxItems}`;
   }catch{return blocked("database_unavailable");}
   if(!Array.isArray(rows)||rows.length>maxItems)return blocked("invalid_database_result");
   const counts=Object.create(null);
