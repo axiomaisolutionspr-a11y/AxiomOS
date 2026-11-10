@@ -10,6 +10,8 @@ on:
       - 'database/migrations/20261110_qa_telnyx_ingress_role_grants.sql'
       - 'scripts/test-qa-telnyx-probe-reconciliation-postgres.sh'
       - 'scripts/test-qa-telnyx-http-postgres.mjs'
+      - 'scripts/test-qa-whatsapp-http-postgres.mjs'
+      - 'app/lib/qa-whatsapp-status-ingress.mjs'
       - 'app/lib/qa-telnyx-ingress.mjs'
       - 'app/lib/autopilot-webhook-verification.mjs'
       - '.github/workflows/qa-outbox-postgres.yml'
@@ -52,3 +54,6 @@ jobs:
 
       - name: Real local HTTP POST to restricted PostgreSQL (SYNTHETIC NO SMS)
         run: node scripts/test-qa-telnyx-http-postgres.mjs
+
+      - name: WhatsApp HMAC local HTTP POST to isolated PostgreSQL (NO META SEND)
+        run: node scripts/test-qa-whatsapp-http-postgres.mjs
