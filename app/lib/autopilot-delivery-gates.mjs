@@ -42,8 +42,9 @@ export function evaluateDispatch(i) {
   if (!consentAt || consentAt > now || now-consentAt > 90*24*3600*1000 ||
       typeof i.consent.evidence !== "string" || i.consent.evidence.trim().length < 3) return deny("invalid_consent_evidence");
   if (i.optOutAfterConsent !== false || i.globalSuppressed !== false) return deny("suppressed");
-  if (i.lastContactAt && (!validDate(i.lastContactAt) ||
-      now-validDate(i.lastContactAt) < 24*3600*1000)) return deny("rate_limit_24h");
+  if (i.lastContactAt === undefined || i.lastContactAt === "" ||
+      (i.lastContactAt !== null && (!validDate(i.lastContactAt) ||
+      now-validDate(i.lastContactAt) < 24*3600*1000))) return deny("rate_limit_24h");
   if (!Number.isInteger(i.messagesInLast7Days) || i.messagesInLast7Days < 0 ||
       i.messagesInLast7Days >= 2) return deny("rate_limit_7d");
   const hour=prHour(now);
