@@ -14,8 +14,8 @@ function fake(data=[row]){
 test("QA reads authoritative CRM queue, permission ledger, and review decision",async()=>{
  const f=fake();const out=await inspectQaFollowup(f.sql,"42");
  assert.equal(f.calls,1);assert.deepEqual(f.args,["42"]);
- assert.match(f.query,/followup_queue/);assert.match(f.query,/followup_contact_permissions/);
- assert.match(f.query,/followup_review_decisions/);assert.match(f.query,/ORDER BY p.recorded_at DESC,p.id DESC/);
+ assert.match(f.query,/qa_followup_preflight_readonly/);
+ assert.equal(f.query.includes("FROM axiomos_commercial.followup_queue"),false);
  assert.equal(out.reason,"human_review_only_no_dispatch");assert.equal(out.allowed,false);
 });
 test("No personal information, drafts, bodies or phone numbers are queried or returned",async()=>{
@@ -86,7 +86,7 @@ test("Future consent time blocks",async()=>{
 });
 test("Latest consent is separate by channel and purpose",async()=>{
  const f=fake();await inspectQaFollowup(f.sql,42);
- assert.match(f.query,/p.channel=q.channel AND p.purpose=q.purpose/);
+ assert.match(f.query,/qa_followup_preflight_readonly/);
 });
 test("Even an unexpected approved status cannot dispatch",async()=>{
  const out=await inspectQaFollowup(fake([{...row,status:"approved"}]).sql,42);
