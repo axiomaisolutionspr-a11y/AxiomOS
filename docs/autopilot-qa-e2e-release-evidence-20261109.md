@@ -78,3 +78,16 @@ Esta revisión fue de solo lectura sobre Vercel, GitHub y Neon QA, sin rearmar r
 **Decisión:** `QA_CODE_AND_CONFIG_REVIEW_PASS`; `PUBLIC_INGRESS_UNVERIFIED`; `REAL_ED25519_WEBHOOK_PENDING`; `WHATSAPP_REAL_PENDING`; `AUTONOMOUS_CUSTOMER_DISPATCH_NO_GO`.
 
 **Próximo ensayo condicionado:** verificar GET público al receptor desde un cliente externo, revisar que Telnyx tenga configurada la URL específica por mensaje, y obtener autorización **explícita para un segundo SMS real** si se decide consumir la reserva independiente de firma. No habilitar flags ni enviar un mensaje sin esa autorización. Registrar un evento real autenticado correlacionado con el identificador de proveedor antes de marcar PASS. No cambiar perfil ni webhooks productivos.
+
+## Ensayo HTTP con claves sintéticas — 10-nov-2026
+
+Alcance: **solo simulación local, sin tráfico a Telnyx/Meta y sin POST a servicios externos**.
+
+- Se añadieron 6 pruebas para el handler HTTP segregado `services/qa-telnyx-webhook/api/telnyx.js` (GET verify-only; POST firmado; modificación/firma ausente/expirada; JSON inválido/evento desconocido; carga >256 KiB; método no permitido).
+- Se corrieron localmente con Node.js 22 las 5 pruebas existentes + 6 nuevas: **11/11 PASS, 0 FAIL**. Código y prueba local cotejados con Git blob SHA de los archivos de GitHub.
+- El flujo `autopilot-delivery-gates-qa.yml` fue actualizado en esta rama para incluir `node --test services/qa-telnyx-webhook/tests/signature.test.mjs` sin proveedores ni secretos reales.
+- **CI remota nueva: sin resultado confirmado todavía**. Los registros de GitHub Actions revisados correspondían a ejecuciones previas y no prueban el commit nuevo.
+- Neon QA hijo (`br-lively-band-avj6yz8x`) confirmado después del ensayo: la reserva firmada permanece `ready`, `attempts=0`; SMS anterior `delivered`, `attempts=1`; eventos reales de firma recibidos `0`.
+- **NO-GO** permanece para despachos reales, WhatsApp real, webhook Telnyx real y cualquier merge de activación.
+
+No se autorizó ni ejecutó SMS adicional. No se tocaron secretos, webhooks ni datos de producción.
