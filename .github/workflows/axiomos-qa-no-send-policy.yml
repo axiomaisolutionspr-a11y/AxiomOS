@@ -14,6 +14,7 @@ on:
       - 'tests/qa-autopilot-simulated-runtime.test.mjs'
       - 'app/lib/qa-telnyx-ingress.mjs'
       - 'tests/qa-telnyx-ingress.test.mjs'
+      - 'services/qa-telnyx-webhook/**'
       - '.github/workflows/axiomos-qa-no-send-policy.yml'
   workflow_dispatch:
 permissions:
@@ -32,4 +33,4 @@ jobs:
       - name: Install pinned dependencies (no lifecycle scripts)
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify isolated CRM to policy to no-send worker (synthetic only)
-        run: node --test tests/autopilot-delivery-gates.test.mjs tests/qa-followup-readonly.test.mjs tests/qa-autopilot-pglite-e2e.test.mjs tests/autopilot-webhook-verification.test.mjs tests/qa-autopilot-simulated-runtime.test.mjs tests/qa-telnyx-ingress.test.mjs
+        run: node --test tests/autopilot-delivery-gates.test.mjs tests/qa-followup-readonly.test.mjs tests/qa-autopilot-pglite-e2e.test.mjs tests/autopilot-webhook-verification.test.mjs tests/qa-autopilot-simulated-runtime.test.mjs tests/qa-telnyx-ingress.test.mjs services/qa-telnyx-webhook/tests/ingress.test.mjs
