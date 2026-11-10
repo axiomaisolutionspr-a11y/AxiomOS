@@ -91,3 +91,15 @@ Alcance: **solo simulación local, sin tráfico a Telnyx/Meta y sin POST a servi
 - **NO-GO** permanece para despachos reales, WhatsApp real, webhook Telnyx real y cualquier merge de activación.
 
 No se autorizó ni ejecutó SMS adicional. No se tocaron secretos, webhooks ni datos de producción.
+
+## Política WhatsApp QA: evidencia de bloqueo preventivo — 10-nov-2026
+
+Ejecutadas pruebas locales sin conexión a Meta, Dualhook, Telnyx ni mensajería. No se enviaron mensajes.
+
+- Cambio en `app/lib/autopilot-delivery-gates.mjs`: comprobar explícitamente `containsSensitiveData === false`, `optOutAfterConsent === false` y `globalSuppressed === false`; datos ausentes o `null` bloquean. Se exige también evidencia explícita de última comunicación (`lastContactAt=null` si nunca hubo contacto; `undefined` o cadena vacía bloquean).
+- En `tests/autopilot-delivery-gates.test.mjs` se agregaron casos de datos desconocidos, expiración de consentimiento, ventana exacta de 24h, fecha de entrada WhatsApp futura y plantillas mal formadas.
+- Se reprodujo localmente el módulo de reglas y se cotejó su Git blob SHA **73cc0dc7dd4b642d1c3c38cae265ffc051879d9c** con GitHub. La batería local de 21 pruebas focalizadas pasó **21/21**; la reconstrucción manual de 41 pruebas del archivo principal pasó **41/41**, aunque el archivo reconstruido localmente no coincide byte a byte con su versión de GitHub, por lo que esta última cifra no debe interpretarse como CI remota.
+- Se reconsultó Neon QA hijo: reserva del SMS adicional `ready, attempts=0`; SMS previo `delivered, attempts=1`; eventos firmados reales `0`; outbox de seis registros sintéticos sin cambios observados.
+- La CI remota del commit actualizado aún **no está confirmada**. No mezclar PR #101 ni habilitar envíos automáticos. Falta integrar las validaciones con fuentes servidor confiables y certificar proveedor real, fuera del alcance de esta autorización solo simulada.
+
+**Decisión:** `QA_POLICY_LOCAL_PASS`; `WHATSAPP_REAL_PENDING`; `AUTONOMOUS_DISPATCH_NO_GO`. Todo permanece en QA.
