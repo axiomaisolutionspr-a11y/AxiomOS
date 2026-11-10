@@ -9,6 +9,9 @@ on:
       - 'database/migrations/20261110_qa_telnyx_probe_event_reconciliation.sql'
       - 'database/migrations/20261110_qa_telnyx_ingress_role_grants.sql'
       - 'scripts/test-qa-telnyx-probe-reconciliation-postgres.sh'
+      - 'scripts/test-qa-telnyx-http-postgres.mjs'
+      - 'app/lib/qa-telnyx-ingress.mjs'
+      - 'app/lib/autopilot-webhook-verification.mjs'
       - '.github/workflows/qa-outbox-postgres.yml'
   workflow_dispatch:
 permissions:
@@ -33,6 +36,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Install PostgreSQL client
         run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client
       - name: SQL role, quiet hours, dedupe, concurrent claim, unknown outcome
@@ -43,3 +49,6 @@ jobs:
 
       - name: Reconcile separate signed Telnyx probe (synthetic only)
         run: bash scripts/test-qa-telnyx-probe-reconciliation-postgres.sh
+
+      - name: Real local HTTP POST to restricted PostgreSQL (SYNTHETIC NO SMS)
+        run: node scripts/test-qa-telnyx-http-postgres.mjs
