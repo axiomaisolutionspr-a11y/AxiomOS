@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # Isolated GitHub CI PostgreSQL, no customer data, provider or send.
-export PGHOST=127.0.0.1 PGPORT=5432 PGDATABASE=postgres PGUSER=neondb_owner PGPASSWORD=qa-only-test
+export PGHOST=127.0.0.1 PGPORT=5432 PGDATABASE=postgres PGUSER=postgres PGPASSWORD=qa-ci-postgres
 psql -X -v ON_ERROR_STOP=1 <<'SQL' >/dev/null
 CREATE TABLE public.prospects(id bigint PRIMARY KEY);
 INSERT INTO public.prospects(id) VALUES (101),(102);
+GRANT REFERENCES,SELECT ON public.prospects TO neondb_owner;
 SQL
+export PGUSER=neondb_owner PGPASSWORD=qa-only-test
 psql -X -v ON_ERROR_STOP=1 -f database/migrations/20261110_qa_contact_history_failclosed.sql >/dev/null
 psql -X -v ON_ERROR_STOP=1 <<'SQL'
 DO $$
