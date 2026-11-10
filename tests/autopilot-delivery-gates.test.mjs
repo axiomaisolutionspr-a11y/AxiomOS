@@ -49,3 +49,32 @@ const wa={...base,channel:"whatsapp",idempotencyKey:"axiomai:whatsapp:24",
 test("WhatsApp outside 24h needs approved template",()=>assert.equal(evaluateDispatch(wa).reason,"whatsapp_template_required"));
 test("WhatsApp approved template allowed in QA",()=>assert.equal(evaluateDispatch({...wa,templateApproved:true,templateName:"qa_followup_approved"}).allowed,true));
 test("WhatsApp customer service window allowed in QA",()=>assert.equal(evaluateDispatch({...wa,lastInboundWhatsAppAt:"2026-11-09T14:00:00Z"}).allowed,true));
+
+
+test("Missing sensitive classification fails closed in QA",()=>assert.equal(
+  evaluateDispatch({...base,containsSensitiveData:undefined}).reason,"sensitive_data"));
+test("Missing opt-out evidence fails closed in QA",()=>assert.equal(
+  evaluateDispatch({...base,optOutAfterConsent:undefined}).reason,"suppressed"));
+test("Missing suppression-list evidence fails closed in QA",()=>assert.equal(
+  evaluateDispatch({...base,globalSuppressed:undefined}).reason,"suppressed"));
+test("WhatsApp 24h boundary: second before deadline allows free-form in QA",()=>{
+  assert.equal(evaluateDispatch({...wa,lastInboundWhatsAppAt:"2026-11-08T16:00:01Z"}).allowed,true);
+});
+test("WhatsApp at exactly 24h requires approved template",()=>{
+  assert.equal(evaluateDispatch({...wa,lastInboundWhatsAppAt:"2026-11-08T16:00:00Z"}).reason,"whatsapp_template_required");
+});
+test("WhatsApp future inbound timestamp cannot open 24h window",()=>{
+  assert.equal(evaluateDispatch({...wa,lastInboundWhatsAppAt:"2026-11-09T16:01:00Z"}).reason,"whatsapp_template_required");
+});
+test("WhatsApp invalid template name rejected outside 24h",()=>{
+  assert.equal(evaluateDispatch({...wa,templateApproved:true,templateName:"BAD-Template"}).reason,"whatsapp_template_required");
+});
+test("WhatsApp valid template can be used at exactly 24h in QA",()=>{
+  assert.equal(evaluateDispatch({...wa,lastInboundWhatsAppAt:"2026-11-08T16:00:00Z",templateApproved:true,templateName:"qa_followup_approved"}).allowed,true);
+});
+test("Expired evidence older than 90 days blocks followup",()=>{
+  assert.equal(evaluateDispatch({...base,consent:{...base.consent,recordedAt:"2026-08-01T00:00:00Z"}}).reason,"invalid_consent_evidence");
+});
+test("WhatsApp missing opt-out evidence cannot pass with approved template",()=>{
+  assert.equal(evaluateDispatch({...wa,templateApproved:true,templateName:"qa_followup_approved",optOutAfterConsent:null}).reason,"suppressed");
+});
