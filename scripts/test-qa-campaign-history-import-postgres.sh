@@ -25,9 +25,11 @@ BEGIN
  THEN RAISE EXCEPTION 'Campaign acceptance misclassified as delivery'; END IF;
  IF (SELECT count(*) FROM axiomos_commercial.qa_contact_history_coverage)<>1
  THEN RAISE EXCEPTION 'Coverage was unexpectedly changed';END IF;
- IF EXISTS(SELECT 1 FROM axiomos_commercial.qa_contact_history_coverage
-    WHERE prospect_id IN (101,102) AND is_complete IS TRUE AND channel='whatsapp')
- THEN RAISE EXCEPTION 'Campaign import fabricated complete coverage';END IF;
+ IF (SELECT count(*) FROM axiomos_commercial.qa_contact_history_coverage
+    WHERE prospect_id=101 AND is_complete IS TRUE AND channel='whatsapp')<>1
+    OR EXISTS(SELECT 1 FROM axiomos_commercial.qa_contact_history_coverage
+    WHERE prospect_id=102 AND channel='whatsapp')
+ THEN RAISE EXCEPTION 'Campaign import altered or fabricated history coverage';END IF;
 END $$;
 SQL
 echo "QA_CAMPAIGN_HISTORY_IDEMPOTENT_NO_SEND_PASS"
