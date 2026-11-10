@@ -7,6 +7,7 @@ on:
       - 'database/migrations/20261109_qa_signed_delivery_receipts.sql'
       - 'scripts/test-qa-provider-receipts-postgres.sh'
       - 'database/migrations/20261110_qa_telnyx_probe_event_reconciliation.sql'
+      - 'database/migrations/20261110_qa_telnyx_ingress_role_grants.sql'
       - 'scripts/test-qa-telnyx-probe-reconciliation-postgres.sh'
       - '.github/workflows/qa-outbox-postgres.yml'
   workflow_dispatch:
