@@ -15,6 +15,8 @@ on:
       - 'scripts/test-qa-followup-transactional-gate-postgres.sh'
       - 'database/migrations/20261110_qa_contact_history_failclosed.sql'
       - 'scripts/test-qa-contact-history-postgres.sh'
+      - 'database/migrations/20261110_qa_reconcile_campaign_contact_attempts.sql'
+      - 'scripts/test-qa-campaign-history-import-postgres.sh'
       - 'app/lib/qa-whatsapp-status-ingress.mjs'
       - 'app/lib/qa-telnyx-ingress.mjs'
       - 'app/lib/autopilot-webhook-verification.mjs'
@@ -67,3 +69,6 @@ jobs:
 
       - name: Verify contact-history coverage and frequency (QA NO SEND)
         run: bash scripts/test-qa-contact-history-postgres.sh
+
+      - name: Reconcile accepted campaign attempts without delivery claims (QA NO SEND)
+        run: bash scripts/test-qa-campaign-history-import-postgres.sh
