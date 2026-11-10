@@ -78,3 +78,14 @@ test("Expired evidence older than 90 days blocks followup",()=>{
 test("WhatsApp missing opt-out evidence cannot pass with approved template",()=>{
   assert.equal(evaluateDispatch({...wa,templateApproved:true,templateName:"qa_followup_approved",optOutAfterConsent:null}).reason,"suppressed");
 });
+
+
+test("Missing last-contact evidence fails closed rather than assuming no prior contact",()=>{
+  assert.equal(evaluateDispatch({...base,lastContactAt:undefined}).reason,"rate_limit_24h");
+});
+test("Empty last-contact evidence fails closed",()=>{
+  assert.equal(evaluateDispatch({...base,lastContactAt:""}).reason,"rate_limit_24h");
+});
+test("Explicit null last-contact result, indicating no prior contact, is permitted for synthetic QA",()=>{
+  assert.equal(evaluateDispatch({...base,lastContactAt:null}).allowed,true);
+});
