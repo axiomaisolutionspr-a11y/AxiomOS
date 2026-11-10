@@ -13,6 +13,8 @@ on:
       - 'scripts/test-qa-whatsapp-http-postgres.mjs'
       - 'database/migrations/20261110_qa_followup_transactional_gate.sql'
       - 'scripts/test-qa-followup-transactional-gate-postgres.sh'
+      - 'database/migrations/20261110_qa_contact_history_failclosed.sql'
+      - 'scripts/test-qa-contact-history-postgres.sh'
       - 'app/lib/qa-whatsapp-status-ingress.mjs'
       - 'app/lib/qa-telnyx-ingress.mjs'
       - 'app/lib/autopilot-webhook-verification.mjs'
@@ -62,3 +64,6 @@ jobs:
 
       - name: Transactional CRM followup decisions (QA NO SEND)
         run: bash scripts/test-qa-followup-transactional-gate-postgres.sh
+
+      - name: Verify contact-history coverage and frequency (QA NO SEND)
+        run: bash scripts/test-qa-contact-history-postgres.sh
