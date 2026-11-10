@@ -12,8 +12,8 @@ export async function runQaNoSendBatch(sql,{environment="qa",maxItems=100}={}) {
   if(!Number.isInteger(maxItems)||maxItems<1||maxItems>100)return blocked("invalid_limit");
   let rows;
   try{
-    rows=await sql`SELECT id::text AS queue_id
-      FROM axiomos_commercial.followup_queue
+    rows=await sql`SELECT queue_id
+      FROM axiomos_commercial.qa_followup_preflight_readonly
       WHERE tenant_id='axiomai'
         AND status IN ('needs_review','blocked','cancelled')
       ORDER BY id ASC LIMIT ${maxItems}`;
