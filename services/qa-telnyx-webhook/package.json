@@ -1,0 +1,9 @@
+{
+  "name": "axiomos-qa-telnyx-webhook",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@neondatabase/serverless": "1.1.0"
+  }
+}
