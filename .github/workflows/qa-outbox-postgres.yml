@@ -1,0 +1,94 @@
+name: AxiomOS QA transactional outbox
+on:
+  pull_request:
+    paths:
+      - 'database/migrations/20261109_qa_delivery_outbox_no_provider.sql'
+      - 'scripts/test-qa-outbox-postgres.sh'
+      - 'database/migrations/20261109_qa_signed_delivery_receipts.sql'
+      - 'scripts/test-qa-provider-receipts-postgres.sh'
+      - 'database/migrations/20261110_qa_telnyx_probe_event_reconciliation.sql'
+      - 'database/migrations/20261110_qa_telnyx_ingress_role_grants.sql'
+      - 'scripts/test-qa-telnyx-probe-reconciliation-postgres.sh'
+      - 'scripts/test-qa-telnyx-http-postgres.mjs'
+      - 'scripts/test-qa-whatsapp-http-postgres.mjs'
+      - 'database/migrations/20261110_qa_followup_transactional_gate.sql'
+      - 'scripts/test-qa-followup-transactional-gate-postgres.sh'
+      - 'database/migrations/20261110_qa_contact_history_failclosed.sql'
+      - 'scripts/test-qa-contact-history-postgres.sh'
+      - 'database/migrations/20261110_qa_reconcile_campaign_contact_attempts.sql'
+      - 'scripts/test-qa-campaign-history-import-postgres.sh'
+      - 'database/migrations/20261110_qa_followup_frequency_gate_v2.sql'
+      - 'scripts/test-qa-followup-frequency-integration-postgres.sh'
+      - 'database/migrations/20261110_qa_suppression_provenance.sql'
+      - 'database/migrations/20261110_qa_followup_suppression_gate_v3.sql'
+      - 'scripts/test-qa-suppression-provenance-postgres.sh'
+      - 'scripts/test-qa-followup-suppression-integration-postgres.sh'
+      - 'database/migrations/20261110_qa_worker_cycle_no_send.sql'
+      - 'scripts/test-qa-worker-cycle-postgres.sh'
+      - 'app/lib/qa-whatsapp-status-ingress.mjs'
+      - 'app/lib/qa-telnyx-ingress.mjs'
+      - 'app/lib/autopilot-webhook-verification.mjs'
+      - '.github/workflows/qa-outbox-postgres.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-qa-outbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: qa-ci-postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client
+      - name: SQL role, quiet hours, dedupe, concurrent claim, unknown outcome
+        run: bash scripts/test-qa-outbox-postgres.sh
+
+      - name: Signed event receipt state transitions (synthetic only)
+        run: bash scripts/test-qa-provider-receipts-postgres.sh
+
+      - name: Reconcile separate signed Telnyx probe (synthetic only)
+        run: bash scripts/test-qa-telnyx-probe-reconciliation-postgres.sh
+
+      - name: Real local HTTP POST to restricted PostgreSQL (SYNTHETIC NO SMS)
+        run: node scripts/test-qa-telnyx-http-postgres.mjs
+
+      - name: WhatsApp HMAC local HTTP POST to isolated PostgreSQL (NO META SEND)
+        run: node scripts/test-qa-whatsapp-http-postgres.mjs
+
+      - name: Transactional CRM followup decisions (QA NO SEND)
+        run: bash scripts/test-qa-followup-transactional-gate-postgres.sh
+
+      - name: Verify contact-history coverage and frequency (QA NO SEND)
+        run: bash scripts/test-qa-contact-history-postgres.sh
+
+      - name: Reconcile accepted campaign attempts without delivery claims (QA NO SEND)
+        run: bash scripts/test-qa-campaign-history-import-postgres.sh
+
+      - name: Join contact history and transactional CRM gate (QA NO SEND)
+        run: bash scripts/test-qa-followup-frequency-integration-postgres.sh
+
+      - name: Suppression evidence and global opt-out (QA NO SEND)
+        run: bash scripts/test-qa-suppression-provenance-postgres.sh
+
+      - name: Transactional CRM + suppression source (QA NO SEND)
+        run: bash scripts/test-qa-followup-suppression-integration-postgres.sh
+
+      - name: Idempotent CRM worker cycle with audited no-send decisions (QA)
+        run: bash scripts/test-qa-worker-cycle-postgres.sh

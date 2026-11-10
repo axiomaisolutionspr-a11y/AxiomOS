@@ -1,0 +1,40 @@
+name: AxiomOS isolated QA policy (NO SEND)
+on:
+  pull_request:
+    paths:
+      - 'app/lib/autopilot-delivery-gates.mjs'
+      - 'tests/autopilot-delivery-gates.test.mjs'
+      - 'app/lib/qa-followup-readonly.mjs'
+      - 'tests/qa-followup-readonly.test.mjs'
+      - 'app/lib/qa-autopilot-no-send-batch.mjs'
+      - 'tests/qa-autopilot-pglite-e2e.test.mjs'
+      - 'app/lib/autopilot-webhook-verification.mjs'
+      - 'tests/autopilot-webhook-verification.test.mjs'
+      - 'app/lib/qa-autopilot-simulated-runtime.mjs'
+      - 'tests/qa-autopilot-simulated-runtime.test.mjs'
+      - 'app/lib/qa-telnyx-ingress.mjs'
+      - 'tests/qa-telnyx-ingress.test.mjs'
+      - 'app/lib/qa-whatsapp-status-ingress.mjs'
+      - 'tests/qa-whatsapp-status-ingress.test.mjs'
+      - 'app/lib/qa-autopilot-worker-cycle.mjs'
+      - 'tests/qa-autopilot-worker-cycle.test.mjs'
+      - 'services/qa-telnyx-webhook/**'
+      - '.github/workflows/axiomos-qa-no-send-policy.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qa-policy-no-send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned dependencies (no lifecycle scripts)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify isolated CRM to policy to no-send worker (synthetic only)
+        run: node --test tests/autopilot-delivery-gates.test.mjs tests/qa-followup-readonly.test.mjs tests/qa-autopilot-pglite-e2e.test.mjs tests/autopilot-webhook-verification.test.mjs tests/qa-autopilot-simulated-runtime.test.mjs tests/qa-telnyx-ingress.test.mjs tests/qa-whatsapp-status-ingress.test.mjs tests/qa-autopilot-worker-cycle.test.mjs services/qa-telnyx-webhook/tests/ingress.test.mjs
