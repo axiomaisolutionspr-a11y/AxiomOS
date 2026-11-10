@@ -33,7 +33,7 @@ export function evaluateDispatch(i) {
   if (i.isSynthetic !== true || i.recipientAllowlisted !== true) return deny("not_synthetic_allowlisted");
   if (typeof i.recipient !== "string" || !E164.test(i.recipient)) return deny("invalid_recipient");
   if (typeof i.body !== "string" || i.body.trim().length < 5 || i.body.length > 500) return deny("invalid_message");
-  if (i.containsSensitiveData === true) return deny("sensitive_data");
+  if (i.containsSensitiveData !== false) return deny("sensitive_data");
   const scheduled = validDate(i.scheduledFor);
   if (!scheduled || scheduled > now) return deny("not_due");
   if (!i.consent || i.consent.state !== "opt_in" || i.consent.channel !== i.channel ||
@@ -41,7 +41,7 @@ export function evaluateDispatch(i) {
   const consentAt = validDate(i.consent.recordedAt);
   if (!consentAt || consentAt > now || now-consentAt > 90*24*3600*1000 ||
       typeof i.consent.evidence !== "string" || i.consent.evidence.trim().length < 3) return deny("invalid_consent_evidence");
-  if (i.optOutAfterConsent === true || i.globalSuppressed === true) return deny("suppressed");
+  if (i.optOutAfterConsent !== false || i.globalSuppressed !== false) return deny("suppressed");
   if (i.lastContactAt && (!validDate(i.lastContactAt) ||
       now-validDate(i.lastContactAt) < 24*3600*1000)) return deny("rate_limit_24h");
   if (!Number.isInteger(i.messagesInLast7Days) || i.messagesInLast7Days < 0 ||
