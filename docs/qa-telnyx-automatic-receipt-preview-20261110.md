@@ -20,3 +20,12 @@ The owner requested implementing automatic registration of *future* signed Telny
 - Do NOT change production aliases, production env vars, or Telnyx webhook settings without a separate reviewed release plan. No customer followups are authorized.
 
 Status: `QA_AUTORECEIVER_PREVIEW_READY`, `QA_DB_RESTRICTED_ROLE_CONNECTIVITY_PASS`, `QA_SIGNED_PROVIDER_PERSISTENCE_E2E_PENDING`, `PRODUCTION_UNCHANGED`.
+
+## Localhost HTTP POST + Postgres integration certification
+
+- CI ephemeral PostgreSQL integration test `scripts/test-qa-telnyx-http-postgres.mjs` sends **real HTTP POST requests only to localhost** with temporary Ed25519 signing keys and synthetic event/receipt IDs.
+- Uses the same `receiveQaTelnyxEvent` module and a restricted `axiomos_qa_telnyx_ingress` SQL login in temporary CI Postgres. Tests `message.sent`, `message.finalized/delivered`, duplicate callback, forged signature, unknown message ID, single final receipt, and preservation of the already-used attempt count.
+- GitHub Actions `AxiomOS QA transactional outbox` run **42904895005**, commit `9af09423b72b38b5b02c189c4531311ed5864a21`: **success** with `QA_TELNYX_SIGNED_HTTP_POST_TO_POSTGRES_PASS`. Sister policy workflow **42904894997** also succeeded.
+- Independent recheck after CI of actual Neon QA branch `br-lively-band-avj6yz8x` showed exactly **2** historical verified events for **1** real message, and the original one-shot state remained `accepted, attempts=1`.
+- Neither Telnyx nor WhatsApp received a new message. Preview Vercel deployment was not modified, and the current public Telnyx receiver remains `verify-only`.
+- **Boundary:** the success certifies **local HTTP + signed synthetic callback + real temporary PostgreSQL processing**, NOT an external signed Telnyx POST to the deployed protected Preview. `QA_LOCAL_HTTP_POST_TO_POSTGRES_PASS`; `QA_DEPLOYED_SIGNED_POST_E2E_PENDING`.
