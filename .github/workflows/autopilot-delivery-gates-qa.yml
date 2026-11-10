@@ -8,6 +8,8 @@ on:
       - 'tests/autopilot-provider-bridge.test.mjs'
       - 'app/api/whatsapp/route.ts'
       - 'tests/whatsapp-signature-route.test.mjs'
+      - 'services/qa-telnyx-webhook/api/telnyx.js'
+      - 'services/qa-telnyx-webhook/tests/signature.test.mjs'
       - '.github/workflows/autopilot-delivery-gates-qa.yml'
   workflow_dispatch:
 permissions:
@@ -25,3 +27,5 @@ jobs:
           node-version: '22'
       - name: Verify fail-closed QA policy (NO SEND)
         run: node --test tests/autopilot-delivery-gates.test.mjs tests/autopilot-provider-bridge.test.mjs tests/whatsapp-signature-route.test.mjs
+      - name: Verify isolated Telnyx webhook with synthetic signed requests (NO SMS)
+        run: node --test services/qa-telnyx-webhook/tests/signature.test.mjs
