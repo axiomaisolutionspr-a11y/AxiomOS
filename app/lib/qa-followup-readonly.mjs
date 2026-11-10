@@ -12,23 +12,10 @@ export async function inspectQaFollowup(sql,queueId,{environment="qa"}={}) {
   if(!ID.test(id))return Object.freeze({allowed:false,reason:"invalid_queue_id"});
   let rows;
   try {
-    rows=await sql`SELECT q.id::text AS queue_id,q.tenant_id,q.channel,q.purpose,
-       q.status,q.scheduled_for,
-       c.permission_state, c.recorded_at AS permission_recorded_at,
-       c.evidence_source IS NOT NULL AND length(btrim(c.evidence_source))>=3 AS has_evidence,
-       d.decision AS review_decision
-      FROM axiomos_commercial.followup_queue AS q
-      LEFT JOIN LATERAL (
-        SELECT permission_state, recorded_at, evidence_source
-        FROM axiomos_commercial.followup_contact_permissions AS p
-        WHERE p.tenant_id=q.tenant_id AND p.prospect_id=q.prospect_id
-          AND p.channel=q.channel AND p.purpose=q.purpose
-        ORDER BY p.recorded_at DESC,p.id DESC LIMIT 1
-      ) AS c ON true
-      LEFT JOIN axiomos_commercial.followup_review_decisions AS d
-        ON d.tenant_id=q.tenant_id AND d.queue_id=q.id
-      WHERE q.tenant_id='axiomai' AND q.id=CAST(${id} AS bigint)
-      LIMIT 1`;
+    rows=await sql`SELECT queue_id,tenant_id,channel,purpose,status AS status,scheduled_for,
+       permission_state,permission_recorded_at,has_evidence,review_decision
+       FROM axiomos_commercial.qa_followup_preflight_readonly
+       WHERE tenant_id='axiomai' AND queue_id=CAST(${id} AS bigint)::text LIMIT 1`;
   } catch {
     return Object.freeze({allowed:false,reason:"authoritative_read_unavailable"});
   }
