@@ -22,3 +22,17 @@ Owner authorized one additional, single-use internal SMS for independent signed 
 - `AUTONOMOUS_COMMERCIAL_DISPATCH_NO_GO`
 
 Do NOT send again, reset attempts, reuse the reservation, change productive credentials, or infer that this independent receiver proves the full CRM production webhook integration. Avoid disclosing live message bodies or tokens.
+
+## Conciliación retrospectiva en Neon QA — 10-nov-2026
+
+Se reconcilió **manualmente, sin reenviar SMS**, la evidencia de dos POST Telnyx autenticados en el receptor QA independiente. Origen: logs de Vercel `AXIOMOS_QA_TELNYX_SIGNED_RECEIPT` donde la verificación Ed25519 terminó `verified:true`.
+
+- Se creó `axiomos_commercial.qa_telnyx_probe_verified_events` en Neon QA `br-lively-band-avj6yz8x` y la función restringida `qa_reconcile_telnyx_signed_probe` según la migración versionada `database/migrations/20261110_qa_telnyx_probe_event_reconciliation.sql`. **Solo QA, no producción**.
+- Evento `message.sent`, event ID `55114abf-8953-421e-ad13-75e85e01d2fc`, status `sent`: `VERIFIED_EVENT_RECORDED`.
+- Evento `message.finalized`, event ID `0b26b6e1-4f76-42be-be7b-e1d69fddf224`, status `delivered`: `VERIFIED_EVENT_RECORDED`.
+- Los dos eventos pertenecen al proveedor ID `4031a1c7-3461-4290-b492-b46e364315cb` y a una sola reserva previamente consumida. El registro de la prueba anterior permanece `delivered`, `attempts=1`.
+- Comprobación posterior: 2 eventos en la tabla nueva, 2 event keys distintos, 1 único mensaje y 1 evento final `delivered`.
+- Un segundo intento de insertar el mismo evento devuelve `DUPLICATE_EVENT`. Los roles `axiomos_commercial_reader` y `axiomos_autopilot_e2e_worker` **no pueden ejecutar** la función.
+- No se tocaron credenciales, webhooks, producción ni se realizó un nuevo envío.
+
+**Alcance:** `TELNYX_SIGNED_QA_EVENTS_RETROSPECTIVELY_RECONCILED_PASS`. Esto es un **backfill manual desde logs de un receptor que había verificado la firma**, y NO demuestra persistencia automática desde el endpoint en tiempo real. Para esa fase se necesita un adaptador de persistencia con una identidad QA restringida, siguiendo la validación criptográfica de cuerpo crudo y deduplicación. No reutilizar tokens de producción ni habilitar el despacho comercial.
