@@ -6,6 +6,8 @@ on:
       - 'tests/autopilot-delivery-gates.test.mjs'
       - 'app/lib/qa-followup-readonly.mjs'
       - 'tests/qa-followup-readonly.test.mjs'
+      - 'app/lib/qa-autopilot-no-send-batch.mjs'
+      - 'tests/qa-autopilot-pglite-e2e.test.mjs'
       - '.github/workflows/axiomos-qa-no-send-policy.yml'
   workflow_dispatch:
 permissions:
@@ -21,5 +23,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify static QA policy (no network and no providers)
-        run: node --test tests/autopilot-delivery-gates.test.mjs tests/qa-followup-readonly.test.mjs
+      - name: Install pinned dependencies (no lifecycle scripts)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify isolated CRM to policy to no-send worker (synthetic only)
+        run: node --test tests/autopilot-delivery-gates.test.mjs tests/qa-followup-readonly.test.mjs tests/qa-autopilot-pglite-e2e.test.mjs
