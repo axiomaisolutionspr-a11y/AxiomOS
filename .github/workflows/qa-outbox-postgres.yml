@@ -11,6 +11,8 @@ on:
       - 'scripts/test-qa-telnyx-probe-reconciliation-postgres.sh'
       - 'scripts/test-qa-telnyx-http-postgres.mjs'
       - 'scripts/test-qa-whatsapp-http-postgres.mjs'
+      - 'database/migrations/20261110_qa_followup_transactional_gate.sql'
+      - 'scripts/test-qa-followup-transactional-gate-postgres.sh'
       - 'app/lib/qa-whatsapp-status-ingress.mjs'
       - 'app/lib/qa-telnyx-ingress.mjs'
       - 'app/lib/autopilot-webhook-verification.mjs'
@@ -57,3 +59,6 @@ jobs:
 
       - name: WhatsApp HMAC local HTTP POST to isolated PostgreSQL (NO META SEND)
         run: node scripts/test-qa-whatsapp-http-postgres.mjs
+
+      - name: Transactional CRM followup decisions (QA NO SEND)
+        run: bash scripts/test-qa-followup-transactional-gate-postgres.sh
