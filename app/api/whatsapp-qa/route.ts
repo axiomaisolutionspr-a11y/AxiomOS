@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { POST as answerWithAxira } from "../brain/route";
 import { qaTextMessages } from "../../lib/whatsapp-qa-events.mjs";
 import { claimQaMessage } from "../../lib/whatsapp-qa-claim.mjs";
-import { recordQaDeliveryStatus, sendAuthorizedQaReply } from "./delivery";
+import { recordQaDeliveryStatus, sendAutomaticQaReply, sendAuthorizedQaReply } from "./delivery";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Default off. Processing is restricted to the dedicated Preview and the
-  // verified test sender, WABA and phone-number ID. Webhook retries only generate a stored reply.
+  // verified test sender, WABA and phone-number ID. A reply requires a single-use QA grant.
   if (process.env.META_WA_QA_PROCESS_TEXT === "true") {
     if (process.env.VERCEL_ENV !== "preview" ||
         process.env.VERCEL_GIT_COMMIT_REF !== "feature/axiomos-whatsapp-meta-qa-20261110" ||
@@ -199,6 +199,7 @@ export async function POST(request: NextRequest) {
         if (rows[0]?.state !== "completed") {
           return NextResponse.json({ ok: false, error: "QA message processing pending" }, { status: 503 });
         }
+        await sendAutomaticQaReply(sql, parsedDatabaseUrl, message, hash);
         continue;
       }
       try {
@@ -215,6 +216,7 @@ export async function POST(request: NextRequest) {
         await sql`UPDATE axiomos_qa_ingress_scope.meta_whatsapp_qa_processing SET state = 'failed', updated_at = now() WHERE message_hash = ${hash} AND state = 'processing' AND attempt_id = ${attempt}`;
         return NextResponse.json({ ok: false, error: "QA processing failed" }, { status: 503 });
       }
+      await sendAutomaticQaReply(sql, parsedDatabaseUrl, message, hash);
     }
   }
 

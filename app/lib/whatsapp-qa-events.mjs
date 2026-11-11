@@ -16,7 +16,10 @@ export function qaTextMessages(payload, { wabaId, phoneNumberId, recipient }) {
             typeof message.text?.body !== "string") continue;
         const text = message.text.body.trim();
         if (!text || text.length > 4000) continue;
-        result.push({ id: message.id, text });
+        const timestamp = typeof message.timestamp === "string" && /^\d{10}$/.test(message.timestamp)
+          ? Number(message.timestamp)
+          : undefined;
+        result.push(timestamp === undefined ? { id: message.id, text } : { id: message.id, text, timestamp });
       }
     }
   }
