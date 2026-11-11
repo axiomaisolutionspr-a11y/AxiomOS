@@ -5,7 +5,7 @@ export function whatsappPilotSettings(env: NodeJS.ProcessEnv = process.env) {
   if (env.VERCEL_ENV !== "production" || env.AXIOMOS_WHATSAPP_PILOT_ENABLED !== "true" ||
       env.AXIOMOS_FOLLOWUP_QUEUE_REVIEW_ENABLED !== "true" ||
       env.AXIOMOS_WHATSAPP_FOLLOWUP_TEMPLATE_ID !== "1623748565895066" ||
-      phoneId !== "1419337331256187" || !key || !recipient || !/^1(?:787|939)[0-9]{7}$/.test(recipient)) {
+      phoneId !== "1313032805233574" || !key || !recipient || !/^1(?:787|939)[0-9]{7}$/.test(recipient)) {
     return null;
   }
   return { key, phoneId, recipient };
