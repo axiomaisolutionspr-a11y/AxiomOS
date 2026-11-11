@@ -1,78 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const COOKIE_NAME = "axiomos_crm_session";
+// The public QA deployment exists only so Meta can reach this callback.
+// Keep every other page and API route private to this branch deployment.
+const META_QA_WEBHOOK_PATH = "/api/whatsapp-qa";
 
-async function crearToken(pin: string) {
-  const contenido = new TextEncoder().encode(
-    `axiomos-crm:${pin}`
-  );
-
-  const hash = await crypto.subtle.digest(
-    "SHA-256",
-    contenido
-  );
-
-  return Array.from(new Uint8Array(hash))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-export async function proxy(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Autopilot verifies Neon Auth and the active tenant membership on every request.
-  // Its own routes fail closed when the commercial release is not configured.
-  if (pathname === "/prospectos/autopilot" || pathname.startsWith("/prospectos/autopilot/")) {
-    return NextResponse.next();
+  if (pathname === META_QA_WEBHOOK_PATH) {
+    if (request.method === "GET" || request.method === "POST") {
+      return NextResponse.next();
+    }
+
+    return new NextResponse(null, {
+      status: 405,
+      headers: {
+        Allow: "GET, POST",
+        "Cache-Control": "no-store",
+      },
+    });
   }
 
-  /*
-    La pantalla de acceso y el icono de marca (sin datos CRM) son públicos.
-  */
-  if (pathname === "/prospectos/acceso" || pathname === "/prospectos/icon") {
-    return NextResponse.next();
-  }
-
-  const accessPin =
-    process.env.AXIOMOS_CRM_ACCESS_PIN;
-
-  if (!accessPin) {
-    return new NextResponse(
-      "El acceso privado de AxiomOS no está configurado.",
-      {
-        status: 503,
-        headers: {
-          "Content-Type":
-            "text/plain; charset=utf-8",
-          "Cache-Control": "no-store",
-        },
-      }
-    );
-  }
-
-  const expectedToken =
-    await crearToken(accessPin);
-
-  const currentToken =
-    request.cookies.get(COOKIE_NAME)?.value;
-
-  if (currentToken === expectedToken) {
-    return NextResponse.next();
-  }
-
-  const loginUrl = new URL(
-    "/prospectos/acceso",
-    request.url
+  return NextResponse.json(
+    { ok: false },
+    {
+      status: 404,
+      headers: { "Cache-Control": "no-store" },
+    },
   );
-
-  loginUrl.searchParams.set(
-    "from",
-    `${pathname}${request.nextUrl.search}`
-  );
-
-  return NextResponse.redirect(loginUrl);
 }
 
 export const config = {
-  matcher: ["/prospectos/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
