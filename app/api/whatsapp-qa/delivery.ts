@@ -62,10 +62,10 @@ export async function sendAutomaticQaReply(
   if (claimed) await sendClaimedReply(sql, accessToken, recipient, claimed);
 }
 
-async function sendClaimedReply(
-  sql: NeonQueryFunction<false, false>, accessToken: string, recipient: string, claimed: DeliveryClaim,
-) {
+type ProviderOutcome = { state: "accepted"; providerHash: string } |
+  { state: "failed" | "uncertain"; errorCode: number | null };
 
+async function postQaText(accessToken: string, recipient: string, body: string): Promise<ProviderOutcome> {
   const response = await fetch(`https://graph.facebook.com/v27.0/${PHONE_ID}/messages`, {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
@@ -73,7 +73,7 @@ async function sendClaimedReply(
       messaging_product: "whatsapp",
       to: recipient,
       type: "text",
-      text: { body: claimed.reply },
+      text: { body },
     }),
     signal: AbortSignal.timeout(12_000),
     redirect: "error",
@@ -83,8 +83,22 @@ async function sendClaimedReply(
     error?: { code?: number };
   } | null | undefined;
   const providerId = result?.messages?.[0]?.id;
-  if (!response?.ok || typeof providerId !== "string" || !providerId.startsWith("wamid.")) {
-    const errorCode = Number.isSafeInteger(result?.error?.code) ? result?.error?.code : null;
+  if (response?.ok && typeof providerId === "string" && providerId.startsWith("wamid.")) {
+    return { state: "accepted", providerHash: hash(providerId) };
+  }
+  const errorCode = result?.error?.code;
+  const definiteRejection = response && response.status >= 400 && response.status < 500 &&
+    ![408, 409, 429].includes(response.status);
+  return { state: definiteRejection ? "failed" : "uncertain",
+    errorCode: typeof errorCode === "number" && Number.isSafeInteger(errorCode) ? errorCode : null };
+}
+
+async function sendClaimedReply(
+  sql: NeonQueryFunction<false, false>, accessToken: string, recipient: string, claimed: DeliveryClaim,
+) {
+  const outcome = await postQaText(accessToken, recipient, claimed.reply);
+  if (outcome.state !== "accepted") {
+    const errorCode = outcome.errorCode;
     if (errorCode) await sql`
       UPDATE axiomos_qa_ingress_scope.meta_whatsapp_qa_delivery SET provider_error_code = ${errorCode}
       WHERE message_hash = ${claimed.message_hash}
@@ -94,10 +108,40 @@ async function sendClaimedReply(
 
   await sql`
     UPDATE axiomos_qa_ingress_scope.meta_whatsapp_qa_delivery
-    SET accepted_at = now(), provider_message_hash = ${hash(providerId)}
+    SET accepted_at = now(), provider_message_hash = ${outcome.providerHash}
     WHERE message_hash = ${claimed.message_hash}
   `;
   return Response.json({ ok: true, accepted: true });
+}
+
+export async function dispatchQaFollowup(
+  sql: NeonQueryFunction<false, false>, database: URL,
+  message: { id: string; text: string; timestamp?: number },
+): Promise<boolean> {
+  if (!/^Prueba seguimiento Axira QA [a-f0-9]{12}$/.test(message.text)) return false;
+
+  const accessToken = process.env.META_WA_QA_ACCESS_TOKEN;
+  const recipient = process.env.META_WA_QA_ALLOWED_SENDER;
+  if (!accessToken || !recipient || !message.timestamp || !configuredForQa(database)) return true;
+
+  const inboundHash = hash(message.id);
+  const [claim] = await sql`
+    SELECT * FROM axiomos_qa_ingress_scope.claim_qa_whatsapp_followup(
+      ${hash(message.text)}, ${hash(recipient)}, ${inboundHash},
+      ${new Date(message.timestamp * 1000).toISOString()}::timestamptz
+    )
+  `;
+  if (!claim) return true;
+
+  const outcome = await postQaText(accessToken, recipient, claim.body);
+  await sql`
+    SELECT axiomos_qa_ingress_scope.finish_qa_whatsapp_followup(
+      ${claim.outbox_id}, ${inboundHash}, ${outcome.state},
+      ${outcome.state === "accepted" ? outcome.providerHash : null},
+      ${outcome.state === "accepted" ? null : outcome.errorCode}
+    )
+  `;
+  return true;
 }
 
 export async function recordQaDeliveryStatus(
@@ -112,13 +156,20 @@ export async function recordQaDeliveryStatus(
     if (status?.recipient_id !== recipient || typeof status.id !== "string" ||
         (status.status !== "delivered" && status.status !== "read" && status.status !== "failed")) continue;
 
+    const providerHash = hash(status.id);
+
     await sql`
       UPDATE axiomos_qa_ingress_scope.meta_whatsapp_qa_delivery
       SET delivered_at = CASE WHEN ${status.status} IN ('delivered', 'read')
             THEN COALESCE(delivered_at, now()) ELSE delivered_at END,
           failed_at = CASE WHEN ${status.status} = 'failed'
             THEN COALESCE(failed_at, now()) ELSE failed_at END
-      WHERE provider_message_hash = ${hash(status.id)}
+      WHERE provider_message_hash = ${providerHash}
+    `;
+    await sql`
+      SELECT axiomos_qa_ingress_scope.record_qa_whatsapp_followup_status(
+        ${providerHash}, ${hash(recipient)}, ${status.status}
+      )
     `;
   }
 }

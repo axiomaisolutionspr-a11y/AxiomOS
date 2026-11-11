@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { POST as answerWithAxira } from "../brain/route";
 import { qaTextMessages } from "../../lib/whatsapp-qa-events.mjs";
 import { claimQaMessage } from "../../lib/whatsapp-qa-claim.mjs";
-import { recordQaDeliveryStatus, sendAutomaticQaReply, sendAuthorizedQaReply } from "./delivery";
+import { dispatchQaFollowup, recordQaDeliveryStatus, sendAutomaticQaReply, sendAuthorizedQaReply } from "./delivery";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -192,6 +192,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: "QA test identifiers unavailable" }, { status: 503 });
     }
     for (const message of qaTextMessages(payload, config)) {
+      if (await dispatchQaFollowup(sql, parsedDatabaseUrl, message)) continue;
       const hash = createHash("sha256").update(message.id).digest("hex");
       const attempt = randomUUID();
       if (!await claimQaMessage(sql, hash, attempt)) {
