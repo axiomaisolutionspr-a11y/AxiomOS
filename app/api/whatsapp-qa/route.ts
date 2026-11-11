@@ -1,10 +1,13 @@
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 import { NextRequest, NextResponse } from "next/server";
+import { POST as answerWithAxira } from "../brain/route";
+import { qaTextMessages } from "../../lib/whatsapp-qa-events.mjs";
+import { claimQaMessage } from "../../lib/whatsapp-qa-claim.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 15;
+export const maxDuration = 60;
 
 const MAX_BODY_BYTES = 128 * 1024;
 const QA_SCHEMA = "axiomos_qa_ingress_scope";
@@ -156,6 +159,52 @@ export async function POST(request: NextRequest) {
          ${record.messageCount}, ${record.statusCount})
       ON CONFLICT (event_id) DO NOTHING
     `;
+  }
+
+  // Default off. Processing is restricted to the dedicated Preview and the
+  // verified test sender, WABA and phone-number ID. It never sends WhatsApp.
+  if (process.env.META_WA_QA_PROCESS_TEXT === "true") {
+    if (process.env.VERCEL_ENV !== "preview" ||
+        process.env.VERCEL_GIT_COMMIT_REF !== "feature/axiomos-whatsapp-meta-qa-20261110" ||
+        parsedDatabaseUrl.hostname !== "ep-polished-fire-avorljs7-pooler.c-11.us-east-1.aws.neon.tech" ||
+        parsedDatabaseUrl.username !== "axiomos_wa_qa_ingress" ||
+        process.env.AXIRA_OFFERS_QA_ENABLED === "true") {
+      return NextResponse.json({ ok: false, error: "QA isolation guard rejected configuration" }, { status: 503 });
+    }
+    const config = {
+      wabaId: process.env.META_WA_QA_WABA_ID ?? "",
+      phoneNumberId: process.env.META_WA_QA_PHONE_ID ?? "",
+      recipient: process.env.META_WA_QA_ALLOWED_SENDER ?? "",
+    };
+    if (!/^\d{1,64}$/.test(config.wabaId) || !/^\d{1,64}$/.test(config.phoneNumberId) ||
+        !/^\d{8,20}$/.test(config.recipient)) {
+      return NextResponse.json({ ok: false, error: "QA test identifiers unavailable" }, { status: 503 });
+    }
+    for (const message of qaTextMessages(payload, config)) {
+      const hash = createHash("sha256").update(message.id).digest("hex");
+      const attempt = randomUUID();
+      if (!await claimQaMessage(sql, hash, attempt)) {
+        const rows = await sql`SELECT state FROM axiomos_qa_ingress_scope.meta_whatsapp_qa_processing WHERE message_hash = ${hash}`;
+        if (rows[0]?.state !== "completed") {
+          return NextResponse.json({ ok: false, error: "QA message processing pending" }, { status: 503 });
+        }
+        continue;
+      }
+      try {
+        const answer = await answerWithAxira(new Request("https://localhost/api/brain", {
+          method: "POST", headers: { "content-type": "application/json" },
+          body: JSON.stringify({ message: message.text, channel: "whatsapp" }),
+        }));
+        const body = await answer.json() as { result?: unknown };
+        if (!answer.ok || typeof body.result !== "string" || !body.result.trim() || body.result.length > 4000) {
+          throw new Error("QA response unavailable");
+        }
+        await sql`UPDATE axiomos_qa_ingress_scope.meta_whatsapp_qa_processing SET state = 'completed', reply = ${body.result}, updated_at = now() WHERE message_hash = ${hash} AND state = 'processing' AND attempt_id = ${attempt}`;
+      } catch {
+        await sql`UPDATE axiomos_qa_ingress_scope.meta_whatsapp_qa_processing SET state = 'failed', updated_at = now() WHERE message_hash = ${hash} AND state = 'processing' AND attempt_id = ${attempt}`;
+        return NextResponse.json({ ok: false, error: "QA processing failed" }, { status: 503 });
+      }
+    }
   }
 
   return NextResponse.json({ ok: true, accepted: records.length });
