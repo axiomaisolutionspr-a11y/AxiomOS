@@ -27,7 +27,9 @@ test("only a fresh, authorized QA webhook message dispatches one reply", async (
 
   const db = new PGlite();
   t.after(() => db.close());
-  await db.exec("CREATE SCHEMA axiomos_qa_ingress_scope; CREATE ROLE axiomos_wa_qa_ingress; GRANT USAGE ON SCHEMA axiomos_qa_ingress_scope TO axiomos_wa_qa_ingress;");
+  await db.exec(`CREATE SCHEMA axiomos_qa_ingress_scope; CREATE ROLE axiomos_wa_qa_ingress;
+    GRANT USAGE ON SCHEMA axiomos_qa_ingress_scope TO axiomos_wa_qa_ingress;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA axiomos_qa_ingress_scope GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO axiomos_wa_qa_ingress;`);
   for (const migration of ["processing", "delivery", "auto_reply"]) {
     await db.exec(await readFile(new URL(`../database/migrations/20261111_whatsapp_qa_${migration}.sql`, import.meta.url), "utf8"));
   }
@@ -59,6 +61,10 @@ test("only a fresh, authorized QA webhook message dispatches one reply", async (
   await sql`INSERT INTO axiomos_qa_ingress_scope.meta_whatsapp_qa_auto_reply (challenge_hash,recipient_hash,issued_at,expires_at)
     VALUES (${hash(text)},${hash(recipient)},to_timestamp(${now - 5}),to_timestamp(${now + 120}))`;
   await db.exec("SET ROLE axiomos_wa_qa_ingress;");
+  const [access] = await sql`SELECT
+    has_table_privilege('axiomos_qa_ingress_scope.meta_whatsapp_qa_auto_reply', 'INSERT') AS can_create_grant,
+    has_column_privilege('axiomos_qa_ingress_scope.meta_whatsapp_qa_auto_reply', 'expires_at', 'UPDATE') AS can_extend_grant`;
+  assert.deepEqual(access, { can_create_grant: false, can_extend_grant: false });
   await sendAutomaticQaReply(sql, database, { ...message, timestamp: now - 120 }, key);
   await sendAutomaticQaReply(sql, database, { ...message, text: "Prueba Axira QA ffffffff" }, key);
   await sendAutomaticQaReply(sql, new URL("postgresql://wrong.neon.tech/neondb"), message, key);
