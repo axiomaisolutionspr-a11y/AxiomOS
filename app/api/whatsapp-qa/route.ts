@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { POST as answerWithAxira } from "../brain/route";
 import { qaTextMessages } from "../../lib/whatsapp-qa-events.mjs";
 import { claimQaMessage } from "../../lib/whatsapp-qa-claim.mjs";
+import { recordQaDeliveryStatus, sendAuthorizedQaReply } from "./delivery";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -73,6 +74,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "QA webhook unavailable" }, { status: 503 });
   }
 
+  if (request.headers.get("x-axiomos-qa-delivery") === "one-time-reply") {
+    try {
+      return await sendAuthorizedQaReply(request, new URL(databaseUrl));
+    } catch {
+      return NextResponse.json({ ok: false, error: "QA delivery could not be confirmed" }, { status: 503 });
+    }
+  }
+
   const contentLength = Number(request.headers.get("content-length") || "0");
   if (contentLength > MAX_BODY_BYTES) {
     return NextResponse.json({ ok: false }, { status: 413 });
@@ -115,6 +124,7 @@ export async function POST(request: NextRequest) {
   }
 
   const eventId = createHash("sha256").update(rawBody).digest("hex");
+  const sql = neon(databaseUrl);
   const records: Array<{
     wabaId: string | null;
     phoneNumberId: string | null;
@@ -135,9 +145,11 @@ export async function POST(request: NextRequest) {
 
       const value = asRecord(change?.value);
       const metadata = asRecord(value?.metadata);
+      const phoneNumberId = safeId(metadata?.phone_number_id);
+      await recordQaDeliveryStatus(sql, parsedDatabaseUrl, wabaId, phoneNumberId, value);
       records.push({
         wabaId,
-        phoneNumberId: safeId(metadata?.phone_number_id),
+        phoneNumberId,
         field,
         messageCount: countArray(value?.messages),
         statusCount: countArray(value?.statuses),
@@ -149,7 +161,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, accepted: 0 });
   }
 
-  const sql = neon(databaseUrl);
   for (const record of records) {
     await sql`
       INSERT INTO axiomos_qa_ingress_scope.meta_whatsapp_webhook_events
@@ -162,7 +173,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Default off. Processing is restricted to the dedicated Preview and the
-  // verified test sender, WABA and phone-number ID. It never sends WhatsApp.
+  // verified test sender, WABA and phone-number ID. Webhook retries only generate a stored reply.
   if (process.env.META_WA_QA_PROCESS_TEXT === "true") {
     if (process.env.VERCEL_ENV !== "preview" ||
         process.env.VERCEL_GIT_COMMIT_REF !== "feature/axiomos-whatsapp-meta-qa-20261110" ||
