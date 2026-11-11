@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { qaMarketingPreferences } from "../../lib/whatsapp-qa-preferences.mjs";
 import { neon } from "@neondatabase/serverless";
 import { NextRequest, NextResponse } from "next/server";
 import { POST as answerWithAxira } from "../brain/route";
@@ -125,6 +126,17 @@ export async function POST(request: NextRequest) {
 
   const eventId = createHash("sha256").update(rawBody).digest("hex");
   const sql = neon(databaseUrl);
+  const preferences = qaMarketingPreferences(payload, {
+    wabaId: process.env.META_WA_QA_WABA_ID,
+    phoneId: process.env.META_WA_QA_PHONE_ID,
+    secret,
+  });
+  if (preferences.length) {
+    await sql.transaction(preferences.map(({ key, state, timestamp }) =>
+      sql`SELECT axiomos_qa_ingress_scope.record_meta_marketing_preference(
+        ${key}, ${state}, to_timestamp(${timestamp}::double precision))`
+    ));
+  }
   const records: Array<{
     wabaId: string | null;
     phoneNumberId: string | null;
@@ -158,7 +170,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (records.length === 0) {
-    return NextResponse.json({ ok: true, accepted: 0 });
+    return NextResponse.json({ ok: true, accepted: 0, preferences: preferences.length });
   }
 
   for (const record of records) {
