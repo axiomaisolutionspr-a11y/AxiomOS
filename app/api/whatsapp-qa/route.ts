@@ -1,4 +1,5 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { qaMarketingPreferences } from "../../lib/whatsapp-qa-preferences.mjs";
 import { neon } from "@neondatabase/serverless";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -142,11 +143,22 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (records.length === 0) {
+  const preferences = qaMarketingPreferences(payload, {
+    wabaId: process.env.META_WA_QA_WABA_ID,
+    phoneId: process.env.META_WA_QA_PHONE_ID,
+    secret,
+  });
+  if (records.length === 0 && preferences.length === 0) {
     return NextResponse.json({ ok: true, accepted: 0 });
   }
 
   const sql = neon(databaseUrl);
+  if (preferences.length) {
+    await sql.transaction(preferences.map(({ key, state, timestamp }) =>
+      sql`SELECT axiomos_qa_ingress_scope.record_meta_marketing_preference(
+        ${key}, ${state}, to_timestamp(${timestamp}::double precision))`
+    ));
+  }
   for (const record of records) {
     await sql`
       INSERT INTO axiomos_qa_ingress_scope.meta_whatsapp_webhook_events
@@ -158,5 +170,5 @@ export async function POST(request: NextRequest) {
     `;
   }
 
-  return NextResponse.json({ ok: true, accepted: records.length });
+  return NextResponse.json({ ok: true, accepted: records.length, preferences: preferences.length });
 }
