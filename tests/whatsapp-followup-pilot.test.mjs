@@ -52,7 +52,7 @@ test("pilot settings require opt-in configuration and send only the pinned Spani
   const env = {
     VERCEL_ENV: "production", AXIOMOS_WHATSAPP_PILOT_ENABLED: "true",
     AXIOMOS_FOLLOWUP_QUEUE_REVIEW_ENABLED: "true", AXIOMOS_WHATSAPP_FOLLOWUP_TEMPLATE_ID: "1623748565895066",
-    WHATSAPP_PHONE_NUMBER_ID: "1419337331256187", DUALHOOK_API_KEY: "fixture-key", AXIOMOS_WHATSAPP_PILOT_TO: "17875550104",
+    WHATSAPP_PHONE_NUMBER_ID: "1313032805233574", DUALHOOK_API_KEY: "fixture-key", AXIOMOS_WHATSAPP_PILOT_TO: "17875550104",
   };
   assert.equal(whatsappPilotSettings({ ...env, VERCEL_ENV: "preview" }), null);
   assert.equal(whatsappPilotSettings({ ...env, AXIOMOS_WHATSAPP_PILOT_ENABLED: "false" }), null);
@@ -62,7 +62,7 @@ test("pilot settings require opt-in configuration and send only the pinned Spani
   let requests = 0;
   const result = await sendWhatsAppPilot(settings, async (url, request) => {
     requests++;
-    assert.equal(url, "https://api.dualhook.com/v25.0/1419337331256187/messages");
+    assert.equal(url, "https://api.dualhook.com/v25.0/1313032805233574/messages");
     assert.equal(request.method, "POST");
     assert.deepEqual(JSON.parse(request.body), {
       messaging_product: "whatsapp", recipient_type: "individual", to: "17875550104",
