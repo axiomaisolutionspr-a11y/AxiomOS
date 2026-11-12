@@ -5,6 +5,8 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { reserveNovemberCampaignSendQuery } from "./audience.mjs";
+import { whatsappManualOptOutMode } from "../../../lib/whatsapp-manual-opt-out-mode.mjs";
 import {
   CAMPAIGN_KEY,
   TEMPLATE_BODY,
@@ -142,7 +144,7 @@ export async function sendNovemberCampaign(formData: FormData) {
 
   const campaign = await getNovemberCampaignData();
   if (!campaign.migrationReady) {
-    finish("error", "El registro de deduplicación todavía no está habilitado.");
+    finish("error", campaign.configurationError ?? "El registro de deduplicación todavía no está habilitado.");
   }
 
   const pending = campaign.recipients.filter((item) => !item.sendStatus);
@@ -182,27 +184,11 @@ export async function sendNovemberCampaign(formData: FormData) {
   let skipped = 0;
   let failed = 0;
 
+  const reserve = reserveNovemberCampaignSendQuery(whatsappManualOptOutMode() === "production");
   for (const recipient of pending) {
-    const reserved = await sql`
-      INSERT INTO whatsapp_campaign_sends (
-        campaign_key,
-        prospect_id,
-        phone,
-        template_name,
-        consent_source,
-        status
-      )
-      VALUES (
-        ${CAMPAIGN_KEY},
-        ${recipient.id},
-        ${recipient.phoneKey},
-        ${TEMPLATE_NAME},
-        ${"inbound_whatsapp"},
-        ${"reserved"}
-      )
-      ON CONFLICT (campaign_key, phone) DO NOTHING
-      RETURNING id::text AS id
-    ` as Array<{ id: string }>;
+    const reserved = await sql.query(reserve, [
+      CAMPAIGN_KEY, recipient.id, recipient.phoneKey, TEMPLATE_NAME,
+    ]) as Array<{ id: string }>;
 
     const sendId = reserved[0]?.id;
     if (!sendId) {

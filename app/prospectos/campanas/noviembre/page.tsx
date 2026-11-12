@@ -53,7 +53,7 @@ export default async function NovemberCampaignPage({
   const pending = campaign.recipients.filter((item) => !item.sendStatus);
   const snapshot = campaignSnapshot(pending);
   const ok = typeof query.ok === "string" ? query.ok : "";
-  const error = typeof query.error === "string" ? query.error : "";
+  const error = campaign.configurationError ?? (typeof query.error === "string" ? query.error : "");
   const sendReady =
     campaign.migrationReady &&
     template.approved &&
