@@ -6,7 +6,9 @@
       "fix/axira-expired-promotions-20261108": false,
       "fix/axira-commercial-failclosed-20261108": false,
       "fix/axira-commercial-followups-20261108": false,
-      "feature/axiomos-commercial-production-v1-20261108": false
+      "feature/axiomos-commercial-production-v1-20261108": false,
+      "feature/axiomos-manual-whatsapp-optout-qa-20261112": false,
+      "feature/axiomos-manual-whatsapp-optout-release-20261112": false
     }
   }
 }

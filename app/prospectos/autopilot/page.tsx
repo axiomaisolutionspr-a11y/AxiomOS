@@ -1,9 +1,11 @@
 import { randomUUID } from "node:crypto";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getOfferState, offerMoney, OFFER_CHANNELS, OFFER_PRODUCTS, puertoRicoLocalDateTime } from "../../lib/axira-offers-policy.js";
 import { listOffers } from "../../lib/axira-offers-store.js";
 import { commercialIdentityDatabase, commercialMember, commercialOfferWriterDatabase } from "../../lib/commercial-identity";
 import { commercialIdentityAuth } from "../../lib/commercial-identity-auth";
+import { whatsappManualOptOutMode, whatsappManualOptOutSharesCampaignDatabase } from "../../lib/whatsapp-manual-opt-out-mode.mjs";
 import { changeQaOfferStatus, createQaOffer } from "./offer-actions";
 import SignOut from "./sign-out";
 
@@ -96,6 +98,8 @@ export default async function AutopilotQaPage({ searchParams }: {
       </div>
     </header>
     <div className="mx-auto grid max-w-6xl gap-6 px-5 py-7">
+      {membership.role === "owner" && (isQa ? whatsappManualOptOutMode() === "qa" : whatsappManualOptOutMode() === "production" && whatsappManualOptOutSharesCampaignDatabase()) && commercialOfferWriterDatabase() &&
+        <Link className="font-semibold text-blue-800 underline" href="/prospectos/autopilot/bajas-whatsapp">Registrar baja de WhatsApp{isQa ? " · QA" : ""}</Link>}
       {feedback.ok && <p role="status" className="rounded-xl bg-green-100 p-4 text-green-950">{feedback.ok}</p>}
       {feedback.error && <p role="alert" className="rounded-xl bg-red-100 p-4 text-red-950">{feedback.error}</p>}
       <section aria-label="Resumen de Axira" className="rounded-2xl border border-blue-200 bg-white p-6 shadow-sm">
