@@ -98,13 +98,25 @@ export async function registerWhatsAppContact(input: {
             text: `WHATSAPP — ${kind ? "SOLICITUD DE SEGUIMIENTO" : "MENSAJE RECIBIDO"}\nTeléfono: +${phone}\nSolicitud: ${input.text.slice(0, 5000)}\nID CRM: ${row.id}\n\nRevisar Prospectos: https://axiomaisolutions.org/prospectos` }),
         });
         const result = await response.json() as { id?: unknown };
-        if (!response.ok || typeof result.id !== "string") throw new Error("Email not accepted");
-        await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${sentMarker}),
-          updated_at = NOW() WHERE prospect_key = ${key}
-          AND STRPOS(COALESCE(crm_notes, ''), ${sentMarker}) = 0`;
-        console.log("WHATSAPP_CONTACT_EMAIL_ACCEPTED", { prospectId: row.id });
+        if (!response.ok || typeof result.id !== "string") {
+          // A provider rejection is different from a transport error or receipt persistence failure.
+          console.error("WHATSAPP_CONTACT_EMAIL_REJECTED", {
+            prospectId: row.id, status: response.status,
+            reason: !response.ok ? "provider_http_error" : "invalid_provider_response",
+          });
+        } else {
+          console.log("WHATSAPP_CONTACT_EMAIL_ACCEPTED", { prospectId: row.id });
+          try {
+            await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${sentMarker}),
+              updated_at = NOW() WHERE prospect_key = ${key}
+              AND STRPOS(COALESCE(crm_notes, ''), ${sentMarker}) = 0`;
+          } catch {
+            // Resend already accepted the email: do not misreport a database failure as a delivery failure.
+            console.error("WHATSAPP_CONTACT_EMAIL_RECEIPT_SAVE_FAILED", { prospectId: row.id });
+          }
+        }
       } catch {
-        console.error("WHATSAPP_CONTACT_EMAIL_FAILED", { prospectId: row.id });
+        console.error("WHATSAPP_CONTACT_EMAIL_FAILED_OR_UNKNOWN", { prospectId: row.id });
       }
     }
   }
@@ -203,14 +215,11 @@ export async function registerWhatsAppContact(input: {
             {
               prospectId: row.id,
               status: response.status,
-              to: smsTo,
               codes:
                 Array.isArray(result?.errors)
-                  ? result.errors.map(
-                      (error) => error.code
-                    )
+                  ? result.errors.map((error) => String(error.code ?? "unknown").slice(0, 64))
                   : [],
-              result,
+              // Never log provider payloads or recipient numbers: they may contain customer data.
             }
           );
         } else {
@@ -219,9 +228,14 @@ export async function registerWhatsAppContact(input: {
             prospectId: row.id, messageId: result.data.id,
           });
           const receipt = `${smsAcceptedMarker} Telnyx: ${result.data.id}`;
-          await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${receipt}),
-            updated_at = NOW() WHERE prospect_key = ${key}
-            AND STRPOS(COALESCE(crm_notes, ''), ${smsAcceptedMarker}) = 0`;
+          try {
+            await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${receipt}),
+              updated_at = NOW() WHERE prospect_key = ${key}
+              AND STRPOS(COALESCE(crm_notes, ''), ${smsAcceptedMarker}) = 0`;
+          } catch {
+            // Telnyx accepted the SMS; a CRM receipt failure is not an SMS send failure.
+            console.error("WHATSAPP_CONTACT_SMS_RECEIPT_SAVE_FAILED", { prospectId: row.id });
+          }
         }
       }
     } catch {
