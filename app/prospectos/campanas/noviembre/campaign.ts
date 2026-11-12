@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
+import { novemberCampaignAudienceQuery } from "./audience.mjs";
 
 export const CAMPAIGN_KEY = "fundadores_noviembre_2026";
 export const TEMPLATE_NAME = "oferta_fundadores_noviembre_2026";
@@ -66,50 +67,9 @@ export async function getNovemberCampaignData() {
     SELECT to_regclass('public.whatsapp_campaign_sends') IS NOT NULL AS ready
   ` as Array<{ ready: boolean }>;
   const migrationReady = Boolean(readiness[0]?.ready);
-
-  const rows = await sql`
-    WITH inbound AS (
-      SELECT
-        right(regexp_replace(phone, '\\D', '', 'g'), 10) AS phone_key,
-        count(*) FILTER (WHERE role = 'user')::int AS inbound_count,
-        max(created_at) FILTER (WHERE role = 'user') AS last_inbound_at,
-        bool_or(
-          role = 'user'
-          AND lower(trim(message)) ~
-            '^(no|stop|parar|baja|cancelar|no me escribas|no deseo (mas|más) (mensajes|promociones))$'
-        ) AS opted_out
-      FROM whatsapp_messages
-      GROUP BY 1
-    )
-    SELECT
-      p.id::text AS id,
-      coalesce(
-        nullif(substring(coalesce(p.crm_notes, '') from
-          'Nombre de perfil \\(sin verificar\\): ([^\\n\\r]+)'), ''),
-        nullif(p.caller_name, 'Contacto de WhatsApp'),
-        'Contacto'
-      ) AS name,
-      coalesce(p.caller_company, '') AS company,
-      coalesce(p.caller_phone, '') AS phone,
-      right(regexp_replace(coalesce(p.caller_phone, ''), '\\D', '', 'g'), 10) AS phone_key,
-      p.crm_stage AS stage,
-      i.inbound_count,
-      i.last_inbound_at
-    FROM prospects p
-    JOIN inbound i
-      ON i.phone_key =
-        right(regexp_replace(coalesce(p.caller_phone, ''), '\\D', '', 'g'), 10)
-    WHERE p.crm_stage NOT IN ('Vendido', 'Perdido')
-      AND i.inbound_count > 0
-      AND NOT i.opted_out
-      AND i.phone_key ~ '^(787|939)'
-      AND lower(coalesce(p.caller_company, '')) <> 'axiomai solutions'
-      AND lower(concat_ws(' ', p.caller_name, p.caller_company, p.crm_notes))
-        !~ '(^|[^[:alnum:]])(prueba|qa|test)([^[:alnum:]]|$)'
-      AND lower(coalesce(p.crm_notes, '')) NOT LIKE '%favor ignorar%'
-    ORDER BY i.last_inbound_at DESC
-    LIMIT 10
-  ` as Array<{
+  const rows = await sql.query(novemberCampaignAudienceQuery(
+    process.env.AXIOMOS_WHATSAPP_MANUAL_OPTOUT_ENABLED === "true"
+  )) as Array<{
     id: string;
     name: string;
     company: string;
