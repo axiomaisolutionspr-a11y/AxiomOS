@@ -5,10 +5,12 @@ const vm = require('node:vm');
 const ts = require('typescript');
 const { createHash } = require('node:crypto');
 
-function harness({ email = true, sms = true, failSave = false } = {}) {
+function harness({ email = true, sms = true, failSave = false, failReceipt = false,
+  rejectEmail = false, rejectSms = false } = {}) {
   let notes = '';
   const queries = [];
   const sent = [];
+  const logs = { info: [], errors: [] };
   const sql = async (strings, ...values) => {
     const query = strings.join('?');
     queries.push({ query, values });
@@ -20,6 +22,9 @@ function harness({ email = true, sms = true, failSave = false } = {}) {
       return [{ id: '42', crm_notes: notes }];
     }
     const marker = values.find(value => typeof value === 'string' && /^\[WA_/.test(value));
+    if (failReceipt && marker && (marker.startsWith('[WA_EMAIL_ACCEPTED:') || marker.startsWith('[WA_SMS_ACCEPTED:'))) {
+      throw new Error('simulated receipt persistence failure');
+    }
     if (query.includes('RETURNING id')) {
       if (notes.includes(marker)) return [];
       notes += '\n' + marker;
@@ -37,14 +42,17 @@ function harness({ email = true, sms = true, failSave = false } = {}) {
     require: name => name === '@neondatabase/serverless' ? { neon: () => sql } : require(name),
     process: { env: { DATABASE_URL: 'mock', EMAIL_ENABLED: email ? ' true ' : 'false',
       RESEND_API_KEY: 'mock', EMAIL_ALERT_FROM: 'alerts@example.test', EMAIL_ALERT_TO: 'owner@example.test',
-      SMS_ENABLED: sms ? 'true' : 'false', TELNYX_API_KEY: 'mock', TELNYX_SMS_FROM: '+15550000000' } },
-    console: { log() {}, error() {} }, AbortSignal,
+      SMS_ENABLED: sms ? 'true' : 'false', WHATSAPP_SMS_ALERTS_ENABLED: sms ? 'true' : 'false',
+      TELNYX_API_KEY: 'mock', TELNYX_SMS_FROM: '+15550000000' } },
+    console: { log(message) { logs.info.push(message); }, error(message) { logs.errors.push(message); } }, AbortSignal,
     fetch: async (url, options) => {
       sent.push({ url, body: JSON.parse(options.body) });
-      return { ok: true, status: 200, json: async () => url.includes('resend') ? { id: 'email-1' } : { data: { id: 'sms-1' } } };
+      const rejected = url.includes('resend') ? rejectEmail : rejectSms;
+      return { ok: !rejected, status: rejected ? 422 : 200,
+        json: async () => url.includes('resend') ? { id: 'email-1' } : { data: { id: 'sms-1' } } };
     },
   });
-  return { ...module.exports, sent, queries };
+  return { ...module.exports, sent, queries, logs };
 }
 
 async function main() {
@@ -74,6 +82,21 @@ async function main() {
   assert.equal(await failed.registerWhatsAppContact(normal), null);
   assert.equal(failed.sent.length, 0);
   assert.match(await failed.registerWhatsAppContact({ ...normal, text: 'Quiero hablar con un asesor' }), /No pudimos registrar/);
+  const receipts = harness({ failReceipt: true });
+  await receipts.registerWhatsAppContact(normal);
+  assert.equal(receipts.sent.length, 2, 'Both providers were called once');
+  assert.ok(receipts.logs.info.includes('WHATSAPP_CONTACT_EMAIL_ACCEPTED'));
+  assert.ok(receipts.logs.info.includes('WHATSAPP_CONTACT_SMS_ACCEPTED'));
+  assert.ok(receipts.logs.errors.includes('WHATSAPP_CONTACT_EMAIL_RECEIPT_SAVE_FAILED'));
+  assert.ok(receipts.logs.errors.includes('WHATSAPP_CONTACT_SMS_RECEIPT_SAVE_FAILED'));
+  assert.equal(receipts.logs.errors.includes('WHATSAPP_CONTACT_EMAIL_FAILED_OR_UNKNOWN'), false);
+  assert.equal(receipts.logs.errors.includes('WHATSAPP_CONTACT_SMS_FAILED_OR_UNKNOWN'), false);
+  const rejected = harness({ rejectEmail: true, rejectSms: true });
+  await rejected.registerWhatsAppContact(normal);
+  assert.ok(rejected.logs.errors.includes('WHATSAPP_CONTACT_EMAIL_REJECTED'));
+  assert.ok(rejected.logs.errors.includes('WHATSAPP_CONTACT_SMS_REJECTED'));
+  assert.equal(rejected.logs.errors.includes('WHATSAPP_CONTACT_EMAIL_ACCEPTED'), false);
+  assert.equal(rejected.logs.info.includes('WHATSAPP_CONTACT_SMS_ACCEPTED'), false);
   assert.equal(test.contactRequestKind('No quiero una evaluación'), null);
   assert.equal(createHash('sha256').update(normal.messageId).digest('hex').length, 64);
   console.log('OK: mensajes normales, solicitudes, archivos, duplicados, destinos y errores sin llamadas externas.');
