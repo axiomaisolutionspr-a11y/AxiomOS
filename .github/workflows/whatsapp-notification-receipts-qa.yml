@@ -1,0 +1,40 @@
+name: WhatsApp notification receipts QA (no external sends)
+
+on:
+  push:
+    branches:
+      - fix/whatsapp-notification-receipts-qa-20261112
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whatsapp-notification-receipts-qa
+  cancel-in-progress: false
+
+jobs:
+  isolated:
+    name: Isolated unit tests and static checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install project dependencies (do not run install scripts)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Unit tests (Neon, Telnyx and Resend fully mocked)
+        run: node tests/whatsapp-notifications.cjs
+      - name: TypeScript check
+        run: npx tsc --noEmit
+      - name: ESLint for changed files
+        run: npx eslint app/lib/whatsapp-contact-request.ts tests/whatsapp-notifications.cjs
+      - name: Whitespace and patch validation
+        run: git diff --check HEAD~2 HEAD
