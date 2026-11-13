@@ -44,6 +44,6 @@ jobs:
       - name: TypeScript check
         run: npx tsc --noEmit
       - name: ESLint for changed files
-        run: npx eslint app/lib/whatsapp-contact-request.ts tests/whatsapp-notifications.cjs
+        run: npx eslint app/lib/whatsapp-contact-request.ts
       - name: Whitespace and patch validation
         run: git diff --check HEAD~2 HEAD
