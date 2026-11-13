@@ -20,6 +20,23 @@ test("manual opt-outs and campaigns must use the same Neon database", () => {
   assert.equal(whatsappManualOptOutSharesCampaignDatabase({ ...env, DATABASE_URL: campaign.replace("/neondb", "/other") }), false);
   assert.equal(whatsappManualOptOutSharesCampaignDatabase({ ...env, DATABASE_URL: campaign.replace("ep-qa", "ep-other") }), false);
   assert.equal(whatsappManualOptOutSharesCampaignDatabase({ ...env, DATABASE_URL: "invalid" }), false);
+  const live = { ...env, VERCEL_ENV: "production", DATABASE_URL:
+    "postgresql://campaign:fake@ep-live-pooler.example.test/neondb",
+    AXIOMOS_COMMERCIAL_LIVE_WRITER_URL:
+      "postgresql://axiomos_commercial_writer:fake@ep-live.example.test/neondb" };
+  assert.equal(whatsappManualOptOutSharesCampaignDatabase(live), false,
+    "switch disabled still checks original writer");
+  assert.equal(whatsappManualOptOutSharesCampaignDatabase({
+    ...live, AXIOMOS_COMMERCIAL_LIVE_DATABASE_ENABLED:"true" }), true,
+    "switch enabled checks parallel writer against live campaign");
+  assert.equal(whatsappManualOptOutSharesCampaignDatabase({
+    ...live, AXIOMOS_COMMERCIAL_LIVE_DATABASE_ENABLED:"true",
+    AXIOMOS_COMMERCIAL_LIVE_WRITER_URL:undefined }),false,
+    "a missing parallel secret must fail closed");
+  assert.equal(whatsappManualOptOutSharesCampaignDatabase({
+    ...live, AXIOMOS_COMMERCIAL_LIVE_DATABASE_ENABLED:"true",
+    AXIOMOS_COMMERCIAL_LIVE_WRITER_URL:writer }),false,
+    "a mismatched branch must fail closed");
 });
 
 test("an owner records one WhatsApp opt-out across campaign and commercial follow-ups", async (t) => {
