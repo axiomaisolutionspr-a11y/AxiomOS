@@ -30,6 +30,27 @@ test("identity pilot fails closed outside QA and without dedicated endpoints", (
   assert.ok(commercialIdentityDatabase(prod));
   assert.ok(commercialOfferWriterDatabase(prod));
   assert.ok(commercialIdentityAuthConfig(prod));
+  // Parallel production connections are used only with the explicit switch.
+  const prodLive = { ...prod,
+    DATABASE_URL:"postgresql://neondb_owner:synthetic@ep-live.example/neondb",
+    AXIOMOS_COMMERCIAL_LIVE_DATABASE_HOST:"ep-live-pooler.example",
+    AXIOMOS_COMMERCIAL_LIVE_DATABASE_URL:"postgresql://axiomos_commercial_reader:synthetic@ep-live-pooler.example/neondb",
+    AXIOMOS_COMMERCIAL_LIVE_WRITER_URL:"postgresql://axiomos_commercial_writer:synthetic@ep-live.example/neondb",
+  };
+  assert.ok(commercialIdentityDatabase(prodLive), "switch off keeps original live URLs untouched");
+  assert.ok(commercialOfferWriterDatabase(prodLive), "switch off keeps original writer untouched");
+  const enabledLive = { ...prodLive, AXIOMOS_COMMERCIAL_LIVE_DATABASE_ENABLED:"true" };
+  assert.ok(commercialIdentityDatabase(enabledLive), "reader connects to the live branch");
+  assert.ok(commercialOfferWriterDatabase(enabledLive), "writer connects to the live branch");
+  assert.ok(commercialIdentityAuthConfig(enabledLive), "Neon Auth credentials stay unchanged");
+  assert.equal(commercialIdentityDatabase({ ...enabledLive, AXIOMOS_COMMERCIAL_LIVE_DATABASE_URL:undefined }), null,
+    "missing parallel reader fails closed");
+  assert.equal(commercialOfferWriterDatabase({ ...enabledLive, AXIOMOS_COMMERCIAL_LIVE_WRITER_URL:undefined }), null,
+    "missing parallel writer fails closed");
+  assert.equal(commercialIdentityDatabase({ ...enabledLive, AXIOMOS_COMMERCIAL_LIVE_DATABASE_HOST:"ep-other.example" }),null,
+    "mismatched host fails closed");
+  assert.equal(commercialIdentityDatabase({ ...enabledLive, VERCEL_ENV:"preview" }),null,
+    "production switch never changes preview routing");
   assert.equal(commercialIdentityDatabase({...prod,AXIOMOS_COMMERCIAL_ENABLED:"false"}),null);
   assert.equal(commercialOfferWriterDatabase({...prod,AXIOMOS_COMMERCIAL_WRITER_URL:"postgresql://owner:synthetic@ep-prod.example/neondb"}),null);
   assert.equal(commercialIdentityAuthConfig({...prod,AXIOMOS_COMMERCIAL_AUTH_HOST:"wrong.example"}),null);
