@@ -11,10 +11,15 @@ export function commercialIdentityEnabled(env: CommercialEnv = process.env) {
 }
 
 function settings(env: CommercialEnv) {
+  // Controlled release: keep existing secrets and routing intact until this switch is enabled.
+  // If enabled but the parallel credentials are absent or mismatched, fail closed.
+  const live = env.VERCEL_ENV === "production" && env.AXIOMOS_COMMERCIAL_LIVE_DATABASE_ENABLED === "true";
   return env.VERCEL_ENV === "production" ? {
     database: "neondb", readerUser: "axiomos_commercial_reader", writerUser: "axiomos_commercial_writer",
-    readerUrl: env.AXIOMOS_COMMERCIAL_DATABASE_URL, writerUrl: env.AXIOMOS_COMMERCIAL_WRITER_URL,
-    host: env.AXIOMOS_COMMERCIAL_DATABASE_HOST, authUrl: env.AXIOMOS_COMMERCIAL_AUTH_BASE_URL,
+    readerUrl: live ? env.AXIOMOS_COMMERCIAL_LIVE_DATABASE_URL : env.AXIOMOS_COMMERCIAL_DATABASE_URL,
+    writerUrl: live ? env.AXIOMOS_COMMERCIAL_LIVE_WRITER_URL : env.AXIOMOS_COMMERCIAL_WRITER_URL,
+    host: live ? env.AXIOMOS_COMMERCIAL_LIVE_DATABASE_HOST : env.AXIOMOS_COMMERCIAL_DATABASE_HOST,
+    authUrl: env.AXIOMOS_COMMERCIAL_AUTH_BASE_URL,
     authHost: env.AXIOMOS_COMMERCIAL_AUTH_HOST, cookieSecret: env.AXIOMOS_COMMERCIAL_COOKIE_SECRET,
   } : {
     database: "axiomos_offers_qa", readerUser: "axiomos_offers_qa_reader",
