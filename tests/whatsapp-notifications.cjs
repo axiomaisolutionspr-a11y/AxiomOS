@@ -42,7 +42,8 @@ function harness({ email = true, sms = true, failSave = false, failReceipt = fal
     require: name => name === '@neondatabase/serverless' ? { neon: () => sql } : require(name),
     process: { env: { DATABASE_URL: 'mock', EMAIL_ENABLED: email ? ' true ' : 'false',
       RESEND_API_KEY: 'mock', EMAIL_ALERT_FROM: 'alerts@example.test', EMAIL_ALERT_TO: 'owner@example.test',
-      SMS_ENABLED: sms ? 'true' : 'false', TELNYX_API_KEY: 'mock', TELNYX_SMS_FROM: '+15550000000' } },
+      SMS_ENABLED: sms ? 'true' : 'false', WHATSAPP_SMS_ALERTS_ENABLED: sms ? 'true' : 'false',
+      TELNYX_API_KEY: 'mock', TELNYX_SMS_FROM: '+15550000000' } },
     console: { log(message) { logs.info.push(message); }, error(message) { logs.errors.push(message); } }, AbortSignal,
     fetch: async (url, options) => {
       sent.push({ url, body: JSON.parse(options.body) });
@@ -96,7 +97,7 @@ async function main() {
   assert.ok(rejected.logs.errors.includes('WHATSAPP_CONTACT_SMS_REJECTED'));
   assert.equal(rejected.logs.errors.includes('WHATSAPP_CONTACT_EMAIL_ACCEPTED'), false);
   assert.equal(rejected.logs.info.includes('WHATSAPP_CONTACT_SMS_ACCEPTED'), false);
-    assert.equal(test.contactRequestKind('No quiero una evaluación'), null);
+  assert.equal(test.contactRequestKind('No quiero una evaluación'), null);
   assert.equal(createHash('sha256').update(normal.messageId).digest('hex').length, 64);
   console.log('OK: mensajes normales, solicitudes, archivos, duplicados, destinos y errores sin llamadas externas.');
 }
