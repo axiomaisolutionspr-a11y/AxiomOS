@@ -25,9 +25,15 @@ export default async function SmsDatabaseDiagnostic() {
   if(error||!data?.user)redirect("/prospectos/autopilot/acceso");
   const membership=await commercialMember(reader,data.user.id);
   if(membership?.role!=="owner")return <main className="p-8">Acceso denegado</main>;
+  const isLive = process.env.VERCEL_ENV === "production" &&
+    process.env.AXIOMOS_COMMERCIAL_LIVE_DATABASE_ENABLED === "true";
+  const readerUrl = isLive ? process.env.AXIOMOS_COMMERCIAL_LIVE_DATABASE_URL
+    : process.env.AXIOMOS_COMMERCIAL_DATABASE_URL;
+  const writerUrl = isLive ? process.env.AXIOMOS_COMMERCIAL_LIVE_WRITER_URL
+    : process.env.AXIOMOS_COMMERCIAL_WRITER_URL;
   const tests=await Promise.allSettled([
-    inspect("Lector",reader,process.env.AXIOMOS_COMMERCIAL_DATABASE_URL),
-    inspect("Escritor",writer,process.env.AXIOMOS_COMMERCIAL_WRITER_URL)
+    inspect("Lector",reader,readerUrl),
+    inspect("Escritor",writer,writerUrl)
   ]);
   const read=(x:PromiseSettledResult<Diagnostic>)=>x.status==="fulfilled"?x.value:null;
   const a=read(tests[0]),b=read(tests[1]);
@@ -35,7 +41,10 @@ export default async function SmsDatabaseDiagnostic() {
    <p>Solo muestra metadatos de conexión. No envía mensajes, no consume el intento SMS ni modifica datos.</p>
    {[a,b].map((d,i)=><section key={i} className="my-4 rounded-lg border p-4"><h2 className="font-bold">{i===0?"Lector":"Escritor"}</h2>
    {d?<dl className="mt-2 space-y-1 text-sm"><div>Rol: {d.role}</div><div>Base: {d.database}</div><div>Rama: {d.branch}</div><div>Host: {d.host}</div><div>Función: {d.hasFunction?"Existe":"NO ENCONTRADA"}</div><div>Tabla de reserva: {d.hasTable?"Existe":"NO ENCONTRADA"}</div></dl>:<p>Consulta fallida; revisar la configuración de conexión.</p>}</section>)}
-   <p className="rounded-lg bg-amber-50 p-3">Si el host del escritor no corresponde con la rama principal de Neon, se debe corregir su variable de conexión en Vercel. No cambiar claves ni reenviar SMS.</p>
+   <p className="rounded-lg border bg-slate-50 p-3">Enrutamiento comercial activo: {isLive?"rama con actividad WhatsApp":"configuración anterior"}.
+    Se muestran los servidores de las conexiones efectivamente utilizadas; la rama principal de Neon no es el objetivo obligatorio.
+    Este diagnóstico no confirma la entrega del SMS.</p>
+   <a className="mr-4 underline" href="/prospectos/autopilot/seguimientos/prueba-sms/evidencia">Consultar comprobante Telnyx</a>
    <a className="underline" href="/prospectos/autopilot/seguimientos/prueba-sms">Volver</a>
   </main>;
 }
