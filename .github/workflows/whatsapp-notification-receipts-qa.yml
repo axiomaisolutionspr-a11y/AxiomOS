@@ -39,6 +39,8 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Unit tests (Neon, Telnyx and Resend fully mocked)
         run: node tests/whatsapp-notifications.cjs
+      - name: Generate Next.js route and layout types
+        run: npx next typegen
       - name: TypeScript check
         run: npx tsc --noEmit
       - name: ESLint for changed files
