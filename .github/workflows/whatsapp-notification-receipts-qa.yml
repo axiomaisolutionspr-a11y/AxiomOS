@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - fix/whatsapp-notification-receipts-qa-20261112
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/lib/whatsapp-contact-request.ts"
+      - "tests/whatsapp-notifications.cjs"
+      - ".github/workflows/whatsapp-notification-receipts-qa.yml"
   workflow_dispatch:
 
 permissions:
