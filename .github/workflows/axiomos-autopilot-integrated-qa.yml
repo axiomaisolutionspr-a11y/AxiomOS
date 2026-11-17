@@ -1,0 +1,29 @@
+name: AxiomOS isolated Autopilot integration QA
+on:
+  push:
+    branches:
+      - audit/whatsapp-inbound-outbound-20261116
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: axiomos-autopilot-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify-worker:
+    name: Non-sending consent and idempotency tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      AXIOMOS_WHATSAPP_FOLLOWUP_DISPATCH_ENABLED: "false"
+      EMAIL_ENABLED: "false"
+      WHATSAPP_SMS_ALERTS_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify consent gate, dedupe, recipient frequency, and fail-closed
+        run: node --test tests/whatsapp-followup-worker.test.mjs
