@@ -32,6 +32,31 @@ export async function GET(request: NextRequest) {
   }
   const sql = neon(env.DATABASE_URL!);
   const quarantined = await quarantineStaleQaLeases(sql as ReturnType<typeof neon>);
+  // Heal synthetic intake interrupted before Brain produced its reply.
+  // No network AI call: strict QA-only deterministic responder.
+  // A received message is claimable only after a grace period (no active handler).
+  const staleIntake = await sql`
+    UPDATE public.whatsapp_delivery_qa SET
+      state='failed', intake_error='STALE_INTAKE_WITHOUT_REPLY',
+      next_retry_at=now(), updated_at=now()
+    WHERE inbound_message_id LIKE 'qa-e2e-worker-%'
+      AND state='received' AND reply_text IS NULL
+      AND updated_at < now()-interval '2 minutes'
+    RETURNING inbound_message_id
+  `;
+  const pendingBrain = await sql`
+    UPDATE public.whatsapp_delivery_qa
+    SET reply_text='AXIRA_QA_REPLY_RECOVERED_FROM_INTAKE',
+        intake_error=NULL, updated_at=now()
+    WHERE inbound_message_id LIKE 'qa-e2e-worker-%'
+      AND state='failed' AND reply_text IS NULL
+      AND inbound_text IS NOT NULL
+      AND recipient_kind='bsuid'
+      AND recipient_value LIKE 'qa-e2e-%'
+      AND attempts=0
+      AND (next_retry_at IS NULL OR next_retry_at <= now())
+    RETURNING inbound_message_id
+  `;
   const pending = await sql`
     SELECT inbound_message_id
     FROM public.whatsapp_delivery_qa
@@ -54,5 +79,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     ok:true, source:"isolated_qa_worker", inspected:pending.length,
     recovered,uncertain,skipped,quarantined,
+    staleIntakeRepaired:staleIntake.length,
+    brainRepliesReconstructed:pendingBrain.length,
   },{headers:{"cache-control":"no-store"}});
 }
