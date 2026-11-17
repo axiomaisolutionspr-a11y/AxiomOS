@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
     accepted: { id: "qa-e2e-accepted-20261117", body: "QA_TRIGGER_ACCEPTED" },
     retry: { id: "qa-e2e-retry-20261117", body: "QA_TRIGGER_503" },
     unknown: { id: "qa-e2e-unknown-20261117", body: "QA_TRIGGER_TIMEOUT" },
+    timeout_lease: { id: "qa-e2e-timeout-lease-20261117", body: "QA_TRIGGER_TIMEOUT" },
     worker: { id: "qa-e2e-worker-20261117", body: "QA_TRIGGER_503" },
     status_base: { id: "qa-e2e-status-base-20261117", body: "QA_TRIGGER_ACCEPTED" },
     status_failure_base: { id: "qa-e2e-status-failure-20261117", body: "QA_TRIGGER_ACCEPTED" },
