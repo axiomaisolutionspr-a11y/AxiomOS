@@ -34,22 +34,47 @@ export default function DemoComercialPage() {
  const [selected, setSelected] = useState<string | null>(null);
  const [tab, setTab] = useState<"conversation" | "crm">("conversation");
  const [notice, setNotice] = useState("");
- useEffect(() => { setLeads(readDemo()); setMessages(initialMessages("dealer")); setHydrated(true); }, []);
+ useEffect(() => {
+  setMessages(initialMessages("dealer"));
+  setHydrated(true);
+  let live = true;
+  fetch("/api/demo-comercial", { cache: "no-store" })
+   .then(async r => { if (!r.ok) throw new Error("Neon QA no disponible"); return r.json(); })
+   .then(data => { if (live && Array.isArray(data.leads)) { setLeads(data.leads); setNotice("Conectado a Neon QA · registros ficticios compartidos."); } })
+   .catch(() => { if (live) { setLeads(readDemo()); setNotice("Neon QA no disponible. Usando datos locales temporales de este navegador."); } });
+  return () => { live = false; };
+ }, []);
  useEffect(() => { if (hydrated) try { window.localStorage.setItem(KEY, JSON.stringify(leads)); } catch { /* Browser storage may be blocked. */ } }, [hydrated, leads]);
  const active = useMemo(() => leads.find(l => l.id === selected) ?? null, [leads, selected]);
  const qualified = leads.filter(l => l.priority === "Alta").length;
  const pending = leads.filter(l => l.status !== "Ganado").length;
  function changeIndustry(next: Industry) { setIndustry(next); setMessages(initialMessages(next)); setName(next === "dealer" ? "Andrea Rivera (ficticia)" : next === "restaurant" ? "Luis Morales (ficticio)" : "María López (ficticia)"); setContact(industries[next].contact); setNotice(""); setSelected(null); setTab("conversation"); }
- function captureLead() {
+ async function captureLead() {
   if (!name.trim() || !contact.trim()) { setNotice("Incluye un nombre y un contacto ficticio para registrar la solicitud."); return; }
   const s = industries[industry];
   const reply: Message = { id: uid(), by: "axira", text: s.response };
   const conversation = [...messages, { id: uid(), by: "cliente" as const, text: "Mi nombre es " + name.trim() + " y mi contacto es " + contact.trim() + "." }, reply];
   const lead: Lead = { id: uid(), industry, name: name.trim(), contact: contact.trim(), need: s.customer, channel: s.channel, status: industry === "dealer" ? "Contactar" : "Cita solicitada", priority: s.priority, nextAction: s.action, messages: conversation, created: new Date().toISOString() };
-  setMessages(conversation); setLeads(prev => [lead, ...prev]); setSelected(lead.id); setTab("crm"); setNotice("Prospecto de prueba creado y guardado en este navegador. No se envió ningún mensaje externo.");
+  setMessages(conversation); setLeads(prev => [lead, ...prev]); setSelected(lead.id); setTab("crm");
+  try {
+   const res = await fetch("/api/demo-comercial", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(lead) });
+   if (!res.ok) throw new Error("Error en Neon QA");
+   setNotice("Prospecto ficticio registrado en Neon QA. No se envió ninguna comunicación externa.");
+  } catch { setNotice("No se pudo guardar en Neon QA. Registro disponible solo temporalmente en este navegador."); }
  }
- function updateStatus(id: string, value: Lead["status"]) { setLeads(prev => prev.map(l => l.id === id ? { ...l, status: value } : l)); }
- function reset() { setLeads([]); setSelected(null); setMessages(initialMessages(industry)); setTab("conversation"); setNotice("Datos de demostración eliminados de este navegador."); }
+ async function updateStatus(id: string, value: Lead["status"]) {
+  const original = leads.find(l => l.id === id)?.status;
+  setLeads(prev => prev.map(l => l.id === id ? { ...l, status: value } : l));
+  try {
+   const res = await fetch("/api/demo-comercial", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: value }) });
+   if (!res.ok) throw new Error("Falló persistencia");
+   setNotice("Estado actualizado en Neon QA.");
+  } catch {
+   setLeads(prev => prev.map(l => l.id === id && original ? { ...l, status: original } : l));
+   setNotice("No se pudo actualizar Neon QA. Se restauró el estado anterior.");
+  }
+ }
+ function reset() { setSelected(null); setMessages(initialMessages(industry)); setTab("conversation"); setNotice("Conversación reiniciada. Los registros compartidos en Neon QA se conservan para mantener su historial."); }
  return (
   <main className="ad-root">
    <div className="ad-shell">
@@ -66,11 +91,11 @@ export default function DemoComercialPage() {
      <div className="ad-chat" aria-live="polite">{messages.map(m => <div className={m.by === "axira" ? "ad-bubble bot" : "ad-bubble"} key={m.id}><small>{m.by === "axira" ? "AXIRA" : "CLIENTE FICTICIO"}</small><p>{m.text}</p></div>)}</div>
      <div className="ad-capture"><h3>Completa la solicitud de prueba</h3><div className="ad-fields"><label>Nombre ficticio<input value={name} onChange={e => setName(e.target.value)} maxLength={90} /></label><label>Teléfono ficticio<input value={contact} onChange={e => setContact(e.target.value)} maxLength={70} /></label></div><button type="button" className="ad-primary" onClick={captureLead}>Registrar en AxiomOS CRM →</button></div>
     </section> : <section className="ad-panel">
-     <div className="ad-panelhead"><div><b>AxiomOS · Centro comercial</b><small>Prospectos de prueba guardados localmente en este navegador</small></div><button className="ad-reset" type="button" onClick={reset}>Reiniciar demo</button></div>
+     <div className="ad-panelhead"><div><b>AxiomOS · Centro comercial</b><small>Prospectos ficticios compartidos mediante Neon QA; modo local si la conexión falla</small></div><button className="ad-reset" type="button" onClick={reset}>Reiniciar demo</button></div>
      <div className="ad-crm"><div className="ad-leads">{leads.length === 0 ? <div className="ad-empty">Aún no hay prospectos de demostración. Vuelve a la conversación y registra uno.</div> : leads.map(l => <button className={selected === l.id ? "ad-lead active" : "ad-lead"} key={l.id} type="button" onClick={() => setSelected(l.id)}><b>{l.name}</b><small>{industries[l.industry].label} · {l.channel}</small><span>{l.priority === "Alta" ? "● Alta prioridad" : "● Prioridad media"} · {l.status}</span></button>)}</div><div className="ad-details">{active ? <><div className="ad-detailtop"><div><small>FICHA DEL PROSPECTO</small><h2>{active.name}</h2><p>{active.contact} · {active.channel}</p></div><span className="ad-priority">{active.priority}</span></div><div className="ad-highlight"><small>PRÓXIMA ACCIÓN RECOMENDADA</small><strong>{active.nextAction}</strong><span>Recomendación simulada · no ejecutada</span></div><label className="ad-statuslabel">Estado de oportunidad<select value={active.status} onChange={e => updateStatus(active.id, e.target.value as Lead["status"])}><option>Nuevo</option><option>Contactar</option><option>Cita solicitada</option><option>Ganado</option></select></label><h3>Historial de la conversación</h3><div className="ad-history">{active.messages.map(m => <p key={m.id}><b>{m.by === "axira" ? "Axira" : "Cliente"}:</b> {m.text}</p>)}</div></> : <div className="ad-empty">Selecciona un prospecto para revisar su historial, cambiar el estado y observar la próxima acción.</div>}</div></div>
     </section>}
     {notice && <p role="status" className="ad-notice">{notice}</p>}
-    <footer className="ad-footer"><div><strong>AxiomAI Solutions LLC</strong><p>Esta versión es una simulación funcional con almacenamiento local. No utiliza la API real de WhatsApp, Telnyx ni Neon; no reemplaza el CRM productivo.</p></div><a href="https://www.axiomaisolutions.org/solicitud">Solicitar implementación →</a></footer>
+    <footer className="ad-footer"><div><strong>AxiomAI Solutions LLC</strong><p>Simulación funcional con persistencia en Neon QA y respaldo local si la conexión falla. No utiliza proveedores reales de WhatsApp ni Telnyx; nunca escribe en el CRM productivo.</p></div><a href="https://www.axiomaisolutions.org/solicitud">Solicitar implementación →</a></footer>
    </div>
   </main>
  );
