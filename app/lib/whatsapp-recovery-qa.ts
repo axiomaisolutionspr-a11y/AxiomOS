@@ -52,3 +52,25 @@ export async function recoverFailedQaReply(
     return { status: "unknown", attempts };
   }
 }
+
+
+/**
+ * An expired lease is NOT a safe reason to send again: the provider may
+ * have accepted the message before the application lost the response.
+ * Quarantine expired QA processing attempts for human/provider reconciliation.
+ */
+export async function quarantineStaleQaLeases(sql: ReturnType<typeof neon>) {
+  const expired = (await sql`
+    UPDATE public.whatsapp_delivery_qa
+    SET state='unknown',
+        last_error_code='EXPIRED_PROCESSING_LEASE',
+        lease_until=NULL,
+        next_retry_at=NULL,
+        updated_at=now()
+    WHERE inbound_message_id LIKE 'qa-e2e-worker-%'
+      AND state='processing'
+      AND lease_until IS NOT NULL AND lease_until < now()
+    RETURNING inbound_message_id
+  `) as Array<{ inbound_message_id: string }>;
+  return expired.length;
+}
