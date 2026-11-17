@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
   const cases: Record<string, { id: string; body: string }> = {
     accepted: { id: "qa-e2e-accepted-20261117", body: "QA_TRIGGER_ACCEPTED" },
     retry: { id: "qa-e2e-retry-20261117", body: "QA_TRIGGER_503" },
-    unknown: { id: "qa-e2e-unknown-20261117", body: "QA_TRIGGER_TIMEOUT" }
+    unknown: { id: "qa-e2e-unknown-20261117", body: "QA_TRIGGER_TIMEOUT" },
+    worker: { id: "qa-e2e-worker-20261117", body: "QA_TRIGGER_503" }
   };
   if (!kind || !cases[kind]) {
     return NextResponse.json({ ok: false, error: "Invalid QA case" }, { status: 400 });
