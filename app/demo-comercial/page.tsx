@@ -17,7 +17,24 @@ const industries: Record<Industry, { label: string; customer: string; intro: str
  restaurant: { label: "Restaurante", customer: "Buenas, ¿puedo reservar una mesa para cuatro personas mañana por la noche?", intro: "¡Claro! Soy Axira. ¿A nombre de quién sería la reserva y a qué contacto podemos confirmarla? La disponibilidad será verificada por el restaurante.", response: "He registrado la solicitud de mesa para cuatro. El restaurante debe confirmar disponibilidad antes de que la reserva sea definitiva.", contact: "787-555-0102", action: "Confirmar disponibilidad de mesa para cuatro", priority: "Alta", channel: "Instagram (simulado)" },
  optica: { label: "Óptica", customer: "Hola, deseo una cita para un examen visual. ¿Tienen espacios esta semana?", intro: "¡Saludos! Soy Axira, asistente de la óptica. Puedo ayudarte a solicitar una cita. ¿Me indicas tu nombre y un número de contacto? No necesito información médica.", response: "Gracias. Registré tu solicitud administrativa para una cita. La óptica podrá confirmar el horario disponible.", contact: "787-555-0103", action: "Confirmar fecha y hora de cita", priority: "Media", channel: "Messenger (simulado)" },
 };
-const uid = () => typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now()) + String(Math.random());
+const sampleQuestions: Record<Industry, { question: string; answer: string }[]> = {
+ dealer: [
+  { question: "¿Puedo hacer una prueba de manejo?", answer: "Con gusto. Puedo registrar tu interés para que un asesor confirme el modelo y la disponibilidad de una prueba de manejo." },
+  { question: "¿Ofrecen financiamiento?", answer: "Podemos registrar tu consulta de financiamiento. Un asesor revisará las alternativas y requisitos; no hay una aprobación automática." },
+  { question: "¿Me pueden llamar?", answer: "Claro. Registraré una solicitud para que el equipo comercial coordine el contacto." }
+ ],
+ restaurant: [
+  { question: "¿Hay mesa para cuatro personas?", answer: "Puedo registrar la solicitud para cuatro personas. El restaurante confirmará la disponibilidad antes de aceptar la reserva." },
+  { question: "¿Tienen opciones vegetarianas?", answer: "Puedo anotar tu pregunta para que el restaurante confirme las opciones del menú actual." },
+  { question: "¿Puedo cambiar una reserva?", answer: "Sí, puedo recopilar la solicitud de cambio para que el personal la revise y confirme." }
+ ],
+ optica: [
+  { question: "¿Puedo solicitar una cita?", answer: "Por supuesto. Registraré la solicitud administrativa para que la óptica confirme día y hora disponibles." },
+  { question: "¿Trabajan los sábados?", answer: "Puedo dejar registrada tu consulta de horario. La óptica confirmará sus horas de atención vigentes." },
+  { question: "¿Puedo recibir un recordatorio?", answer: "Puedo preparar esa solicitud; el equipo de la óptica deberá confirmar la cita y el recordatorio." }
+ ]
+};
+const uid = () => crypto.randomUUID();
 function initialMessages(industry: Industry): Message[] {
  const s = industries[industry]; return [{ id: uid(), by: "cliente", text: s.customer }, { id: uid(), by: "axira", text: s.intro }];
 }
@@ -87,6 +104,13 @@ export default function DemoComercialPage() {
  const active = useMemo(() => leads.find(l => l.id === selected) ?? null, [leads, selected]);
  const qualified = leads.filter(l => l.priority === "Alta").length;
  const pending = leads.filter(l => l.status !== "Ganado").length;
+ function sendSampleQuestion(index: number) {
+  if (busy || !ready || messages.length > 7) return;
+  const item = sampleQuestions[industry][index];
+  if (!item) return;
+  setMessages(prev => [...prev, { id: uid(), by: "cliente", text: item.question }, { id: uid(), by: "axira", text: item.answer }]);
+  setNotice("Respuesta simulada por Axira · ninguna conversación externa ni consulta real a un negocio.");
+ }
  function changeIndustry(next: Industry) { setIndustry(next); setMessages(initialMessages(next)); setName(next === "dealer" ? "Andrea Rivera (ficticia)" : next === "restaurant" ? "Luis Morales (ficticio)" : "María López (ficticia)"); setContact(industries[next].contact); setNotice(""); setSelected(null); setTab("conversation"); }
  async function captureLead() {
   if (busy || !ready) return;
@@ -153,6 +177,7 @@ export default function DemoComercialPage() {
     {tab === "conversation" ? <section className="ad-panel">
      <div className="ad-panelhead"><div><b>Axira · Atención inteligente</b><small>{industries[industry].channel} — entorno de simulación</small></div><span className="ad-status">● Demo activo</span></div>
      <div className="ad-chat" aria-live="polite">{messages.map(m => <div className={m.by === "axira" ? "ad-bubble bot" : "ad-bubble"} key={m.id}><small>{m.by === "axira" ? "AXIRA" : "CLIENTE FICTICIO"}</small><p>{m.text}</p></div>)}</div>
+     <div className="ad-quick"><div><strong>Prueba una pregunta</strong><small>Respuestas preparadas para esta simulación; sin proveedor de IA ni datos reales</small></div><div className="ad-quickbuttons">{sampleQuestions[industry].map((item, i) => <button type="button" key={i} disabled={!ready || busy || messages.length > 7} onClick={() => sendSampleQuestion(i)}>{item.question}</button>)}</div></div>
      <div className="ad-capture"><h3>Completa la solicitud de prueba</h3><div className="ad-fields"><label>Nombre ficticio<input value={name} onChange={e => setName(e.target.value)} maxLength={90} placeholder="Ej.: Andrea Rivera (ficticia)" autoComplete="off" /></label><label>Teléfono ficticio<input value={contact} onChange={e => setContact(e.target.value)} maxLength={12} placeholder="787-555-0101" inputMode="tel" autoComplete="off" /></label></div><button type="button" className="ad-primary" disabled={!ready || busy} onClick={captureLead}>{busy ? "Guardando en Neon QA…" : !ready ? "Neon QA no disponible" : "Registrar en AxiomOS CRM →"}</button></div>
     </section> : <section className="ad-panel">
      <div className="ad-panelhead"><div><b>AxiomOS · Centro comercial</b><small>Prospectos ficticios almacenados en Neon QA; si falla la conexión se deshabilitan los cambios</small></div><button className="ad-reset" type="button" onClick={reset}>Reiniciar demo</button></div>
