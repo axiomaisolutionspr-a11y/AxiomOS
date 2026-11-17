@@ -28,7 +28,7 @@ async function query(sql) {
   return payload.rows;
 }
 
-export default async function handle(request) {
+async function handle(request) {
   if (request.method !== 'POST' || !request.headers.get('x-neon-trigger-invocation-id')) {
     return new Response('trigger required', {status: 403});
   }
@@ -90,3 +90,5 @@ export default async function handle(request) {
     return Response.json({ok:false,error:'qa_worker_failed'}, {status:503});
   }
 }
+
+export default { fetch: handle };
