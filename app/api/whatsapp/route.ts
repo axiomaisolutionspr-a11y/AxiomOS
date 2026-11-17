@@ -6,6 +6,7 @@ import {
 import { neon } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
 import {assessMetaWebhookSignature} from "../../lib/meta-signature-policy";
+import { recoverFailedQaReply } from "../../lib/whatsapp-recovery-qa";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -944,34 +945,22 @@ export async function POST(
                 }
 
                 if (deliveryQaEnabled && whatsappMessageId && recipient) {
-                  // Only retry a known, explicitly failed request with a cached reply.
-                  // 'unknown' or 'processing' must never be resent blindly.
-                  const claim = await sql`
-                    UPDATE public.whatsapp_delivery_qa
-                    SET state='processing', attempts=attempts+1,
-                        lease_until=now()+interval '5 minutes',updated_at=now()
-                    WHERE inbound_message_id=${whatsappMessageId}
-                      AND state='failed' AND attempts < 3
-                      AND reply_text IS NOT NULL
-                    RETURNING reply_text
-                  `;
-                  if (claim.length === 1 && typeof claim[0]?.reply_text === 'string') {
-                    try {
-                      await sendWhatsAppMessage(recipient, claim[0].reply_text as string);
-                      await sql`
-                        UPDATE public.whatsapp_delivery_qa SET state='sent',
-                          last_error_code=NULL,last_error_details=NULL,updated_at=now()
-                        WHERE inbound_message_id=${whatsappMessageId} AND state='processing'
-                      `;
-                      console.log('WHATSAPP_QA_RECOVERY_SENT', whatsappMessageId);
-                    } catch (retryError) {
-                      await sql`
-                        UPDATE public.whatsapp_delivery_qa SET state='unknown',
-                          last_error_details=${retryError instanceof Error ? retryError.message.slice(0,500) : 'retry failed'},updated_at=now()
-                        WHERE inbound_message_id=${whatsappMessageId} AND state='processing'
-                      `;
-                      console.error('WHATSAPP_QA_RECOVERY_UNCERTAIN', whatsappMessageId);
+                  const recovered = await recoverFailedQaReply(
+                    sql,
+                    whatsappMessageId,
+                    async (reply) => {
+                      const result = await sendWhatsAppMessage(recipient, reply);
+                      const parsed = JSON.parse(result[0] || "{}") as { messages?: Array<{ id?: string }> };
+                      const outboundId = parsed.messages?.[0]?.id;
+                      if (!outboundId) throw new Error("QA provider acknowledgement missing message ID");
+                      return outboundId;
                     }
+                  );
+                  if (recovered.status === "recovered") {
+                    repliesSent += 1;
+                    console.log("WHATSAPP_QA_RECOVERY_SENT", whatsappMessageId);
+                  } else if (recovered.status === "unknown") {
+                    console.error("WHATSAPP_QA_RECOVERY_UNCERTAIN", whatsappMessageId);
                   }
                 }
                 continue;
