@@ -946,7 +946,7 @@ export async function POST(
 
                 if (deliveryQaEnabled && whatsappMessageId && recipient) {
                   const recovered = await recoverFailedQaReply(
-                    sql,
+                    sql as ReturnType<typeof neon>,
                     whatsappMessageId,
                     async (reply) => {
                       const result = await sendWhatsAppMessage(recipient, reply);
