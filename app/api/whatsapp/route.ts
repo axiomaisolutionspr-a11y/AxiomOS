@@ -1166,6 +1166,20 @@ export async function POST(
               await sendWhatsAppMessage(recipient, brainReply);
             } catch (sendError) {
               if (deliveryQaEnabled && whatsappMessageId) {
+                // Retry only explicit provider rejections for a single-part message.
+                // Network timeouts and multipart sends remain unknown to avoid duplicates.
+                const sendErrorText = sendError instanceof Error ? sendError.message : '';
+                const rejectedTransient =
+                  /^Dualhook error (429|503)(?:\\s|\\/|:)/.test(sendErrorText) &&
+                  splitWhatsAppMessage(brainReply).length === 1;
+                if (rejectedTransient) {
+                  await sql`
+                    UPDATE public.whatsapp_delivery_qa
+                    SET state='failed',last_error_code='TRANSIENT_REJECTED',
+                        last_error_details=${sendErrorText.slice(0,500)},updated_at=now()
+                    WHERE inbound_message_id=${whatsappMessageId} AND state='processing'
+                  `;
+                } else {
                 // A provider timeout can occur after accepting a message: do not blindly retry.
                 await sql`
                   UPDATE public.whatsapp_delivery_qa
@@ -1175,6 +1189,7 @@ export async function POST(
                   WHERE inbound_message_id = ${whatsappMessageId}
                     AND state = 'processing'
                 `;
+                }
               }
               throw sendError;
             }
