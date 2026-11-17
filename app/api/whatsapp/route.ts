@@ -813,9 +813,12 @@ export async function POST(
             */
 
             // QA-only durable intake state. Disabled unless explicitly enabled in isolated QA.
+            // Explicit opt-in and isolated QA database only. QA Vercel projects
+            // may use VERCEL_ENV=production, so that variable is not sufficient.
             const deliveryQaEnabled =
               process.env.AXIOMOS_WHATSAPP_DELIVERY_QA_ENABLED === "true" &&
-              process.env.VERCEL_ENV !== "production";
+              process.env.AXIOMOS_WHATSAPP_DELIVERY_QA_ISOLATED === "true" &&
+              process.env.VERCEL_PROJECT_PRODUCTION_URL !== "www.axiomaisolutions.org";
             if (deliveryQaEnabled && whatsappMessageId) {
               await sql`
                 INSERT INTO public.whatsapp_delivery_qa
@@ -895,6 +898,37 @@ export async function POST(
                   });
                 }
 
+                if (deliveryQaEnabled && whatsappMessageId && recipient) {
+                  // Only retry a known, explicitly failed request with a cached reply.
+                  // 'unknown' or 'processing' must never be resent blindly.
+                  const claim = await sql`
+                    UPDATE public.whatsapp_delivery_qa
+                    SET state='processing', attempts=attempts+1,
+                        lease_until=now()+interval '5 minutes',updated_at=now()
+                    WHERE inbound_message_id=${whatsappMessageId}
+                      AND state='failed' AND attempts < 3
+                      AND reply_text IS NOT NULL
+                    RETURNING reply_text
+                  `;
+                  if (claim.length === 1 && typeof claim[0]?.reply_text === 'string') {
+                    try {
+                      await sendWhatsAppMessage(recipient, claim[0].reply_text as string);
+                      await sql`
+                        UPDATE public.whatsapp_delivery_qa SET state='sent',
+                          last_error_code=NULL,last_error_details=NULL,updated_at=now()
+                        WHERE inbound_message_id=${whatsappMessageId} AND state='processing'
+                      `;
+                      console.log('WHATSAPP_QA_RECOVERY_SENT', whatsappMessageId);
+                    } catch (retryError) {
+                      await sql`
+                        UPDATE public.whatsapp_delivery_qa SET state='unknown',
+                          last_error_details=${retryError instanceof Error ? retryError.message.slice(0,500) : 'retry failed'},updated_at=now()
+                        WHERE inbound_message_id=${whatsappMessageId} AND state='processing'
+                      `;
+                      console.error('WHATSAPP_QA_RECOVERY_UNCERTAIN', whatsappMessageId);
+                    }
+                  }
+                }
                 continue;
               }
             }
@@ -1104,6 +1138,14 @@ export async function POST(
             ENVIAR RESPUESTA POR WHATSAPP
             ================================================
             */
+
+            if (deliveryQaEnabled && whatsappMessageId) {
+              await sql`
+                UPDATE public.whatsapp_delivery_qa
+                SET reply_text=${brainReply},updated_at=now()
+                WHERE inbound_message_id=${whatsappMessageId} AND state='received'
+              `;
+            }
 
             if (deliveryQaEnabled && whatsappMessageId) {
               const claimed = await sql`
