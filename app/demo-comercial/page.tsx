@@ -150,7 +150,7 @@ export default function DemoComercialPage() {
     <Image src="/axiomai-logo-transparent.webp" width={96} height={80} alt="AxiomAI Solutions" unoptimized />
     <div className="ad-eyebrow">AXIOMAI SOLUTIONS · ENTORNO QA</div>
     <h1>DEMO comercial privado</h1>
-    <p>Recorrido interactivo de Axira y AxiomOS con datos ficticios. Requiere código de acceso; no utiliza WhatsApp ni telefonía reales.</p>
+    <p>Recorrido interactivo de Axira y AxiomOS con datos ficticios. Este entorno usa una clave exclusiva para el demo QA, diferente del PIN del CRM. No utiliza WhatsApp ni telefonía reales.</p>
     {authState === "checking" ? <p role="status">Comprobando acceso…</p> :
      <form onSubmit={unlock}>
       <label htmlFor="demo-code">Código de acceso</label>
