@@ -1,6 +1,16 @@
 import { createHash } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
+function databaseErrorMetadata(error: unknown) {
+  const e = error as { code?: unknown; severity?: unknown; constraint?: unknown; routine?: unknown };
+  return {
+    sqlState: typeof e?.code === "string" && /^[0-9A-Z]{5}$/.test(e.code) ? e.code : "unavailable",
+    severity: typeof e?.severity === "string" ? e.severity.slice(0,24) : undefined,
+    constraintPresent: typeof e?.constraint === "string",
+    routinePresent: typeof e?.routine === "string",
+  };
+}
+
 type HistoryItem = { role: "user" | "assistant"; text: string };
 type ContactKind = "evaluation" | "advisor" | "preference";
 
@@ -110,9 +120,12 @@ export async function registerWhatsAppContact(input: {
             await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${sentMarker}),
               updated_at = NOW() WHERE prospect_key = ${key}
               AND STRPOS(COALESCE(crm_notes, ''), ${sentMarker}) = 0`;
-          } catch {
-            // Resend already accepted the email: do not misreport a database failure as a delivery failure.
-            console.error("WHATSAPP_CONTACT_EMAIL_RECEIPT_SAVE_FAILED", { prospectId: row.id });
+          } catch (error) {
+            // Provider acceptance is not proof of delivery; no automatic repeat send.
+            console.error("WHATSAPP_CONTACT_EMAIL_RECEIPT_SAVE_FAILED", {
+              prospectId: row.id,
+              ...databaseErrorMetadata(error),
+            });
           }
         }
       } catch {
@@ -232,15 +245,21 @@ export async function registerWhatsAppContact(input: {
             await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${receipt}),
               updated_at = NOW() WHERE prospect_key = ${key}
               AND STRPOS(COALESCE(crm_notes, ''), ${smsAcceptedMarker}) = 0`;
-          } catch {
-            // Telnyx accepted the SMS; a CRM receipt failure is not an SMS send failure.
-            console.error("WHATSAPP_CONTACT_SMS_RECEIPT_SAVE_FAILED", { prospectId: row.id });
+          } catch (error) {
+            // Telnyx acceptance is not proof of delivery; never resend blindly.
+            console.error("WHATSAPP_CONTACT_SMS_RECEIPT_SAVE_FAILED", {
+              prospectId: row.id,
+              ...databaseErrorMetadata(error),
+            });
           }
         }
       }
-    } catch {
-      // El CRM y el correo siguen disponibles aunque el SMS falle.
-      console.error("WHATSAPP_CONTACT_SMS_FAILED_OR_UNKNOWN", { prospectId: row.id });
+    } catch (error) {
+      // DB diagnostics only; never print provider tokens or customer payload.
+      console.error("WHATSAPP_CONTACT_SMS_FAILED_OR_UNKNOWN", {
+        prospectId: row.id,
+        ...databaseErrorMetadata(error),
+      });
     }
   }
 
