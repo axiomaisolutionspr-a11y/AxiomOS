@@ -1263,6 +1263,7 @@ export async function POST(
                 await sql`
                   UPDATE public.whatsapp_delivery_qa
                   SET state = 'unknown',
+                      lease_until = NULL, next_retry_at = NULL,
                       last_error_details = ${sendError instanceof Error ? sendError.message.slice(0, 500) : 'send failed'},
                       updated_at = now()
                   WHERE inbound_message_id = ${whatsappMessageId}
