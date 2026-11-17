@@ -347,10 +347,11 @@ async function sendSingleWhatsAppMessage(
     response.status
   );
 
-  console.log(
-    "DUALHOOK_OUTBOUND_RESPONSE:",
-    responseBody
-  );
+  // Provider body may contain identifiers and customer-specific details.
+  console.log("DUALHOOK_OUTBOUND_RESPONSE_METADATA:", {
+    httpStatus: response.status,
+    responseBytes: Buffer.byteLength(responseBody, "utf8")
+  });
 
   if (!response.ok) {
     const metaError =
@@ -704,15 +705,8 @@ export async function POST(
                   typeof status?.status === "string"
                     ? status.status
                     : null,
-                recipientId:
-                  typeof status?.recipient_id === "string"
-                    ? status.recipient_id
-                    : null,
-                recipientUserId:
-                  typeof status?.recipient_user_id === "string"
-                    ? status.recipient_user_id
-                    : null,
-                errors: statusErrors,
+                errorCodes: statusErrors.map((item: { code?: unknown }) =>
+                  typeof item?.code === "number" ? item.code : null),
               }
             );
           }
@@ -853,30 +847,13 @@ export async function POST(
             phone ||
             `bsuid:${userId}`;
 
-          console.log(
-            "WHATSAPP_INCOMING_IDENTITY:",
-            {
-              phone:
-                phone || null,
-              userId:
-                userId || null,
-              recipientKind:
-                recipient.kind,
-            }
-          );
-
-          if (!phone && userId) {
-            console.log(
-              "WHATSAPP_BSUID_WITHOUT_PHONE:",
-              userId
-            );
-          }
-
-
-          console.log(
-            "WHATSAPP_INCOMING_TEXT:",
-            text
-          );
+          console.log("WHATSAPP_INCOMING_METADATA:", {
+            recipientKind: recipient.kind,
+            hasPhone: Boolean(phone),
+            hasBsuid: Boolean(userId),
+            textLength: text.length,
+            hasMessageId: Boolean(whatsappMessageId)
+          });
 
           try {
             /*
@@ -1202,10 +1179,10 @@ export async function POST(
               ? "AXIRA_QA_REPLY_SIMULATED"
               : contactReply ?? await askBrain(request, history, businessContext);
 
-            console.log(
-              "WHATSAPP_BRAIN_REPLY:",
-              brainReply
-            );
+            console.log("WHATSAPP_BRAIN_REPLY_METADATA:", {
+              replyLength: brainReply.length,
+              simulated: qaMode
+            });
 
             /*
             ================================================
