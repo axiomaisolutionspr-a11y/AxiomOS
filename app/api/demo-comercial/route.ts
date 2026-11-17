@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
+import { hasDemoSession, isSameOrigin } from "../../lib/demo-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ const statuses = ["Nuevo", "Contactar", "Cita solicitada", "Ganado"];
 const priorities = ["Alta", "Media"];
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const simulatedContact = /^787-555-[0-9]{4}$/;
-function response(data: unknown, status = 200) { return NextResponse.json(data, { status, headers: { "Cache-Control": "no-store" } }); }
+function response(data: unknown, status = 200) { return NextResponse.json(data, { status, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } }); }
 function db() {
  const connection = process.env.AXIOMAI_DEMO_QA_DATABASE_URL;
  if (!connection) return null;
@@ -37,6 +38,7 @@ function validate(data: unknown): data is LeadInput {
   && x.messages.every(m => !!m && typeof m.id === "string" && uuid.test(m.id) && ["cliente", "axira"].includes(m.by) && typeof m.text === "string" && m.text.length <= 500);
 }
 export async function GET() {
+ if (!(await hasDemoSession())) return response({ error: "Acceso al demo requerido" }, 401);
  const sql = db(); if (!sql) return response({ error: "Demo QA no configurado" }, 503);
  try {
   const rows = await sql`SELECT id,industry,name,contact,need,channel,status,priority,next_action AS "nextAction",messages,created_at AS created FROM public.demo_leads ORDER BY created_at DESC LIMIT 100`;
@@ -44,6 +46,9 @@ export async function GET() {
  } catch { return response({ error: "No se pudo consultar Neon QA" }, 503); }
 }
 export async function POST(request: Request) {
+ if (!(await hasDemoSession())) return response({ error: "Acceso al demo requerido" }, 401);
+ if (!isSameOrigin(request)) return response({ error: "Origen no autorizado" }, 403);
+ if (!request.headers.get("content-type")?.startsWith("application/json")) return response({ error: "Formato no permitido" }, 415);
  const sql = db(); if (!sql) return response({ error: "Demo QA no configurado" }, 503);
  try {
   const raw = await request.text(); if (raw.length > 12000) return response({ error: "Solicitud demasiado grande" }, 413);
@@ -52,10 +57,14 @@ export async function POST(request: Request) {
   const rows = await sql`INSERT INTO public.demo_leads(id,industry,name,contact,need,channel,status,priority,next_action,messages)
    VALUES (${l.id},${l.industry},${l.name},${l.contact},${l.need},${l.channel},${l.status},${l.priority},${l.nextAction},${JSON.stringify(l.messages)}::jsonb)
    ON CONFLICT (id) DO NOTHING RETURNING id`;
-  return response({ success: true, created: rows.length === 1 }, 201);
+  const created = rows.length === 1;
+  return response({ success: created, created }, created ? 201 : 409);
  } catch { return response({ error: "No se pudo guardar el registro de prueba" }, 503); }
 }
 export async function PATCH(request: Request) {
+ if (!(await hasDemoSession())) return response({ error: "Acceso al demo requerido" }, 401);
+ if (!isSameOrigin(request)) return response({ error: "Origen no autorizado" }, 403);
+ if (!request.headers.get("content-type")?.startsWith("application/json")) return response({ error: "Formato no permitido" }, 415);
  const sql = db(); if (!sql) return response({ error: "Demo QA no configurado" }, 503);
  try {
   const raw = await request.text(); if (raw.length > 1000) return response({ error: "Solicitud demasiado grande" }, 413);
