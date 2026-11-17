@@ -893,8 +893,9 @@ export async function POST(
             if (deliveryQaEnabled && whatsappMessageId) {
               await sql`
                 INSERT INTO public.whatsapp_delivery_qa
-                  (inbound_message_id, conversation_key, state)
-                VALUES (${whatsappMessageId}, ${conversationKey}, 'received')
+                  (inbound_message_id, conversation_key, state, inbound_text, recipient_kind, recipient_value)
+                VALUES (${whatsappMessageId}, ${conversationKey}, 'received',
+                  ${text}, ${recipient.kind}, ${recipient.value})
                 ON CONFLICT (inbound_message_id) DO NOTHING
               `;
             }
@@ -1185,6 +1186,17 @@ export async function POST(
               } catch {
                 console.error("WHATSAPP_CRM_CONTEXT_LOOKUP_FAILED");
               }
+            }
+            // Exercise the actual intake-before-Brain failure path in QA only.
+            // Worker must recover from a durable snapshot, not from webhook replay.
+            if (qaMode && text === "QA_TRIGGER_BRAIN_FAILURE" && whatsappMessageId) {
+              await sql`
+                UPDATE public.whatsapp_delivery_qa
+                SET state='failed', intake_error='QA_BRAIN_UNAVAILABLE',
+                    next_retry_at=now(),updated_at=now()
+                WHERE inbound_message_id=${whatsappMessageId} AND state='received'
+              `;
+              throw new Error("QA simulated Brain failure after durable intake");
             }
             const brainReply = qaMode
               ? "AXIRA_QA_REPLY_SIMULATED"
