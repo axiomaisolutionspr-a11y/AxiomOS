@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
-import { recoverFailedQaReply } from "../../../lib/whatsapp-recovery-qa";
+import { recoverFailedQaReply, quarantineStaleQaLeases } from "../../../lib/whatsapp-recovery-qa";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ok:false,error:"Unauthorized QA worker"}, {status:401});
   }
   const sql = neon(env.DATABASE_URL!);
+  const quarantined = await quarantineStaleQaLeases(sql as ReturnType<typeof neon>);
   const pending = await sql`
     SELECT inbound_message_id
     FROM public.whatsapp_delivery_qa
@@ -52,6 +53,6 @@ export async function GET(request: NextRequest) {
   }
   return NextResponse.json({
     ok:true, source:"isolated_qa_worker", inspected:pending.length,
-    recovered,uncertain,skipped,
+    recovered,uncertain,skipped,quarantined,
   },{headers:{"cache-control":"no-store"}});
 }
