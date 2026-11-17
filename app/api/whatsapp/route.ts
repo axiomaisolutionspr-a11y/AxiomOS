@@ -7,6 +7,7 @@ import { neon } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
 import {assessMetaWebhookSignature} from "../../lib/meta-signature-policy";
 import { recoverFailedQaReply } from "../../lib/whatsapp-recovery-qa";
+import { recordQaProviderStatus, reconcileQaProviderStatus } from "../../lib/whatsapp-status-qa";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -273,14 +274,15 @@ ENVIAR UN MENSAJE POR DUALHOOK
 
 async function sendSingleWhatsAppMessage(
   recipient: WhatsAppRecipient,
-  text: string
+  text: string,
+  qaCorrelationId?: string
 ) {
   if (isIsolatedWhatsAppQa()) {
     if (recipient.kind !== "bsuid" || !recipient.value.startsWith("qa-e2e-")) {
       throw new Error("QA simulation blocks non-synthetic WhatsApp recipients");
     }
     console.log("WHATSAPP_QA_PROVIDER_ACCEPTED_SIMULATION");
-    return JSON.stringify({ messages: [{ id: "qa-simulated-accepted" }] });
+    return JSON.stringify({ messages: [{ id: `qa-provider-ack-${qaCorrelationId || "qa-e2e-unlinked"}` }] });
   }
   if (!PHONE_NUMBER_ID) {
     throw new Error(
@@ -397,7 +399,8 @@ ENVIAR RESPUESTA COMPLETA POR WHATSAPP
 
 async function sendWhatsAppMessage(
   recipient: WhatsAppRecipient,
-  text: string
+  text: string,
+  qaCorrelationId?: string
 ) {
   const chunks =
     splitWhatsAppMessage(text);
@@ -428,7 +431,8 @@ async function sendWhatsAppMessage(
     const response =
       await sendSingleWhatsAppMessage(
         recipient,
-        chunks[index]
+        chunks[index],
+        qaCorrelationId
       );
 
     responses.push(response);
@@ -607,12 +611,22 @@ export async function POST(
     if (qaMode) {
       const changes = entries.flatMap((entry: any) => Array.isArray(entry?.changes) ? entry.changes : []);
       const messages = changes.flatMap((change: any) => Array.isArray(change?.value?.messages) ? change.value.messages : []);
+      const statusesQa = changes.flatMap((change: any) => Array.isArray(change?.value?.statuses) ? change.value.statuses : []);
       const only = messages[0];
-      if (entries.length !== 1 || changes.length !== 1 || messages.length !== 1 ||
-        typeof only?.id !== "string" || !only.id.startsWith("qa-e2e-") ||
-        typeof only?.from_user_id !== "string" || !only.from_user_id.startsWith("qa-e2e-") ||
-        Boolean(only?.from) || only?.type !== "text" ||
-        typeof only?.text?.body !== "string") {
+      const statusQa = statusesQa[0];
+      const syntheticMessage = messages.length === 1 && statusesQa.length === 0 &&
+        typeof only?.id === "string" && only.id.startsWith("qa-e2e-") &&
+        typeof only?.from_user_id === "string" && only.from_user_id.startsWith("qa-e2e-") &&
+        !only?.from && only?.type === "text" && typeof only?.text?.body === "string";
+      const syntheticStatus = statusesQa.length === 1 && messages.length === 0 &&
+        typeof statusQa?.id === "string" && statusQa.id.startsWith("qa-provider-ack-qa-e2e-") &&
+        ["sent","delivered","read","failed"].includes(statusQa.status) &&
+        (!statusQa.recipient_user_id || statusQa.recipient_user_id === "qa-e2e-recipient") &&
+        !statusQa.recipient_id;
+      const scopeOk = entries.length === 1 && entries[0]?.id === "qa-e2e-waba" &&
+        changes.length === 1 && changes[0]?.field === "messages" &&
+        changes[0]?.value?.metadata?.phone_number_id === "qa-e2e-phone";
+      if (!scopeOk || !(syntheticMessage || syntheticStatus)) {
         return NextResponse.json({ ok: false, error: "Only synthetic QA events allowed" }, { status: 403 });
       }
     }
@@ -661,6 +675,18 @@ export async function POST(
         );
 
         for (const status of statuses) {
+          if (qaMode) {
+            const result = await recordQaProviderStatus(sql,{
+              outboundId: status.id,
+              status: status.status,
+              timestamp: Number(status.timestamp),
+              errorCode: typeof status?.errors?.[0]?.code === "number" ?
+                String(status.errors[0].code) : null,
+            });
+            console.log("WHATSAPP_QA_STATUS_RECORDED",{
+              stored: result.stored, matched: result.matched, status: result.status
+            });
+          }
           const statusErrors =
             Array.isArray(status?.errors)
               ? status.errors
@@ -949,7 +975,7 @@ export async function POST(
                     sql as ReturnType<typeof neon>,
                     whatsappMessageId,
                     async (reply) => {
-                      const result = await sendWhatsAppMessage(recipient, reply);
+                      const result = await sendWhatsAppMessage(recipient, reply, whatsappMessageId);
                       const parsed = JSON.parse(result[0] || "{}") as { messages?: Array<{ id?: string }> };
                       const outboundId = parsed.messages?.[0]?.id;
                       if (!outboundId) throw new Error("QA provider acknowledgement missing message ID");
@@ -1203,10 +1229,18 @@ export async function POST(
               }
             }
 
+            let qaOutboundId: string | null = null;
             try {
               if (qaFirstAttemptFailure === "503") throw new Error("Dualhook error 503: QA simulated rejection");
               if (qaFirstAttemptFailure === "timeout") throw new Error("QA simulated network timeout (uncertain)");
-              await sendWhatsAppMessage(recipient, brainReply);
+              const sendResponses = await sendWhatsAppMessage(recipient, brainReply, whatsappMessageId ?? undefined);
+              if (deliveryQaEnabled && whatsappMessageId) {
+                const parsed = JSON.parse(sendResponses[0] || "{}") as { messages?: Array<{ id?: string }> };
+                if (typeof parsed.messages?.[0]?.id !== "string") {
+                  throw new Error("QA provider acknowledgement did not include a message ID");
+                }
+                qaOutboundId = parsed.messages[0].id;
+              }
             } catch (sendError) {
               if (deliveryQaEnabled && whatsappMessageId) {
                 // Retry only explicit provider rejections for a single-part message.
@@ -1219,7 +1253,9 @@ export async function POST(
                   await sql`
                     UPDATE public.whatsapp_delivery_qa
                     SET state='failed',last_error_code='TRANSIENT_REJECTED',
-                        last_error_details=${sendErrorText.slice(0,500)},updated_at=now()
+                        last_error_details=${sendErrorText.slice(0,500)},
+                        next_retry_at=${qaMode ? new Date().toISOString() : new Date(Date.now()+60000).toISOString()},
+                        updated_at=now()
                     WHERE inbound_message_id=${whatsappMessageId} AND state='processing'
                   `;
                 } else {
@@ -1239,10 +1275,12 @@ export async function POST(
             if (deliveryQaEnabled && whatsappMessageId) {
               await sql`
                 UPDATE public.whatsapp_delivery_qa
-                SET state = 'sent', updated_at = now()
+                SET state = 'sent', outbound_message_id=${qaOutboundId},
+                    next_retry_at=NULL, updated_at = now()
                 WHERE inbound_message_id = ${whatsappMessageId}
                   AND state = 'processing'
               `;
+              if (qaOutboundId) await reconcileQaProviderStatus(sql,qaOutboundId);
             }
 
             /*
