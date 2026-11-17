@@ -825,9 +825,14 @@ export async function POST(
               if (
                 duplicate.length > 0
               ) {
-                console.log(
-                  "WHATSAPP_DUPLICATE_SKIPPED:",
-                  whatsappMessageId
+                console.warn(
+                  "WHATSAPP_DUPLICATE_REDELIVERY_UNVERIFIED:",
+                  {
+                    messageId: whatsappMessageId,
+                    conversationKey,
+                    reason: "Existing inbound row does not prove outbound delivery",
+                    action: "Skipped automatically; requires delivery-state reconciliation",
+                  }
                 );
 
                 const retryRows =
