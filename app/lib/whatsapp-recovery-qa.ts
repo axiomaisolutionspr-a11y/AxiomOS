@@ -1,4 +1,5 @@
 import { neon } from "@neondatabase/serverless";
+import { reconcileQaProviderStatus } from "./whatsapp-status-qa";
 
 // Isolated QA only: concurrent claims are atomic and capped at three total tries.
 // 'unknown' cannot be claimed; a prior network timeout might have sent the message.
@@ -15,11 +16,13 @@ export async function recoverFailedQaReply(
     SET state = 'processing',
         attempts = attempts + 1,
         lease_until = now() + interval '5 minutes',
+        next_retry_at = NULL,
         updated_at = now()
     WHERE inbound_message_id = ${inboundMessageId}
       AND state = 'failed'
       AND attempts < 3
       AND reply_text IS NOT NULL
+      AND (next_retry_at IS NULL OR next_retry_at <= now())
     RETURNING reply_text, attempts
   `) as Array<{ reply_text: string; attempts: number }>;
   if (claimed.length !== 1 || typeof claimed[0]?.reply_text !== "string") {
@@ -35,6 +38,7 @@ export async function recoverFailedQaReply(
           lease_until = NULL, updated_at = now()
       WHERE inbound_message_id = ${inboundMessageId} AND state = 'processing'
     `;
+    await reconcileQaProviderStatus(sql,outboundId);
     return { status: "recovered", attempts };
   } catch {
     // A timeout may follow provider acceptance; never blindly repeat.
