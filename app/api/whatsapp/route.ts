@@ -812,6 +812,19 @@ export async function POST(
             ================================================
             */
 
+            // QA-only durable intake state. Disabled unless explicitly enabled in isolated QA.
+            const deliveryQaEnabled =
+              process.env.AXIOMOS_WHATSAPP_DELIVERY_QA_ENABLED === "true" &&
+              process.env.VERCEL_ENV !== "production";
+            if (deliveryQaEnabled && whatsappMessageId) {
+              await sql`
+                INSERT INTO public.whatsapp_delivery_qa
+                  (inbound_message_id, conversation_key, state)
+                VALUES (${whatsappMessageId}, ${conversationKey}, 'received')
+                ON CONFLICT (inbound_message_id) DO NOTHING
+              `;
+            }
+
             if (whatsappMessageId) {
               const duplicate =
                 await sql`
@@ -1092,10 +1105,45 @@ export async function POST(
             ================================================
             */
 
-            await sendWhatsAppMessage(
-              recipient,
-              brainReply
-            );
+            if (deliveryQaEnabled && whatsappMessageId) {
+              const claimed = await sql`
+                UPDATE public.whatsapp_delivery_qa
+                SET state = 'processing', attempts = attempts + 1,
+                    lease_until = now() + interval '5 minutes', updated_at = now()
+                WHERE inbound_message_id = ${whatsappMessageId}
+                  AND state = 'received'
+                RETURNING inbound_message_id
+              `;
+              if (claimed.length !== 1) {
+                console.warn("WHATSAPP_QA_DELIVERY_NOT_CLAIMED", whatsappMessageId);
+                continue;
+              }
+            }
+
+            try {
+              await sendWhatsAppMessage(recipient, brainReply);
+            } catch (sendError) {
+              if (deliveryQaEnabled && whatsappMessageId) {
+                // A provider timeout can occur after accepting a message: do not blindly retry.
+                await sql`
+                  UPDATE public.whatsapp_delivery_qa
+                  SET state = 'unknown',
+                      last_error_details = ${sendError instanceof Error ? sendError.message.slice(0, 500) : 'send failed'},
+                      updated_at = now()
+                  WHERE inbound_message_id = ${whatsappMessageId}
+                    AND state = 'processing'
+                `;
+              }
+              throw sendError;
+            }
+            if (deliveryQaEnabled && whatsappMessageId) {
+              await sql`
+                UPDATE public.whatsapp_delivery_qa
+                SET state = 'sent', updated_at = now()
+                WHERE inbound_message_id = ${whatsappMessageId}
+                  AND state = 'processing'
+              `;
+            }
 
             /*
             ================================================
