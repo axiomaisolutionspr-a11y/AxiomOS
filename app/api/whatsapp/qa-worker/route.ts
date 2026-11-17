@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
   let recovered = 0, uncertain = 0, skipped = 0;
   for (const row of pending) {
     const id = String(row.inbound_message_id ?? "");
-    const result = await recoverFailedQaReply(sql,id,async (_reply, attempt) => {
+    const result = await recoverFailedQaReply(sql as ReturnType<typeof neon>,id,async (_reply, attempt) => {
       // A deterministic fake acknowledgement. No Dualhook/Meta request.
       return `qa-provider-mock-${id}-${attempt}`;
     });
