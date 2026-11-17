@@ -21,6 +21,27 @@ const DUALHOOK_API_KEY =
 
 const WHATSAPP_MAX_TEXT_LENGTH = 4000;
 
+// Never enable simulation on production, other preview branches, or a different DB.
+// Synthetic events are signed with a separate QA secret.
+function isIsolatedWhatsAppQa(): boolean {
+  const env = process.env;
+  if (
+    env.VERCEL_ENV !== "preview" ||
+    env.VERCEL_GIT_COMMIT_REF !== "audit/whatsapp-inbound-outbound-20261116" ||
+    env.AXIOMOS_WHATSAPP_DELIVERY_QA_ENABLED !== "true" ||
+    env.AXIOMOS_WHATSAPP_DELIVERY_QA_ISOLATED !== "true" ||
+    env.AXIOMOS_WHATSAPP_E2E_SIMULATE !== "true" ||
+    !env.AXIOMOS_WHATSAPP_QA_TEST_SECRET ||
+    !env.AXIOMOS_WHATSAPP_QA_DB_HOST
+  ) return false;
+  try {
+    const host = new URL(env.DATABASE_URL || "").hostname.replace("-pooler.", ".");
+    return host === env.AXIOMOS_WHATSAPP_QA_DB_HOST;
+  } catch {
+    return false;
+  }
+}
+
 type BrainMessage = {
   role: "user" | "assistant";
   text: string;
@@ -253,6 +274,13 @@ async function sendSingleWhatsAppMessage(
   recipient: WhatsAppRecipient,
   text: string
 ) {
+  if (isIsolatedWhatsAppQa()) {
+    if (recipient.kind !== "bsuid" || !recipient.value.startsWith("qa-e2e-")) {
+      throw new Error("QA simulation blocks non-synthetic WhatsApp recipients");
+    }
+    console.log("WHATSAPP_QA_PROVIDER_ACCEPTED_SIMULATION");
+    return JSON.stringify({ messages: [{ id: "qa-simulated-accepted" }] });
+  }
   if (!PHONE_NUMBER_ID) {
     throw new Error(
       "WHATSAPP_PHONE_NUMBER_ID is not configured"
@@ -534,6 +562,11 @@ export async function POST(
   request: NextRequest
 ) {
   try {
+    const qaMode = isIsolatedWhatsAppQa();
+    // Fail closed if simulation was configured but QA isolation is not provable.
+    if (process.env.AXIOMOS_WHATSAPP_E2E_SIMULATE === "true" && !qaMode) {
+      return NextResponse.json({ ok: false, error: "QA isolation failed" }, { status: 503 });
+    }
     const databaseUrl =
       process.env.DATABASE_URL;
 
@@ -550,7 +583,8 @@ export async function POST(
       return NextResponse.json({error:"Payload too large"},{status:413});
     }
     const signatureAssessment = assessMetaWebhookSignature(
-      rawBody,request.headers.get("x-hub-signature-256"),process.env.META_APP_SECRET
+      rawBody,request.headers.get("x-hub-signature-256"),
+      qaMode ? process.env.AXIOMOS_WHATSAPP_QA_TEST_SECRET : process.env.META_APP_SECRET
     );
     // Safe rollout: observation only until signed production events are confirmed.
     // If the provider strips Meta's signature, fail-closed would disrupt Axira.
@@ -559,7 +593,7 @@ export async function POST(
         result:signatureAssessment.reason,
         enforcement:process.env.AXIOMOS_WHATSAPP_SIGNATURE_ENFORCE==="true"
       });
-      if(process.env.AXIOMOS_WHATSAPP_SIGNATURE_ENFORCE==="true") {
+      if(qaMode || process.env.AXIOMOS_WHATSAPP_SIGNATURE_ENFORCE==="true") {
         return NextResponse.json({error:"Invalid webhook signature"},{status:401});
       }
     }
@@ -569,6 +603,18 @@ export async function POST(
       Array.isArray(body?.entry)
         ? body.entry
         : [];
+    if (qaMode) {
+      const changes = entries.flatMap((entry: any) => Array.isArray(entry?.changes) ? entry.changes : []);
+      const messages = changes.flatMap((change: any) => Array.isArray(change?.value?.messages) ? change.value.messages : []);
+      const only = messages[0];
+      if (entries.length !== 1 || changes.length !== 1 || messages.length !== 1 ||
+        typeof only?.id !== "string" || !only.id.startsWith("qa-e2e-") ||
+        typeof only?.from_user_id !== "string" || !only.from_user_id.startsWith("qa-e2e-") ||
+        Boolean(only?.from) || only?.type !== "text" ||
+        typeof only?.text?.body !== "string") {
+        return NextResponse.json({ ok: false, error: "Only synthetic QA events allowed" }, { status: 403 });
+      }
+    }
 
     let messagesReceived = 0;
     let repliesSent = 0;
@@ -816,9 +862,7 @@ export async function POST(
             // Explicit opt-in and isolated QA database only. QA Vercel projects
             // may use VERCEL_ENV=production, so that variable is not sufficient.
             const deliveryQaEnabled =
-              process.env.AXIOMOS_WHATSAPP_DELIVERY_QA_ENABLED === "true" &&
-              process.env.AXIOMOS_WHATSAPP_DELIVERY_QA_ISOLATED === "true" &&
-              process.env.VERCEL_PROJECT_PRODUCTION_URL !== "www.axiomaisolutions.org";
+              qaMode;
             if (deliveryQaEnabled && whatsappMessageId) {
               await sql`
                 INSERT INTO public.whatsapp_delivery_qa
@@ -883,6 +927,7 @@ export async function POST(
                   );
 
                 if (
+                  !qaMode &&
                   phone &&
                   !isConversationResetCommand(
                     text
@@ -1083,7 +1128,7 @@ export async function POST(
               matchingContact?.profile?.name;
 
             const contactReply =
-              phone
+              !qaMode && phone
                 ? await registerWhatsAppContact({
                     phone,
                     text,
@@ -1126,7 +1171,9 @@ export async function POST(
                 console.error("WHATSAPP_CRM_CONTEXT_LOOKUP_FAILED");
               }
             }
-            const brainReply = contactReply ?? await askBrain(request, history, businessContext);
+            const brainReply = qaMode
+              ? "AXIRA_QA_REPLY_SIMULATED"
+              : contactReply ?? await askBrain(request, history, businessContext);
 
             console.log(
               "WHATSAPP_BRAIN_REPLY:",
@@ -1147,6 +1194,7 @@ export async function POST(
               `;
             }
 
+            let qaFirstAttemptFailure: "503" | "timeout" | null = null;
             if (deliveryQaEnabled && whatsappMessageId) {
               const claimed = await sql`
                 UPDATE public.whatsapp_delivery_qa
@@ -1154,15 +1202,21 @@ export async function POST(
                     lease_until = now() + interval '5 minutes', updated_at = now()
                 WHERE inbound_message_id = ${whatsappMessageId}
                   AND state = 'received'
-                RETURNING inbound_message_id
+                RETURNING inbound_message_id, attempts
               `;
               if (claimed.length !== 1) {
                 console.warn("WHATSAPP_QA_DELIVERY_NOT_CLAIMED", whatsappMessageId);
                 continue;
               }
+              if (qaMode && Number(claimed[0].attempts) === 1) {
+                qaFirstAttemptFailure = text === "QA_TRIGGER_503" ? "503" :
+                  text === "QA_TRIGGER_TIMEOUT" ? "timeout" : null;
+              }
             }
 
             try {
+              if (qaFirstAttemptFailure === "503") throw new Error("Dualhook error 503: QA simulated rejection");
+              if (qaFirstAttemptFailure === "timeout") throw new Error("QA simulated network timeout (uncertain)");
               await sendWhatsAppMessage(recipient, brainReply);
             } catch (sendError) {
               if (deliveryQaEnabled && whatsappMessageId) {
