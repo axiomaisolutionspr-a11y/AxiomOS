@@ -676,7 +676,7 @@ export async function POST(
 
         for (const status of statuses) {
           if (qaMode) {
-            const result = await recordQaProviderStatus(sql,{
+            const result = await recordQaProviderStatus(sql as ReturnType<typeof neon>,{
               outboundId: status.id,
               status: status.status,
               timestamp: Number(status.timestamp),
@@ -1280,7 +1280,7 @@ export async function POST(
                 WHERE inbound_message_id = ${whatsappMessageId}
                   AND state = 'processing'
               `;
-              if (qaOutboundId) await reconcileQaProviderStatus(sql,qaOutboundId);
+              if (qaOutboundId) await reconcileQaProviderStatus(sql as ReturnType<typeof neon>,qaOutboundId);
             }
 
             /*
