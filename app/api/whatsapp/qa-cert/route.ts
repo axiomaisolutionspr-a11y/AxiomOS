@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
   const kind = request.nextUrl.searchParams.get("case");
   const cases: Record<string, { id: string; body: string }> = {
     accepted: { id: "qa-e2e-accepted-20261117", body: "QA_TRIGGER_ACCEPTED" },
+    privacy_logs: { id: "qa-e2e-privacy-logs-20261117", body: "QA_PRIVATE_SENTINEL_DO_NOT_LOG" },
     retry: { id: "qa-e2e-retry-20261117", body: "QA_TRIGGER_503" },
     unknown: { id: "qa-e2e-unknown-20261117", body: "QA_TRIGGER_TIMEOUT" },
     timeout_lease: { id: "qa-e2e-timeout-lease-20261117", body: "QA_TRIGGER_TIMEOUT" },
