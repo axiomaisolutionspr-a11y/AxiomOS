@@ -10,7 +10,7 @@ export async function recoverFailedQaReply(
   if (!inboundMessageId.startsWith("qa-e2e-")) {
     return { status: "not_eligible" };
   }
-  const claimed = await sql`
+  const claimed = (await sql`
     UPDATE public.whatsapp_delivery_qa
     SET state = 'processing',
         attempts = attempts + 1,
@@ -21,7 +21,7 @@ export async function recoverFailedQaReply(
       AND attempts < 3
       AND reply_text IS NOT NULL
     RETURNING reply_text, attempts
-  `;
+  `) as Array<{ reply_text: string; attempts: number }>;
   if (claimed.length !== 1 || typeof claimed[0]?.reply_text !== "string") {
     return { status: "not_eligible" };
   }
