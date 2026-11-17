@@ -1170,7 +1170,7 @@ export async function POST(
                 // Network timeouts and multipart sends remain unknown to avoid duplicates.
                 const sendErrorText = sendError instanceof Error ? sendError.message : '';
                 const rejectedTransient =
-                  /^Dualhook error (429|503)(?:\\s|\\/|:)/.test(sendErrorText) &&
+                  /^Dualhook error (429|503)(?:\s|\/|:)/.test(sendErrorText) &&
                   splitWhatsAppMessage(brainReply).length === 1;
                 if (rejectedTransient) {
                   await sql`
