@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
     FROM public.whatsapp_delivery_qa
     WHERE inbound_message_id LIKE 'qa-e2e-worker-%'
       AND state='failed' AND attempts < 3 AND reply_text IS NOT NULL
+      AND (next_retry_at IS NULL OR next_retry_at <= now())
     ORDER BY updated_at ASC LIMIT 5
   `;
   let recovered = 0, uncertain = 0, skipped = 0;
