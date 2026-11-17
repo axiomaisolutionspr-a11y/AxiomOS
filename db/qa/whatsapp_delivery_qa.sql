@@ -42,3 +42,11 @@ CREATE INDEX IF NOT EXISTS whatsapp_delivery_qa_outbound_idx
 CREATE INDEX IF NOT EXISTS whatsapp_delivery_qa_retry_idx
   ON public.whatsapp_delivery_qa(next_retry_at)
   WHERE state='failed';
+
+-- Durable synthetic intake snapshot: worker can reconstruct a reply after
+-- Brain fails before reply_text exists. Strict QA guard keeps real traffic out.
+ALTER TABLE public.whatsapp_delivery_qa
+  ADD COLUMN IF NOT EXISTS inbound_text text,
+  ADD COLUMN IF NOT EXISTS recipient_kind text,
+  ADD COLUMN IF NOT EXISTS recipient_value text,
+  ADD COLUMN IF NOT EXISTS intake_error text;
