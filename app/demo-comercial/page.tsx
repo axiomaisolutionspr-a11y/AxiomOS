@@ -38,6 +38,41 @@ const uid = () => crypto.randomUUID();
 function initialMessages(industry: Industry): Message[] {
  const s = industries[industry]; return [{ id: uid(), by: "cliente", text: s.customer }, { id: uid(), by: "axira", text: s.intro }];
 }
+
+function IndustrySignal({ leads }: { leads: Lead[] }) {
+ const categories: Array<{ industry: Industry; caption: string }> = [
+  { industry: "dealer", caption: "AUTOS" },
+  { industry: "restaurant", caption: "MESAS" },
+  { industry: "optica", caption: "ÓPTICA" }
+ ];
+ const counts = categories.map(category => leads.filter(lead => lead.industry === category.industry).length);
+ const peak = Math.max(1, ...counts);
+ return (
+  <div className="ad-chart-columns" role="img" aria-label={categories.map((category, i) => category.caption + ": " + counts[i] + " prospectos de prueba").join(", ")}>
+   {categories.map((category, i) =>
+    <div className="ad-chart-column" key={category.industry}>
+     <div className="ad-chart-track"><span style={{ height: `${counts[i] === 0 ? 5 : 18 + (counts[i] / peak) * 82}%`, opacity: counts[i] ? 1 : 0.22 }} /></div>
+     <small>{category.caption}</small>
+    </div>
+   )}
+  </div>
+ );
+}
+function RatioSignal({ count, total, kind }: { count: number; total: number; kind: "priority" | "pending" }) {
+ const percent = total ? Math.max(0, Math.min(100, count / total * 100)) : 0;
+ const circumference = 2 * Math.PI * 42;
+ return (
+  <svg className={`ad-ratio-svg ad-ratio-${kind}`} viewBox="0 0 120 120" role="img" aria-label={`${count} de ${total} prospectos de prueba ${kind === "priority" ? "de prioridad alta" : "con acciones pendientes"}`}>
+   <circle className="ad-ratio-base" cx="60" cy="60" r="42" fill="none" strokeWidth="10" />
+   <circle className="ad-ratio-fill" cx="60" cy="60" r="42" fill="none" strokeWidth="10" strokeLinecap="round"
+    strokeDasharray={`${circumference} ${circumference}`} strokeDashoffset={circumference * (1 - percent / 100)}
+    transform="rotate(-90 60 60)" />
+   {kind === "priority"
+    ? <path d="m60 37 5.5 14 15 1.2-11.5 9.5 3.5 14.4L60 68.6 47.5 76l3.5-14.3L39.5 52l15-1z" fill="currentColor" />
+    : <path d="M60 38v22l13 10M39 46a29 29 0 1 0 9-9" stroke="currentColor" strokeWidth="5" strokeLinecap="round" fill="none" />}
+  </svg>
+ );
+}
 export default function DemoComercialPage() {
  const [industry, setIndustry] = useState<Industry>("dealer");
  const [messages, setMessages] = useState<Message[]>([]);
@@ -182,15 +217,41 @@ export default function DemoComercialPage() {
      <div className="ad-brand"><Image src="/axiomai-logo-transparent.webp" width={66} height={54} alt="AxiomAI Solutions" unoptimized /><div><strong>AXIOMAI <span>SOLUTIONS</span></strong><small>DEMO COMERCIAL · AXIRA + AXIOMOS</small></div></div>
      <div className="ad-auth-actions"><span className="ad-sim">● SIMULACIÓN INTERACTIVA · SIN ENVÍOS REALES</span><button type="button" onClick={signOut} disabled={busy} className="ad-reset">Cerrar sesión</button></div>
     </header>
-    <section className="ad-hero"><div><div className="ad-eyebrow">INTELIGENCIA COMERCIAL EN ACCIÓN</div><h1>De una conversación<br /><em>a una oportunidad real.</em></h1><p>Observa cómo Axira atiende una consulta, registra un prospecto y organiza su siguiente paso dentro de AxiomOS.</p></div><div className="ad-stats"><div><b>{leads.length}</b><span>Prospectos demo</span></div><div><b>{qualified}</b><span>Prioridad alta</span></div><div><b>{pending}</b><span>Acciones pendientes</span></div></div></section>
-    <div className="ad-stepbar"><span><b>01</b> Elige un negocio</span><span><b>02</b> Axira atiende</span><span><b>03</b> CRM registra</span><span><b>04</b> Siguiente acción</span></div>
+    <section className="ad-hero">
+     <div className="ad-hero-copy">
+      <div className="ad-eyebrow"><span className="ad-eyebrow-line" /> EXPERIENCIA COMERCIAL INTERACTIVA</div>
+      <h1>Conversaciones<br />que se convierten<br /><em>en oportunidades.</em></h1>
+      <p>Descubre cómo Axira recibe una consulta simulada y AxiomOS organiza el prospecto, su historial y el próximo paso.</p>
+      <button type="button" className="ad-hero-tour" onClick={guidedDemo} disabled={!ready || busy}>
+       <span className="ad-tour-play" aria-hidden="true">▶</span>
+       <span className="ad-tour-caption"><strong>{busy ? "Registrando en Neon QA…" : "INICIAR DEMOSTRACIÓN"}</strong><small>Recorrido guiado · conversación, CRM y seguimiento</small></span>
+       <span className="ad-tour-arrow" aria-hidden="true">↗</span>
+      </button>
+      <div className="ad-hero-assurance"><span className="ad-live-dot" /> Simulación segura · datos ficticios · sin mensajes reales</div>
+     </div>
+     <div className="ad-visual-board">
+      <div className="ad-board-header"><div><span className="ad-board-kicker">AXIOMOS / VISIÓN GENERAL</span><strong>Pulso comercial</strong></div><span className="ad-board-live"><span className="ad-live-dot" /> QA</span></div>
+      <div className="ad-stats">
+       <div className="ad-metric ad-metric-sectors"><span className="ad-metric-heading">Prospectos por industria</span><IndustrySignal leads={leads} /><small>Origen de los registros de prueba</small></div>
+       <div className="ad-metric ad-metric-priority"><span className="ad-metric-heading">Interés prioritario</span><RatioSignal count={qualified} total={leads.length} kind="priority" /><small>Oportunidades de prioridad alta</small></div>
+       <div className="ad-metric ad-metric-pending"><span className="ad-metric-heading">Próximas acciones</span><RatioSignal count={pending} total={leads.length} kind="pending" /><small>Casos que requieren seguimiento</small></div>
+      </div>
+      <div className="ad-board-footer"><span className="ad-board-pulse" aria-hidden="true">▂ ▅ ▃ ▆ ▄ ▇ ▃</span><span>Indicadores calculados desde Neon QA</span></div>
+     </div>
+    </section>
+    <div className="ad-stepbar" aria-label="Flujo de la demostración">
+      <span><span className="ad-step-symbol" aria-hidden="true">◇</span> Elige tu industria</span>
+      <span><span className="ad-step-symbol" aria-hidden="true">✦</span> Axira atiende</span>
+      <span><span className="ad-step-symbol" aria-hidden="true">▤</span> AxiomOS registra</span>
+      <span><span className="ad-step-symbol" aria-hidden="true">➤</span> Acción sugerida</span>
+    </div>
     <section className="ad-scenarios" aria-label="Escenarios comerciales">{(Object.keys(industries) as Industry[]).map(k => <button type="button" key={k} onClick={() => changeIndustry(k)} className={industry === k ? "ad-scenario active" : "ad-scenario"}><span>{k === "dealer" ? "🚙" : k === "restaurant" ? "🍽️" : "👓"}</span><strong>{industries[k].label}</strong><small>{k === "dealer" ? "Financiamiento y pruebas" : k === "restaurant" ? "Reservaciones y consultas" : "Citas administrativas"}</small></button>)}</section>
-    <div className="ad-tabs"><button type="button" className={tab === "conversation" ? "active" : ""} onClick={() => setTab("conversation")}>Conversación con Axira</button><button type="button" className={tab === "crm" ? "active" : ""} onClick={() => setTab("crm")}>AxiomOS CRM <span>{leads.length}</span></button></div>
+    <div className="ad-tabs"><button type="button" className={tab === "conversation" ? "active" : ""} onClick={() => setTab("conversation")}>Conversación con Axira</button><button type="button" className={tab === "crm" ? "active" : ""} onClick={() => setTab("crm")}>AxiomOS CRM <span className="ad-tab-graph" aria-hidden="true"><i /><i /><i /></span></button></div>
     {tab === "conversation" ? <section className="ad-panel">
      <div className="ad-panelhead"><div><b>Axira · Atención inteligente</b><small>{industries[industry].channel} — entorno de simulación</small></div><span className="ad-status">● Demo activo</span></div>
      <div className="ad-chat" aria-live="polite">{messages.map(m => <div className={m.by === "axira" ? "ad-bubble bot" : "ad-bubble"} key={m.id}><small>{m.by === "axira" ? "AXIRA" : "CLIENTE FICTICIO"}</small><p>{m.text}</p></div>)}</div>
      <div className="ad-quick"><div><strong>Prueba una pregunta</strong><small>Respuestas preparadas para esta simulación; sin proveedor de IA ni datos reales</small></div><div className="ad-quickbuttons">{sampleQuestions[industry].map((item, i) => <button type="button" key={i} disabled={!ready || busy || messages.length > 7} onClick={() => sendSampleQuestion(i)}>{item.question}</button>)}</div></div>
-     <div className="ad-capture"><h3>Completa la solicitud de prueba</h3><div className="ad-fields"><label>Nombre ficticio<input value={name} onChange={e => setName(e.target.value)} maxLength={90} placeholder="Ej.: Andrea Rivera (ficticia)" autoComplete="off" /></label><label>Teléfono ficticio<input value={contact} onChange={e => setContact(e.target.value)} maxLength={12} placeholder="787-555-0101" inputMode="tel" autoComplete="off" /></label></div><button type="button" className="ad-primary" disabled={!ready || busy} onClick={() => captureLead()}>{busy ? "Guardando en Neon QA…" : !ready ? "Neon QA no disponible" : "Registrar en AxiomOS CRM →"}</button><button type="button" className="ad-guided" disabled={!ready || busy} onClick={guidedDemo}>▶ Ejecutar recorrido guiado completo</button><p className="ad-guide-note">El recorrido simula preguntas y registra un prospecto ficticio en Neon QA. No envía mensajes ni solicita citas reales.</p></div>
+     <div className="ad-capture"><h3>Completa la solicitud de prueba</h3><div className="ad-fields"><label>Nombre ficticio<input value={name} onChange={e => setName(e.target.value)} maxLength={90} placeholder="Ej.: Andrea Rivera (ficticia)" autoComplete="off" /></label><label>Teléfono ficticio<input value={contact} onChange={e => setContact(e.target.value)} maxLength={12} placeholder="787-555-0101" inputMode="tel" autoComplete="off" /></label></div><button type="button" className="ad-primary" disabled={!ready || busy} onClick={() => captureLead()}>{busy ? "Guardando en Neon QA…" : !ready ? "Neon QA no disponible" : "Registrar en AxiomOS CRM →"}</button><button type="button" className="ad-guided" disabled={!ready || busy} onClick={guidedDemo}>▶ Iniciar recorrido guiado</button><p className="ad-guide-note">El recorrido simula preguntas y registra un prospecto ficticio en Neon QA. No envía mensajes ni solicita citas reales.</p></div>
     </section> : <section className="ad-panel">
      <div className="ad-panelhead"><div><b>AxiomOS · Centro comercial</b><small>Prospectos ficticios almacenados en Neon QA; si falla la conexión se deshabilitan los cambios</small></div><button className="ad-reset" type="button" onClick={reset}>Reiniciar demo</button></div>
      <div className="ad-crm"><div className="ad-leads">{leads.length === 0 ? <div className="ad-empty">Aún no hay prospectos de demostración. Vuelve a la conversación y registra uno.</div> : leads.map(l => <button className={selected === l.id ? "ad-lead active" : "ad-lead"} key={l.id} type="button" onClick={() => setSelected(l.id)}><b>{l.name}</b><small>{industries[l.industry].label} · {l.channel}</small><span>{l.priority === "Alta" ? "● Alta prioridad" : "● Prioridad media"} · {l.status}</span></button>)}</div><div className="ad-details">{active ? <><div className="ad-detailtop"><div><small>FICHA DEL PROSPECTO</small><h2>{active.name}</h2><p>{active.contact} · {active.channel}</p></div><span className="ad-priority">{active.priority}</span></div><div className="ad-highlight"><small>PRÓXIMA ACCIÓN RECOMENDADA</small><strong>{active.nextAction}</strong><span>Recomendación simulada · no ejecutada</span></div><label className="ad-statuslabel">Estado de oportunidad<select value={active.status} disabled={busy || !ready} onChange={e => updateStatus(active.id, e.target.value as Lead["status"])}><option>Nuevo</option><option>Contactar</option><option>Cita solicitada</option><option>Ganado</option></select></label><h3>Historial de la conversación</h3><div className="ad-history">{active.messages.map(m => <p key={m.id}><b>{m.by === "axira" ? "Axira" : "Cliente"}:</b> {m.text}</p>)}</div></> : <div className="ad-empty">Selecciona un prospecto para revisar su historial, cambiar el estado y observar la próxima acción.</div>}</div></div>
