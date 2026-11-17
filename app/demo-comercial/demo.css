@@ -26,3 +26,11 @@
 .ad-quickbuttons button:focus-visible{outline:2px solid #83c9ff;outline-offset:3px}
 .ad-quickbuttons button:disabled{opacity:.4;cursor:not-allowed}
 @media(max-width:750px){.ad-quick{padding:15px}.ad-quickbuttons{flex-direction:column}.ad-quickbuttons button{border-radius:10px;width:100%}}
+
+/* One-click, reversible simulated sales path. The database only contains synthetic leads. */
+.ad-guided{display:inline-flex;margin:16px 0 0 12px;padding:14px 18px;border:1px solid #38a9ff;border-radius:10px;background:#102d49;color:#bdeaff;font-size:13px;font-weight:750;cursor:pointer}
+.ad-guided:hover:not(:disabled){background:#174369}
+.ad-guided:disabled{opacity:.45;cursor:not-allowed}
+.ad-guided:focus-visible{outline:2px solid #83c9ff;outline-offset:3px}
+.ad-guide-note{color:#8ea8c4;font-size:11px;line-height:1.5;margin:10px 0 0}
+@media(max-width:750px){.ad-guided{display:flex;margin:9px 0 0;width:100%;justify-content:center}.ad-primary{width:100%}}
