@@ -10,7 +10,7 @@ const industries = ["dealer", "restaurant", "optica"];
 const statuses = ["Nuevo", "Contactar", "Cita solicitada", "Ganado"];
 const priorities = ["Alta", "Media"];
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const simulatedContact = /^787-555-[0-9]{4}$/;
+const simulatedContact = /^787-555-01[0-9]{2}$/; // NANP 555-0100–0199 fictitious-use range
 function response(data: unknown, status = 200) { return NextResponse.json(data, { status, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } }); }
 function db() {
  const connection = process.env.AXIOMAI_DEMO_QA_DATABASE_URL;
