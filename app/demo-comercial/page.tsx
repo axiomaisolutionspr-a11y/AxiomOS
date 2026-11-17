@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Image from "next/image";
 import "./demo.css";
 
@@ -26,6 +26,9 @@ export default function DemoComercialPage() {
  const [messages, setMessages] = useState<Message[]>([]);
  const [leads, setLeads] = useState<Lead[]>([]);
  const [busy, setBusy] = useState(false);
+ const [authState, setAuthState] = useState<"checking" | "locked" | "ready">("checking");
+ const [accessCode, setAccessCode] = useState("");
+ const [authError, setAuthError] = useState("");
  const [ready, setReady] = useState(false);
  const [name, setName] = useState("Andrea Rivera (ficticia)");
  const [contact, setContact] = useState("787-555-0101");
@@ -34,15 +37,53 @@ export default function DemoComercialPage() {
  const [notice, setNotice] = useState("");
  useEffect(() => {
   setMessages(initialMessages("dealer"));
-
   let live = true;
-  fetch("/api/demo-comercial", { cache: "no-store" })
-   .then(async r => { if (!r.ok) throw new Error("Neon QA no disponible"); return r.json(); })
-   .then(data => { if (live && Array.isArray(data.leads)) { setLeads(data.leads); setReady(true); setNotice("Conectado a Neon QA · registros ficticios compartidos."); } })
-   .catch(() => { if (live) { setReady(false); setNotice("No hay conexión con Neon QA. El registro de prospectos está deshabilitado hasta restablecer la conexión."); } });
+  (async () => {
+   try {
+    const session = await fetch("/api/demo-comercial/session", { cache: "no-store" });
+    const data: { authenticated?: boolean } = await session.json();
+    if (!live) return;
+    if (!data.authenticated) { setAuthState("locked"); return; }
+    setAuthState("ready");
+    const res = await fetch("/api/demo-comercial", { cache: "no-store" });
+    if (!res.ok) throw new Error("Neon QA no disponible");
+    const payload: { leads?: Lead[] } = await res.json();
+    if (live && Array.isArray(payload.leads)) {
+     setLeads(payload.leads);
+     setReady(true);
+     setNotice("Sesión autorizada y CRM conectado a Neon QA.");
+    }
+   } catch {
+    if (live) { setReady(false); setAuthState(prev => prev === "checking" ? "locked" : prev); setNotice("No se pudo consultar Neon QA."); }
+   }
+  })();
   return () => { live = false; };
  }, []);
-
+ async function unlock(event: FormEvent<HTMLFormElement>) {
+  event.preventDefault();
+  if (busy || !accessCode.trim()) return;
+  setBusy(true); setAuthError("");
+  try {
+   const res = await fetch("/api/demo-comercial/session", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code: accessCode.trim() })
+   });
+   if (!res.ok) throw new Error(res.status === 401 ? "Código incorrecto." : "Acceso no disponible.");
+   setAccessCode("");
+   const leadsRes = await fetch("/api/demo-comercial", { cache: "no-store" });
+   if (!leadsRes.ok) throw new Error("Sesión abierta, pero Neon QA no responde.");
+   const data: { leads?: Lead[] } = await leadsRes.json();
+   if (!Array.isArray(data.leads)) throw new Error("Respuesta inesperada de Neon QA.");
+   setLeads(data.leads); setReady(true); setAuthState("ready");
+   setNotice("Acceso autorizado · CRM de prueba conectado.");
+  } catch (error) { setAuthError(error instanceof Error ? error.message : "No fue posible entrar."); }
+  finally { setBusy(false); }
+ }
+ async function signOut() {
+  setBusy(true);
+  try { await fetch("/api/demo-comercial/session", { method: "DELETE" }); }
+  finally { setBusy(false); setReady(false); setLeads([]); setAuthState("locked"); setSelected(null); setNotice(""); }
+ }
  const active = useMemo(() => leads.find(l => l.id === selected) ?? null, [leads, selected]);
  const qualified = leads.filter(l => l.priority === "Alta").length;
  const pending = leads.filter(l => l.status !== "Ganado").length;
@@ -79,12 +120,31 @@ export default function DemoComercialPage() {
   } finally { setBusy(false); }
  }
  function reset() { setSelected(null); setMessages(initialMessages(industry)); setTab("conversation"); setNotice("Conversación reiniciada. Los registros compartidos en Neon QA se conservan para mantener su historial."); }
+ if (authState !== "ready") return (
+  <main className="ad-root ad-login-wrap">
+   <section className="ad-login" aria-label="Acceso privado al demo">
+    <Image src="/axiomai-logo-transparent.webp" width={96} height={80} alt="AxiomAI Solutions" unoptimized />
+    <div className="ad-eyebrow">AXIOMAI SOLUTIONS · ENTORNO QA</div>
+    <h1>DEMO comercial privado</h1>
+    <p>Recorrido interactivo de Axira y AxiomOS con datos ficticios. Requiere código de acceso; no utiliza WhatsApp ni telefonía reales.</p>
+    {authState === "checking" ? <p role="status">Comprobando acceso…</p> :
+     <form onSubmit={unlock}>
+      <label htmlFor="demo-code">Código de acceso</label>
+      <input id="demo-code" type="password" value={accessCode} onChange={e => setAccessCode(e.target.value)}
+       placeholder="Código privado de demostración" autoComplete="off" maxLength={128} required />
+      <button type="submit" className="ad-primary" disabled={busy}>{busy ? "Validando…" : "Entrar al DEMO →"}</button>
+      {authError && <p className="ad-login-error" role="alert">{authError}</p>}
+     </form>}
+    <small>Solo registros simulados · Datos QA separados de producción</small>
+   </section>
+  </main>
+ );
  return (
   <main className="ad-root">
    <div className="ad-shell">
     <header className="ad-header">
      <div className="ad-brand"><Image src="/axiomai-logo-transparent.webp" width={66} height={54} alt="AxiomAI Solutions" unoptimized /><div><strong>AXIOMAI <span>SOLUTIONS</span></strong><small>DEMO COMERCIAL · AXIRA + AXIOMOS</small></div></div>
-     <span className="ad-sim">● SIMULACIÓN INTERACTIVA · SIN ENVÍOS REALES</span>
+     <div className="ad-auth-actions"><span className="ad-sim">● SIMULACIÓN INTERACTIVA · SIN ENVÍOS REALES</span><button type="button" onClick={signOut} disabled={busy} className="ad-reset">Cerrar sesión</button></div>
     </header>
     <section className="ad-hero"><div><div className="ad-eyebrow">INTELIGENCIA COMERCIAL EN ACCIÓN</div><h1>De una conversación<br /><em>a una oportunidad real.</em></h1><p>Observa cómo Axira atiende una consulta, registra un prospecto y organiza su siguiente paso dentro de AxiomOS.</p></div><div className="ad-stats"><div><b>{leads.length}</b><span>Prospectos demo</span></div><div><b>{qualified}</b><span>Prioridad alta</span></div><div><b>{pending}</b><span>Acciones pendientes</span></div></div></section>
     <div className="ad-stepbar"><span><b>01</b> Elige un negocio</span><span><b>02</b> Axira atiende</span><span><b>03</b> CRM registra</span><span><b>04</b> Siguiente acción</span></div>
