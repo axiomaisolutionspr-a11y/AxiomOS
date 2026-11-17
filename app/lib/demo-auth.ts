@@ -22,9 +22,18 @@ function signature(body: string, secret: string): string {
 }
 
 export function isValidDemoAccessCode(candidate: unknown): boolean {
+  if (typeof candidate !== "string" || candidate.length > 128) return false;
   const expected = process.env.AXIOMAI_DEMO_QA_ACCESS_CODE;
-  return typeof candidate === "string" && typeof expected === "string" &&
-    candidate.length <= 128 && expected.length >= 16 && safeMatch(candidate, expected);
+  const originalValid = typeof expected === "string" && expected.length >= 16 &&
+    safeMatch(candidate, expected);
+  // Short-lived secondary key for this QA preview only; never replaces the original.
+  const temporary = process.env.AXIOMAI_DEMO_QA_TEMP_ACCESS_CODE;
+  const expiresAt = Date.parse(process.env.AXIOMAI_DEMO_QA_TEMP_ACCESS_UNTIL ?? "");
+  const temporaryValid = process.env.VERCEL_ENV === "preview" &&
+    typeof temporary === "string" && temporary.length >= 20 &&
+    Number.isFinite(expiresAt) && Date.now() < expiresAt &&
+    safeMatch(candidate, temporary);
+  return originalValid || temporaryValid;
 }
 
 export async function hasDemoSession(): Promise<boolean> {
