@@ -8,7 +8,8 @@
       "fix/axira-commercial-followups-20261108": false,
       "feature/axiomos-commercial-production-v1-20261108": false,
       "feature/axiomos-manual-whatsapp-optout-qa-20261112": false,
-      "feature/axiomos-manual-whatsapp-optout-release-20261112": false
+      "feature/axiomos-manual-whatsapp-optout-release-20261112": false,
+      "feature/axira-ai-providers-qa-20261118": false
     }
   }
 }
