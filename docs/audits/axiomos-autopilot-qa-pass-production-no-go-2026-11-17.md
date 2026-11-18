@@ -1,7 +1,7 @@
 # AxiomOS Autopilot — cierre de certificación QA y dictamen productivo
-**Fecha:** 2026-11-17 (Puerto Rico/UTC-4)  
-**Empresa:** AxiomAI Solutions  
-**Alcance:** CRM autónomo, WhatsApp, Meta/Dualhook, Telnyx, notificaciones, seguridad de datos, Vercel, Neon y GitHub.  
+**Fecha:** 2026-11-17 (Puerto Rico/UTC-4)
+**Empresa:** AxiomAI Solutions
+**Alcance:** CRM autónomo, WhatsApp, Meta/Dualhook, Telnyx, notificaciones, seguridad de datos, Vercel, Neon y GitHub.
 **Dictamen:** **PASS QA LIMITADO (simulación WhatsApp y recuperador)** / **NO-GO PRODUCCIÓN PARA CRM AUTÓNOMO INTEGRAL**.
 
 ## 1. Evidencia que sí permite un PASS QA
