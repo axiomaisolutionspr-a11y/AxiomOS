@@ -6,6 +6,7 @@ import {
 import { neon } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
 import {assessMetaWebhookSignature} from "../../lib/meta-signature-policy";
+import {assessWhatsAppPayload} from "../../lib/whatsapp-payload-guard.js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -564,6 +565,24 @@ export async function POST(
       }
     }
     const body = JSON.parse(rawBody);
+
+    // Verificación estructural recomendada por Dualhook (la firma de Meta usa el
+    // App Secret de Dualhook, no el nuestro). Por defecto solo registra (sombra);
+    // descarta únicamente si AXIOMOS_WHATSAPP_PAYLOAD_GUARD_ENFORCE === "true".
+    const payloadAssessment = assessWhatsAppPayload(body, {
+      wabaId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,
+      phoneNumberId: PHONE_NUMBER_ID,
+    });
+    if (!payloadAssessment.valid) {
+      console.warn("WHATSAPP_PAYLOAD_GUARD_SHADOW", {
+        reasons: payloadAssessment.reasons,
+        enforcement: process.env.AXIOMOS_WHATSAPP_PAYLOAD_GUARD_ENFORCE === "true",
+      });
+      if (process.env.AXIOMOS_WHATSAPP_PAYLOAD_GUARD_ENFORCE === "true") {
+        // 200 para que Meta no reintente durante días un payload que nunca será válido.
+        return NextResponse.json({ ignored: true }, { status: 200 });
+      }
+    }
 
     const entries =
       Array.isArray(body?.entry)
