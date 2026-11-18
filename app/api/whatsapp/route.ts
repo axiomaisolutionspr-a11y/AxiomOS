@@ -6,6 +6,8 @@ import {
 import { neon } from "@neondatabase/serverless";
 import { registerWhatsAppContact } from "../../lib/whatsapp-contact-request";
 import {assessMetaWebhookSignature} from "../../lib/meta-signature-policy";
+import { recoverFailedQaReply } from "../../lib/whatsapp-recovery-qa";
+import { recordQaProviderStatus, reconcileQaProviderStatus } from "../../lib/whatsapp-status-qa";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +22,27 @@ const DUALHOOK_API_KEY =
   process.env.DUALHOOK_API_KEY;
 
 const WHATSAPP_MAX_TEXT_LENGTH = 4000;
+
+// Never enable simulation on production, other preview branches, or a different DB.
+// Synthetic events are signed with a separate QA secret.
+function isIsolatedWhatsAppQa(): boolean {
+  const env = process.env;
+  if (
+    env.VERCEL_ENV !== "preview" ||
+    env.VERCEL_GIT_COMMIT_REF !== "audit/whatsapp-inbound-outbound-20261116" ||
+    env.AXIOMOS_WHATSAPP_DELIVERY_QA_ENABLED !== "true" ||
+    env.AXIOMOS_WHATSAPP_DELIVERY_QA_ISOLATED !== "true" ||
+    env.AXIOMOS_WHATSAPP_E2E_SIMULATE !== "true" ||
+    !env.AXIOMOS_WHATSAPP_QA_TEST_SECRET ||
+    !env.AXIOMOS_WHATSAPP_QA_DB_HOST
+  ) return false;
+  try {
+    const host = new URL(env.DATABASE_URL || "").hostname.replace("-pooler.", ".");
+    return host === env.AXIOMOS_WHATSAPP_QA_DB_HOST;
+  } catch {
+    return false;
+  }
+}
 
 type BrainMessage = {
   role: "user" | "assistant";
@@ -251,8 +274,16 @@ ENVIAR UN MENSAJE POR DUALHOOK
 
 async function sendSingleWhatsAppMessage(
   recipient: WhatsAppRecipient,
-  text: string
+  text: string,
+  qaCorrelationId?: string
 ) {
+  if (isIsolatedWhatsAppQa()) {
+    if (recipient.kind !== "bsuid" || !recipient.value.startsWith("qa-e2e-")) {
+      throw new Error("QA simulation blocks non-synthetic WhatsApp recipients");
+    }
+    console.log("WHATSAPP_QA_PROVIDER_ACCEPTED_SIMULATION");
+    return JSON.stringify({ messages: [{ id: `qa-provider-ack-${qaCorrelationId || "qa-e2e-unlinked"}` }] });
+  }
   if (!PHONE_NUMBER_ID) {
     throw new Error(
       "WHATSAPP_PHONE_NUMBER_ID is not configured"
@@ -316,10 +347,11 @@ async function sendSingleWhatsAppMessage(
     response.status
   );
 
-  console.log(
-    "DUALHOOK_OUTBOUND_RESPONSE:",
-    responseBody
-  );
+  // Provider body may contain identifiers and customer-specific details.
+  console.log("DUALHOOK_OUTBOUND_RESPONSE_METADATA:", {
+    httpStatus: response.status,
+    responseBytes: Buffer.byteLength(responseBody, "utf8")
+  });
 
   if (!response.ok) {
     const metaError =
@@ -368,7 +400,8 @@ ENVIAR RESPUESTA COMPLETA POR WHATSAPP
 
 async function sendWhatsAppMessage(
   recipient: WhatsAppRecipient,
-  text: string
+  text: string,
+  qaCorrelationId?: string
 ) {
   const chunks =
     splitWhatsAppMessage(text);
@@ -399,7 +432,8 @@ async function sendWhatsAppMessage(
     const response =
       await sendSingleWhatsAppMessage(
         recipient,
-        chunks[index]
+        chunks[index],
+        qaCorrelationId
       );
 
     responses.push(response);
@@ -534,6 +568,11 @@ export async function POST(
   request: NextRequest
 ) {
   try {
+    const qaMode = isIsolatedWhatsAppQa();
+    // Fail closed if simulation was configured but QA isolation is not provable.
+    if (process.env.AXIOMOS_WHATSAPP_E2E_SIMULATE === "true" && !qaMode) {
+      return NextResponse.json({ ok: false, error: "QA isolation failed" }, { status: 503 });
+    }
     const databaseUrl =
       process.env.DATABASE_URL;
 
@@ -550,7 +589,8 @@ export async function POST(
       return NextResponse.json({error:"Payload too large"},{status:413});
     }
     const signatureAssessment = assessMetaWebhookSignature(
-      rawBody,request.headers.get("x-hub-signature-256"),process.env.META_APP_SECRET
+      rawBody,request.headers.get("x-hub-signature-256"),
+      qaMode ? process.env.AXIOMOS_WHATSAPP_QA_TEST_SECRET : process.env.META_APP_SECRET
     );
     // Safe rollout: observation only until signed production events are confirmed.
     // If the provider strips Meta's signature, fail-closed would disrupt Axira.
@@ -559,7 +599,7 @@ export async function POST(
         result:signatureAssessment.reason,
         enforcement:process.env.AXIOMOS_WHATSAPP_SIGNATURE_ENFORCE==="true"
       });
-      if(process.env.AXIOMOS_WHATSAPP_SIGNATURE_ENFORCE==="true") {
+      if(qaMode || process.env.AXIOMOS_WHATSAPP_SIGNATURE_ENFORCE==="true") {
         return NextResponse.json({error:"Invalid webhook signature"},{status:401});
       }
     }
@@ -569,6 +609,28 @@ export async function POST(
       Array.isArray(body?.entry)
         ? body.entry
         : [];
+    if (qaMode) {
+      const changes = entries.flatMap((entry: any) => Array.isArray(entry?.changes) ? entry.changes : []);
+      const messages = changes.flatMap((change: any) => Array.isArray(change?.value?.messages) ? change.value.messages : []);
+      const statusesQa = changes.flatMap((change: any) => Array.isArray(change?.value?.statuses) ? change.value.statuses : []);
+      const only = messages[0];
+      const statusQa = statusesQa[0];
+      const syntheticMessage = messages.length === 1 && statusesQa.length === 0 &&
+        typeof only?.id === "string" && only.id.startsWith("qa-e2e-") &&
+        typeof only?.from_user_id === "string" && only.from_user_id.startsWith("qa-e2e-") &&
+        !only?.from && only?.type === "text" && typeof only?.text?.body === "string";
+      const syntheticStatus = statusesQa.length === 1 && messages.length === 0 &&
+        typeof statusQa?.id === "string" && statusQa.id.startsWith("qa-provider-ack-qa-e2e-") &&
+        ["sent","delivered","read","failed"].includes(statusQa.status) &&
+        (!statusQa.recipient_user_id || statusQa.recipient_user_id === "qa-e2e-recipient") &&
+        !statusQa.recipient_id;
+      const scopeOk = entries.length === 1 && entries[0]?.id === "qa-e2e-waba" &&
+        changes.length === 1 && changes[0]?.field === "messages" &&
+        changes[0]?.value?.metadata?.phone_number_id === "qa-e2e-phone";
+      if (!scopeOk || !(syntheticMessage || syntheticStatus)) {
+        return NextResponse.json({ ok: false, error: "Only synthetic QA events allowed" }, { status: 403 });
+      }
+    }
 
     let messagesReceived = 0;
     let repliesSent = 0;
@@ -614,6 +676,18 @@ export async function POST(
         );
 
         for (const status of statuses) {
+          if (qaMode) {
+            const result = await recordQaProviderStatus(sql as ReturnType<typeof neon>,{
+              outboundId: status.id,
+              status: status.status,
+              timestamp: Number(status.timestamp),
+              errorCode: typeof status?.errors?.[0]?.code === "number" ?
+                String(status.errors[0].code) : null,
+            });
+            console.log("WHATSAPP_QA_STATUS_RECORDED",{
+              stored: result.stored, matched: result.matched, status: result.status
+            });
+          }
           const statusErrors =
             Array.isArray(status?.errors)
               ? status.errors
@@ -631,15 +705,8 @@ export async function POST(
                   typeof status?.status === "string"
                     ? status.status
                     : null,
-                recipientId:
-                  typeof status?.recipient_id === "string"
-                    ? status.recipient_id
-                    : null,
-                recipientUserId:
-                  typeof status?.recipient_user_id === "string"
-                    ? status.recipient_user_id
-                    : null,
-                errors: statusErrors,
+                errorCodes: statusErrors.map((item: { code?: unknown }) =>
+                  typeof item?.code === "number" ? item.code : null),
               }
             );
           }
@@ -780,30 +847,13 @@ export async function POST(
             phone ||
             `bsuid:${userId}`;
 
-          console.log(
-            "WHATSAPP_INCOMING_IDENTITY:",
-            {
-              phone:
-                phone || null,
-              userId:
-                userId || null,
-              recipientKind:
-                recipient.kind,
-            }
-          );
-
-          if (!phone && userId) {
-            console.log(
-              "WHATSAPP_BSUID_WITHOUT_PHONE:",
-              userId
-            );
-          }
-
-
-          console.log(
-            "WHATSAPP_INCOMING_TEXT:",
-            text
-          );
+          console.log("WHATSAPP_INCOMING_METADATA:", {
+            recipientKind: recipient.kind,
+            hasPhone: Boolean(phone),
+            hasBsuid: Boolean(userId),
+            textLength: text.length,
+            hasMessageId: Boolean(whatsappMessageId)
+          });
 
           try {
             /*
@@ -811,6 +861,21 @@ export async function POST(
             EVITAR MENSAJES DUPLICADOS
             ================================================
             */
+
+            // QA-only durable intake state. Disabled unless explicitly enabled in isolated QA.
+            // Explicit opt-in and isolated QA database only. QA Vercel projects
+            // may use VERCEL_ENV=production, so that variable is not sufficient.
+            const deliveryQaEnabled =
+              qaMode;
+            if (deliveryQaEnabled && whatsappMessageId) {
+              await sql`
+                INSERT INTO public.whatsapp_delivery_qa
+                  (inbound_message_id, conversation_key, state, inbound_text, recipient_kind, recipient_value)
+                VALUES (${whatsappMessageId}, ${conversationKey}, 'received',
+                  ${text}, ${recipient.kind}, ${recipient.value})
+                ON CONFLICT (inbound_message_id) DO NOTHING
+              `;
+            }
 
             if (whatsappMessageId) {
               const duplicate =
@@ -825,9 +890,14 @@ export async function POST(
               if (
                 duplicate.length > 0
               ) {
-                console.log(
-                  "WHATSAPP_DUPLICATE_SKIPPED:",
-                  whatsappMessageId
+                console.warn(
+                  "WHATSAPP_DUPLICATE_REDELIVERY_UNVERIFIED:",
+                  {
+                    messageId: whatsappMessageId,
+                    conversationKey,
+                    reason: "Existing inbound row does not prove outbound delivery",
+                    action: "Skipped automatically; requires delivery-state reconciliation",
+                  }
                 );
 
                 const retryRows =
@@ -862,6 +932,7 @@ export async function POST(
                   );
 
                 if (
+                  !qaMode &&
                   phone &&
                   !isConversationResetCommand(
                     text
@@ -877,6 +948,25 @@ export async function POST(
                   });
                 }
 
+                if (deliveryQaEnabled && whatsappMessageId && recipient) {
+                  const recovered = await recoverFailedQaReply(
+                    sql as ReturnType<typeof neon>,
+                    whatsappMessageId,
+                    async (reply) => {
+                      const result = await sendWhatsAppMessage(recipient, reply, whatsappMessageId);
+                      const parsed = JSON.parse(result[0] || "{}") as { messages?: Array<{ id?: string }> };
+                      const outboundId = parsed.messages?.[0]?.id;
+                      if (!outboundId) throw new Error("QA provider acknowledgement missing message ID");
+                      return outboundId;
+                    }
+                  );
+                  if (recovered.status === "recovered") {
+                    repliesSent += 1;
+                    console.log("WHATSAPP_QA_RECOVERY_SENT", whatsappMessageId);
+                  } else if (recovered.status === "unknown") {
+                    console.error("WHATSAPP_QA_RECOVERY_UNCERTAIN", whatsappMessageId);
+                  }
+                }
                 continue;
               }
             }
@@ -1031,7 +1121,7 @@ export async function POST(
               matchingContact?.profile?.name;
 
             const contactReply =
-              phone
+              !qaMode && phone
                 ? await registerWhatsAppContact({
                     phone,
                     text,
@@ -1074,12 +1164,25 @@ export async function POST(
                 console.error("WHATSAPP_CRM_CONTEXT_LOOKUP_FAILED");
               }
             }
-            const brainReply = contactReply ?? await askBrain(request, history, businessContext);
+            // Exercise the actual intake-before-Brain failure path in QA only.
+            // Worker must recover from a durable snapshot, not from webhook replay.
+            if (qaMode && text === "QA_TRIGGER_BRAIN_FAILURE" && whatsappMessageId) {
+              await sql`
+                UPDATE public.whatsapp_delivery_qa
+                SET state='failed', intake_error='QA_BRAIN_UNAVAILABLE',
+                    next_retry_at=now(),updated_at=now()
+                WHERE inbound_message_id=${whatsappMessageId} AND state='received'
+              `;
+              throw new Error("QA simulated Brain failure after durable intake");
+            }
+            const brainReply = qaMode
+              ? "AXIRA_QA_REPLY_SIMULATED"
+              : contactReply ?? await askBrain(request, history, businessContext);
 
-            console.log(
-              "WHATSAPP_BRAIN_REPLY:",
-              brainReply
-            );
+            console.log("WHATSAPP_BRAIN_REPLY_METADATA:", {
+              replyLength: brainReply.length,
+              simulated: qaMode
+            });
 
             /*
             ================================================
@@ -1087,10 +1190,88 @@ export async function POST(
             ================================================
             */
 
-            await sendWhatsAppMessage(
-              recipient,
-              brainReply
-            );
+            if (deliveryQaEnabled && whatsappMessageId) {
+              await sql`
+                UPDATE public.whatsapp_delivery_qa
+                SET reply_text=${brainReply},updated_at=now()
+                WHERE inbound_message_id=${whatsappMessageId} AND state='received'
+              `;
+            }
+
+            let qaFirstAttemptFailure: "503" | "timeout" | null = null;
+            if (deliveryQaEnabled && whatsappMessageId) {
+              const claimed = await sql`
+                UPDATE public.whatsapp_delivery_qa
+                SET state = 'processing', attempts = attempts + 1,
+                    lease_until = now() + interval '5 minutes', updated_at = now()
+                WHERE inbound_message_id = ${whatsappMessageId}
+                  AND state = 'received'
+                RETURNING inbound_message_id, attempts
+              `;
+              if (claimed.length !== 1) {
+                console.warn("WHATSAPP_QA_DELIVERY_NOT_CLAIMED", whatsappMessageId);
+                continue;
+              }
+              if (qaMode && Number(claimed[0].attempts) === 1) {
+                qaFirstAttemptFailure = text === "QA_TRIGGER_503" ? "503" :
+                  text === "QA_TRIGGER_TIMEOUT" ? "timeout" : null;
+              }
+            }
+
+            let qaOutboundId: string | null = null;
+            try {
+              if (qaFirstAttemptFailure === "503") throw new Error("Dualhook error 503: QA simulated rejection");
+              if (qaFirstAttemptFailure === "timeout") throw new Error("QA simulated network timeout (uncertain)");
+              const sendResponses = await sendWhatsAppMessage(recipient, brainReply, whatsappMessageId ?? undefined);
+              if (deliveryQaEnabled && whatsappMessageId) {
+                const parsed = JSON.parse(sendResponses[0] || "{}") as { messages?: Array<{ id?: string }> };
+                if (typeof parsed.messages?.[0]?.id !== "string") {
+                  throw new Error("QA provider acknowledgement did not include a message ID");
+                }
+                qaOutboundId = parsed.messages[0].id;
+              }
+            } catch (sendError) {
+              if (deliveryQaEnabled && whatsappMessageId) {
+                // Retry only explicit provider rejections for a single-part message.
+                // Network timeouts and multipart sends remain unknown to avoid duplicates.
+                const sendErrorText = sendError instanceof Error ? sendError.message : '';
+                const rejectedTransient =
+                  /^Dualhook error (429|503)(?:\s|\/|:)/.test(sendErrorText) &&
+                  splitWhatsAppMessage(brainReply).length === 1;
+                if (rejectedTransient) {
+                  await sql`
+                    UPDATE public.whatsapp_delivery_qa
+                    SET state='failed',last_error_code='TRANSIENT_REJECTED',
+                        last_error_details=${sendErrorText.slice(0,500)},
+                        next_retry_at=${qaMode ? new Date().toISOString() : new Date(Date.now()+60000).toISOString()},
+                        updated_at=now()
+                    WHERE inbound_message_id=${whatsappMessageId} AND state='processing'
+                  `;
+                } else {
+                // A provider timeout can occur after accepting a message: do not blindly retry.
+                await sql`
+                  UPDATE public.whatsapp_delivery_qa
+                  SET state = 'unknown',
+                      lease_until = NULL, next_retry_at = NULL,
+                      last_error_details = ${sendError instanceof Error ? sendError.message.slice(0, 500) : 'send failed'},
+                      updated_at = now()
+                  WHERE inbound_message_id = ${whatsappMessageId}
+                    AND state = 'processing'
+                `;
+                }
+              }
+              throw sendError;
+            }
+            if (deliveryQaEnabled && whatsappMessageId) {
+              await sql`
+                UPDATE public.whatsapp_delivery_qa
+                SET state = 'sent', outbound_message_id=${qaOutboundId},
+                    next_retry_at=NULL, updated_at = now()
+                WHERE inbound_message_id = ${whatsappMessageId}
+                  AND state = 'processing'
+              `;
+              if (qaOutboundId) await reconcileQaProviderStatus(sql as ReturnType<typeof neon>,qaOutboundId);
+            }
 
             /*
             ================================================
