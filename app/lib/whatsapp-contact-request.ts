@@ -107,7 +107,7 @@ export async function registerWhatsAppContact(input: {
         } else {
           console.log("WHATSAPP_CONTACT_EMAIL_ACCEPTED", { prospectId: row.id });
           try {
-            await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${sentMarker}),
+            await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${sentMarker}::text),
               updated_at = NOW() WHERE prospect_key = ${key}
               AND STRPOS(COALESCE(crm_notes, ''), ${sentMarker}) = 0`;
           } catch {
@@ -178,7 +178,7 @@ export async function registerWhatsAppContact(input: {
       // Conservamos el intento incluso si hay timeout: Telnyx podría haberlo aceptado.
       // Los intentos fallidos requieren revisión; no hay reintento automático.
       const claimed = await sql`
-        UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${smsAttemptMarker}),
+        UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${smsAttemptMarker}::text),
           updated_at = NOW()
         WHERE prospect_key = ${key}
           AND STRPOS(COALESCE(crm_notes, ''), ${smsAttemptMarker}) = 0
@@ -229,7 +229,7 @@ export async function registerWhatsAppContact(input: {
           });
           const receipt = `${smsAcceptedMarker} Telnyx: ${result.data.id}`;
           try {
-            await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${receipt}),
+            await sql`UPDATE prospects SET crm_notes = CONCAT_WS(E'\n', crm_notes, ${receipt}::text),
               updated_at = NOW() WHERE prospect_key = ${key}
               AND STRPOS(COALESCE(crm_notes, ''), ${smsAcceptedMarker}) = 0`;
           } catch {
