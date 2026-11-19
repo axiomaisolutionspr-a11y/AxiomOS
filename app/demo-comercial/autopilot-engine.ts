@@ -335,7 +335,7 @@ export function pipelineMetrics(leads: Lead[], now: number, assignments: Record<
 export type AuditEntry = {
   id: string; at: string; leadId: string; leadName: string; kind: ActionKind;
   title: string; detail: string; outcome: "ejecutada" | "aprobada" | "descartada" | "bloqueada" | "error";
-  by: "Axira" | "Persona"; persisted: "Neon QA" | "Este navegador";
+  by: "Axira" | "Persona"; persisted: "Neon QA" | "Este navegador"; actionKey?: string;
 };
 
 export function productivity(log: AuditEntry[]) {

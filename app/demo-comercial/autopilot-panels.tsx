@@ -41,15 +41,56 @@ function load(): Stored {
 const uid = () => crypto.randomUUID();
 const prTime = (iso: string) => new Intl.DateTimeFormat("es-PR", { timeZone: "America/Puerto_Rico", dateStyle: "short", timeStyle: "short" }).format(new Date(iso));
 
-/** Estado compartido del Autopilot. updateStatus debe devolver true solo si Neon QA confirmó el cambio. */
-export function useAutopilot(leads: Lead[], updateStatus: (id: string, status: LeadStatus) => Promise<boolean>) {
+const API = "/api/demo-comercial/autopilot";
+type ServerEvent = { id: string; leadId: string; leadName: string; at: string; actionKey: string; kind: AuditEntry["kind"]; title: string; detail: string; outcome: AuditEntry["outcome"]; actor: AuditEntry["by"] };
+type ServerOps = { leadId: string; sellerId: string | null; followupDue: string | null; handoffSeller: string | null };
+type OpsPatch = { sellerId?: string; followupDue?: string; handoffSeller?: string };
+const draftFromDetail = (detail: string) => /^Aprobada, no enviada: «([\s\S]*)»$/.exec(detail)?.[1] ?? null;
+
+/**
+ * Estado compartido del Autopilot. Con `remote` activo, responsable, seguimiento, transferencia y
+ * bitácora se guardan en Neon QA (bitácora de solo agregar, una sola resolución por acción).
+ * Si Neon QA no responde, el registro queda en este navegador y se indica así.
+ * updateStatus debe devolver true solo si Neon QA confirmó el cambio de etapa.
+ */
+export function useAutopilot(leads: Lead[], updateStatus: (id: string, status: LeadStatus) => Promise<boolean>, remote = false) {
   const [state, setState] = useState<Stored>(empty);
   const [hydrated, setHydrated] = useState(false);
+  const [synced, setSynced] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const [running, setRunning] = useState(false);
 
   useEffect(() => { setState(load()); setHydrated(true); const t = setInterval(() => setNow(Date.now()), 60_000); return () => clearInterval(t); }, []);
   useEffect(() => { if (!hydrated) return; try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* almacenamiento no disponible */ } }, [state, hydrated]);
+
+  /** Trae de Neon QA la bitácora y las operaciones; conserva solo lo local que nunca llegó al servidor. */
+  const sync = useCallback(async (): Promise<boolean> => {
+    if (!remote) return false;
+    try {
+      const res = await fetch(API, { cache: "no-store" });
+      if (!res.ok) { setSynced(false); return false; }
+      const data: { ops?: ServerOps[]; events?: ServerEvent[] } = await res.json();
+      if (!Array.isArray(data.ops) || !Array.isArray(data.events)) { setSynced(false); return false; }
+      const ops = data.ops, events = data.events;
+      setState(s => {
+        const localOnly = s.log.filter(e => e.persisted === "Este navegador");
+        const serverLog: AuditEntry[] = events.map(e => ({ id: e.id, at: new Date(e.at).toISOString(), leadId: e.leadId, leadName: e.leadName, kind: e.kind, title: e.title, detail: e.detail, outcome: e.outcome, by: e.actor, persisted: "Neon QA", actionKey: e.actionKey }));
+        const pick = (k: "sellerId" | "followupDue" | "handoffSeller") => Object.fromEntries(ops.filter(o => o[k]).map(o => [o.leadId, k === "followupDue" ? new Date(String(o[k])).toISOString() : String(o[k])]));
+        return {
+          ...s,
+          assignments: { ...s.assignments, ...pick("sellerId") },
+          followups: { ...s.followups, ...pick("followupDue") },
+          handoffs: { ...s.handoffs, ...pick("handoffSeller") },
+          done: [...new Set([...s.done, ...events.filter(e => e.outcome !== "error").map(e => e.actionKey)])],
+          approvedDrafts: [...new Set([...s.approvedDrafts, ...events.filter(e => e.kind === "borrador_respuesta" && e.outcome === "aprobada").map(e => draftFromDetail(e.detail)).filter((x): x is string => !!x)])].slice(-100),
+          log: [...serverLog, ...localOnly].sort((a, b) => b.at.localeCompare(a.at)).slice(0, MAX_LOG),
+        };
+      });
+      setSynced(true);
+      return true;
+    } catch { setSynced(false); return false; }
+  }, [remote]);
+  useEffect(() => { if (hydrated && remote) void sync(); }, [hydrated, remote, sync]);
 
   const sellerFor = useCallback((lead: Lead) => assignSeller(lead, state.assignments), [state.assignments]);
   const planFor = useCallback((lead: Lead): ProposedAction[] => {
@@ -60,17 +101,46 @@ export function useAutopilot(leads: Lead[], updateStatus: (id: string, status: L
 
   const queue = useMemo(() => leads.flatMap(l => planFor(l).filter(a => a.decision === "requiere_aprobacion")), [leads, planFor]);
 
-  function record(s: Stored, lead: Lead, action: ProposedAction, outcome: AuditEntry["outcome"], by: AuditEntry["by"], persisted: AuditEntry["persisted"], detail = action.detail): Stored {
-    const entry: AuditEntry = { id: uid(), at: new Date().toISOString(), leadId: lead.id, leadName: lead.name, kind: action.kind, title: action.title, detail, outcome, by, persisted };
-    return { ...s, done: [...s.done, action.id], log: [entry, ...s.log].slice(0, MAX_LOG) };
-  }
-  function applyInternal(s: Stored, action: ProposedAction): Stored {
+  function opsFor(action: ProposedAction): OpsPatch | undefined {
     const p = action.payload ?? {};
-    if (action.kind === "asignar_vendedor" && p.sellerId) return { ...s, assignments: { ...s.assignments, [action.leadId]: p.sellerId } };
-    if (action.kind === "programar_seguimiento" && p.dueAt) return { ...s, followups: { ...s.followups, [action.leadId]: p.dueAt } };
-    if (action.kind === "transferir_humano" && p.sellerId) return { ...s, handoffs: { ...s.handoffs, [action.leadId]: p.sellerId }, assignments: { ...s.assignments, [action.leadId]: s.assignments[action.leadId] ?? p.sellerId } };
-    return s;
+    if (action.kind === "asignar_vendedor" && p.sellerId) return { sellerId: p.sellerId };
+    if (action.kind === "programar_seguimiento" && p.dueAt) return { followupDue: p.dueAt };
+    if (action.kind === "transferir_humano" && p.sellerId) return { handoffSeller: p.sellerId, sellerId: p.sellerId };
+    return undefined;
   }
+  function applyOps(s: Stored, leadId: string, ops?: OpsPatch): Stored {
+    if (!ops) return s;
+    return {
+      ...s,
+      assignments: ops.sellerId && !(ops.handoffSeller && s.assignments[leadId]) ? { ...s.assignments, [leadId]: ops.sellerId } : s.assignments,
+      followups: ops.followupDue ? { ...s.followups, [leadId]: ops.followupDue } : s.followups,
+      handoffs: ops.handoffSeller ? { ...s.handoffs, [leadId]: ops.handoffSeller } : s.handoffs,
+    };
+  }
+
+  /** Guarda el resultado: primero en Neon QA; si no responde, en este navegador (y lo dice). */
+  async function commit(lead: Lead, action: ProposedAction, outcome: AuditEntry["outcome"], by: AuditEntry["by"], detail: string, ops?: OpsPatch, draft?: string): Promise<"saved" | "local" | "duplicate"> {
+    const entry: AuditEntry = { id: uid(), at: new Date().toISOString(), leadId: lead.id, leadName: lead.name, kind: action.kind, title: action.title.slice(0, 120), detail: detail.slice(0, 700), outcome, by, persisted: "Este navegador", actionKey: action.id };
+    if (remote) {
+      try {
+        const res = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ event: { id: entry.id, leadId: lead.id, actionKey: action.id, kind: action.kind, title: entry.title, detail: entry.detail, outcome, actor: by }, ops }) });
+        if (res.status === 201) entry.persisted = "Neon QA";
+        else if (res.status === 409) { await sync(); return "duplicate"; }
+      } catch { /* sin conexión: queda local */ }
+    }
+    setState(s => {
+      const next = applyOps(s, lead.id, outcome === "ejecutada" || outcome === "aprobada" ? ops : undefined);
+      return {
+        ...next,
+        done: outcome === "error" ? next.done : [...next.done, action.id],
+        approvedDrafts: draft ? [...next.approvedDrafts, draft].slice(-100) : next.approvedDrafts,
+        log: [entry, ...next.log].slice(0, MAX_LOG),
+      };
+    });
+    return entry.persisted === "Neon QA" ? "saved" : "local";
+  }
+  const where = (r: "saved" | "local" | "duplicate") => r === "saved" ? " Guardado en Neon QA." : r === "local" ? (remote ? " Neon QA no respondió: quedó solo en este navegador." : "") : "";
 
   /** Aprueba (persona) o ejecuta (Axira) una acción. Lo externo nunca se ejecuta. */
   async function resolve(action: ProposedAction, by: AuditEntry["by"], editedDraft?: string): Promise<string> {
@@ -78,27 +148,27 @@ export function useAutopilot(leads: Lead[], updateStatus: (id: string, status: L
     if (!lead) return "Prospecto no encontrado.";
     const risk = ACTION_RISK[action.kind];
     if (risk === "external" || risk === "forbidden") {
-      setState(s => record(s, lead, action, "bloqueada", by, "Este navegador", action.reason));
-      return "Acción bloqueada y registrada. No se envió nada.";
+      const r = await commit(lead, action, "bloqueada", by, action.reason);
+      return r === "duplicate" ? "Esta acción ya estaba registrada." : "Acción bloqueada y registrada. No se envió nada." + where(r);
     }
     if (action.kind === "avanzar_etapa" && action.payload?.status) {
       const ok = await updateStatus(lead.id, action.payload.status);
-      setState(s => record(s, lead, action, ok ? (by === "Axira" ? "ejecutada" : "aprobada") : "error", by, "Neon QA",
-        ok ? `Etapa cambiada a «${action.payload?.status}» y confirmada por Neon QA.` : "Neon QA no confirmó el cambio; la etapa no cambió."));
-      return ok ? "Etapa actualizada en Neon QA." : "Neon QA no confirmó el cambio.";
+      const r = await commit(lead, action, ok ? (by === "Axira" ? "ejecutada" : "aprobada") : "error", by,
+        ok ? `Etapa cambiada a «${action.payload.status}» y confirmada por Neon QA.` : "Neon QA no confirmó el cambio; la etapa no cambió.");
+      return ok ? "Etapa actualizada en Neon QA." + (r === "local" ? " La bitácora quedó solo en este navegador." : "") : "Neon QA no confirmó el cambio.";
     }
     if (action.kind === "borrador_respuesta") {
       const text = (editedDraft ?? action.payload?.draft ?? "").trim().slice(0, 500);
       if (!text) return "La respuesta está vacía.";
-      setState(s => ({ ...record(s, lead, action, "aprobada", by, "Este navegador", `Aprobada, no enviada: «${text}»`), approvedDrafts: [...s.approvedDrafts, text].slice(-100) }));
-      return "Respuesta aprobada. Queda lista para enviar cuando el canal real y el consentimiento estén activos; no se envió.";
+      const r = await commit(lead, action, "aprobada", by, `Aprobada, no enviada: «${text}»`, undefined, text);
+      return r === "duplicate" ? "Otra sesión ya resolvió esta respuesta." : "Respuesta aprobada. Queda lista para enviar cuando el canal real y el consentimiento estén activos; no se envió." + where(r);
     }
-    setState(s => record(applyInternal(s, action), lead, action, by === "Axira" ? "ejecutada" : "aprobada", by, "Este navegador"));
-    return "Acción registrada.";
+    const r = await commit(lead, action, by === "Axira" ? "ejecutada" : "aprobada", by, action.detail, opsFor(action));
+    return r === "duplicate" ? "Otra sesión ya resolvió esta acción; se actualizó la vista." : "Acción registrada." + where(r);
   }
-  function discard(action: ProposedAction) {
+  async function discard(action: ProposedAction) {
     const lead = leads.find(l => l.id === action.leadId);
-    if (lead) setState(s => record(s, lead, action, "descartada", "Persona", "Este navegador"));
+    if (lead) await commit(lead, action, "descartada", "Persona", action.detail);
   }
 
   /** Recorre los prospectos abiertos y ejecuta solo lo que la política permite. */
@@ -119,10 +189,10 @@ export function useAutopilot(leads: Lead[], updateStatus: (id: string, status: L
   }
 
   return {
-    ...state, now, running, queue, planFor, sellerFor, resolve, discard, runAutopilot,
+    ...state, now, running, queue, planFor, sellerFor, resolve, discard, runAutopilot, remote, synced,
     setMode: (mode: AutonomyMode) => setState(s => ({ ...s, mode })),
     setPlaybook: (playbook: Playbook) => setState(s => ({ ...s, playbook: sanitizePlaybook(playbook) })),
-    resetLocal: () => setState(empty()),
+    resetLocal: async () => { setState(s => ({ ...empty(), mode: s.mode, playbook: s.playbook })); if (remote) await sync(); },
   };
 }
 export type AutopilotApi = ReturnType<typeof useAutopilot>;
@@ -210,7 +280,7 @@ export function LeadIntelligence({ lead, api, busy, onNotice }: { lead: Lead; ap
         <textarea id={`draft-${lead.id}`} value={draft} onChange={e => setDraft(e.target.value)} maxLength={500} rows={3} />
         <div className="ap-row">
           <button type="button" className="ap-approve" disabled={busy || api.running || !draft.trim()} onClick={() => act(() => api.resolve(draftAction, "Persona", draft))}>Aprobar respuesta</button>
-          <button type="button" className="ap-ghost" disabled={busy || api.running} onClick={() => { api.discard(draftAction); onNotice("Respuesta descartada."); }}>Descartar</button>
+          <button type="button" className="ap-ghost" disabled={busy || api.running} onClick={async () => { await api.discard(draftAction); onNotice("Respuesta descartada."); }}>Descartar</button>
           <small>Aprobar no la envía: el DEMO no tiene canal real ni consentimiento.</small>
         </div>
       </div>}
@@ -319,8 +389,8 @@ export function AutopilotTab({ leads, api, busy, onNotice, onOpenLead }: { leads
       </div>
 
       <div className="ap-card">
-        <div className="ap-row ap-between"><h3>Registro de auditoría</h3>
-          <button type="button" className="ap-ghost" disabled={api.running} onClick={() => { api.resetLocal(); onNotice("Registro local reiniciado. Las etapas guardadas en Neon QA no cambian."); }}>Reiniciar registro local</button></div>
+        <div className="ap-row ap-between"><h3>Registro de auditoría <small>{api.remote ? (api.synced ? "Neon QA · solo agregar" : "Neon QA no responde · copia local") : "este navegador"}</small></h3>
+          <button type="button" className="ap-ghost" disabled={api.running} onClick={async () => { await api.resetLocal(); onNotice(api.remote ? "Vista local reiniciada. La bitácora de Neon QA es permanente y se volvió a cargar." : "Registro local reiniciado. Las etapas guardadas en Neon QA no cambian."); }}>{api.remote ? "Recargar desde Neon QA" : "Reiniciar registro local"}</button></div>
         {api.log.length === 0 ? <p className="ap-muted">Aún no hay actividad. Cada acción de Axira o de una persona aparece aquí con fecha, resultado y dónde quedó guardada.</p> :
           <ol className="ap-log">{api.log.slice(0, 30).map(e => <li key={e.id} className={`ap-out-${e.outcome}`}>
             <time>{prTime(e.at)}</time><b>{e.title}</b><span>{e.leadName} · {e.outcome} por {e.by} · {e.persisted}</span><small>{e.detail}</small></li>)}</ol>}

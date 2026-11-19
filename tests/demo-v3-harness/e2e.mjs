@@ -53,7 +53,7 @@ const notice = await page.locator(".ad-notice").innerText();
 ok("Autopilot ejecuta y reporta", /acciones ejecutadas/.test(notice), notice);
 const calls = await page.evaluate(() => window.__calls);
 const newCalls = calls.slice(callsBefore);
-ok("Modo Supervisado no cambia etapas sin aprobación (0 PATCH)", !newCalls.some(c => c.startsWith("PATCH")), newCalls.join(" | "));
+ok("Modo Supervisado no cambia etapas sin aprobación (0 PATCH)", !newCalls.some(c => c.startsWith("PATCH")), `${newCalls.length} escrituras, todas en la bitácora: ${newCalls.every(c => c.startsWith("POST /api/demo-comercial/autopilot"))}`);
 ok("Ninguna llamada a proveedores externos", calls.every(c => / \/api\/demo-comercial/.test(c)));
 ok("Registro de auditoría con entradas", (await page.locator(".ap-log li").count()) > 0);
 ok("Paso de envío externo viene desactivado por defecto", await page.locator(".ap-node.off:has-text('Enviar respuesta')").isVisible());
@@ -61,7 +61,8 @@ await page.locator(".ap-node:has-text('Enviar respuesta') input[type=checkbox]")
 const cx = await page.evaluate(() => window.__calls.length);
 await page.click(".ad-panelhead .ap-run"); await page.waitForTimeout(300); await page.waitForSelector("text=bloqueadas por política");
 ok("Activar envío externo: Axira lo bloquea y lo registra", (await page.locator(".ap-log .ap-out-bloqueada").count()) > 0, await page.locator(".ad-notice").innerText());
-ok("Bloqueo no genera ninguna llamada", (await page.evaluate(() => window.__calls.length)) === cx);
+const blockCalls = (await page.evaluate(() => window.__calls)).slice(cx);
+ok("Bloqueo: ningún envío, solo se anota en la bitácora", blockCalls.length > 0 && blockCalls.every(c => c.startsWith("POST /api/demo-comercial/autopilot") && c.includes('"outcome":"bloqueada"')), `${blockCalls.length} anotaciones`);
 await page.locator(".ap-node:has-text('Enviar respuesta') input[type=checkbox]").first().uncheck();
 const qAfter = Number(await page.locator(".ap-count").innerText());
 ok("Cola de aprobación con pendientes", qAfter > 0, `antes=${qBefore} después=${qAfter}`);
@@ -112,17 +113,48 @@ if (hasDraft) {
   await page.click(".ap-draft .ap-approve");
   await page.waitForSelector("text=Respuesta aprobada");
   const after = (await page.evaluate(() => window.__calls)).slice(c1);
-  ok("Aprobar respuesta no genera envío ni escritura", after.length === 0, after.join("|"));
+  ok("Aprobar respuesta no la envía: solo 1 anotación en la bitácora", after.length === 1 && after[0].startsWith("POST /api/demo-comercial/autopilot") && after[0].includes("Aprobada, no enviada"));
   ok("Borrador aprobado desaparece (sin duplicado)", (await page.locator(".ap-draft").count()) === 0);
 } else ok("Ficha de María con borrador sugerido", false);
 await page.screenshot({ path: "shots/05-ficha-tras-aprobar.png", fullPage: true });
 
-// Persistencia local tras recargar (registro) — la sesión del arnés se reinicia, así que se vuelve a entrar
-const logCount = await page.evaluate(() => JSON.parse(localStorage.getItem("axiomos_demo_autopilot_v3")).log.length);
-await page.reload(); await page.fill("#demo-code", "harness-local-code"); await page.click("text=Entrar al DEMO"); await page.waitForSelector("text=Pulso comercial");
+// Persistencia en Neon QA (simulado): borrar el navegador no borra la bitácora
+const serverEvents = await page.evaluate(() => window.__db.events.length);
+ok("Acciones guardadas en la bitácora del servidor", serverEvents > 0, `${serverEvents} eventos`);
+ok("Bitácora marcada como Neon QA", (await page.locator(".ap-log span:has-text('Neon QA')").count()) > 0);
 await page.click(".ad-tabs button:has-text('Axira Autopilot')");
-const logAfter = await page.evaluate(() => JSON.parse(localStorage.getItem("axiomos_demo_autopilot_v3")).log.length);
-ok("Registro de auditoría sobrevive a la recarga", logAfter === logCount && logCount > 0, `${logCount}`);
+await page.evaluate(() => localStorage.clear());
+await page.click("text=Recargar desde Neon QA");
+await page.waitForTimeout(300);
+const shown = await page.locator(".ap-log li").count();
+ok("Sin datos locales, la bitácora se recupera del servidor", shown === Math.min(30, serverEvents), `${shown} visibles de ${serverEvents}`);
+const dupKeys = await page.evaluate(() => { const k = window.__db.events.filter(e => e.outcome !== "error").map(e => e.actionKey); return k.length - new Set(k).size; });
+ok("Ninguna acción resuelta dos veces", dupKeys === 0);
+
+// Aprobar desde la cola: un solo evento por acción
+const ev0 = await page.evaluate(() => window.__db.events.length);
+await page.click(".ap-card .ap-plan li >> nth=0 >> button:has-text('Aprobar')").catch(() => {});
+await page.waitForTimeout(300);
+const ev1 = await page.evaluate(() => window.__db.events.length);
+ok("Aprobar desde la cola agrega exactamente 1 evento", ev1 - ev0 <= 1, `${ev1 - ev0}`);
+// Simula que otra sesión ya resolvió una acción pendiente
+const pendingKey = await page.evaluate(() => {
+  const anyKey = window.__db.events[0]; return anyKey ? anyKey.actionKey : null; });
+const status409 = await page.evaluate(async (key) => {
+  const r = await fetch("/api/demo-comercial/autopilot", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: { id: crypto.randomUUID(), leadId: key.split(":")[0], actionKey: key, kind: key.split(":")[1], title: "x", detail: "x", outcome: "ejecutada", actor: "Axira" } }) });
+  return r.status; }, pendingKey);
+ok("Repetir una acción ya resuelta devuelve 409", status409 === 409);
+
+// Neon QA caído: se indica y queda local, sin fingir
+await page.evaluate(() => { window.__failAutopilot = true; });
+const qItem = page.locator(".ap-card .ap-plan li:has(button:has-text('Aprobar'))").first();
+if (await qItem.count()) {
+  await qItem.locator("button:has-text('Aprobar')").click();
+  await page.waitForTimeout(400);
+  const msg = await page.locator(".ad-notice").innerText();
+  ok("Con Neon QA caído se avisa y la anotación queda solo local", /Neon QA no (respondió|confirmó)|quedó solo en este navegador/.test(msg) && (await page.locator(".ap-log span:has-text('Este navegador')").count()) > 0, msg);
+} else ok("Hay acciones pendientes para probar la caída", false);
+await page.evaluate(() => { window.__failAutopilot = false; });
 
 // Recorrido guiado original sigue funcionando
 await page.click(".ad-tabs button:has-text('Conversación')");

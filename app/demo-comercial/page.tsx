@@ -196,7 +196,7 @@ export default function DemoComercialPage() {
    return false;
   } finally { setBusy(false); }
  }
- const autopilot = useAutopilot(leads, updateStatus);
+ const autopilot = useAutopilot(leads, updateStatus, ready);
  const visibleLeads = useMemo(() => filterLeads(leads, query, filter, autopilot.now), [leads, query, filter, autopilot.now]);
  function openLead(id: string) { setQuery(""); setFilter("todos"); setSelected(id); setTab("crm"); }
  function reset() { setSelected(null); setMessages(initialMessages(industry)); setTab("conversation"); setNotice("Conversación reiniciada. Los registros compartidos en Neon QA se conservan para mantener su historial."); }

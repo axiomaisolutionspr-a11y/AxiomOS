@@ -59,10 +59,21 @@ Leyenda: **SUP** superior · **EQ** equivalente · **MEJ** mejorable · **FALT**
 4. **Sin datos inventados:** lo que no se puede medir aparece como «no medido».
 5. **Costo:** v3 no añade ningún proveedor, modelo de IA ni cargo por sesión. XBert empieza en $99/mes más $0.99 por sesión extra.
 
-## 5. Pendiente (decisiones y trabajo)
+## 5. Persistencia en Neon QA (hecho el 19 nov, tarde)
+
+- Migración `database/migrations/20261119_demo_autopilot_v3_qa.sql`, aplicada **solo** en `axiomai_demo_comercial_qa`:
+  - `demo_lead_ops`: responsable, seguimiento y transferencia.
+  - `demo_autopilot_events`: la bitácora.
+- **Bitácora de solo agregar:** el rol de la app puede insertar y leer, pero no editar ni borrar. Se comprobó con `has_table_privilege` como `axiomai_demo_qa_writer`.
+- **Una sola resolución por acción:** un índice único parcial en `action_key`. Los errores sí se pueden reintentar. Si otra sesión ya resolvió la acción, el endpoint responde 409 y la vista se resincroniza.
+- **Atomicidad:** evento y operación se guardan en una sola sentencia. Se probó como el rol de la app y se deshizo: evento nuevo, duplicado y reintento tras error.
+- Endpoint `/api/demo-comercial/autopilot` con la misma sesión firmada, comprobación de origen y fallo cerrado que el endpoint actual.
+- Si Neon QA no responde, la anotación queda en el navegador y la pantalla lo dice.
+- Banco E2E: **37/37 PASS**.
+
+## 6. Pendiente (decisiones y trabajo)
 
 - **Ver v3 en Vercel:** las variables Preview del DEMO están limitadas a la rama v2. Para probar v3 con Neon QA en Preview hay que copiar esas 4 variables a la rama v3 (sin cambiar valores ni producción) **o** fusionar v3 dentro de la rama v2. Decisión tuya.
-- Persistir en Neon QA la asignación, el seguimiento y la bitácora (hoy se guardan en el navegador). Requiere una migración QA con 2 tablas nuevas.
 - Respuestas de Axira con el modelo real (`/api/brain`) dentro del DEMO: el costo por token sería de OpenAI. Requiere tu autorización.
 - Condiciones ramificadas en el flujo (horario, canal, palabra clave), al estilo de NEXT Studio.
 - Calendario real, reseñas, voz, cotizaciones con el catálogo verificado, más industrias y versión en inglés del DEMO.
