@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [{ "path": "/api/autopilot/whatsapp-followups", "schedule": "0 15 * * *" }],
   "git": {
     "deploymentEnabled": {
       "fix/crm-show-all-contacts-qa-20261107": false,

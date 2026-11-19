@@ -16,8 +16,8 @@ type PilotOutcome = {
   providerId: string | null;
 };
 
-export async function sendWhatsAppPilot(
-  settings: NonNullable<ReturnType<typeof whatsappPilotSettings>>,
+export async function sendWhatsAppFollowupTemplate(
+  settings: { key: string; phoneId: string; recipient: string },
   fetcher: typeof fetch = fetch,
 ): Promise<PilotOutcome> {
   try {
@@ -51,3 +51,5 @@ export async function sendWhatsAppPilot(
     return { outcome: "unknown", providerId: null };
   }
 }
+
+export const sendWhatsAppPilot = sendWhatsAppFollowupTemplate;
