@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Image from "next/image";
 import "./demo.css";
+import "./autopilot.css";
+import { AutopilotTab, CrmToolbar, filterLeads, LeadBadges, LeadIntelligence, useAutopilot, type LeadFilter } from "./autopilot-panels";
 
 type Industry = "dealer" | "restaurant" | "optica";
 type Message = { id: string; by: "cliente" | "axira"; text: string };
@@ -85,7 +87,9 @@ export default function DemoComercialPage() {
  const [name, setName] = useState("Andrea Rivera (ficticia)");
  const [contact, setContact] = useState("787-555-0101");
  const [selected, setSelected] = useState<string | null>(null);
- const [tab, setTab] = useState<"conversation" | "crm">("conversation");
+ const [tab, setTab] = useState<"conversation" | "crm" | "autopilot">("conversation");
+ const [query, setQuery] = useState("");
+ const [filter, setFilter] = useState<LeadFilter>("todos");
  const [notice, setNotice] = useState("");
  useEffect(() => {
   setMessages(initialMessages("dealer"));
@@ -178,18 +182,23 @@ export default function DemoComercialPage() {
   } catch { setNotice("No se pudo guardar en Neon QA. No se creó ningún prospecto; inténtalo nuevamente."); }
   finally { setBusy(false); }
  }
- async function updateStatus(id: string, value: Lead["status"]) {
-  if (busy || !ready) return;
+ async function updateStatus(id: string, value: Lead["status"]): Promise<boolean> {
+  if (busy || !ready) return false;
   setBusy(true);
   try {
    const res = await fetch("/api/demo-comercial", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: value }) });
    if (!res.ok) throw new Error("Falló persistencia");
    setLeads(prev => prev.map(l => l.id === id ? { ...l, status: value } : l));
    setNotice("Estado actualizado y confirmado en Neon QA.");
+   return true;
   } catch {
    setNotice("No se pudo actualizar Neon QA. El estado no cambió.");
+   return false;
   } finally { setBusy(false); }
  }
+ const autopilot = useAutopilot(leads, updateStatus);
+ const visibleLeads = useMemo(() => filterLeads(leads, query, filter, autopilot.now), [leads, query, filter, autopilot.now]);
+ function openLead(id: string) { setQuery(""); setFilter("todos"); setSelected(id); setTab("crm"); }
  function reset() { setSelected(null); setMessages(initialMessages(industry)); setTab("conversation"); setNotice("Conversación reiniciada. Los registros compartidos en Neon QA se conservan para mantener su historial."); }
  if (authState !== "ready") return (
   <main className="ad-root ad-login-wrap">
@@ -246,15 +255,15 @@ export default function DemoComercialPage() {
       <span><span className="ad-step-symbol" aria-hidden="true">➤</span> Acción sugerida</span>
     </div>
     <section className="ad-scenarios" aria-label="Escenarios comerciales">{(Object.keys(industries) as Industry[]).map(k => <button type="button" key={k} onClick={() => changeIndustry(k)} className={industry === k ? "ad-scenario active" : "ad-scenario"}><span>{k === "dealer" ? "🚙" : k === "restaurant" ? "🍽️" : "👓"}</span><strong>{industries[k].label}</strong><small>{k === "dealer" ? "Financiamiento y pruebas" : k === "restaurant" ? "Reservaciones y consultas" : "Citas administrativas"}</small></button>)}</section>
-    <div className="ad-tabs"><button type="button" className={tab === "conversation" ? "active" : ""} onClick={() => setTab("conversation")}>Conversación con Axira</button><button type="button" className={tab === "crm" ? "active" : ""} onClick={() => setTab("crm")}>AxiomOS CRM <span className="ad-tab-graph" aria-hidden="true"><i /><i /><i /></span></button></div>
+    <div className="ad-tabs"><button type="button" className={tab === "conversation" ? "active" : ""} onClick={() => setTab("conversation")}>Conversación con Axira</button><button type="button" className={tab === "crm" ? "active" : ""} onClick={() => setTab("crm")}>AxiomOS CRM <span className="ad-tab-graph" aria-hidden="true"><i /><i /><i /></span></button><button type="button" className={tab === "autopilot" ? "active" : ""} onClick={() => setTab("autopilot")}>Axira Autopilot {autopilot.queue.length > 0 && <span className="ap-tab-count" aria-label={`${autopilot.queue.length} por aprobar`}>{autopilot.queue.length}</span>}</button></div>
     {tab === "conversation" ? <section className="ad-panel">
      <div className="ad-panelhead"><div><b>Axira · Atención inteligente</b><small>{industries[industry].channel} — entorno de simulación</small></div><span className="ad-status">● Demo activo</span></div>
      <div className="ad-chat" aria-live="polite">{messages.map(m => <div className={m.by === "axira" ? "ad-bubble bot" : "ad-bubble"} key={m.id}><small>{m.by === "axira" ? "AXIRA" : "CLIENTE FICTICIO"}</small><p>{m.text}</p></div>)}</div>
      <div className="ad-quick"><div><strong>Prueba una pregunta</strong><small>Respuestas preparadas para esta simulación; sin proveedor de IA ni datos reales</small></div><div className="ad-quickbuttons">{sampleQuestions[industry].map((item, i) => <button type="button" key={i} disabled={!ready || busy || messages.length > 7} onClick={() => sendSampleQuestion(i)}>{item.question}</button>)}</div></div>
      <div className="ad-capture"><h3>Completa la solicitud de prueba</h3><div className="ad-fields"><label>Nombre ficticio<input value={name} onChange={e => setName(e.target.value)} maxLength={90} placeholder="Ej.: Andrea Rivera (ficticia)" autoComplete="off" /></label><label>Teléfono ficticio<input value={contact} onChange={e => setContact(e.target.value)} maxLength={12} placeholder="787-555-0101" inputMode="tel" autoComplete="off" /></label></div><button type="button" className="ad-primary" disabled={!ready || busy} onClick={() => captureLead()}>{busy ? "Guardando en Neon QA…" : !ready ? "Neon QA no disponible" : "Registrar en AxiomOS CRM →"}</button><button type="button" className="ad-guided" disabled={!ready || busy} onClick={guidedDemo}>▶ Iniciar recorrido guiado</button><p className="ad-guide-note">El recorrido simula preguntas y registra un prospecto ficticio en Neon QA. No envía mensajes ni solicita citas reales.</p></div>
-    </section> : <section className="ad-panel">
+    </section> : tab === "autopilot" ? <AutopilotTab leads={leads} api={autopilot} busy={busy} onNotice={setNotice} onOpenLead={openLead} /> : <section className="ad-panel">
      <div className="ad-panelhead"><div><b>AxiomOS · Centro comercial</b><small>Prospectos ficticios almacenados en Neon QA; si falla la conexión se deshabilitan los cambios</small></div><button className="ad-reset" type="button" onClick={reset}>Reiniciar demo</button></div>
-     <div className="ad-crm"><div className="ad-leads">{leads.length === 0 ? <div className="ad-empty">Aún no hay prospectos de demostración. Vuelve a la conversación y registra uno.</div> : leads.map(l => <button className={selected === l.id ? "ad-lead active" : "ad-lead"} key={l.id} type="button" onClick={() => setSelected(l.id)}><b>{l.name}</b><small>{industries[l.industry].label} · {l.channel}</small><span>{l.priority === "Alta" ? "● Alta prioridad" : "● Prioridad media"} · {l.status}</span></button>)}</div><div className="ad-details">{active ? <><div className="ad-detailtop"><div><small>FICHA DEL PROSPECTO</small><h2>{active.name}</h2><p>{active.contact} · {active.channel}</p></div><span className="ad-priority">{active.priority}</span></div><div className="ad-highlight"><small>PRÓXIMA ACCIÓN RECOMENDADA</small><strong>{active.nextAction}</strong><span>Recomendación simulada · no ejecutada</span></div><label className="ad-statuslabel">Estado de oportunidad<select value={active.status} disabled={busy || !ready} onChange={e => updateStatus(active.id, e.target.value as Lead["status"])}><option>Nuevo</option><option>Contactar</option><option>Cita solicitada</option><option>Ganado</option></select></label><h3>Historial de la conversación</h3><div className="ad-history">{active.messages.map(m => <p key={m.id}><b>{m.by === "axira" ? "Axira" : "Cliente"}:</b> {m.text}</p>)}</div></> : <div className="ad-empty">Selecciona un prospecto para revisar su historial, cambiar el estado y observar la próxima acción.</div>}</div></div>
+     <div className="ad-crm"><div className="ad-leads"><CrmToolbar query={query} setQuery={setQuery} filter={filter} setFilter={setFilter} leads={leads} now={autopilot.now} />{leads.length === 0 ? <div className="ad-empty">Aún no hay prospectos de demostración. Vuelve a la conversación y registra uno.</div> : visibleLeads.length === 0 ? <div className="ad-empty">Ningún prospecto coincide con la búsqueda o el filtro.</div> : visibleLeads.map(l => <button className={selected === l.id ? "ad-lead active" : "ad-lead"} key={l.id} type="button" onClick={() => setSelected(l.id)}><b>{l.name}</b><small>{industries[l.industry].label} · {l.channel}</small><span>{l.priority === "Alta" ? "● Alta prioridad" : "● Prioridad media"} · {l.status}</span><LeadBadges lead={l} now={autopilot.now} /></button>)}</div><div className="ad-details">{active ? <><div className="ad-detailtop"><div><small>FICHA DEL PROSPECTO</small><h2>{active.name}</h2><p>{active.contact} · {active.channel}</p></div><span className="ad-priority">{active.priority}</span></div><div className="ad-highlight"><small>PRÓXIMA ACCIÓN RECOMENDADA</small><strong>{active.nextAction}</strong><span>Recomendación simulada · no ejecutada</span></div><label className="ad-statuslabel">Estado de oportunidad<select value={active.status} disabled={busy || !ready} onChange={e => updateStatus(active.id, e.target.value as Lead["status"])}><option>Nuevo</option><option>Contactar</option><option>Cita solicitada</option><option>Ganado</option></select></label><LeadIntelligence key={active.id} lead={active} api={autopilot} busy={busy} onNotice={setNotice} /><h3>Historial de la conversación</h3><div className="ad-history">{active.messages.map(m => <p key={m.id}><b>{m.by === "axira" ? "Axira" : "Cliente"}:</b> {m.text}</p>)}</div></> : <div className="ad-empty">Selecciona un prospecto para revisar su historial, cambiar el estado y observar la próxima acción.</div>}</div></div>
     </section>}
     {notice && <p role="status" className="ad-notice">{notice}</p>}
     <footer className="ad-footer"><div><strong>AxiomAI Solutions LLC</strong><p>Simulación funcional con persistencia confirmada en Neon QA. Los cambios se bloquean si falla la conexión. No utiliza proveedores reales de WhatsApp ni Telnyx; nunca escribe en el CRM productivo.</p></div><a href="https://www.axiomaisolutions.org/solicitud">Solicitar implementación →</a></footer>
