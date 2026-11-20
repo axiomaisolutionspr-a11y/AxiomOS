@@ -9,22 +9,22 @@
  * "Reducir movimiento" del dispositivo se respeta en ambos modos.
  */
 .fx {
-  --fx-bg: #030712;
-  --fx-ink: #e6eeff;
-  --fx-muted: #a7b8d8;
-  --fx-line: rgba(125, 170, 255, 0.24);
-  --fx-glass: rgba(13, 24, 48, 0.78);
-  --fx-glass-2: rgba(30, 50, 92, 0.55);
-  --fx-neon: #38bdf8;
-  --fx-ring: 0 0 0 1px rgba(56, 189, 248, 0.9), 0 0 16px -3px rgba(56, 189, 248, 0.7);
+  --fx-bg: rgb(var(--fx-s0));
+  --fx-ink: rgb(var(--fx-t));
+  --fx-muted: rgb(var(--fx-t2));
+  --fx-line: rgb(var(--fx-l) / 0.24);
+  --fx-glass: rgb(var(--fx-s2) / 0.78);
+  --fx-glass-2: rgb(var(--fx-s3) / 0.55);
+  --fx-neon: rgb(var(--fx-a));
+  --fx-ring: 0 0 0 1px rgb(var(--fx-a) / 0.9), 0 0 16px -3px rgb(var(--fx-a) / 0.7);
   --fx-speed: 0.28s;
   color-scheme: dark;
   position: relative;
   isolation: isolate;
   color: var(--fx-ink);
   background:
-    radial-gradient(1200px 600px at 85% -10%, rgba(37, 99, 235, 0.3), transparent 60%),
-    radial-gradient(900px 500px at -10% 30%, rgba(14, 165, 233, 0.14), transparent 60%),
+    radial-gradient(1200px 600px at 85% -10%, rgb(var(--fx-b) / 0.3), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgb(var(--fx-a2) / 0.14), transparent 60%),
     var(--fx-bg);
 }
 /* Malla tecnológica fija (sin movimiento). */
@@ -35,8 +35,8 @@
   z-index: -1;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(96, 165, 250, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(96, 165, 250, 0.06) 1px, transparent 1px);
+    linear-gradient(rgb(var(--fx-a-soft) / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--fx-a-soft) / 0.06) 1px, transparent 1px);
   background-size: 34px 34px;
   mask-image: radial-gradient(ellipse at 50% 20%, #000 30%, transparent 80%);
 }
@@ -45,12 +45,12 @@
 .fx > header {
   position: relative;
   z-index: 10;
-  background: linear-gradient(180deg, rgba(2, 6, 23, 0.94), rgba(2, 6, 23, 0.7)) !important;
+  background: linear-gradient(180deg, rgb(var(--fx-s) / 0.94), rgb(var(--fx-s) / 0.7)) !important;
   border-bottom: 1px solid var(--fx-line);
-  box-shadow: 0 1px 0 rgba(56, 189, 248, 0.25);
+  box-shadow: 0 1px 0 rgb(var(--fx-a) / 0.25);
 }
 .fx > header h1 {
-  background: linear-gradient(92deg, #fff 0%, #cfe9ff 55%, #8fd8ff 100%);
+  background: linear-gradient(92deg, #fff 0%, rgb(var(--fx-tint)) 55%, rgb(var(--fx-tint)) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -71,8 +71,8 @@
 .fx .text-slate-500 { color: var(--fx-muted) !important; }
 .fx .text-blue-700,
 .fx .text-blue-800,
-.fx .text-blue-900 { color: #8fd2ff !important; }
-.fx .bg-blue-50 { background: rgba(59, 130, 246, 0.14) !important; border-color: rgba(96, 165, 250, 0.4) !important; }
+.fx .text-blue-900 { color: rgb(var(--fx-tint)) !important; }
+.fx .bg-blue-50 { background: rgb(var(--fx-b2) / 0.14) !important; border-color: rgb(var(--fx-a-soft) / 0.4) !important; }
 .fx .bg-amber-50,
 .fx .bg-amber-100 { background: rgba(245, 158, 11, 0.13) !important; border-color: rgba(251, 191, 36, 0.35) !important; }
 .fx .text-amber-950,
@@ -92,7 +92,7 @@
 .fx .border-t,
 .fx .border-b { border-color: var(--fx-line) !important; }
 .fx summary { color: var(--fx-ink); }
-.fx .text-3xl.text-blue-700 { color: #a5e3ff !important; }
+.fx .text-3xl.text-blue-700 { color: rgb(var(--fx-tint)) !important; }
 
 /* ---------- Iluminación de bordes (igual para todo lo interactivo) ----------
  * Se ilumina solo el elemento con el que se interactúa: el que tiene el puntero encima
@@ -109,7 +109,7 @@
 .fx :is(button, a.rounded-lg, a.rounded-full, a.rounded) { border: 1px solid transparent; }
 @media (hover: hover) {
   .fx :is(button, a.rounded-lg, a.rounded-full, a.rounded, summary, [data-fx-card]):hover {
-    border-color: rgba(56, 189, 248, 0.9) !important;
+    border-color: rgb(var(--fx-a) / 0.9) !important;
     box-shadow: var(--fx-ring) !important;
   }
 }
@@ -118,39 +118,39 @@
 .fx :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea):focus,
 .fx [data-fx-active] {
   outline: none;
-  border-color: rgba(56, 189, 248, 0.95) !important;
+  border-color: rgb(var(--fx-a) / 0.95) !important;
   box-shadow: var(--fx-ring) !important;
 }
 .fx input[type="checkbox"]:focus-visible { outline: 2px solid var(--fx-neon); outline-offset: 2px; }
-.fx details[open] > summary { color: #bfe6ff; }
+.fx details[open] > summary { color: rgb(var(--fx-tint)); }
 
 /* ---------- Botones ---------- */
 .fx :is(button, a).bg-blue-600,
 .fx :is(button, a).bg-blue-700,
 .fx :is(button, a).bg-blue-800 {
-  background: linear-gradient(120deg, #2563eb, #0ea5e9 60%, #4f46e5) !important;
+  background: linear-gradient(120deg, rgb(var(--fx-b)), rgb(var(--fx-a2)) 60%, rgb(var(--fx-c))) !important;
   color: #fff !important;
-  border-color: rgba(125, 211, 252, 0.45) !important;
+  border-color: rgb(var(--fx-a-soft) / 0.45) !important;
 }
 .fx :is(button, a).bg-slate-950,
 .fx :is(button, a).bg-slate-900,
 .fx button:not([class*="bg-"]):not(.fx-seg button):not(.fx-logo) {
-  background: rgba(2, 6, 23, 0.6) !important;
+  background: rgb(var(--fx-s) / 0.6) !important;
   border: 1px solid var(--fx-line) !important;
-  color: #e0f2fe !important;
+  color: rgb(var(--fx-t3)) !important;
 }
 .fx a.rounded-full:not(.bg-blue-600) { border-color: var(--fx-line); color: var(--fx-ink) !important; }
 .fx a.rounded-full.bg-blue-600 { color: #fff !important; }
-.fx header a.rounded-lg:not(.bg-blue-600) { background: rgba(15, 23, 42, 0.5); border-color: var(--fx-line) !important; }
+.fx header a.rounded-lg:not(.bg-blue-600) { background: rgb(var(--fx-s) / 0.5); border-color: var(--fx-line) !important; }
 
 /* ---------- Campos ---------- */
 .fx :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
-  background: rgba(2, 8, 23, 0.65) !important;
+  background: rgb(var(--fx-s) / 0.65) !important;
   color: var(--fx-ink) !important;
   border: 1px solid var(--fx-line) !important;
   border-radius: 0.75rem;
 }
-.fx :is(input, select, textarea)::placeholder { color: rgba(167, 184, 216, 0.6); }
+.fx :is(input, select, textarea)::placeholder { color: rgb(var(--fx-t2) / 0.6); }
 .fx input[type="checkbox"] { accent-color: var(--fx-neon); width: 1.15rem; height: 1.15rem; }
 
 /* ---------- Tarjetas ---------- */
@@ -164,7 +164,7 @@
 .fx nav[aria-label] {
   padding: 4px;
   border-radius: 999px;
-  background: rgba(2, 6, 23, 0.55);
+  background: rgb(var(--fx-s) / 0.55);
   border: 1px solid var(--fx-line);
   scrollbar-width: none;
 }
@@ -176,7 +176,7 @@
   box-shadow:
     var(--fx-ring),
     0 22px 36px -18px rgba(0, 0, 0, 0.95),
-    0 14px 40px -22px rgba(37, 99, 235, 0.8) !important;
+    0 14px 40px -22px rgb(var(--fx-b) / 0.8) !important;
 }
 /* La sección elevada se distingue: las demás bajan un poco de brillo, sin moverse ni desenfocarse. */
 .fx[data-fx-mode="sobrio"] [data-fx-stage] [data-fx-card]:not([data-fx-active]) { filter: brightness(0.8); }
@@ -194,8 +194,8 @@
   z-index: -1;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(56, 189, 248, 0.22) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.22) 1px, transparent 1px);
+    linear-gradient(rgb(var(--fx-a) / 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--fx-a) / 0.22) 1px, transparent 1px);
   background-size: 48px 48px;
   transform: perspective(380px) rotateX(68deg);
   transform-origin: 50% 100%;
@@ -213,8 +213,8 @@
   padding: 3px;
   gap: 2px;
   border-radius: 999px;
-  border: 1px solid rgba(125, 170, 255, 0.28);
-  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgb(var(--fx-l) / 0.28);
+  background: rgb(var(--fx-s) / 0.6);
 }
 .fx .fx-seg button {
   min-height: 34px;
@@ -222,16 +222,16 @@
   border-radius: 999px;
   border: 1px solid transparent !important;
   background: transparent !important;
-  color: #c7d7f2 !important;
+  color: rgb(var(--fx-t3)) !important;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
 }
 .fx .fx-seg button[aria-pressed="true"] {
-  background: linear-gradient(120deg, #2563eb, #0ea5e9) !important;
+  background: linear-gradient(120deg, rgb(var(--fx-b)), rgb(var(--fx-a2))) !important;
   color: #fff !important;
 }
-.fx-seg-label { padding: 0 6px 0 8px; font-size: 0.7rem; color: #a7b8d8; text-transform: uppercase; letter-spacing: 0.08em; }
+.fx-seg-label { padding: 0 6px 0 8px; font-size: 0.7rem; color: rgb(var(--fx-t2)); text-transform: uppercase; letter-spacing: 0.08em; }
 
 /* ---------- Logo AxiomAI: profundidad tipo pantalla 3D ----------
  * Inspirado en las pantallas anamórficas (el panda que sale del marco): el logo vive en un
@@ -245,12 +245,12 @@
   margin: 12px 4px 6px;
   padding: 0;
   border-radius: 18px;
-  border: 1px solid rgba(125, 170, 255, 0.3) !important;
+  border: 1px solid rgb(var(--fx-l) / 0.3) !important;
   background:
-    linear-gradient(rgba(56, 189, 248, 0.07) 1px, transparent 1px) 0 0 / 14px 14px,
-    linear-gradient(90deg, rgba(56, 189, 248, 0.07) 1px, transparent 1px) 0 0 / 14px 14px,
-    radial-gradient(ellipse at 50% 100%, rgba(37, 99, 235, 0.35), rgba(2, 6, 23, 0.9) 70%) !important;
-  box-shadow: inset 0 0 24px -8px rgba(56, 189, 248, 0.5);
+    linear-gradient(rgb(var(--fx-a) / 0.07) 1px, transparent 1px) 0 0 / 14px 14px,
+    linear-gradient(90deg, rgb(var(--fx-a) / 0.07) 1px, transparent 1px) 0 0 / 14px 14px,
+    radial-gradient(ellipse at 50% 100%, rgb(var(--fx-b) / 0.35), rgb(var(--fx-s) / 0.9) 70%) !important;
+  box-shadow: inset 0 0 24px -8px rgb(var(--fx-a) / 0.5);
   cursor: pointer;
   touch-action: manipulation;
   perspective: 600px;
@@ -276,7 +276,7 @@
 .fx-logo-shine,
 .fx-logo-base { display: none; }
 .fx-logo-face {
-  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.55));
+  filter: drop-shadow(0 0 8px rgb(var(--fx-a) / 0.55));
   transition: filter 0.3s ease;
 }
 /* Sombra que el logo proyecta sobre el "piso" del marco. */
@@ -300,14 +300,14 @@
 .fx[data-fx-mode="sobrio"] .fx-logo-stage { transform: rotateX(6deg); }
 .fx[data-fx-mode="sobrio"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-stage { transform: rotateX(4deg) translate3d(0, -9%, 26px) scale(1.12); }
 .fx[data-fx-mode="sobrio"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-shadow { opacity: 1; transform: scaleX(0.85); }
-.fx[data-fx-mode="sobrio"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-face { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8)) drop-shadow(0 12px 10px rgba(0, 0, 0, 0.6)); }
+.fx[data-fx-mode="sobrio"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-face { filter: drop-shadow(0 0 10px rgb(var(--fx-a) / 0.8)) drop-shadow(0 12px 10px rgba(0, 0, 0, 0.6)); }
 @media (hover: hover) {
   .fx[data-fx-mode="sobrio"] .fx-logo:hover .fx-logo-stage { transform: rotateX(4deg) translate3d(0, -9%, 26px) scale(1.12); }
   .fx[data-fx-mode="sobrio"] .fx-logo:hover .fx-logo-shadow { opacity: 1; transform: scaleX(0.85); }
-  .fx[data-fx-mode="sobrio"] .fx-logo:hover .fx-logo-face { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8)) drop-shadow(0 12px 10px rgba(0, 0, 0, 0.6)); }
+  .fx[data-fx-mode="sobrio"] .fx-logo:hover .fx-logo-face { filter: drop-shadow(0 0 10px rgb(var(--fx-a) / 0.8)) drop-shadow(0 12px 10px rgba(0, 0, 0, 0.6)); }
 }
 /* En los dos modos: al interactuar se ilumina el borde del marco del logo. */
-.fx .fx-logo[data-pop] { border-color: rgba(56, 189, 248, 0.95) !important; box-shadow: var(--fx-ring), inset 0 0 24px -8px rgba(56, 189, 248, 0.6) !important; }
+.fx .fx-logo[data-pop] { border-color: rgb(var(--fx-a) / 0.95) !important; box-shadow: var(--fx-ring), inset 0 0 24px -8px rgb(var(--fx-a) / 0.6) !important; }
 
 /* ---------- Movimiento reducido del dispositivo: sin movimiento en ningún modo ---------- */
 @media (prefers-reduced-motion: reduce) {
@@ -321,4 +321,4 @@
 }
 
 /* Tarjeta del resumen que corresponde a la vista abierta. */
-.fx .fx-tile-current { border-color: rgba(56, 189, 248, 0.95) !important; box-shadow: var(--fx-ring) !important; }
+.fx .fx-tile-current { border-color: rgb(var(--fx-a) / 0.95) !important; box-shadow: var(--fx-ring) !important; }

@@ -5,10 +5,14 @@
 
 export type Lang = "es" | "en";
 export type FxMode = "3d" | "sobrio";
+export type FxTheme = "azul" | "cian" | "violeta" | "claro";
+export const FX_THEMES: FxTheme[] = ["azul", "cian", "violeta", "claro"];
 export const LANG_COOKIE = "axiomos_lang";
 export const FX_COOKIE = "axiomos_fx";
+export const THEME_COOKIE = "axiomos_theme";
 export const parseLang = (v: string | undefined): Lang => (v === "en" ? "en" : "es");
 export const parseFxMode = (v: string | undefined): FxMode => (v === "sobrio" ? "sobrio" : "3d");
+export const parseTheme = (v: string | undefined): FxTheme => (FX_THEMES as string[]).includes(v ?? "") ? v as FxTheme : "azul";
 
 const es = {
   // Comunes
@@ -18,6 +22,8 @@ const es = {
   roleOwner: "Propietario", roleOperator: "Operador", roleViewer: "Consulta",
   effects: "Efectos", effects3d: "3D", effectsCalm: "Sobrio", language: "Idioma",
   effectsHelp: "Cambiar entre efectos 3D y modo sobrio", languageHelp: "Cambiar idioma de la interfaz",
+  color: "Color", colorHelp: "Cambiar el color de la interfaz",
+  themes: { azul: "Azul", cian: "Cian", violeta: "Violeta", claro: "Claro" } as Record<string, string>,
   logoLabel: "AxiomAI Solutions",
   // Acceso
   accessTitle: "Acceso individual · AxiomOS Autopilot",
@@ -156,6 +162,8 @@ const en: Dict = {
   roleOwner: "Owner", roleOperator: "Operator", roleViewer: "Viewer",
   effects: "Effects", effects3d: "3D", effectsCalm: "Calm", language: "Language",
   effectsHelp: "Switch between 3D effects and calm mode", languageHelp: "Change interface language",
+  color: "Color", colorHelp: "Change the interface color",
+  themes: { azul: "Blue", cian: "Cyan", violeta: "Violet", claro: "Light" },
   logoLabel: "AxiomAI Solutions",
   accessTitle: "Individual access · AxiomOS Autopilot",
   accessIntro: "Sign in with your authorized account. You will receive a one-time code by email.",

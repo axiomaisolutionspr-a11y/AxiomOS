@@ -26,7 +26,7 @@ type Offer = {
 export default async function AutopilotQaPage({ searchParams }: {
   searchParams: Promise<{ok?: string; error?: string}>;
 }) {
-  const { lang, mode, t, locale } = await uiPrefs();
+  const { lang, mode, theme, t, locale } = await uiPrefs();
   const dateFormat = new Intl.DateTimeFormat(locale, { timeZone: "America/Puerto_Rico", dateStyle: "medium", timeStyle: "short" });
   const auth = commercialIdentityAuth(), sql = commercialIdentityDatabase();
   if (!auth || !sql) return <main className="p-8"><h1>{t.accessUnavailable}</h1></main>;
@@ -87,7 +87,7 @@ export default async function AutopilotQaPage({ searchParams }: {
   const feedback = await searchParams;
   const channelName = (c: string) => ({ whatsapp: "WhatsApp", messenger: "Messenger", instagram: "Instagram", web: "Web" } as Record<string, string>)[c] ?? c;
 
-  return <main lang={lang} data-fx-mode={mode} className="fx min-h-screen bg-slate-100 text-slate-950">
+  return <main lang={lang} data-fx-mode={mode} data-fx-theme={theme} className="fx min-h-screen bg-slate-100 text-slate-950">
     <FuturoFx />
     <header className="bg-slate-950 px-5 py-8 text-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-5">
@@ -99,7 +99,7 @@ export default async function AutopilotQaPage({ searchParams }: {
           <Link href="/prospectos/autopilot/catalogo" className="mt-3 inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">{t.toCatalog}</Link>
         </div>
         <div className="grid justify-items-start gap-3 sm:justify-items-end">
-          <ExperienceControls lang={lang} mode={mode} />
+          <ExperienceControls lang={lang} mode={mode} theme={theme} />
           <SignOut lang={lang} />
         </div>
       </div>

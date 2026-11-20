@@ -1,0 +1,137 @@
+/*
+ * Temas de color de AxiomOS Autopilot (atributo data-fx-theme en <main className="fx">).
+ * futuro.css y futuro-3d.css usan estas variables (tripletas RGB) en lugar de colores fijos,
+ * así el botón de color cambia bordes, botones, brillos y fondos al instante en los dos modos.
+ *   azul    → Azul AxiomAI (predeterminado)
+ *   cian    → Cian eléctrico
+ *   violeta → Violeta neón (el morado del cerebro del logo)
+ *   claro   → Fondo claro para usar de día, con el azul de la marca
+ */
+.fx,
+.fx[data-fx-theme="azul"] {
+  --fx-a: 56 189 248;      /* acento neón */
+  --fx-a2: 14 165 233;     /* acento medio */
+  --fx-a-soft: 125 211 252;
+  --fx-b: 37 99 235;       /* primario */
+  --fx-b2: 59 130 246;
+  --fx-c: 79 70 229;       /* secundario */
+  --fx-c2: 165 180 252;
+  --fx-tint: 165 220 255;  /* textos destacados */
+  --fx-l: 125 170 255;     /* líneas */
+  --fx-s0: 3 7 18;         /* fondo */
+  --fx-s: 2 6 23;          /* superficies oscuras */
+  --fx-s2: 13 24 48;       /* tarjetas */
+  --fx-s3: 30 50 92;       /* etiquetas */
+  --fx-t: 230 238 255;     /* texto */
+  --fx-t2: 167 184 216;    /* texto secundario */
+  --fx-t3: 224 242 254;    /* texto sobre botones oscuros */
+}
+.fx[data-fx-theme="cian"] {
+  --fx-a: 34 211 238;
+  --fx-a2: 6 182 212;
+  --fx-a-soft: 103 232 249;
+  --fx-b: 8 145 178;
+  --fx-b2: 14 116 144;
+  --fx-c: 13 148 136;
+  --fx-c2: 94 234 212;
+  --fx-tint: 165 243 252;
+  --fx-l: 103 232 249;
+  --fx-s0: 2 10 16;
+  --fx-s: 2 12 20;
+  --fx-s2: 6 28 40;
+  --fx-s3: 14 56 72;
+  --fx-t: 230 252 255;
+  --fx-t2: 160 205 214;
+  --fx-t3: 207 250 254;
+}
+.fx[data-fx-theme="violeta"] {
+  --fx-a: 192 132 252;
+  --fx-a2: 168 85 247;
+  --fx-a-soft: 216 180 254;
+  --fx-b: 124 58 237;
+  --fx-b2: 139 92 246;
+  --fx-c: 219 39 119;
+  --fx-c2: 244 114 182;
+  --fx-tint: 233 213 255;
+  --fx-l: 196 160 255;
+  --fx-s0: 9 4 20;
+  --fx-s: 10 4 24;
+  --fx-s2: 26 14 48;
+  --fx-s3: 52 30 92;
+  --fx-t: 243 236 255;
+  --fx-t2: 196 181 222;
+  --fx-t3: 243 232 255;
+}
+.fx[data-fx-theme="claro"] {
+  --fx-a: 2 132 199;
+  --fx-a2: 14 165 233;
+  --fx-a-soft: 56 189 248;
+  --fx-b: 37 99 235;
+  --fx-b2: 59 130 246;
+  --fx-c: 79 70 229;
+  --fx-c2: 129 140 248;
+  --fx-tint: 3 105 161;
+  --fx-l: 37 99 235;
+  --fx-s0: 238 243 251;
+  --fx-s: 255 255 255;
+  --fx-s2: 255 255 255;
+  --fx-s3: 226 236 250;
+  --fx-t: 15 23 42;
+  --fx-t2: 71 85 105;
+  --fx-t3: 30 41 59;
+}
+
+/* ---------- Ajustes del tema claro (fondo de día) ----------
+ * Doble atributo para quedar por encima de las reglas del modo 3D. */
+.fx[data-fx-theme="claro"][data-fx-mode] {
+  color-scheme: light;
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgb(var(--fx-b) / 0.12), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgb(var(--fx-a) / 0.08), transparent 60%),
+    rgb(var(--fx-s0));
+}
+.fx[data-fx-theme="claro"][data-fx-mode] > header {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.96), rgb(255 255 255 / 0.85)) !important;
+  color: rgb(var(--fx-t));
+}
+.fx[data-fx-theme="claro"][data-fx-mode] > header :is(.text-white, .text-slate-300) { color: rgb(var(--fx-t2)) !important; }
+.fx[data-fx-theme="claro"][data-fx-mode] > header h1 {
+  background: linear-gradient(92deg, rgb(15 23 42) 0%, rgb(var(--fx-b)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+}
+.fx[data-fx-theme="claro"][data-fx-mode] > header .text-blue-300 { color: rgb(var(--fx-b)) !important; }
+.fx[data-fx-theme="claro"][data-fx-mode] > header strong.text-white { color: rgb(var(--fx-t)) !important; }
+.fx[data-fx-theme="claro"][data-fx-mode] :is(.bg-white, .bg-slate-50, [data-fx-card]) {
+  background: rgb(255 255 255 / 0.92) !important;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 8px 24px -16px rgb(15 23 42 / 0.25);
+}
+.fx[data-fx-theme="claro"][data-fx-mode] :is(.text-3xl, .text-2xl) { text-shadow: none !important; }
+.fx[data-fx-theme="claro"][data-fx-mode]::before { opacity: 0.6; }
+.fx[data-fx-theme="claro"][data-fx-mode] .fx-logo-face { filter: drop-shadow(0 6px 10px rgb(15 23 42 / 0.25)); }
+.fx[data-fx-theme="claro"][data-fx-mode] .bg-amber-50 { background: rgb(254 243 199 / 0.85) !important; }
+.fx[data-fx-theme="claro"][data-fx-mode] :is(.text-amber-950, .text-amber-900) { color: rgb(120 53 15) !important; }
+.fx[data-fx-theme="claro"][data-fx-mode] :is(.bg-red-50, .bg-red-100) { background: rgb(254 226 226) !important; }
+.fx[data-fx-theme="claro"][data-fx-mode] :is(.text-red-950, .text-red-900, .text-red-800, .text-red-700) { color: rgb(127 29 29) !important; }
+.fx[data-fx-theme="claro"][data-fx-mode] .bg-green-100 { background: rgb(220 252 231) !important; }
+.fx[data-fx-theme="claro"][data-fx-mode] .text-green-950 { color: rgb(20 83 45) !important; }
+.fx[data-fx-theme="claro"][data-fx-mode] .bg-blue-50 { background: rgb(var(--fx-b) / 0.08) !important; }
+
+/* ---------- Selector de color ---------- */
+.fx-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.35);
+}
+.fx-swatch[data-theme="azul"] { background: linear-gradient(135deg, #2563eb, #38bdf8); }
+.fx-swatch[data-theme="cian"] { background: linear-gradient(135deg, #0891b2, #22d3ee); }
+.fx-swatch[data-theme="violeta"] { background: linear-gradient(135deg, #7c3aed, #f472b6); }
+.fx-swatch[data-theme="claro"] { background: linear-gradient(135deg, #ffffff, #bfdbfe); box-shadow: 0 0 0 1px rgb(15 23 42 / 0.35); }
+.fx[data-fx-theme="claro"][data-fx-mode] .fx-seg { background: rgb(255 255 255 / 0.85); }
+.fx[data-fx-theme="claro"][data-fx-mode] .fx-seg button:not([aria-pressed="true"]) { color: rgb(var(--fx-t3)) !important; }

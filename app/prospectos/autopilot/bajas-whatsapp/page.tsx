@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function WhatsAppOptOutPage({ searchParams }: {
   searchParams: Promise<{ result?: string }>;
 }) {
-  const { lang, mode: fxMode, t } = await uiPrefs();
+  const { lang, mode: fxMode, theme, t } = await uiPrefs();
   const mode = whatsappManualOptOutMode();
   if (!mode || (mode === "production" && !whatsappManualOptOutSharesCampaignDatabase())) notFound();
   const qa = mode === "qa";
@@ -40,9 +40,9 @@ export default async function WhatsAppOptOutPage({ searchParams }: {
     return <main className="p-8"><p role="alert">{t.optOutUnavailable}</p></main>;
   }
 
-  return <main lang={lang} data-fx-mode={fxMode} className="fx min-h-screen bg-slate-100 px-5 py-10 text-slate-950">
+  return <main lang={lang} data-fx-mode={fxMode} data-fx-theme={theme} className="fx min-h-screen bg-slate-100 px-5 py-10 text-slate-950">
     <FuturoFx />
-    <div className="mx-auto mb-4 flex max-w-lg justify-end"><ExperienceControls lang={lang} mode={fxMode} /></div>
+    <div className="mx-auto mb-4 flex max-w-lg justify-end"><ExperienceControls lang={lang} mode={fxMode} theme={theme} /></div>
     <section className="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-sm">
       <Link className="text-blue-800 underline" href="/prospectos/autopilot">{t.backToAutopilot}</Link>
       <h1 className="mt-4 text-2xl font-bold">{t.optOutTitle}{qa ? " · QA" : ""}</h1>

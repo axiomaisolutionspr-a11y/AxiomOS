@@ -103,7 +103,7 @@ function toLocal(iso: string | null | undefined) {
 export default async function CatalogoPage({ searchParams }: {
   searchParams: Promise<{ tab?: string; ok?: string; error?: string; editar?: string; v?: string; q?: string; ver?: string }>;
 }) {
-  const { lang, mode, t, locale } = await uiPrefs();
+  const { lang, mode, theme, t, locale } = await uiPrefs();
   const date = new Intl.DateTimeFormat(locale, { timeZone: "America/Puerto_Rico", dateStyle: "medium", timeStyle: "short" });
   const priceLabel = (cents: number, period: string | null) => cents === 0 ? t.free : `${money(cents)}/${t.period[period ?? "month"]}`;
   const auth = commercialIdentityAuth(), sql = commercialIdentityDatabase();
@@ -155,7 +155,7 @@ export default async function CatalogoPage({ searchParams }: {
   const topicKeys = Object.keys(KNOWLEDGE_TOPICS);
   const limitKeys = Object.keys(LIMIT_ENFORCEMENT);
 
-  return <main lang={lang} data-fx-mode={mode} className="fx min-h-screen bg-slate-100 text-slate-950">
+  return <main lang={lang} data-fx-mode={mode} data-fx-theme={theme} className="fx min-h-screen bg-slate-100 text-slate-950">
     <FuturoFx />
     <header className="bg-slate-950 px-5 py-7 text-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4">
@@ -166,7 +166,7 @@ export default async function CatalogoPage({ searchParams }: {
           <p className="mt-2 max-w-2xl text-sm text-slate-300">{t.centerIntro} <strong className="text-white">{t.publishedAndLive}</strong>.</p>
         </div>
         <div className="grid justify-items-start gap-3 sm:justify-items-end">
-          <ExperienceControls lang={lang} mode={mode} />
+          <ExperienceControls lang={lang} mode={mode} theme={theme} />
           <div className="flex items-center gap-3"><Link href="/prospectos/autopilot" className="rounded-lg border border-slate-600 px-3 py-2 text-sm">{t.back}</Link><SignOut lang={lang} /></div>
         </div>
       </div>

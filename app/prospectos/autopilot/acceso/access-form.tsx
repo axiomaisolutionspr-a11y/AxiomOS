@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import FuturoFx from "../futuro-fx";
 import HoloLogo from "../holo-logo";
 import ExperienceControls from "../experience-controls";
-import { dict, type FxMode, type Lang } from "../i18n";
+import { dict, type FxMode, type FxTheme, type Lang } from "../i18n";
 
 const auth = createAuthClient();
-export default function AutopilotAccessPage({ lang, mode }: { lang: Lang; mode: FxMode }) {
+export default function AutopilotAccessPage({ lang, mode, theme }: { lang: Lang; mode: FxMode; theme: FxTheme }) {
   const t = dict(lang);
   const router=useRouter();
   const [error,setError]=useState("");
@@ -32,12 +32,12 @@ export default function AutopilotAccessPage({ lang, mode }: { lang: Lang; mode: 
     } catch {setError(t.verifyFailed);}
     finally {setPending(false);}
   }
-  return <main lang={lang} data-fx-mode={mode} className="fx min-h-screen px-5 py-8">
+  return <main lang={lang} data-fx-mode={mode} data-fx-theme={theme} className="fx min-h-screen px-5 py-8">
     <FuturoFx />
     <div className="mx-auto grid max-w-md gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <HoloLogo label={t.logoLabel} />
-        <ExperienceControls lang={lang} mode={mode} />
+        <ExperienceControls lang={lang} mode={mode} theme={theme} />
       </div>
       <section className="grid gap-5 rounded-2xl bg-white p-6">
         <h1 className="text-2xl font-bold sm:text-3xl">{t.accessTitle}</h1>
