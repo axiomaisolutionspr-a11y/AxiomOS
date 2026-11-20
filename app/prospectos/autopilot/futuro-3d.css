@@ -513,3 +513,17 @@
   background: linear-gradient(120deg, rgb(var(--fx-b)), rgb(var(--fx-a2))) !important;
   color: #fff !important;
 }
+
+/* ---- Cuadros independientes dentro de una sección (.fx-card) ---- */
+/* La sección que contiene el cuadro tocado se queda en su plano, sin hundirse ni oscurecerse,
+ * y el cuadro sale de ella con su propio hueco iluminado. */
+.fx[data-fx-mode="3d"] [data-fx-stage] [data-fx-card][data-fx-host] {
+  --fx-z: 0px;
+  --fx-gyro: 0;
+  opacity: 1;
+  filter: none;
+}
+.fx[data-fx-mode="3d"] [data-fx-host] [data-fx-card]:not([data-fx-active]):not([data-fx-host]) { opacity: 0.75; filter: brightness(0.8); }
+.fx[data-fx-mode="3d"] .fx-card[data-fx-active] { --fx-z: 56px; }
+/* Lo que va dentro del cuadro que salió viaja con él: no se hunde ni se oscurece. */
+.fx[data-fx-mode="3d"] [data-fx-active] [data-fx-card]:not([data-fx-active]) { --fx-z: 0px; opacity: 1; filter: none; }

@@ -4,7 +4,7 @@
 // Las respuestas de precios de Axira sí usan el catálogo real publicado (lo pasa la página del servidor).
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { answerFromCatalog, money, relevantKnowledge, wantsHuman } from "../../../lib/axira-catalog-policy.js";
-import { answerBrain, brainAllowance } from "../../../lib/axiomos-brain.js";
+import { analyzeConversation, answerBrain, brainAllowance } from "../../../lib/axiomos-brain.js";
 import type { Lang } from "../i18n";
 import {
   CALLS, CLIENT_REPLIES, CONVERSATIONS, FOLLOWUPS, PROSPECTS, STAGES, demoText, pick,
@@ -42,6 +42,7 @@ export default function DemoTour({ lang, catalog }: { lang: Lang; catalog: Catal
   const [state, setState] = useState(initialState);
   const [selected, setSelected] = useState<string>(CONVERSATIONS[0].prospectId);
   const [opened, setOpened] = useState(false);
+  const [calling, setCalling] = useState<string | null>(null); // contacto en llamada simulada
 
   // Sincroniza la sección con el ancla de la dirección (#conversaciones, etc.).
   useEffect(() => {
@@ -95,10 +96,11 @@ export default function DemoTour({ lang, catalog }: { lang: Lang; catalog: Catal
 
     {section === "inicio" && <Start t={t} go={go} />}
     {section === "conversaciones" && <Conversations t={t} lang={lang} catalog={catalog} state={state} setState={setState}
-      selected={selected} opened={opened} setOpened={setOpened} openContact={openContact} prospect={prospect} log={log} />}
+      selected={selected} opened={opened} setOpened={setOpened} openContact={openContact} prospect={prospect} log={log} startCall={setCalling} />}
     {section === "prospectos" && <Prospects t={t} lang={lang} state={state} setState={setState} log={log} openContact={openContact} />}
     {section === "seguimientos" && <Followups t={t} lang={lang} state={state} setState={setState} prospect={prospect} log={log} openContact={openContact} />}
-    {section === "llamadas" && <Calls t={t} lang={lang} state={state} prospect={prospect} openContact={openContact} />}
+    {section === "llamadas" && <Calls t={t} lang={lang} state={state} prospect={prospect} openContact={openContact} startCall={setCalling} />}
+    {calling && <CallScreen t={t} lang={lang} p={prospect(calling)} setState={setState} log={log} close={() => setCalling(null)} />}
     {section === "campanas" && <Campaigns t={t} state={state} setState={setState} log={log} />}
     {section === "panel" && <Dashboard t={t} state={state} unread={unread} overdue={overdue} />}
     {section === "brain" && <BrainDemo t={t} lang={lang} catalog={catalog} state={state} overdue={overdue} log={log} />}
@@ -149,12 +151,14 @@ function suggestion(catalog: Catalog, lang: Lang, message: string, t: T) {
   return { text: t.handoffReply, source: t.noSuggestion, handoff: true };
 }
 
-function Conversations({ t, lang, catalog, state, setState, selected, opened, setOpened, openContact, prospect, log }: {
+function Conversations({ t, lang, catalog, state, setState, selected, opened, setOpened, openContact, prospect, log, startCall }: {
   t: T; lang: Lang; catalog: Catalog; state: St; setState: SetSt; selected: string; opened: boolean; setOpened: (v: boolean) => void;
-  openContact: (id: string) => void; prospect: (id: string) => DemoProspect; log: (l: string) => void;
+  openContact: (id: string) => void; prospect: (id: string) => DemoProspect; log: (l: string) => void; startCall: (id: string) => void;
 }) {
   const [draft, setDraft] = useState("");
   const [note, setNote] = useState("");
+  const [adviceFor, setAdvice] = useState<{ id: string; data: ReturnType<typeof analyzeConversation> } | null>(null);
+  const advice = adviceFor?.id === selected ? adviceFor.data : null; // al cambiar de contacto no se muestra el consejo anterior
   const [typing, setTyping] = useState<string | null>(null);
   const timers = useRef<number[]>([]);
   useEffect(() => () => timers.current.forEach((id) => window.clearTimeout(id)), []);
@@ -194,12 +198,6 @@ function Conversations({ t, lang, catalog, state, setState, selected, opened, se
   const updateProspect = (patch: Partial<DemoProspect>) =>
     setState((st) => ({ ...st, prospects: st.prospects.map((x) => x.id === p.id ? { ...x, ...patch } : x) }));
 
-  const call = () => {
-    const minutes = 3 + (state.calls.length % 5);
-    setState((st) => ({ ...st, calls: [{ id: `c${Date.now()}`, prospectId: p.id, minutes, direction: "out", at: lang === "en" ? "Now" : "Ahora",
-      summary: { es: t.callSummary(p.name), en: t.callSummary(p.name) } }, ...st.calls] }));
-    system(t.sysCall(minutes)); log(t.log.called(p.name));
-  };
   const followup = () => {
     setState((st) => ({ ...st, followups: [...st.followups, { id: `f${Date.now()}`, prospectId: p.id, dueInHours: 24,
       task: { es: t.followupTask, en: t.followupTask }, done: false }] }));
@@ -254,7 +252,7 @@ function Conversations({ t, lang, catalog, state, setState, selected, opened, se
       </div>
 
       <div aria-label={t.actions} className="flex gap-2 overflow-x-auto pb-1">
-        <button type="button" className={chip} onClick={call}>{t.call}</button>
+        <button type="button" className={chip} onClick={() => startCall(p.id)}>{t.call}</button>
         <button type="button" className={chip} onClick={followup}>{t.followup}</button>
         {STAGES.indexOf(p.stage) < STAGES.length - 1 && <button type="button" className={chip} onClick={nextStage}>{t.nextStage}</button>}
         {!p.owner && <button type="button" className={chip} onClick={() => { updateProspect({ owner: t.you }); log(t.log.assigned(p.name)); }}>{t.assignMe}</button>}
@@ -274,6 +272,21 @@ function Conversations({ t, lang, catalog, state, setState, selected, opened, se
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" className="rounded-lg bg-blue-600 px-3 py-2 font-semibold text-white" onClick={() => sug.handoff ? transfer() : reply("axira", sug.text)}>{sug.handoff ? t.transfer : t.approveSend}</button>
           {!sug.handoff && <button type="button" className="rounded-lg px-3 py-2" onClick={() => setDraft(sug.text)}>{t.edit}</button>}
+        </div>
+      </div>}
+
+      <button type="button" onClick={() => setAdvice({ id: selected, data: analyzeConversation({ messages: all, language: lang, catalog, name: p.name }) })}
+        className="flex w-fit items-center gap-2 rounded-full border border-blue-300 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-800">
+        <img src="/axiomos-brain-3d.webp" alt="" width={22} height={22} className="h-5 w-5" />{t.brainAsk}</button>
+      {advice && <div className="grid gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+        <p><strong>{t.brainWants}:</strong> {advice.wants}</p>
+        <p><strong>{t.brainTone}:</strong> {advice.tone}</p>
+        <div><strong>{t.brainReview}:</strong><ul className="ml-4 list-disc">{advice.review.map((r) => <li key={r}>{r}</li>)}</ul></div>
+        <p><strong>{t.brainReply}:</strong> {advice.reply}</p>
+        <p><strong>{t.brainNext}:</strong> {advice.next}</p>
+        <div className="flex flex-wrap gap-2">
+          {!thread.transferred && <button type="button" className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white" onClick={() => { setDraft(advice.reply); setAdvice(null); }}>{t.brainUse}</button>}
+          <button type="button" className="rounded-lg px-3 py-1.5 text-xs" onClick={() => setAdvice(null)}>{t.brainClose}</button>
         </div>
       </div>}
 
@@ -322,6 +335,129 @@ function Bubble({ who, text, t, note }: { who: Extra["from"]; text: string; t: T
   </li>;
 }
 
+// Llamada simulada: pantalla completa con controles, transcripción de Axira, notas, resultado,
+// seguimiento y etapa. Al colgar, Axira resume y se puede guardar en el historial de la demostración.
+function CallScreen({ t, lang, p, setState, log, close }: {
+  t: T; lang: Lang; p: DemoProspect; setState: SetSt; log: (l: string) => void; close: () => void;
+}) {
+  const sim = t.sim;
+  const script = useMemo(() => sim.script(p.name.replace(" (demo)", ""), pick(p.business, lang)), [sim, p, lang]);
+  const [phase, setPhase] = useState<"dialing" | "live" | "ended">("dialing");
+  const [secs, setSecs] = useState(0);
+  const [lines, setLines] = useState(0);
+  const [muted, setMuted] = useState(false);
+  const [speaker, setSpeaker] = useState(false);
+  const [hold, setHold] = useState(false);
+  const [rec, setRec] = useState(false);
+  const [pad, setPad] = useState(false);
+  const [digits, setDigits] = useState("");
+  const [events, setEvents] = useState<string[]>([]);
+  const [notes, setNotes] = useState("");
+  const [result, setResult] = useState(0);
+  const [follow, setFollow] = useState<number>(0);
+  const [stage, setStage] = useState<Stage>(p.stage);
+
+  useEffect(() => { const id = window.setTimeout(() => setPhase("live"), 2000); return () => window.clearTimeout(id); }, []);
+  useEffect(() => {
+    if (phase !== "live" || hold) return;
+    const id = window.setInterval(() => {
+      setSecs((x) => x + 1);
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [phase, hold]);
+  useEffect(() => {
+    if (phase !== "live" || hold || lines >= script.length) return;
+    const id = window.setTimeout(() => setLines((n) => n + 1), lines === 0 ? 600 : 2600);
+    return () => window.clearTimeout(id);
+  }, [phase, hold, lines, script.length]);
+
+  const time = `${String(Math.floor(secs / 60)).padStart(2, "0")}:${String(secs % 60).padStart(2, "0")}`;
+  const status = phase === "dialing" ? sim.dialing : phase === "ended" ? sim.ended : hold ? sim.onHold : sim.connected;
+  const tip = sim.tips[Math.min(sim.tips.length - 1, Math.floor(lines / 2))];
+  const summary = sim.autoSummary(p.name, sim.results[result], notes.trim());
+
+  const save = () => {
+    const minutes = Math.max(1, Math.ceil(secs / 60));
+    setState((st) => ({
+      ...st,
+      calls: [{ id: `c${Date.now()}`, prospectId: p.id, minutes, direction: "out", at: lang === "en" ? "Now" : "Ahora", summary: { es: summary, en: summary } }, ...st.calls],
+      followups: follow ? [...st.followups, { id: `f${Date.now()}`, prospectId: p.id, dueInHours: follow, task: { es: t.followupTask, en: t.followupTask }, done: false }] : st.followups,
+      prospects: st.prospects.map((x) => x.id === p.id ? { ...x, stage } : x),
+      notes: notes.trim() ? { ...st.notes, [p.id]: [notes.trim(), ...(st.notes[p.id] ?? [])] } : st.notes,
+      threads: st.threads.map((th) => th.prospectId === p.id ? { ...th, extra: [...th.extra, { from: "system", text: t.sysCall(minutes) }] } : th),
+    }));
+    log(sim.saved(p.name));
+    close();
+  };
+  const ctl = (on: boolean) => `grid place-items-center gap-1 rounded-2xl px-2 py-3 text-xs font-semibold ${on ? "bg-white text-slate-950" : "bg-white/10 text-white"}`;
+
+  // data-fx-off: dentro de la llamada no hay efecto 3D de tarjetas (los botones no se mueven al tocarlos).
+  return <div role="dialog" aria-modal="true" aria-label={sim.title} data-fx-off=""
+    className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/95 p-4 text-white backdrop-blur">
+    <div className="mx-auto grid max-w-md gap-4 pb-10">
+      <p className="rounded-lg bg-amber-400/15 px-3 py-2 text-center text-xs text-amber-200">{sim.notice}</p>
+      <div className="grid justify-items-center gap-1 pt-2 text-center">
+        <span className={`grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-fuchsia-500 text-3xl font-bold ${phase === "dialing" ? "animate-pulse" : ""}`}>{p.name[0]}</span>
+        <h2 className="mt-2 text-xl font-bold">{p.name}</h2>
+        <p className="text-sm text-slate-300">{pick(p.business, lang)} · ***{p.phoneLast4}</p>
+        <p className="text-sm font-semibold text-green-300" aria-live="polite">{status}{phase !== "dialing" && ` · ${time}`}{rec && phase === "live" && ` · ● ${sim.recording}`}</p>
+      </div>
+
+      {phase !== "ended" ? <>
+        <div className="grid grid-cols-3 gap-2">
+          <button type="button" className={ctl(muted)} onClick={() => setMuted((v) => !v)}>{muted ? sim.unmute : sim.mute}</button>
+          <button type="button" className={ctl(speaker)} onClick={() => setSpeaker((v) => !v)}>{sim.speaker}</button>
+          <button type="button" className={ctl(hold)} disabled={phase !== "live"} onClick={() => setHold((v) => !v)}>{hold ? sim.resume : sim.hold}</button>
+          <button type="button" className={ctl(rec)} disabled={phase !== "live"} onClick={() => { setRec((v) => !v); if (!rec) setEvents((e) => [sim.recordNotice, ...e]); }}>{rec ? sim.recording : sim.record}</button>
+          <button type="button" className={ctl(pad)} onClick={() => setPad((v) => !v)}>{sim.keypad}</button>
+          <button type="button" className={ctl(false)} disabled={phase !== "live"} onClick={() => { setEvents((e) => [sim.transferred, ...e]); log(t.log.transferred(p.name)); }}>{sim.transfer}</button>
+        </div>
+        {pad && <div className="grid gap-2 rounded-2xl bg-white/5 p-3">
+          <p className="min-h-6 text-center font-mono text-lg tracking-widest">{digits}</p>
+          <div className="grid grid-cols-3 gap-2">{["1","2","3","4","5","6","7","8","9","*","0","#"].map((d) =>
+            <button key={d} type="button" className="rounded-xl bg-white/10 py-2 text-lg font-semibold" onClick={() => setDigits((x) => (x + d).slice(-16))}>{d}</button>)}</div>
+        </div>}
+        <button type="button" onClick={() => { setPhase("ended"); setHold(false); }} className="mx-auto rounded-full bg-red-600 px-8 py-3 font-bold text-white">{sim.hangUp}</button>
+        {events.map((e, i) => <p key={i} className="rounded-lg bg-white/10 px-3 py-2 text-xs">{e}</p>)}
+
+        <section className="rounded-2xl bg-white/5 p-3">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-blue-300">{sim.transcript}</h3>
+          <ul className="mt-2 grid max-h-56 gap-2 overflow-y-auto text-sm">
+            {script.slice(0, lines).map(([who, text], i) => <li key={i} className={`max-w-[85%] rounded-xl px-3 py-2 ${who === "you" ? "ml-auto bg-blue-600" : "bg-white/10"}`}>
+              <span className="block text-[11px] font-bold opacity-75">{who === "you" ? t.you : t.client}</span>{text}</li>)}
+          </ul>
+          {phase === "live" && <p className="mt-2 rounded-lg bg-fuchsia-500/15 px-3 py-2 text-xs text-fuchsia-100"><strong>{sim.tip}:</strong> {tip}</p>}
+        </section>
+      </> : <section className="rounded-2xl bg-white/5 p-3 text-sm">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-blue-300">{sim.summary}</h3>
+        <p className="mt-1 text-xs text-slate-300">{sim.duration}: {time}</p>
+        <p className="mt-2">{summary}</p>
+      </section>}
+
+      <section className="grid gap-3 rounded-2xl bg-white/5 p-3 text-sm">
+        <label className="grid gap-1"><span className="text-xs font-bold uppercase tracking-wide text-blue-300">{sim.notes}</span>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} maxLength={500} placeholder={sim.notesPh}
+            className="rounded-lg border border-white/20 bg-slate-900 p-2 text-base text-white" /></label>
+        <div><p className="text-xs font-bold uppercase tracking-wide text-blue-300">{sim.result}</p>
+          <div className="mt-1 flex flex-wrap gap-2">{sim.results.map((r, i) =>
+            <button key={r} type="button" onClick={() => setResult(i)} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${result === i ? "bg-blue-500 text-white" : "bg-white/10"}`}>{r}</button>)}</div></div>
+        <div><p className="text-xs font-bold uppercase tracking-wide text-blue-300">{sim.followup}</p>
+          <div className="mt-1 flex flex-wrap gap-2">
+            {[[sim.noFollowup, 0] as [string, number], ...sim.followups].map(([label, h]) =>
+              <button key={label} type="button" onClick={() => setFollow(h)} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${follow === h ? "bg-blue-500 text-white" : "bg-white/10"}`}>{label}</button>)}</div></div>
+        <label className="grid gap-1"><span className="text-xs font-bold uppercase tracking-wide text-blue-300">{sim.stage}</span>
+          <select value={stage} onChange={(e) => setStage(e.target.value as Stage)} className="rounded-lg border border-white/20 bg-slate-900 p-2 text-base text-white">
+            {STAGES.map((st) => <option key={st} value={st}>{t.stages[st]}</option>)}</select></label>
+      </section>
+
+      {phase === "ended" && <div className="flex flex-wrap justify-center gap-2">
+        <button type="button" onClick={save} className="rounded-lg bg-blue-600 px-5 py-2.5 font-semibold text-white">{sim.save}</button>
+        <button type="button" onClick={close} className="rounded-lg bg-white/10 px-5 py-2.5 font-semibold">{sim.discard}</button>
+      </div>}
+    </div>
+  </div>;
+}
+
 function Prospects({ t, lang, state, setState, log, openContact }: { t: T; lang: Lang; state: St; setState: SetSt; log: (l: string) => void; openContact: (id: string) => void }) {
   const move = (p: DemoProspect, dir: -1 | 1) => {
     const next = STAGES[STAGES.indexOf(p.stage) + dir];
@@ -334,7 +470,7 @@ function Prospects({ t, lang, state, setState, log, openContact }: { t: T; lang:
       return <div key={stage} className="rounded-2xl bg-white p-3 shadow-sm">
         <h2 className="flex items-center justify-between font-bold">{t.stages[stage]}<span className="rounded-full bg-slate-100 px-2 text-xs">{list.length}</span></h2>
         <ul className="mt-3 grid gap-2">
-          {list.map((p) => <li key={p.id} className="rounded-xl border border-slate-200 p-3 text-sm">
+          {list.map((p) => <li key={p.id} className="fx-card rounded-xl border border-slate-200 p-3 text-sm">
             <button type="button" onClick={() => openContact(p.id)} className="text-left font-semibold text-blue-700 underline-offset-2 hover:underline">{p.name}</button>
             <p className="text-xs text-slate-500">{pick(p.business, lang)} · {t.channels[p.channel]}</p>
             <p className="mt-1 text-xs">{pick(p.note, lang)}</p>
@@ -363,7 +499,7 @@ function Followups({ t, lang, state, setState, prospect, log, openContact }: {
     <h2 className="font-bold">{t.sections.seguimientos} · {state.followups.filter((f) => !f.done).length} {t.pendingFollowups} · {state.followups.filter((f) => !f.done && f.dueInHours < 0).length} {t.overdueCount}</h2>
     <ul className="mt-3 grid gap-2">
       {sorted.map((f) => { const p = prospect(f.prospectId); const late = !f.done && f.dueInHours < 0;
-        return <li key={f.id} className={`rounded-xl border p-3 text-sm ${late ? "border-red-200 bg-red-50" : "border-slate-200"}`}>
+        return <li key={f.id} className={`fx-card rounded-xl border p-3 text-sm ${late ? "border-red-200 bg-red-50" : "border-slate-200"}`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className={f.done ? "line-through opacity-70" : "font-semibold"}>{pick(f.task, lang)}</p>
             <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${f.done ? "bg-green-100 text-green-950" : late ? "bg-red-100 text-red-900" : "bg-slate-100"}`}>
@@ -379,21 +515,32 @@ function Followups({ t, lang, state, setState, prospect, log, openContact }: {
   </section>;
 }
 
-function Calls({ t, lang, state, prospect, openContact }: { t: T; lang: Lang; state: St; prospect: (id: string) => DemoProspect; openContact: (id: string) => void }) {
+function Calls({ t, lang, state, prospect, openContact, startCall }: {
+  t: T; lang: Lang; state: St; prospect: (id: string) => DemoProspect; openContact: (id: string) => void; startCall: (id: string) => void;
+}) {
   const used = state.calls.reduce((n, c) => n + c.minutes, 0);
+  const [who, setWho] = useState(state.prospects[0]?.id ?? "");
   return <section className="grid gap-4">
     <div className="rounded-2xl bg-white p-4 shadow-sm">
       <p className="text-sm text-slate-600">{t.minutesUsed}</p>
       <p className="text-3xl font-bold text-blue-700">{used} <span className="text-base font-normal text-slate-600">{t.ofPlan}</span></p>
       <div className="mt-2 h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-blue-600" style={{ width: `${Math.min(100, (used / 200) * 100)}%` }} /></div>
       <p className="mt-2 text-xs text-slate-500">{t.callNote}</p>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <label className="sr-only" htmlFor="demo-call-who">{t.sim.pick}</label>
+        <select id="demo-call-who" value={who} onChange={(e) => setWho(e.target.value)} className="min-w-0 flex-1 rounded-lg border p-2.5 text-base">
+          {state.prospects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+        <button type="button" onClick={() => who && startCall(who)} className="rounded-lg bg-green-600 px-4 py-2.5 font-semibold text-white">{t.sim.newCall}</button>
+      </div>
     </div>
     <ul className="grid gap-2">
       {state.calls.map((c) => { const p = prospect(c.prospectId);
-        return <li key={c.id} className="rounded-2xl bg-white p-4 text-sm shadow-sm">
+        return <li key={c.id} className="fx-card rounded-2xl bg-white p-4 text-sm shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2"><button type="button" onClick={() => openContact(p.id)} className="font-bold text-blue-700">{p.name}</button>
             <span className="text-xs text-slate-500">{c.direction === "in" ? t.callIn : t.callOut} · {c.minutes} {t.min} · {c.at}</span></div>
           <p className="mt-1"><span className="text-xs font-bold text-blue-700">Axira · </span>{pick(c.summary, lang)}</p>
+          <button type="button" onClick={() => startCall(p.id)} className="mt-2 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white">{t.sim.callAgain}</button>
         </li>; })}
     </ul>
   </section>;
@@ -444,7 +591,7 @@ function Dashboard({ t, state, unread, overdue }: { t: T; state: St; unread: num
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
       {([[t.kpiProspects, active.length], [t.kpiClients, clients.length], [t.kpiConversion, `${conversion}%`],
         [t.kpiMonthly, `$${monthly.toFixed(2)}`], [t.kpiOverdue, overdue], [t.kpiUnread, unread]] as const).map(([label, value]) =>
-        <div key={label} className="rounded-xl bg-white p-4 shadow-sm"><p className="text-xs text-slate-600">{label}</p><p className="mt-1 text-2xl font-bold">{value}</p></div>)}
+        <div key={label} className="fx-card rounded-xl bg-white p-4 shadow-sm"><p className="text-xs text-slate-600">{label}</p><p className="mt-1 text-2xl font-bold">{value}</p></div>)}
     </div>
     <div className="rounded-2xl bg-white p-4 shadow-sm">
       <h2 className="font-bold">{t.byStage}</h2>

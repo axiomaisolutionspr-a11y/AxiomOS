@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { dict, type Lang } from "../i18n";
-import { askBrain } from "./actions";
+import { analyzeBrainConversation, askBrain } from "./actions";
 
 type Msg = { role: "user" | "brain"; text: string; free?: boolean };
 
@@ -35,6 +35,25 @@ export default function BrainChat({ lang, used: usedStart, limit: limitStart, su
       if (typeof r.limit === "number") setLimit(r.limit);
       if (r.blocked) { setBlocked(true); setMessages((m) => m.slice(0, -1)); return; }
       setMessages((m) => [...m, { role: "brain", text: r.answer ?? "", free: r.free }]);
+      if (typeof r.used === "number" && typeof r.limit === "number" && r.used >= r.limit) setBlocked(true);
+    });
+  };
+  // Modo "analizar conversación": pegas la conversación y Brain dice qué responder.
+  const [analyzing, setAnalyzing] = useState(false);
+  const [pasted, setPasted] = useState("");
+  const analyze = () => {
+    const text = pasted.trim();
+    if (text.length < 10 || pending) return;
+    setError("");
+    setMessages((m) => [...m, { role: "user", text: `${t.analyzeTitle}:\n${text.slice(0, 400)}${text.length > 400 ? "…" : ""}` }]);
+    start(async () => {
+      const r = await analyzeBrainConversation(text, lang);
+      if (!r.ok) { setError(r.error ?? ""); return; }
+      if (typeof r.used === "number") setUsed(r.used);
+      if (typeof r.limit === "number") setLimit(r.limit);
+      if (r.blocked) { setBlocked(true); setMessages((m) => m.slice(0, -1)); return; }
+      setMessages((m) => [...m, { role: "brain", text: r.answer ?? "" }]);
+      setPasted(""); setAnalyzing(false);
       if (typeof r.used === "number" && typeof r.limit === "number" && r.used >= r.limit) setBlocked(true);
     });
   };
@@ -74,12 +93,24 @@ export default function BrainChat({ lang, used: usedStart, limit: limitStart, su
       <p className="mt-1 text-sm">{t.blockedText}</p>
       <a href="#plan" className="mt-2 inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">{t.packTitle} →</a>
     </div>
-      : <form className="mt-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); ask(draft); }}>
+      : analyzing ? <div className="mt-4 grid gap-2">
+        <p className="text-sm font-semibold">{t.analyzeTitle}</p>
+        <p className="text-xs text-slate-600">{t.analyzeHint}</p>
+        <label className="sr-only" htmlFor="brain-paste">{t.analyzeTitle}</label>
+        <textarea id="brain-paste" value={pasted} onChange={(e) => setPasted(e.target.value)} rows={6} maxLength={6000} placeholder={t.analyzePh}
+          className="rounded-lg border border-slate-300 px-3 py-2 text-base" />
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={analyze} disabled={pending || pasted.trim().length < 10} className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50">{t.analyzeBtn}</button>
+          <button type="button" onClick={() => setAnalyzing(false)} className="rounded-lg px-4 py-2 text-sm">{t.analyzeClose}</button>
+        </div>
+      </div>
+      : <><button type="button" onClick={() => setAnalyzing(true)} className="mt-4 rounded-full border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800">{t.analyzeOpen}</button>
+      <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); ask(draft); }}>
         <label className="sr-only" htmlFor="brain-q">{t.placeholder}</label>
         <input id="brain-q" value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={600} placeholder={t.placeholder}
           autoComplete="off" className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-base" />
         <button type="submit" disabled={pending || draft.trim().length < 2} className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50">{t.send}</button>
-      </form>}
+      </form></>}
     <p className="mt-3 text-xs text-slate-500">{t.privacy} {t.resets}</p>
   </section>;
 }

@@ -323,3 +323,8 @@
 
 /* Tarjeta del resumen que corresponde a la vista abierta. */
 .fx .fx-tile-current { border-color: rgb(var(--fx-a) / 0.95) !important; box-shadow: var(--fx-ring) !important; }
+
+/* Cuadros independientes (.fx-card): la sección que los contiene no se oscurece. */
+.fx[data-fx-mode="sobrio"] [data-fx-stage] [data-fx-card][data-fx-host] { filter: none; }
+.fx[data-fx-mode="sobrio"] [data-fx-host] [data-fx-card]:not([data-fx-active]):not([data-fx-host]) { filter: brightness(0.85); }
+.fx[data-fx-mode="sobrio"] [data-fx-active] [data-fx-card]:not([data-fx-active]) { filter: none; }

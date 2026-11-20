@@ -28,6 +28,7 @@ const es = {
   logoLabel: "AxiomAI Solutions",
   navLabel: "Menú principal", navPanel: "Panel", navCatalog: "Centro Comercial", navDemo: "Demostración", navBrain: "Brain", brainButton: "Abrir Brain, tu asistente de negocio", backToCrm: "← Volver al CRM", navOptOut: "Bajas de WhatsApp",
   brain: {
+    analyzeTitle: "Analizar una conversación", analyzeHint: "Pega una conversación de Axira (o de tu equipo) con un cliente. Brain te dice qué quiere, cómo lo hizo Axira y qué responder. No se guarda.", analyzePh: "Cliente: Hola, ¿cuánto cuesta?\nAxira: …", analyzeBtn: "Analizar (1 pregunta)", analyzeOpen: "Analizar una conversación", analyzeClose: "Volver a preguntas",
     title: "Brain", subtitle: "Tu asistente de negocio. Pregúntale por tus ofertas, prospectos, planes y cómo usar el CRM.",
     meter: (left: number, limit: number) => `${left === 1 ? "Te queda" : "Te quedan"} ${left.toLocaleString("es-PR")} de ${limit.toLocaleString("es-PR")} preguntas este mes`,
     planLine: (plan: string, base: number, packs: number) => `Plan ${plan}: ${base} preguntas al mes${packs ? ` + ${packs} paquete${packs === 1 ? "" : "s"}` : ""}.`,
@@ -193,6 +194,7 @@ const en: Dict = {
   logoLabel: "AxiomAI Solutions",
   navLabel: "Main menu", navPanel: "Dashboard", navCatalog: "Commercial Center", navDemo: "Demo tour", navBrain: "Brain", brainButton: "Open Brain, your business assistant", backToCrm: "← Back to the CRM", navOptOut: "WhatsApp opt-outs",
   brain: {
+    analyzeTitle: "Analyze a conversation", analyzeHint: "Paste a conversation between Axira (or your team) and a client. Brain tells you what they want, how Axira did and what to reply. It is not saved.", analyzePh: "Client: Hi, how much is it?\nAxira: …", analyzeBtn: "Analyze (1 question)", analyzeOpen: "Analyze a conversation", analyzeClose: "Back to questions",
     title: "Brain", subtitle: "Your business assistant. Ask about your offers, prospects, plans and how to use the CRM.",
     meter: (left: number, limit: number) => `${left.toLocaleString("en-US")} of ${limit.toLocaleString("en-US")} questions left this month`,
     planLine: (plan: string, base: number, packs: number) => `${plan} plan: ${base} questions per month${packs ? ` + ${packs} pack${packs === 1 ? "" : "s"}` : ""}.`,

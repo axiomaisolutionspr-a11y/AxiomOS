@@ -12,7 +12,8 @@ import "./futuro-3d.css";
 import "./futuro-temas.css";
 import "./brain-button.css";
 
-const CARD = "article, section.rounded-xl, section.rounded-2xl, div.rounded-xl, div.rounded-2xl, a.fx-tile";
+// .fx-card: cuadros que se separan solos aunque estén dentro de otra sección (ofertas, prospectos, llamadas…).
+const CARD = "article, section.rounded-xl, section.rounded-2xl, div.rounded-xl, div.rounded-2xl, a.fx-tile, .fx-card";
 const MAX_TILT = 9;
 const MAX_GYRO = 10; // grados máximos de paralaje por giroscopio (solo 3D)
 
@@ -33,7 +34,7 @@ export default function FuturoFx() {
     // ---- Tarjetas de primer nivel: se seleccionan como una unidad completa ----
     const mark = () => {
       root.querySelectorAll<HTMLElement>(CARD).forEach((el) => {
-        if (el.hasAttribute("data-fx-card") || el.closest("header") || el.parentElement?.closest(CARD)) return;
+        if (el.hasAttribute("data-fx-card") || el.closest("header, [data-fx-off]") || (!el.matches(".fx-card") && el.parentElement?.closest(CARD))) return;
         el.setAttribute("data-fx-card", "");
         if (still) return;
         el.style.setProperty("--fx-delay", `${Math.min(order++, 10) * 60}ms`);
@@ -67,6 +68,7 @@ export default function FuturoFx() {
     // ---- Selección (ambos modos); en 3D además deja el hueco iluminado ----
     const activate = (card: HTMLElement | null) => {
       if (card === active) return;
+      root.querySelectorAll("[data-fx-host]").forEach((el) => el.removeAttribute("data-fx-host"));
       if (active) {
         active.removeAttribute("data-fx-active");
         active.parentElement?.removeAttribute("data-fx-focus");
@@ -86,6 +88,10 @@ export default function FuturoFx() {
         navigator.vibrate?.(8);
       }
       card.setAttribute("data-fx-active", "");
+      // Las secciones que contienen al cuadro tocado se quedan en su sitio (no se hunden ni se oscurecen).
+      for (let host = card.parentElement?.closest<HTMLElement>("[data-fx-card]"); host; host = host.parentElement?.closest<HTMLElement>("[data-fx-card]") ?? null) {
+        host.setAttribute("data-fx-host", "");
+      }
       Array.from(root.children).find((el) => el.contains(card))?.setAttribute("data-fx-stage", "");
     };
 
@@ -157,6 +163,9 @@ export default function FuturoFx() {
       const logo = el?.closest<HTMLElement>(".fx-logo");
       if (logo) { activate(null); popLogo(logo); return; }
       if (el?.closest(".fx-controls")) return;
+      // Tocar un botón, enlace o campo dentro de un cuadro no lo levanta: si el cuadro se moviera bajo el
+      // dedo, el toque se perdería. El cuadro se separa al tocar su parte que no es un control.
+      if (el?.closest("button, a, input, select, textarea, summary, label, [role='button']")) return;
       const card = cardFrom(e.target);
       if (!card || !root.contains(card)) return activate(null);
       activate(card);

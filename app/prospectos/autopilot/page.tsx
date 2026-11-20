@@ -154,7 +154,7 @@ export default async function AutopilotQaPage({ searchParams }: {
         <p className="mt-1 text-sm text-slate-600">{t.offersCatalogNote}</p>
         {!catalogError && catalog.length === 0 && <p className="mt-4">{t.noOffers}</p>}
         {!catalogError && <ul className="mt-4 grid gap-3">
-          {catalog.map(({ offer, state }) => <li key={offer.id} className="rounded-xl border border-slate-200 p-4">
+          {catalog.map(({ offer, state }) => <li key={offer.id} className="fx-card rounded-xl border border-slate-200 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="font-semibold">{offer.name}</h3>
               <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-900">{t.offerStates[state] || t.offerStates.unavailable}</span>

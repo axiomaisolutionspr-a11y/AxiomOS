@@ -6,7 +6,7 @@ import { listOffers } from "../../../lib/axira-offers-store.js";
 import { AXIOMAI_TENANT, loadPublishedCatalog, neonCatalogDb } from "../../../lib/axira-catalog-store.js";
 import { knowledgeContext, relevantKnowledge } from "../../../lib/axira-catalog-policy.js";
 import {
-  answerBrain, BRAIN_MAX_QUESTION, BRAIN_PLAN_KEYS, brainAiInstructions, brainAllowance, brainHistory, brainPeriod, cancelPack, confirmPackForTest,
+  analyzeConversation, answerBrain, BRAIN_MAX_CONVERSATION, BRAIN_MAX_QUESTION, BRAIN_PLAN_KEYS, brainAiInstructions, brainAllowance, brainHistory, brainPeriod, cancelPack, confirmPackForTest, conversationAnalysisTask,
   consumeQuestion, readBrainState, refundQuestion, requestPack, setTestPlan,
 } from "../../../lib/axiomos-brain.js";
 import { commercialIdentityAuth } from "../../../lib/commercial-identity-auth";
@@ -119,6 +119,52 @@ export async function askBrain(question: string, lang: "es" | "en", previous: un
   } catch (error) {
     console.error("BRAIN_ASK_FAILED", (error as { code?: string })?.code ?? "unknown");
     return { ok: false, error: english ? "Brain couldn't answer right now. The question wasn't counted." : "Brain no pudo contestar ahora. La pregunta no se contó." };
+  }
+}
+
+/**
+ * Brain analiza una conversación de Axira (o del equipo) con un cliente y dice qué responder.
+ * Cuenta 1 pregunta. Con IA encendida: análisis completo; sin IA (o si la IA falla): análisis por
+ * reglas a partir del texto pegado. La conversación nunca se guarda.
+ */
+export async function analyzeBrainConversation(conversation: string, lang: "es" | "en"): Promise<BrainReply> {
+  const english = lang === "en";
+  const text = String(conversation ?? "").trim().slice(0, BRAIN_MAX_CONVERSATION);
+  if (text.length < 10) return { ok: false, error: english ? "Paste the conversation first." : "Pega primero la conversación." };
+  const who = await member();
+  if (!who) return { ok: false, error: english ? "Your session ended. Sign in again." : "Tu sesión terminó. Vuelve a entrar." };
+  const writer = neonCatalogDb(commercialOfferWriterDatabase());
+  const reader = neonCatalogDb(who.reader);
+  if (!writer || !reader) return { ok: false, error: english ? "Brain isn't enabled in this environment." : "Brain no está habilitado en este ambiente." };
+  const period = brainPeriod();
+  try {
+    const [catalog, state] = await Promise.all([loadPublishedCatalog(reader, AXIOMAI_TENANT, "web"), readBrainState(reader, AXIOMAI_TENANT, period)]);
+    const allowance = brainAllowance(catalog, state.account);
+    if (state.used >= allowance.limit) return { ok: true, blocked: true, used: state.used, limit: allowance.limit };
+    const aiOn = process.env.AXIOMOS_BRAIN_AI_ENABLED === "true" && Boolean(process.env.OPENAI_API_KEY);
+    const used = await consumeQuestion(writer, AXIOMAI_TENANT, period, allowance.limit, who.actor, aiOn ? "ai" : "help");
+    if (used === null) return { ok: true, blocked: true, used: allowance.limit, limit: allowance.limit };
+    if (aiOn) {
+      const context = conversationAnalysisTask(lang) + "\n" + knowledgeContext(relevantKnowledge(catalog, text, { language: lang }), catalog.status === "ok"
+        ? catalog.items.filter((i: { kind: string; pricing_mode: string }) => i.kind === "plan" && i.pricing_mode === "fixed") : []);
+      const ai = await aiAnswer(`${english ? "CONVERSATION" : "CONVERSACIÓN"}:\n${text}`, lang, context);
+      if (ai) return { ok: true, answer: ai, used, limit: allowance.limit };
+    }
+    // Sin IA (o si la IA falló): análisis por reglas a partir del texto pegado.
+    const messages = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line) => {
+      const m = line.match(/^([^:]{1,30}):\s*(.*)$/);
+      const who = m ? m[1].toLowerCase() : "";
+      const from = /^(axira|t[uú]|you|yo|agente|asesor|equipo|negocio)\b/.test(who) ? "axira" : "client";
+      return { from, text: m ? m[2] : line };
+    });
+    const a = analyzeConversation({ messages, language: lang, catalog });
+    const answer = english
+      ? `What the client wants: ${a.wants}\nTone: ${a.tone}\nHow Axira did:\n${a.review.map((r) => `- ${r}`).join("\n")}\nRecommended reply:\n${a.reply}\nNext step: ${a.next}`
+      : `Qué quiere el cliente: ${a.wants}\nTono: ${a.tone}\nCómo lo hizo Axira:\n${a.review.map((r) => `- ${r}`).join("\n")}\nRespuesta recomendada:\n${a.reply}\nPróximo paso: ${a.next}`;
+    return { ok: true, answer, used, limit: allowance.limit };
+  } catch (error) {
+    console.error("BRAIN_ANALYZE_FAILED", (error as { code?: string })?.code ?? "unknown");
+    return { ok: false, error: english ? "Brain couldn't analyze it right now. The question wasn't counted." : "Brain no pudo analizarla ahora. La pregunta no se contó." };
   }
 }
 

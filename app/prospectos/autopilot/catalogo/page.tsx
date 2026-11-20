@@ -227,7 +227,7 @@ export default async function CatalogoPage({ searchParams }: {
               {current.benefits.length > 0 && <ul className="mt-2 list-disc pl-5 text-sm text-slate-700">{current.benefits.map((b) => <li key={b}>{b}</li>)}</ul>}
               {current.promo_valid_until && <p className="mt-1 text-xs text-slate-600">{t.promoUntil(date.format(new Date(current.promo_valid_until)))}</p>}
               <details id={`versiones-${key}`} className="mt-3 scroll-mt-4"><summary className="cursor-pointer text-sm font-semibold text-slate-700">{t.versions} ({versions.length})</summary>
-                <ul className="mt-2 grid gap-3">{versions.map((v) => <li key={v.version} className="rounded-lg border border-slate-200 p-3 text-sm">
+                <ul className="mt-2 grid gap-3">{versions.map((v) => <li key={v.version} className="fx-card rounded-lg border border-slate-200 p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2"><strong>v{v.version}</strong><Badge status={v.status} t={t} />
                     <span className="text-xs text-slate-500">{date.format(new Date(v.created_at))} · {v.change_reason || t.noReason}</span></div>
                   <p className="mt-1">{v.pricing_mode === "quote" ? t.quoteShort : `${v.promo_cents !== null ? `${money(v.promo_cents)} × ${v.promo_months} ${t.monthsShort} → ` : ""}${money(v.regular_cents ?? 0)}`}</p>
@@ -292,7 +292,7 @@ export default async function CatalogoPage({ searchParams }: {
               <p className="mt-2 whitespace-pre-line text-sm text-slate-800">{current.answer}</p>
               {current.keywords.length > 0 && <p className="mt-2 text-xs text-slate-500">{t.keywords}: {current.keywords.join(", ")}</p>}
               <details id={`versiones-${key}`} className="mt-3 scroll-mt-4"><summary className="cursor-pointer text-sm font-semibold text-slate-700">{t.versions} ({versions.length})</summary>
-                <ul className="mt-2 grid gap-3">{versions.map((v) => <li key={v.version} className="rounded-lg border border-slate-200 p-3 text-sm">
+                <ul className="mt-2 grid gap-3">{versions.map((v) => <li key={v.version} className="fx-card rounded-lg border border-slate-200 p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2"><strong>v{v.version}</strong><Badge status={v.status} t={t} /><span className="text-xs text-slate-500">{date.format(new Date(v.created_at))} · {v.change_reason || t.noReason}</span></div>
                   {canEdit && <Link className="mt-2 inline-block text-sm font-semibold text-blue-700" href={`?tab=conocimiento&editar=${v.key}&v=${v.version}#formulario`}>{t.newVersionFrom}</Link>}
                   <VersionActions entity="knowledge" row={v} canEdit={canEdit} t={t} />
@@ -337,7 +337,7 @@ export default async function CatalogoPage({ searchParams }: {
       {tab === "auditoria" && <section className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
         <h2 className="text-lg font-bold">{t.historyTitle}</h2>
         <p className="mt-1 text-sm text-slate-600">{t.historyIntro}</p>
-        <ul className="mt-4 grid gap-2">{audit.map((a) => <li key={a.id} className="rounded-lg border border-slate-200 p-3 text-sm">
+        <ul className="mt-4 grid gap-2">{audit.map((a) => <li key={a.id} className="fx-card rounded-lg border border-slate-200 p-3 text-sm">
           <div className="flex flex-wrap items-center gap-2"><strong>{t.actions[a.action] ?? a.action}</strong><span className="text-slate-600">{a.entity === "item" ? t.catalogEntity : t.knowledgeEntity} · {a.entity_key} v{a.version}</span>
             <span className="text-xs text-slate-500">{a.from_status ? `${t.status[a.from_status] ?? a.from_status} → ` : ""}{t.status[a.to_status] ?? a.to_status}</span></div>
           <p className="mt-1 text-xs text-slate-500">{date.format(new Date(a.recorded_at))} · {a.actor} · {a.reason || t.noReason}</p>
