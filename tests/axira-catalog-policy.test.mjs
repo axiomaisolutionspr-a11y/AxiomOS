@@ -20,7 +20,7 @@ test("Caso 5: precio autorizado de Autopilot con promoción y precio posterior",
   const r = answerFromCatalog(catalog, { message: "¿Cuánto cuesta AxiomOS Autopilot?", now: NOW });
   assert.equal(r.kind, "price");
   assert.match(r.reply, /\$9\.99 al mes durante tus primeros 3 meses y luego \$17\.95 mensuales/);
-  assert.match(r.reply, /dos usuarios, 200 minutos de llamadas y hasta 500 respuestas de Axira al mes/);
+  assert.match(r.reply, /dos usuarios, 200 minutos de teléfono y hasta 500 respuestas de Axira al mes/);
   assert.match(r.reply, /¿Quieres que te muestre cómo funcionaría en tu negocio\?$/);
 });
 

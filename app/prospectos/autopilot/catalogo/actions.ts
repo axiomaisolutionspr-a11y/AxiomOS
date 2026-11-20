@@ -42,7 +42,8 @@ export async function saveItemDraft(formData: FormData) {
     category: formData.get("category"), pricingMode: formData.get("pricingMode"), billingPeriod: formData.get("billingPeriod"),
     regular: formData.get("regular"), promo: formData.get("promo"), promoMonths: formData.get("promoMonths"),
     promoValidUntil: formData.get("promoValidUntil"), usersIncluded: formData.get("usersIncluded"),
-    callMinutes: formData.get("callMinutes"), axiraResponses: formData.get("axiraResponses"),
+    callMinutes: formData.get("callMinutes"), axiraVoiceMinutes: formData.get("axiraVoiceMinutes"),
+    axiraResponses: formData.get("axiraResponses"), brainQuestions: formData.get("brainQuestions"),
     benefits: formData.get("benefits"), restrictions: formData.get("restrictions"), channels: formData.getAll("channels"),
     validFrom: formData.get("validFrom"), validUntil: formData.get("validUntil"),
   });

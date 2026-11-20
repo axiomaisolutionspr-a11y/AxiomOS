@@ -217,7 +217,9 @@ export default async function CatalogoPage({ searchParams }: {
               <ul className="mt-2 flex flex-wrap gap-2 text-xs">
                 {current.users_included && <li className="rounded bg-slate-100 px-2 py-1">{current.users_included} {t.users}</li>}
                 {Number.isInteger(current.limits?.call_minutes) && <li className="rounded bg-slate-100 px-2 py-1">{current.limits.call_minutes} {t.callMinutes}</li>}
+                {Number.isInteger(current.limits?.axira_voice_minutes) && <li className="rounded bg-slate-100 px-2 py-1">{current.limits.axira_voice_minutes} {t.axiraVoice}</li>}
                 {Number.isInteger(current.limits?.axira_responses) && <li className="rounded bg-slate-100 px-2 py-1">{current.limits.axira_responses} {t.axiraReplies}</li>}
+                {Number.isInteger(current.limits?.brain_questions) && <li className="rounded bg-slate-100 px-2 py-1">{current.limits.brain_questions} {t.brainQuestions}</li>}
                 <li className="rounded bg-slate-100 px-2 py-1">{t.channelsLabel}: {channelList(current.channels)}</li>
               </ul>
               {current.benefits.length > 0 && <ul className="mt-2 list-disc pl-5 text-sm text-slate-700">{current.benefits.map((b) => <li key={b}>{b}</li>)}</ul>}
@@ -258,7 +260,9 @@ export default async function CatalogoPage({ searchParams }: {
             <Field label={t.promoAvailableUntil} hint={t.promoUntilHint}><input type="datetime-local" name="promoValidUntil" defaultValue={toLocal(editItem?.promo_valid_until)} className={input} /></Field>
             <Field label={t.usersIncluded}><input name="usersIncluded" inputMode="numeric" defaultValue={editItem?.users_included ?? ""} className={input} /></Field>
             <Field label={t.minutesIncluded}><input name="callMinutes" inputMode="numeric" defaultValue={editItem?.limits?.call_minutes ?? ""} className={input} /></Field>
+            <Field label={t.voiceMinutesIncluded}><input name="axiraVoiceMinutes" inputMode="numeric" defaultValue={editItem?.limits?.axira_voice_minutes ?? ""} className={input} /></Field>
             <Field label={t.repliesMonth}><input name="axiraResponses" inputMode="numeric" defaultValue={editItem?.limits?.axira_responses ?? ""} className={input} /></Field>
+            <Field label={t.brainMonth}><input name="brainQuestions" inputMode="numeric" defaultValue={editItem?.limits?.brain_questions ?? ""} className={input} /></Field>
             <Field label={t.benefits} hint={t.onePerLine}><textarea name="benefits" rows={4} defaultValue={editItem?.benefits.join("\n")} className={input} /></Field>
             <Field label={t.restrictions} hint={t.onePerLineF}><textarea name="restrictions" rows={4} defaultValue={editItem?.restrictions.join("\n")} className={input} /></Field>
             <Field label={t.validFrom} hint={t.emptyNow}><input type="datetime-local" name="validFrom" className={input} /></Field>

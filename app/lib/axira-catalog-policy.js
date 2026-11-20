@@ -12,7 +12,14 @@ export const STATUS_LABELS = { draft: "Borrador", approved: "Aprobado", publishe
 const PERIOD = { month: ["mes", "month"], year: ["año", "year"], one_time: ["pago único", "one-time"] };
 const KEY_RE = /^[a-z0-9][a-z0-9-]{1,62}$/;
 const MONEY_RE = /^(?:0|[1-9]\d{0,5})(?:\.(\d{1,2}))?$/;
-const LIMIT_KEYS = { call_minutes: ["minutos de llamadas", "call minutes"], axira_responses: ["respuestas de Axira", "Axira replies"] };
+// Minutos de teléfono (baratos) y minutos de Axira por voz (IA, ~5 veces más caros) se cuentan aparte.
+const LIMIT_KEYS = {
+  call_minutes: ["minutos de teléfono", "phone minutes"],
+  axira_voice_minutes: ["minutos de Axira por voz", "Axira voice minutes"],
+  axira_responses: ["respuestas de Axira", "Axira replies"],
+  brain_questions: ["preguntas a Brain", "Brain questions"],
+};
+const MONTHLY_CAP_KEYS = new Set(["axira_responses", "brain_questions"]);
 
 export const normalize = (value) => String(value ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const words = (value) => ` ${normalize(value).replace(/[^a-z0-9]+/g, " ").trim()} `;
@@ -66,13 +73,17 @@ export function validateItemInput(raw) {
   }
   const users = intOrNull(raw.usersIncluded, 1, 10000);
   const minutes = intOrNull(raw.callMinutes, 0, 1000000);
+  const voiceMinutes = intOrNull(raw.axiraVoiceMinutes, 0, 1000000);
   const replies = intOrNull(raw.axiraResponses, 0, 10000000);
-  if (users === undefined || minutes === undefined || replies === undefined) {
-    return { ok: false, error: "Usuarios, minutos y respuestas deben ser números enteros." };
+  const brain = intOrNull(raw.brainQuestions, 0, 10000000);
+  if ([users, minutes, voiceMinutes, replies, brain].includes(undefined)) {
+    return { ok: false, error: "Usuarios, minutos, respuestas y preguntas deben ser números enteros." };
   }
   const limits = {};
   if (minutes !== null) limits.call_minutes = minutes;
+  if (voiceMinutes !== null) limits.axira_voice_minutes = voiceMinutes;
   if (replies !== null) limits.axira_responses = replies;
+  if (brain !== null) limits.brain_questions = brain;
   const base = {
     kind, name, summary: String(raw.summary ?? "").trim().slice(0, 400), category: String(raw.category ?? "").trim().slice(0, 60),
     pricing_mode: pricing, currency: "USD", users_included: users, limits,
@@ -177,7 +188,9 @@ function describeItem(item, english, now) {
   if (item.users_included) included.push(english ? `${item.users_included} users` : `${item.users_included === 1 ? "un usuario" : item.users_included === 2 ? "dos usuarios" : `${item.users_included} usuarios`}`);
   for (const [k, [esLabel, enLabel]] of Object.entries(LIMIT_KEYS)) {
     const v = item.limits?.[k];
-    if (Number.isInteger(v)) included.push(english ? `${k === "axira_responses" ? "up to " : ""}${v} ${enLabel}` : `${k === "axira_responses" ? "hasta " : ""}${v} ${esLabel}${k === "axira_responses" ? " al mes" : ""}`);
+    if (!Number.isInteger(v)) continue;
+    const cap = MONTHLY_CAP_KEYS.has(k);
+    included.push(english ? `${cap ? "up to " : ""}${v} ${enLabel}${cap ? " per month" : ""}` : `${cap ? "hasta " : ""}${v} ${esLabel}${cap ? " al mes" : ""}`);
   }
   if (included.length) {
     const list = included.length > 1 ? `${included.slice(0, -1).join(", ")} ${english ? "and" : "y"} ${included.at(-1)}` : included[0];
@@ -203,7 +216,9 @@ export function answerFromCatalog(catalog, { message = "", language = "es", chan
   if (!priceWords.test(text)) return null;
   if (!catalog || catalog.status !== "ok") return null;
   const items = catalog.items.filter((i) => i.channels.includes(channel) && isLive(i, now));
-  const named = items.filter((i) => mentions(i, query));
+  // Si el cliente escribe el nombre completo (ej. "AxiomOS Básico"), ese producto gana sobre coincidencias parciales ("AxiomOS").
+  const exact = items.filter((i) => query.includes(` ${words(i.name).trim()} `));
+  const named = exact.length ? exact : items.filter((i) => mentions(i, query));
   const plans = items.filter((i) => i.kind === "plan" && i.pricing_mode === "fixed");
   const close = english ? " Would you like me to show you how it would work for your business?" : " ¿Quieres que te muestre cómo funcionaría en tu negocio?";
   let reply;
@@ -286,5 +301,7 @@ export function previewCatalog(all, { includeApproved = true } = {}) {
 export const LIMIT_ENFORCEMENT = {
   users_included: "Sin control técnico: el CRM no limita la cantidad de usuarios por negocio.",
   call_minutes: "Sin control técnico: no existe medición ni corte de minutos por negocio.",
+  axira_voice_minutes: "Sin control técnico: no existe medición ni corte de minutos de Axira por voz por negocio.",
   axira_responses: "Sin control técnico: no existe contador mensual de respuestas de Axira por negocio.",
+  brain_questions: "Sin control técnico: Brain (asistente del dueño) todavía no existe ni cuenta preguntas.",
 };
