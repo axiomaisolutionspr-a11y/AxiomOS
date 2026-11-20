@@ -135,3 +135,23 @@
 .fx-swatch[data-theme="claro"] { background: linear-gradient(135deg, #ffffff, #bfdbfe); box-shadow: 0 0 0 1px rgb(15 23 42 / 0.35); }
 .fx[data-fx-theme="claro"][data-fx-mode] .fx-seg { background: rgb(255 255 255 / 0.85); }
 .fx[data-fx-theme="claro"][data-fx-mode] .fx-seg button:not([aria-pressed="true"]) { color: rgb(var(--fx-t3)) !important; }
+
+/* El logo oficial trae un halo oscuro en la imagen: en el tema claro vive sobre una placa
+ * oscura tipo pantalla (en 3D sale de ella al tocarlo). */
+.fx[data-fx-theme="claro"][data-fx-mode] button.fx-logo {
+  border-radius: 18px;
+  border: 1px solid rgb(var(--fx-b) / 0.35) !important;
+  background:
+    linear-gradient(rgb(56 189 248 / 0.08) 1px, transparent 1px) 0 0 / 14px 14px,
+    linear-gradient(90deg, rgb(56 189 248 / 0.08) 1px, transparent 1px) 0 0 / 14px 14px,
+    radial-gradient(ellipse at 50% 100%, rgb(37 99 235 / 0.45), rgb(2 6 23) 72%) !important;
+  box-shadow: 0 10px 24px -12px rgb(15 23 42 / 0.6) !important;
+  overflow: visible !important;
+}
+.fx[data-fx-theme="claro"][data-fx-mode] button.fx-logo:is(:focus-visible, [data-pop]) {
+  border-color: rgb(var(--fx-a)) !important;
+  box-shadow: 0 0 0 1px rgb(var(--fx-a) / 0.9), 0 0 16px -3px rgb(var(--fx-a) / 0.7), 0 10px 24px -12px rgb(15 23 42 / 0.6) !important;
+}
+.fx[data-fx-theme="claro"][data-fx-mode="3d"] .fx-logo-stage { inset: 4%; }
+.fx[data-fx-theme="claro"][data-fx-mode] .fx-logo-face { filter: drop-shadow(0 0 8px rgb(56 189 248 / 0.55)); }
+.fx[data-fx-theme="claro"][data-fx-mode="3d"] .fx-logo-base { bottom: -10px; }
