@@ -148,8 +148,21 @@ export default function FuturoFx() {
     startGyro(); // Android: funciona sin permiso. iPhone: se pide al primer toque.
 
     // ---- Eventos ----
+    let logoTimer = 0;
+    const popLogo = (logo: HTMLElement) => {
+      if (still) return;
+      logo.removeAttribute("data-pop");
+      void logo.offsetWidth; // permite repetir el efecto con cada toque
+      logo.setAttribute("data-pop", "");
+      navigator.vibrate?.([12, 60, 24]);
+      window.clearTimeout(logoTimer);
+      logoTimer = window.setTimeout(() => logo.removeAttribute("data-pop"), 1900);
+    };
+
     const onDown = (e: PointerEvent) => {
       startGyro();
+      const logo = e.target instanceof Element ? e.target.closest<HTMLElement>(".fx-logo") : null;
+      if (logo) { activate(null); return popLogo(logo); }
       const card = cardFrom(e.target);
       if (!card || !root.contains(card)) return activate(null);
       activate(card);
@@ -182,6 +195,7 @@ export default function FuturoFx() {
       activate(null);
       observer.disconnect();
       window.clearTimeout(settle);
+      window.clearTimeout(logoTimer);
       cancelAnimationFrame(frame);
       document.removeEventListener("pointerdown", onDown);
       root.removeEventListener("pointermove", onMove);
