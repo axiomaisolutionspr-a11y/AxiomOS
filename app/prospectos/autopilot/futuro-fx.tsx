@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import "./futuro.css";
 import "./futuro-3d.css";
 import "./futuro-temas.css";
+import "./brain-button.css";
 
 const CARD = "article, section.rounded-xl, section.rounded-2xl, div.rounded-xl, div.rounded-2xl, a.fx-tile";
 const MAX_TILT = 9;

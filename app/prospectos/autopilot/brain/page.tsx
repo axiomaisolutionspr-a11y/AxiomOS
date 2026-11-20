@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrainButton from "../brain-button";
 import { redirect } from "next/navigation";
 import { money } from "../../../lib/axira-catalog-policy.js";
 import { AXIOMAI_TENANT, loadPublishedCatalog, neonCatalogDb } from "../../../lib/axira-catalog-store.js";
@@ -51,14 +52,11 @@ export default async function BrainPage({ searchParams }: { searchParams: Promis
 
   return <main lang={lang} data-fx-mode={mode} data-fx-theme={theme} className="fx min-h-screen bg-slate-100 text-slate-950">
     <FuturoFx />
-    <header className="bg-slate-950 px-5 py-7 text-white">
+    <header className="fx-has-brain bg-slate-950 px-5 py-7 text-white">
+      <BrainButton label={t.brainButton} current />
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4">
         <HoloLogo label={t.logoLabel} />
         <div className="flex min-w-0 flex-1 basis-64 items-center gap-4">
-          <span className="grid h-20 w-20 shrink-0 place-items-center rounded-full border border-cyan-300/60 bg-slate-950"
-            style={{ boxShadow: "0 0 18px rgba(34,211,238,.55), 0 0 36px rgba(217,70,239,.35), inset 0 0 18px rgba(59,130,246,.45)" }}>
-            <img src="/axiomos-brain-icon.webp" alt="" width={64} height={64} className="h-16 w-16" />
-          </span>
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-widest text-blue-300">AxiomOS Autopilot {isQa && "· QA"}</p>
             <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{b.title}</h1>
@@ -78,7 +76,7 @@ export default async function BrainPage({ searchParams }: { searchParams: Promis
       {params.error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-900">{systemMessage(lang, params.error)}</p>}
 
       {!ready ? <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p>{b.unavailable}</p></section> : <>
-        <BrainChat t={b} lang={lang} used={state.used} limit={allowance.limit} suggestions={brainSuggestions(lang)} />
+        <BrainChat lang={lang} used={state.used} limit={allowance.limit} suggestions={brainSuggestions(lang)} />
 
         <section id="plan" aria-label={b.packTitle} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold">{b.planLine(allowance.plan?.name ?? "—", allowance.plan?.questions ?? 0, allowance.packs)}</h2>

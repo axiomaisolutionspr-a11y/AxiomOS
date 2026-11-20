@@ -1,0 +1,42 @@
+/* Botón de Brain (cerebro neón) arriba a la derecha. Reutiliza el marcado y los efectos de .fx-logo;
+ * aquí solo cambia el tamaño, la forma redonda y la máscara del brillo. */
+.fx .fx-logo.fx-brain,
+.fx[data-fx-mode="3d"] .fx-logo.fx-brain {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: clamp(58px, 15vw, 76px);
+  aspect-ratio: 1;
+  margin: 0;
+  border-radius: 50%;
+  z-index: 30;
+}
+.fx[data-fx-mode="sobrio"] .fx-logo.fx-brain .fx-logo-stage { inset: 10%; transform-origin: 50% 50%; }
+.fx[data-fx-mode="3d"] .fx-brain .fx-logo-shine {
+  -webkit-mask-image: url(/axiomos-brain-3d.webp);
+  mask-image: url(/axiomos-brain-3d.webp);
+}
+.fx[data-fx-mode="3d"] .fx-brain .fx-logo-face {
+  filter: drop-shadow(0 0 8px rgb(34 211 238 / 0.75)) drop-shadow(0 0 18px rgba(217, 70, 239, 0.45));
+}
+.fx[data-fx-mode="3d"] .fx-brain .fx-logo-base { left: 18%; right: 18%; bottom: -8px; height: 10px; }
+.fx[data-fx-mode="3d"] .fx-brain .fx-logo-base::before { height: 46px; }
+.fx[data-fx-mode="3d"] .fx-brain[data-pop] { --fx-spread: -5px; }
+/* El destello de pantalla completa del logo, en Brain sale desde la esquina derecha. */
+.fx[data-fx-mode="3d"] .fx-logo.fx-brain[data-pop]::after {
+  background: radial-gradient(circle at 88% 8%, rgba(217, 70, 239, 0.3), transparent 50%);
+}
+/* Tema claro: placa oscura redonda para que el neón se vea. */
+.fx[data-fx-theme="claro"][data-fx-mode] button.fx-logo.fx-brain { border-radius: 50%; }
+/* En la pantalla de Brain el botón marca que ya estás ahí. */
+.fx .fx-logo.fx-brain[aria-current="page"] .fx-logo-face { filter: drop-shadow(0 0 12px rgb(34 211 238 / 0.95)) drop-shadow(0 0 26px rgba(217, 70, 239, 0.6)); }
+/* Deja espacio para el botón en la cabecera. */
+.fx header.fx-has-brain { position: relative; }
+.fx header.fx-has-brain > div { padding-right: clamp(64px, 17vw, 88px); }
+/* En la esquina, el cerebro sale hacia quien mira y un poco hacia el centro para no cortarse arriba. */
+.fx[data-fx-mode="3d"] .fx-logo.fx-brain[data-pop] .fx-logo-stage { animation: fx-brain-pop 0.9s cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+@keyframes fx-brain-pop {
+  0% { transform: rotateX(8deg) translateZ(0) scale(1); }
+  45% { transform: rotateX(2deg) translate3d(-18%, 22%, 150px) scale(1.3); }
+  100% { transform: rotateX(4deg) translate3d(-12%, 16%, 120px) scale(1.22); }
+}

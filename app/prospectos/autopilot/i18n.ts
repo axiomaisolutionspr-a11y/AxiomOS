@@ -26,7 +26,7 @@ const es = {
   effects3dHint: "Profundidad: lo que tocas se eleva.", effectsCalmHint: "Sin profundidad: solo se ilumina el borde de lo que tocas.",
   themes: { azul: "Azul", cian: "Cian", violeta: "Violeta", esmeralda: "Esmeralda", dorado: "Dorado", claro: "Claro" } as Record<string, string>,
   logoLabel: "AxiomAI Solutions",
-  navLabel: "Menú principal", navPanel: "Panel", navCatalog: "Centro Comercial", navDemo: "Demostración", navBrain: "Brain", navOptOut: "Bajas de WhatsApp",
+  navLabel: "Menú principal", navPanel: "Panel", navCatalog: "Centro Comercial", navDemo: "Demostración", navBrain: "Brain", brainButton: "Abrir Brain, tu asistente de negocio", navOptOut: "Bajas de WhatsApp",
   brain: {
     title: "Brain", subtitle: "Tu asistente de negocio. Pregúntale por tus ofertas, prospectos, planes y cómo usar el CRM.",
     meter: (left: number, limit: number) => `${left === 1 ? "Te queda" : "Te quedan"} ${left.toLocaleString("es-PR")} de ${limit.toLocaleString("es-PR")} preguntas este mes`,
@@ -191,7 +191,7 @@ const en: Dict = {
   effects3dHint: "Depth: what you touch lifts up.", effectsCalmHint: "No depth: only the border of what you touch lights up.",
   themes: { azul: "Blue", cian: "Cyan", violeta: "Violet", esmeralda: "Emerald", dorado: "Gold", claro: "Light" },
   logoLabel: "AxiomAI Solutions",
-  navLabel: "Main menu", navPanel: "Dashboard", navCatalog: "Commercial Center", navDemo: "Demo tour", navBrain: "Brain", navOptOut: "WhatsApp opt-outs",
+  navLabel: "Main menu", navPanel: "Dashboard", navCatalog: "Commercial Center", navDemo: "Demo tour", navBrain: "Brain", brainButton: "Open Brain, your business assistant", navOptOut: "WhatsApp opt-outs",
   brain: {
     title: "Brain", subtitle: "Your business assistant. Ask about your offers, prospects, plans and how to use the CRM.",
     meter: (left: number, limit: number) => `${left.toLocaleString("en-US")} of ${limit.toLocaleString("en-US")} questions left this month`,

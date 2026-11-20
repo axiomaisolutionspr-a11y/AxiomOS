@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import BrainButton from "./brain-button";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getOfferState, offerMoney, OFFER_CHANNELS, OFFER_PRODUCTS, puertoRicoLocalDateTime } from "../../lib/axira-offers-policy.js";
@@ -92,7 +93,8 @@ export default async function AutopilotQaPage({ searchParams }: {
 
   return <main lang={lang} data-fx-mode={mode} data-fx-theme={theme} className="fx min-h-screen bg-slate-100 text-slate-950">
     <FuturoFx />
-    <header className="bg-slate-950 px-5 py-8 text-white">
+    <header className="fx-has-brain bg-slate-950 px-5 py-8 text-white">
+      <BrainButton label={t.brainButton} />
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-5">
         <HoloLogo label={t.logoLabel} />
         <div className="min-w-0 flex-1 basis-64">

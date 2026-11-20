@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import type { Dict, Lang } from "../i18n";
+import { dict, type Lang } from "../i18n";
 import { askBrain } from "./actions";
 
 type Msg = { role: "user" | "brain"; text: string; free?: boolean };
 
 // Conversación con Brain. La conversación vive solo en esta pantalla (no se guarda el texto).
-export default function BrainChat({ t, lang, used: usedStart, limit: limitStart, suggestions }: {
-  t: Dict["brain"]; lang: Lang; used: number; limit: number; suggestions: string[];
+// Recibe solo datos (no textos con funciones): los textos se arman aquí a partir del idioma.
+export default function BrainChat({ lang, used: usedStart, limit: limitStart, suggestions }: {
+  lang: Lang; used: number; limit: number; suggestions: string[];
 }) {
+  const t = dict(lang).brain;
   const [messages, setMessages] = useState<Msg[]>([]);
   const [used, setUsed] = useState(usedStart);
   const [limit, setLimit] = useState(limitStart);

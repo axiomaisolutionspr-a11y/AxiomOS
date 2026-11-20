@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import BrainButton from "../brain-button";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -159,7 +160,8 @@ export default async function CatalogoPage({ searchParams }: {
 
   return <main lang={lang} data-fx-mode={mode} data-fx-theme={theme} className="fx min-h-screen bg-slate-100 text-slate-950">
     <FuturoFx />
-    <header className="bg-slate-950 px-5 py-7 text-white">
+    <header className="fx-has-brain bg-slate-950 px-5 py-7 text-white">
+      <BrainButton label={t.brainButton} />
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4">
         <HoloLogo label={t.logoLabel} />
         <div className="min-w-0 flex-1 basis-64">
