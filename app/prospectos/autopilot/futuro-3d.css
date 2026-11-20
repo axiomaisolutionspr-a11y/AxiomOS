@@ -497,8 +497,8 @@
 
 /* ---------- Ajustes de convivencia con la base (futuro.css) ---------- */
 /* El logo en 3D no usa el marco del modo sobrio y puede salir de su caja. */
-.fx[data-fx-mode="3d"] .fx-logo,
-.fx[data-fx-mode="3d"] .fx-logo:is(:hover, :active, :focus-visible, [data-pop]) {
+.fx[data-fx-mode="3d"] button.fx-logo,
+.fx[data-fx-mode="3d"] button.fx-logo:is(:hover, :active, :focus-visible, [data-pop]) {
   border: 0 !important;
   border-radius: 0;
   background: none !important;
@@ -507,7 +507,7 @@
   padding: 0;
   transform: none;
 }
-.fx[data-fx-mode="3d"] .fx-logo:focus-visible { outline: 2px solid #38bdf8 !important; outline-offset: 4px; }
+.fx[data-fx-mode="3d"] button.fx-logo:focus-visible { outline: 2px solid #38bdf8 !important; outline-offset: 4px; }
 .fx[data-fx-mode="3d"] .fx-logo-stage { inset: 0; transform-origin: 50% 50%; }
 .fx[data-fx-mode="3d"] .fx-logo-depth,
 .fx[data-fx-mode="3d"] .fx-logo-shine,
