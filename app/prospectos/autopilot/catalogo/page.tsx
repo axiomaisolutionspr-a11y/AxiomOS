@@ -9,6 +9,7 @@ import { AXIOMAI_TENANT, listCatalog, neonCatalogDb } from "../../../lib/axira-c
 import { commercialIdentityAuth } from "../../../lib/commercial-identity-auth";
 import { commercialIdentityDatabase, commercialMember, commercialOfferWriterDatabase } from "../../../lib/commercial-identity";
 import SignOut from "../sign-out";
+import HideSiteWidgets from "../hide-site-widgets";
 import { changeVersion, saveItemDraft, saveKnowledgeDraft } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +36,9 @@ const BADGE: Record<string, string> = {
 };
 const date = new Intl.DateTimeFormat("es-PR", { timeZone: "America/Puerto_Rico", dateStyle: "medium", timeStyle: "short" });
 const PERIOD: Record<string, string> = { month: "mes", year: "año", one_time: "pago único" };
+const CHANNEL_LABELS: Record<string, string> = { whatsapp: "WhatsApp", messenger: "Messenger", instagram: "Instagram", web: "Web" };
+const channelList = (channels: string[]) => channels.map((c) => CHANNEL_LABELS[c] ?? c).join(", ");
+const priceLabel = (cents: number, period: string | null) => cents === 0 ? "Gratis" : `${money(cents)}/${PERIOD[period ?? "month"]}`;
 
 function groupByKey<T extends { key: string; version: number }>(rows: T[]) {
   const map = new Map<string, T[]>();
@@ -110,7 +114,10 @@ export default async function CatalogoPage({ searchParams }: {
   }
   const canEdit = membership.role === "owner" && !loadError && Boolean(commercialOfferWriterDatabase());
   const isQa = process.env.VERCEL_ENV === "preview";
-  const itemGroups = groupByKey(items);
+  // Planes primero; luego servicios por nombre.
+  const itemGroups = groupByKey(items).sort((a, b) =>
+    (a.versions[0].kind === "plan" ? 0 : 1) - (b.versions[0].kind === "plan" ? 0 : 1) ||
+    a.versions[0].name.localeCompare(b.versions[0].name, "es"));
   const knowledgeGroups = groupByKey(knowledge);
   const published = (rows: { status: string }[]) => rows.filter((r) => r.status === "published").length;
   const pending = [...items, ...knowledge].filter((r) => r.status === "draft" || r.status === "approved").length;
@@ -122,6 +129,7 @@ export default async function CatalogoPage({ searchParams }: {
   const previewKnowledge = (question ? relevantKnowledge(preview, question) : []) as Array<{ key: string; title: string }>;
 
   return <main className="min-h-screen bg-slate-100 text-slate-950">
+    <HideSiteWidgets />
     <header className="bg-slate-950 px-5 py-7 text-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4">
         <div>
@@ -162,13 +170,13 @@ export default async function CatalogoPage({ searchParams }: {
               </div>
               <p className="mt-2 text-lg font-semibold text-blue-700">{current.pricing_mode === "quote" ? "Cotización personalizada"
                 : current.promo_cents !== null ? `${money(current.promo_cents)}/${PERIOD[current.billing_period ?? "month"]} × ${current.promo_months} meses → ${money(current.regular_cents ?? 0)}`
-                : `${money(current.regular_cents ?? 0)}/${PERIOD[current.billing_period ?? "month"]}`}</p>
+                : priceLabel(current.regular_cents ?? 0, current.billing_period)}</p>
               {current.summary && <p className="mt-1 text-sm text-slate-700">{current.summary}</p>}
               <ul className="mt-2 flex flex-wrap gap-2 text-xs">
                 {current.users_included && <li className="rounded bg-slate-100 px-2 py-1">{current.users_included} usuarios</li>}
                 {Number.isInteger(current.limits?.call_minutes) && <li className="rounded bg-slate-100 px-2 py-1">{current.limits.call_minutes} min de llamadas</li>}
                 {Number.isInteger(current.limits?.axira_responses) && <li className="rounded bg-slate-100 px-2 py-1">{current.limits.axira_responses} respuestas de Axira/mes</li>}
-                <li className="rounded bg-slate-100 px-2 py-1">Canales: {current.channels.join(", ")}</li>
+                <li className="rounded bg-slate-100 px-2 py-1">Canales: {channelList(current.channels)}</li>
               </ul>
               {current.benefits.length > 0 && <ul className="mt-2 list-disc pl-5 text-sm text-slate-700">{current.benefits.map((b) => <li key={b}>{b}</li>)}</ul>}
               {current.promo_valid_until && <p className="mt-1 text-xs text-slate-600">Promoción disponible hasta {date.format(new Date(current.promo_valid_until))} (PR)</p>}
@@ -214,7 +222,7 @@ export default async function CatalogoPage({ searchParams }: {
             <Field label="Vigente desde (hora PR)" hint="vacío = ahora"><input type="datetime-local" name="validFrom" className={input} /></Field>
             <Field label="Vigente hasta (hora PR)" hint="opcional"><input type="datetime-local" name="validUntil" defaultValue={toLocal(editItem?.valid_until)} className={input} /></Field>
             <fieldset className="grid gap-2 text-sm sm:col-span-2"><legend className="font-medium">Canales donde Axira puede ofrecerlo</legend>
-              <div className="flex flex-wrap gap-4">{CATALOG_CHANNELS.map((c: string) => <label key={c} className="flex items-center gap-2"><input type="checkbox" name="channels" value={c} defaultChecked={!editItem || editItem.channels.includes(c)} />{c}</label>)}</div>
+              <div className="flex flex-wrap gap-4">{CATALOG_CHANNELS.map((c: string) => <label key={c} className="flex items-center gap-2"><input type="checkbox" name="channels" value={c} defaultChecked={!editItem || editItem.channels.includes(c)} />{CHANNEL_LABELS[c] ?? c}</label>)}</div>
             </fieldset>
             <Field label="Motivo del cambio (auditoría)"><input name="reason" required minLength={3} maxLength={300} className={input} /></Field>
             <div className="sm:col-span-2"><button className="w-full rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white sm:w-auto">Guardar borrador</button></div>
