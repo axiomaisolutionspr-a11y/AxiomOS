@@ -93,6 +93,7 @@ export default async function AutopilotQaPage({ searchParams }: {
           <p className="text-sm font-bold uppercase tracking-widest text-blue-300">AxiomOS Autopilot {isQa ? "· QA" : ""}</p>
           <h1 className="mt-2 text-3xl font-bold">Hola, {data.user.name || data.user.email}</h1>
           <p className="mt-2 text-slate-300">AxiomAI Solutions · {role} · {canEdit ? "Gestión de ofertas" : "Solo lectura"}</p>
+          <Link href="/prospectos/autopilot/catalogo" className="mt-3 inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">Precios, ofertas y conocimientos de Axira →</Link>
         </div>
         <SignOut />
       </div>
