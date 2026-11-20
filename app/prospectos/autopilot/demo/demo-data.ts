@@ -105,7 +105,7 @@ export const DEMO_TEXT = {
     },
     brain: {
       intro: "Pregúntale a Brain por tus ventas, planes o cómo usar el CRM. En esta demostración tienes 5 preguntas para ver qué pasa al llegar al límite.",
-      meter: (l: number, n: number) => `Te quedan ${l} de ${n} preguntas (demostración)`, placeholder: "Escribe tu pregunta…", send: "Preguntar",
+      meter: (l: number, n: number) => `${l === 1 ? "Te queda" : "Te quedan"} ${l.toLocaleString("es-PR")} de ${n.toLocaleString("es-PR")} preguntas (demostración)`, placeholder: "Escribe tu pregunta…", send: "Preguntar",
       blocked: "Llegaste al límite de la demostración. Así se ve cuando se acaban las preguntas del mes:",
       pack: (q: string, p: string) => `Añadir ${q} preguntas por ${p} al mes`, addPack: "Añadir paquete (demostración, sin cobro)",
       packAdded: "Paquete añadido en la demostración.", free: "No se contó",
@@ -172,7 +172,7 @@ export const DEMO_TEXT = {
     },
     brain: {
       intro: "Ask Brain about your sales, plans or how to use the CRM. In this demo you have 5 questions so you can see what happens at the limit.",
-      meter: (l: number, n: number) => `${l} of ${n} questions left (demo)`, placeholder: "Type your question…", send: "Ask",
+      meter: (l: number, n: number) => `${l.toLocaleString("en-US")} of ${n.toLocaleString("en-US")} questions left (demo)`, placeholder: "Type your question…", send: "Ask",
       blocked: "You reached the demo limit. This is what it looks like when the month's questions run out:",
       pack: (q: string, p: string) => `Add ${q} questions for ${p}/month`, addPack: "Add pack (demo, no charge)",
       packAdded: "Pack added in the demo.", free: "Not counted",

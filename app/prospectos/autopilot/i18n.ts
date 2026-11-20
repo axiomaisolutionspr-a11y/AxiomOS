@@ -29,7 +29,7 @@ const es = {
   navLabel: "Menú principal", navPanel: "Panel", navCatalog: "Centro Comercial", navDemo: "Demostración", navBrain: "Brain", navOptOut: "Bajas de WhatsApp",
   brain: {
     title: "Brain", subtitle: "Tu asistente de negocio. Pregúntale por tus ofertas, prospectos, planes y cómo usar el CRM.",
-    meter: (left: number, limit: number) => `Te quedan ${left} de ${limit} preguntas este mes`,
+    meter: (left: number, limit: number) => `${left === 1 ? "Te queda" : "Te quedan"} ${left.toLocaleString("es-PR")} de ${limit.toLocaleString("es-PR")} preguntas este mes`,
     planLine: (plan: string, base: number, packs: number) => `Plan ${plan}: ${base} preguntas al mes${packs ? ` + ${packs} paquete${packs === 1 ? "" : "s"}` : ""}.`,
     resets: "El contador vuelve a cero el día 1 de cada mes (hora de Puerto Rico).",
     placeholder: "Escribe tu pregunta…", send: "Preguntar", thinking: "Brain está pensando…", you: "Tú",
@@ -194,7 +194,7 @@ const en: Dict = {
   navLabel: "Main menu", navPanel: "Dashboard", navCatalog: "Commercial Center", navDemo: "Demo tour", navBrain: "Brain", navOptOut: "WhatsApp opt-outs",
   brain: {
     title: "Brain", subtitle: "Your business assistant. Ask about your offers, prospects, plans and how to use the CRM.",
-    meter: (left: number, limit: number) => `${left} of ${limit} questions left this month`,
+    meter: (left: number, limit: number) => `${left.toLocaleString("en-US")} of ${limit.toLocaleString("en-US")} questions left this month`,
     planLine: (plan: string, base: number, packs: number) => `${plan} plan: ${base} questions per month${packs ? ` + ${packs} pack${packs === 1 ? "" : "s"}` : ""}.`,
     resets: "The counter resets on the 1st of every month (Puerto Rico time).",
     placeholder: "Type your question…", send: "Ask", thinking: "Brain is thinking…", you: "You",

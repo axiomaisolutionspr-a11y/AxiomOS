@@ -88,9 +88,15 @@ function prospectsAnswer(prospects, english) {
       : "Tu lista de prospectos todavía no está conectada en este ambiente, así que no puedo contarlos. Cuando se conecte te diré cuántos son nuevos, interesados, en seguimiento o atrasados.";
   }
   const p = prospects;
-  return english
-    ? `You have ${p.total} prospects: ${p.new_count} new, ${p.interested_count} interested and ${p.followup_count} in follow-up. ${p.overdue_count} follow-ups are overdue and ${p.due_next_7_days} are due in the next 7 days.${p.overdue_count > 0 ? " I'd start with the overdue ones." : ""}`
-    : `Tienes ${p.total} prospectos: ${p.new_count} nuevos, ${p.interested_count} interesados y ${p.followup_count} en seguimiento. ${p.overdue_count} seguimientos están atrasados y ${p.due_next_7_days} vencen en los próximos 7 días.${p.overdue_count > 0 ? " Yo empezaría por los atrasados." : ""}`;
+  const n = (v, one, many) => `${v} ${v === 1 ? one : many}`;
+  if (english) {
+    return `You have ${n(p.total, "prospect", "prospects")}: ${p.new_count} new, ${p.interested_count} interested and ${p.followup_count} in follow-up. ` +
+      `${n(p.overdue_count, "follow-up is", "follow-ups are")} overdue and ${p.due_next_7_days} ${p.due_next_7_days === 1 ? "is" : "are"} due in the next 7 days.` +
+      (p.overdue_count > 0 ? " I'd start with the overdue ones." : "");
+  }
+  return `Tienes ${n(p.total, "prospecto", "prospectos")}: ${n(p.new_count, "nuevo", "nuevos")}, ${n(p.interested_count, "interesado", "interesados")} y ${p.followup_count} en seguimiento. ` +
+    `${n(p.overdue_count, "seguimiento está atrasado", "seguimientos están atrasados")} y ${p.due_next_7_days} ${p.due_next_7_days === 1 ? "vence" : "vencen"} en los próximos 7 días.` +
+    (p.overdue_count > 0 ? " Yo empezaría por los atrasados." : "");
 }
 
 function usageAnswer(allowance, used, english) {
@@ -98,8 +104,8 @@ function usageAnswer(allowance, used, english) {
   const pack = allowance.pack;
   const plan = allowance.plan?.name ?? "—";
   return english
-    ? `Your plan (${plan}) includes ${allowance.plan?.questions ?? 0} Brain questions per month${allowance.packs ? ` plus ${allowance.packs} extra pack${allowance.packs === 1 ? "" : "s"}` : ""}. You have ${left} of ${allowance.limit} left this month.${pack ? ` If you run out, you can add ${pack.questions.toLocaleString("en-US")} more questions for ${money(pack.price_cents)}/month or move to a higher plan.` : ""}`
-    : `Tu plan (${plan}) incluye ${allowance.plan?.questions ?? 0} preguntas a Brain al mes${allowance.packs ? ` más ${allowance.packs} paquete${allowance.packs === 1 ? "" : "s"} adicional${allowance.packs === 1 ? "" : "es"}` : ""}. Te quedan ${left} de ${allowance.limit} este mes.${pack ? ` Si se te acaban, puedes añadir ${pack.questions.toLocaleString("es-PR")} preguntas más por ${money(pack.price_cents)} al mes o subir de plan.` : ""}`;
+    ? `Your plan (${plan}) includes ${allowance.plan?.questions ?? 0} Brain questions per month${allowance.packs ? ` plus ${allowance.packs} extra pack${allowance.packs === 1 ? "" : "s"}` : ""}. You have ${left.toLocaleString("en-US")} of ${allowance.limit.toLocaleString("en-US")} left this month.${pack ? ` If you run out, you can add ${pack.questions.toLocaleString("en-US")} more questions for ${money(pack.price_cents)}/month or move to a higher plan.` : ""}`
+    : `Tu plan (${plan}) incluye ${allowance.plan?.questions ?? 0} preguntas a Brain al mes${allowance.packs ? ` más ${allowance.packs} paquete${allowance.packs === 1 ? "" : "s"} adicional${allowance.packs === 1 ? "" : "es"}` : ""}. ${left === 1 ? "Te queda" : "Te quedan"} ${left.toLocaleString("es-PR")} de ${allowance.limit.toLocaleString("es-PR")} este mes.${pack ? ` Si se te acaban, puedes añadir ${pack.questions.toLocaleString("es-PR")} preguntas más por ${money(pack.price_cents)} al mes o subir de plan.` : ""}`;
 }
 
 /**
