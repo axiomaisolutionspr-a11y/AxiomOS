@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   answerFromCatalog, CATALOG_CHANNELS, KNOWLEDGE_TOPICS, LIMIT_ENFORCEMENT, money, previewCatalog,
-  relevantKnowledge, STATUS_LABELS,
+  relevantKnowledge,
 } from "../../../lib/axira-catalog-policy.js";
 import { AXIOMAI_TENANT, listCatalog, neonCatalogDb } from "../../../lib/axira-catalog-store.js";
 import { commercialIdentityAuth } from "../../../lib/commercial-identity-auth";
@@ -11,6 +11,9 @@ import { commercialIdentityDatabase, commercialMember, commercialOfferWriterData
 import SignOut from "../sign-out";
 import HoloLogo from "../holo-logo";
 import FuturoFx from "../futuro-fx";
+import ExperienceControls from "../experience-controls";
+import { systemMessage, type Dict } from "../i18n";
+import { uiPrefs } from "../prefs";
 import { changeVersion, saveItemDraft, saveKnowledgeDraft } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -26,20 +29,15 @@ type Knowledge = {
   key: string; version: number; topic: string; language: string; title: string; answer: string; keywords: string[];
   valid_from: string; valid_until: string | null; status: string; change_reason: string; created_at: string;
 };
-type Audit = { id: string; entity: string; entity_key: string; version: number; action: string; from_status: string | null;
-  to_status: string; actor: string; reason: string; recorded_at: string };
 
-const TABS = { catalogo: "Planes y servicios", conocimiento: "Conocimiento de Axira", "vista-previa": "Vista previa", auditoria: "Auditoría" } as const;
-const ACTIONS: Record<string, string> = { create_draft: "Borrador creado", approve: "Aprobada", publish: "Publicada", archive: "Archivada", restore: "Restaurada" };
+const TAB_KEYS = ["catalogo", "conocimiento", "vista-previa", "auditoria"] as const;
+type Tab = typeof TAB_KEYS[number];
 const BADGE: Record<string, string> = {
   draft: "bg-slate-200 text-slate-800", approved: "bg-amber-100 text-amber-900",
   published: "bg-blue-600 text-white", archived: "bg-slate-100 text-slate-500 line-through",
 };
-const date = new Intl.DateTimeFormat("es-PR", { timeZone: "America/Puerto_Rico", dateStyle: "medium", timeStyle: "short" });
-const PERIOD: Record<string, string> = { month: "mes", year: "año", one_time: "pago único" };
 const CHANNEL_LABELS: Record<string, string> = { whatsapp: "WhatsApp", messenger: "Messenger", instagram: "Instagram", web: "Web" };
 const channelList = (channels: string[]) => channels.map((c) => CHANNEL_LABELS[c] ?? c).join(", ");
-const priceLabel = (cents: number, period: string | null) => cents === 0 ? "Gratis" : `${money(cents)}/${PERIOD[period ?? "month"]}`;
 
 function groupByKey<T extends { key: string; version: number }>(rows: T[]) {
   const map = new Map<string, T[]>();
@@ -47,34 +45,34 @@ function groupByKey<T extends { key: string; version: number }>(rows: T[]) {
   return [...map.entries()].map(([key, versions]) => ({ key, versions: versions.sort((a, b) => b.version - a.version) }));
 }
 
-function Badge({ status }: { status: string }) {
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${BADGE[status] ?? ""}`}>{STATUS_LABELS[status as keyof typeof STATUS_LABELS] ?? status}</span>;
+function Badge({ status, t }: { status: string; t: Dict }) {
+  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${BADGE[status] ?? ""}`}>{t.status[status] ?? status}</span>;
 }
 
-function VersionActions({ entity, row, canEdit }: { entity: "item" | "knowledge"; row: { key: string; version: number; status: string }; canEdit: boolean }) {
+function VersionActions({ entity, row, canEdit, t }: { entity: "item" | "knowledge"; row: { key: string; version: number; status: string }; canEdit: boolean; t: Dict }) {
   if (!canEdit) return null;
-  const options: Array<[string, string]> = [];
-  if (row.status === "draft") options.push(["approved", "Aprobar"]);
-  if (row.status === "approved") options.push(["published", "Publicar"]);
-  if (row.status !== "archived") options.push(["archived", "Archivar"]);
-  if (row.status === "archived" || row.status === "published") options.push(["restore", "Restaurar como nueva versión"]);
+  const options: Array<[string, string, string]> = [];
+  if (row.status === "draft") options.push(["approved", t.approve, "APROBAR"]);
+  if (row.status === "approved") options.push(["published", t.publish, "PUBLICAR"]);
+  if (row.status !== "archived") options.push(["archived", t.archive, "ARCHIVAR"]);
+  if (row.status === "archived" || row.status === "published") options.push(["restore", t.restoreAsNew, "RESTAURAR"]);
   if (!options.length) return null;
   return <details className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
-    <summary className="cursor-pointer font-semibold text-blue-700">Cambiar estado de la v{row.version}</summary>
+    <summary className="cursor-pointer font-semibold text-blue-700">{t.changeStateOf(row.version)}</summary>
     <form action={changeVersion} className="mt-3 grid gap-2 sm:grid-cols-4 sm:items-end">
       <input type="hidden" name="entity" value={entity} />
       <input type="hidden" name="key" value={row.key} />
       <input type="hidden" name="version" value={row.version} />
-      <label className="grid gap-1">Acción
+      <label className="grid gap-1">{t.action}
         <select name="target" className="rounded border border-slate-300 bg-white p-2">{options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
       </label>
-      <label className="grid gap-1">Confirmación
-        <input name="confirmation" required placeholder="APROBAR / PUBLICAR…" className="rounded border border-slate-300 p-2" autoComplete="off" />
+      <label className="grid gap-1">{t.confirmation}
+        <input name="confirmation" required placeholder={options.map((o) => o[2]).join(" / ")} className="rounded border border-slate-300 p-2" autoComplete="off" />
       </label>
-      <label className="grid gap-1">Motivo
+      <label className="grid gap-1">{t.reason}
         <input name="reason" required minLength={3} maxLength={300} className="rounded border border-slate-300 p-2" />
       </label>
-      <button className="rounded bg-slate-950 px-4 py-2 font-semibold text-white">Confirmar</button>
+      <button className="rounded bg-slate-950 px-4 py-2 font-semibold text-white">{t.confirm}</button>
     </form>
   </details>;
 }
@@ -92,17 +90,20 @@ function toLocal(iso: string | null | undefined) {
 export default async function CatalogoPage({ searchParams }: {
   searchParams: Promise<{ tab?: string; ok?: string; error?: string; editar?: string; v?: string; q?: string }>;
 }) {
+  const { lang, mode, t, locale } = await uiPrefs();
+  const date = new Intl.DateTimeFormat(locale, { timeZone: "America/Puerto_Rico", dateStyle: "medium", timeStyle: "short" });
+  const priceLabel = (cents: number, period: string | null) => cents === 0 ? t.free : `${money(cents)}/${t.period[period ?? "month"]}`;
   const auth = commercialIdentityAuth(), sql = commercialIdentityDatabase();
-  if (!auth || !sql) return <main className="p-8"><h1 className="text-xl font-bold">Acceso comercial no configurado</h1></main>;
+  if (!auth || !sql) return <main className="p-8"><h1 className="text-xl font-bold">{t.accessUnavailable}</h1></main>;
   const { data, error } = await auth.getSession();
   if (error || !data?.user) redirect("/prospectos/autopilot/acceso");
   let membership;
   try { membership = await commercialMember(sql, data.user.id); }
-  catch { return <main className="p-8"><h1>No se pudo verificar tu permiso</h1></main>; }
-  if (!membership) return <main className="p-8"><h1>Tu cuenta no tiene permiso para esta empresa</h1><SignOut /></main>;
+  catch { return <main className="p-8"><h1>{t.permissionFailed}</h1></main>; }
+  if (!membership) return <main className="p-8"><h1>{t.noPermission}</h1><SignOut lang={lang} /></main>;
 
   const params = await searchParams;
-  const tab = (Object.hasOwn(TABS, params.tab ?? "") ? params.tab : "catalogo") as keyof typeof TABS;
+  const tab: Tab = (TAB_KEYS as readonly string[]).includes(params.tab ?? "") ? params.tab as Tab : "catalogo";
   const reader = neonCatalogDb(sql);
   let items: Item[] = [], knowledge: Knowledge[] = [], audit: Audit[] = [];
   let loadError = false;
@@ -126,69 +127,75 @@ export default async function CatalogoPage({ searchParams }: {
   const editKnowledge = params.editar ? knowledge.find((k) => k.key === params.editar && String(k.version) === params.v) : undefined;
   const preview = previewCatalog({ items, knowledge });
   const question = (params.q ?? "").slice(0, 300);
-  const previewAnswer = question ? answerFromCatalog(preview, { message: question, channel: "whatsapp" }) : null;
+  const previewAnswer = question ? answerFromCatalog(preview, { message: question, channel: "whatsapp", language: lang }) : null;
   const previewKnowledge = (question ? relevantKnowledge(preview, question) : []) as Array<{ key: string; title: string }>;
+  // Las llaves vienen de la política de Axira; se muestran con el texto del idioma elegido.
+  const topicKeys = Object.keys(KNOWLEDGE_TOPICS);
+  const limitKeys = Object.keys(LIMIT_ENFORCEMENT);
 
-  return <main className="fx min-h-screen bg-slate-100 text-slate-950">
+  return <main lang={lang} data-fx-mode={mode} className="fx min-h-screen bg-slate-100 text-slate-950">
     <FuturoFx />
     <header className="bg-slate-950 px-5 py-7 text-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4">
-        <HoloLogo />
+        <HoloLogo label={t.logoLabel} />
         <div className="min-w-0 flex-1 basis-64">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-300">AxiomOS Autopilot · Configuración {isQa && "· QA"}</p>
-          <h1 className="mt-2 text-2xl font-bold sm:text-3xl">Centro Comercial y Conocimiento de Axira</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-300">Precios, ofertas, servicios y respuestas que Axira puede usar. Axira solo consulta lo <strong className="text-white">publicado y vigente</strong>.</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-300">AxiomOS Autopilot · {t.configuration} {isQa && "· QA"}</p>
+          <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{t.centerTitle}</h1>
+          <p className="mt-2 max-w-2xl text-sm text-slate-300">{t.centerIntro} <strong className="text-white">{t.publishedAndLive}</strong>.</p>
         </div>
-        <div className="flex items-center gap-3"><Link href="/prospectos/autopilot" className="rounded-lg border border-slate-600 px-3 py-2 text-sm">← Autopilot</Link><SignOut /></div>
+        <div className="grid justify-items-start gap-3 sm:justify-items-end">
+          <ExperienceControls lang={lang} mode={mode} />
+          <div className="flex items-center gap-3"><Link href="/prospectos/autopilot" className="rounded-lg border border-slate-600 px-3 py-2 text-sm">{t.back}</Link><SignOut lang={lang} /></div>
+        </div>
       </div>
     </header>
 
     <div className="mx-auto grid max-w-6xl gap-5 px-4 py-6 sm:px-5">
-      {params.ok && <p role="status" className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-blue-900">{params.ok}</p>}
-      {params.error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-900">{params.error}</p>}
-      {loadError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-900">No se pudo leer el catálogo (¿falta aplicar la migración v2 en esta base?).</p>}
+      {params.ok && <p role="status" className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-blue-900">{systemMessage(lang, params.ok)}</p>}
+      {params.error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-900">{systemMessage(lang, params.error)}</p>}
+      {loadError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-900">{t.catalogLoadError}</p>}
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Resumen">
-        {[["Planes publicados", published(items.filter((i) => i.kind === "plan"))], ["Servicios publicados", published(items.filter((i) => i.kind === "service"))],
-          ["Conocimientos publicados", published(knowledge)], ["Pendientes de aprobar o publicar", pending]].map(([label, value]) =>
-          <div key={label as string} className="rounded-xl bg-white p-4 shadow-sm"><p className="text-3xl font-bold text-blue-700">{value}</p><p className="mt-1 text-xs text-slate-600">{label}</p></div>)}
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label={t.summary}>
+        {([["plans", t.plansPublished, published(items.filter((i) => i.kind === "plan"))], ["services", t.servicesPublished, published(items.filter((i) => i.kind === "service"))],
+          ["knowledge", t.knowledgePublished, published(knowledge)], ["pending", t.pending, pending]] as const).map(([id, label, value]) =>
+          <div key={id} className="rounded-xl bg-white p-4 shadow-sm"><p className="text-3xl font-bold text-blue-700">{value}</p><p className="mt-1 text-xs text-slate-600">{label}</p></div>)}
       </section>
 
-      <nav className="flex gap-2 overflow-x-auto" aria-label="Secciones">
-        {Object.entries(TABS).map(([key, label]) => <Link key={key} href={`?tab=${key}`} aria-current={tab === key ? "page" : undefined}
-          className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${tab === key ? "bg-blue-600 text-white" : "bg-white text-slate-700"}`}>{label}</Link>)}
+      <nav className="flex gap-2 overflow-x-auto" aria-label={t.sections}>
+        {TAB_KEYS.map((key) => <Link key={key} href={`?tab=${key}`} aria-current={tab === key ? "page" : undefined}
+          className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${tab === key ? "bg-blue-600 text-white" : "bg-white text-slate-700"}`}>{t.tabs[key]}</Link>)}
       </nav>
-      <p className="text-sm text-slate-600">Rol: {membership.role === "owner" ? "Propietario (puede editar)" : "Solo lectura"}{!canEdit && membership.role === "owner" && " · la escritura no está habilitada en este entorno"}</p>
+      <p className="text-sm text-slate-600">{t.role}: {membership.role === "owner" ? t.ownerCanEdit : t.readOnly}{!canEdit && membership.role === "owner" && t.writeDisabled}</p>
 
       {tab === "catalogo" && <>
         <section className="grid gap-4">
-          {itemGroups.length === 0 && !loadError && <p className="rounded-xl bg-white p-5">Todavía no hay planes ni servicios.</p>}
+          {itemGroups.length === 0 && !loadError && <p className="rounded-xl bg-white p-5">{t.noItems}</p>}
           {itemGroups.map(({ key, versions }) => {
             const current = versions.find((v) => v.status === "published") ?? versions[0];
             return <article key={key} className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <div><h2 className="text-lg font-bold">{current.name}</h2><p className="text-xs text-slate-500">{current.kind === "plan" ? "Plan" : "Servicio"} · clave {key}{current.category && ` · ${current.category}`}</p></div>
-                <Badge status={current.status} />
+                <div><h2 className="text-lg font-bold">{current.name}</h2><p className="text-xs text-slate-500">{current.kind === "plan" ? t.plan : t.serviceKind} · {t.key} {key}{current.category && ` · ${current.category}`}</p></div>
+                <Badge status={current.status} t={t} />
               </div>
-              <p className="mt-2 text-lg font-semibold text-blue-700">{current.pricing_mode === "quote" ? "Cotización personalizada"
-                : current.promo_cents !== null ? `${money(current.promo_cents)}/${PERIOD[current.billing_period ?? "month"]} × ${current.promo_months} meses → ${money(current.regular_cents ?? 0)}`
+              <p className="mt-2 text-lg font-semibold text-blue-700">{current.pricing_mode === "quote" ? t.quote
+                : current.promo_cents !== null ? `${money(current.promo_cents)}/${t.period[current.billing_period ?? "month"]} × ${current.promo_months} ${t.months} → ${money(current.regular_cents ?? 0)}`
                 : priceLabel(current.regular_cents ?? 0, current.billing_period)}</p>
               {current.summary && <p className="mt-1 text-sm text-slate-700">{current.summary}</p>}
               <ul className="mt-2 flex flex-wrap gap-2 text-xs">
-                {current.users_included && <li className="rounded bg-slate-100 px-2 py-1">{current.users_included} usuarios</li>}
-                {Number.isInteger(current.limits?.call_minutes) && <li className="rounded bg-slate-100 px-2 py-1">{current.limits.call_minutes} min de llamadas</li>}
-                {Number.isInteger(current.limits?.axira_responses) && <li className="rounded bg-slate-100 px-2 py-1">{current.limits.axira_responses} respuestas de Axira/mes</li>}
-                <li className="rounded bg-slate-100 px-2 py-1">Canales: {channelList(current.channels)}</li>
+                {current.users_included && <li className="rounded bg-slate-100 px-2 py-1">{current.users_included} {t.users}</li>}
+                {Number.isInteger(current.limits?.call_minutes) && <li className="rounded bg-slate-100 px-2 py-1">{current.limits.call_minutes} {t.callMinutes}</li>}
+                {Number.isInteger(current.limits?.axira_responses) && <li className="rounded bg-slate-100 px-2 py-1">{current.limits.axira_responses} {t.axiraReplies}</li>}
+                <li className="rounded bg-slate-100 px-2 py-1">{t.channelsLabel}: {channelList(current.channels)}</li>
               </ul>
               {current.benefits.length > 0 && <ul className="mt-2 list-disc pl-5 text-sm text-slate-700">{current.benefits.map((b) => <li key={b}>{b}</li>)}</ul>}
-              {current.promo_valid_until && <p className="mt-1 text-xs text-slate-600">Promoción disponible hasta {date.format(new Date(current.promo_valid_until))} (PR)</p>}
-              <details className="mt-3"><summary className="cursor-pointer text-sm font-semibold text-slate-700">Versiones ({versions.length})</summary>
+              {current.promo_valid_until && <p className="mt-1 text-xs text-slate-600">{t.promoUntil(date.format(new Date(current.promo_valid_until)))}</p>}
+              <details className="mt-3"><summary className="cursor-pointer text-sm font-semibold text-slate-700">{t.versions} ({versions.length})</summary>
                 <ul className="mt-2 grid gap-3">{versions.map((v) => <li key={v.version} className="rounded-lg border border-slate-200 p-3 text-sm">
-                  <div className="flex flex-wrap items-center gap-2"><strong>v{v.version}</strong><Badge status={v.status} />
-                    <span className="text-xs text-slate-500">{date.format(new Date(v.created_at))} · {v.change_reason || "sin motivo"}</span></div>
-                  <p className="mt-1">{v.pricing_mode === "quote" ? "Cotización" : `${v.promo_cents !== null ? `${money(v.promo_cents)} × ${v.promo_months} m → ` : ""}${money(v.regular_cents ?? 0)}`}</p>
-                  {canEdit && <Link className="mt-2 inline-block text-sm font-semibold text-blue-700" href={`?tab=catalogo&editar=${v.key}&v=${v.version}#formulario`}>Crear nueva versión a partir de esta</Link>}
-                  <VersionActions entity="item" row={v} canEdit={canEdit} />
+                  <div className="flex flex-wrap items-center gap-2"><strong>v{v.version}</strong><Badge status={v.status} t={t} />
+                    <span className="text-xs text-slate-500">{date.format(new Date(v.created_at))} · {v.change_reason || t.noReason}</span></div>
+                  <p className="mt-1">{v.pricing_mode === "quote" ? t.quoteShort : `${v.promo_cents !== null ? `${money(v.promo_cents)} × ${v.promo_months} ${t.monthsShort} → ` : ""}${money(v.regular_cents ?? 0)}`}</p>
+                  {canEdit && <Link className="mt-2 inline-block text-sm font-semibold text-blue-700" href={`?tab=catalogo&editar=${v.key}&v=${v.version}#formulario`}>{t.newVersionFrom}</Link>}
+                  <VersionActions entity="item" row={v} canEdit={canEdit} t={t} />
                 </li>)}</ul>
               </details>
             </article>;
@@ -196,104 +203,104 @@ export default async function CatalogoPage({ searchParams }: {
         </section>
 
         <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-          <h2 className="font-bold">Límites ofrecidos vs. controles técnicos</h2>
-          <ul className="mt-1 list-disc pl-5">{Object.values(LIMIT_ENFORCEMENT).map((t) => <li key={t}>{t}</li>)}</ul>
-          <p className="mt-1">Axira informa estos límites como condiciones comerciales; todavía no se aplican automáticamente.</p>
+          <h2 className="font-bold">{t.limitsTitle}</h2>
+          <ul className="mt-1 list-disc pl-5">{limitKeys.map((k) => <li key={k}>{t.limits[k] ?? LIMIT_ENFORCEMENT[k as keyof typeof LIMIT_ENFORCEMENT]}</li>)}</ul>
+          <p className="mt-1">{t.limitsNote}</p>
         </section>
 
         {canEdit && <section id="formulario" className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
-          <h2 className="text-lg font-bold">{editItem ? `Nueva versión de “${editItem.name}”` : "Nuevo plan o servicio (borrador)"}</h2>
-          <p className="mt-1 text-sm text-slate-600">Guardar crea un borrador. Después debes aprobarlo y publicarlo. Las versiones anteriores no se borran.</p>
+          <h2 className="text-lg font-bold">{editItem ? t.newVersionOf(editItem.name) : t.newItem}</h2>
+          <p className="mt-1 text-sm text-slate-600">{t.draftFlow}</p>
           <form action={saveItemDraft} className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field label="Clave única" hint="minúsculas y guiones, ej. axiomos-autopilot"><input name="key" required defaultValue={editItem?.key} readOnly={Boolean(editItem)} className={input} /></Field>
-            <Field label="Nombre"><input name="name" required minLength={3} maxLength={80} defaultValue={editItem?.name} className={input} /></Field>
-            <Field label="Tipo"><select name="kind" defaultValue={editItem?.kind ?? "plan"} className={input}><option value="plan">Plan</option><option value="service">Servicio</option></select></Field>
-            <Field label="Categoría"><input name="category" maxLength={60} defaultValue={editItem?.category} className={input} /></Field>
-            <Field label="Descripción"><textarea name="summary" maxLength={400} rows={2} defaultValue={editItem?.summary} className={input} /></Field>
-            <Field label="Precio"><select name="pricingMode" defaultValue={editItem?.pricing_mode ?? "fixed"} className={input}><option value="fixed">Precio fijo</option><option value="quote">Cotización personalizada</option></select></Field>
-            <Field label="Precio regular (USD)" hint="vacío si es cotización"><input name="regular" inputMode="decimal" defaultValue={editItem?.regular_cents != null ? (editItem.regular_cents / 100).toFixed(2) : ""} className={input} /></Field>
-            <Field label="Periodicidad"><select name="billingPeriod" defaultValue={editItem?.billing_period ?? "month"} className={input}><option value="month">Mensual</option><option value="year">Anual</option><option value="one_time">Pago único</option></select></Field>
-            <Field label="Precio promocional (USD)" hint="opcional"><input name="promo" inputMode="decimal" defaultValue={editItem?.promo_cents != null ? (editItem.promo_cents / 100).toFixed(2) : ""} className={input} /></Field>
-            <Field label="Meses de promoción por cliente"><input name="promoMonths" inputMode="numeric" defaultValue={editItem?.promo_months ?? ""} className={input} /></Field>
-            <Field label="Promoción disponible hasta (hora PR)" hint="opcional; al vencer Axira ofrece solo el precio regular"><input type="datetime-local" name="promoValidUntil" defaultValue={toLocal(editItem?.promo_valid_until)} className={input} /></Field>
-            <Field label="Usuarios incluidos"><input name="usersIncluded" inputMode="numeric" defaultValue={editItem?.users_included ?? ""} className={input} /></Field>
-            <Field label="Minutos de llamadas incluidos"><input name="callMinutes" inputMode="numeric" defaultValue={editItem?.limits?.call_minutes ?? ""} className={input} /></Field>
-            <Field label="Respuestas de Axira al mes"><input name="axiraResponses" inputMode="numeric" defaultValue={editItem?.limits?.axira_responses ?? ""} className={input} /></Field>
-            <Field label="Beneficios" hint="uno por línea"><textarea name="benefits" rows={4} defaultValue={editItem?.benefits.join("\n")} className={input} /></Field>
-            <Field label="Restricciones" hint="una por línea"><textarea name="restrictions" rows={4} defaultValue={editItem?.restrictions.join("\n")} className={input} /></Field>
-            <Field label="Vigente desde (hora PR)" hint="vacío = ahora"><input type="datetime-local" name="validFrom" className={input} /></Field>
-            <Field label="Vigente hasta (hora PR)" hint="opcional"><input type="datetime-local" name="validUntil" defaultValue={toLocal(editItem?.valid_until)} className={input} /></Field>
-            <fieldset className="grid gap-2 text-sm sm:col-span-2"><legend className="font-medium">Canales donde Axira puede ofrecerlo</legend>
+            <Field label={t.uniqueKey} hint={t.keyHint}><input name="key" required defaultValue={editItem?.key} readOnly={Boolean(editItem)} className={input} /></Field>
+            <Field label={t.name}><input name="name" required minLength={3} maxLength={80} defaultValue={editItem?.name} className={input} /></Field>
+            <Field label={t.type}><select name="kind" defaultValue={editItem?.kind ?? "plan"} className={input}><option value="plan">{t.plan}</option><option value="service">{t.serviceKind}</option></select></Field>
+            <Field label={t.category}><input name="category" maxLength={60} defaultValue={editItem?.category} className={input} /></Field>
+            <Field label={t.description}><textarea name="summary" maxLength={400} rows={2} defaultValue={editItem?.summary} className={input} /></Field>
+            <Field label={t.price}><select name="pricingMode" defaultValue={editItem?.pricing_mode ?? "fixed"} className={input}><option value="fixed">{t.fixedPrice}</option><option value="quote">{t.quote}</option></select></Field>
+            <Field label={t.regularUsd} hint={t.emptyIfQuote}><input name="regular" inputMode="decimal" defaultValue={editItem?.regular_cents != null ? (editItem.regular_cents / 100).toFixed(2) : ""} className={input} /></Field>
+            <Field label={t.periodicity}><select name="billingPeriod" defaultValue={editItem?.billing_period ?? "month"} className={input}><option value="month">{t.monthly}</option><option value="year">{t.yearly}</option><option value="one_time">{t.oneTime}</option></select></Field>
+            <Field label={t.promoUsd} hint={t.optional}><input name="promo" inputMode="decimal" defaultValue={editItem?.promo_cents != null ? (editItem.promo_cents / 100).toFixed(2) : ""} className={input} /></Field>
+            <Field label={t.promoMonths}><input name="promoMonths" inputMode="numeric" defaultValue={editItem?.promo_months ?? ""} className={input} /></Field>
+            <Field label={t.promoAvailableUntil} hint={t.promoUntilHint}><input type="datetime-local" name="promoValidUntil" defaultValue={toLocal(editItem?.promo_valid_until)} className={input} /></Field>
+            <Field label={t.usersIncluded}><input name="usersIncluded" inputMode="numeric" defaultValue={editItem?.users_included ?? ""} className={input} /></Field>
+            <Field label={t.minutesIncluded}><input name="callMinutes" inputMode="numeric" defaultValue={editItem?.limits?.call_minutes ?? ""} className={input} /></Field>
+            <Field label={t.repliesMonth}><input name="axiraResponses" inputMode="numeric" defaultValue={editItem?.limits?.axira_responses ?? ""} className={input} /></Field>
+            <Field label={t.benefits} hint={t.onePerLine}><textarea name="benefits" rows={4} defaultValue={editItem?.benefits.join("\n")} className={input} /></Field>
+            <Field label={t.restrictions} hint={t.onePerLineF}><textarea name="restrictions" rows={4} defaultValue={editItem?.restrictions.join("\n")} className={input} /></Field>
+            <Field label={t.validFrom} hint={t.emptyNow}><input type="datetime-local" name="validFrom" className={input} /></Field>
+            <Field label={t.validUntil} hint={t.optional}><input type="datetime-local" name="validUntil" defaultValue={toLocal(editItem?.valid_until)} className={input} /></Field>
+            <fieldset className="grid gap-2 text-sm sm:col-span-2"><legend className="font-medium">{t.channelsWhere}</legend>
               <div className="flex flex-wrap gap-4">{CATALOG_CHANNELS.map((c: string) => <label key={c} className="flex items-center gap-2"><input type="checkbox" name="channels" value={c} defaultChecked={!editItem || editItem.channels.includes(c)} />{CHANNEL_LABELS[c] ?? c}</label>)}</div>
             </fieldset>
-            <Field label="Motivo del cambio (auditoría)"><input name="reason" required minLength={3} maxLength={300} className={input} /></Field>
-            <div className="sm:col-span-2"><button className="w-full rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white sm:w-auto">Guardar borrador</button></div>
+            <Field label={t.auditReason}><input name="reason" required minLength={3} maxLength={300} className={input} /></Field>
+            <div className="sm:col-span-2"><button className="w-full rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white sm:w-auto">{t.saveDraft}</button></div>
           </form>
         </section>}
       </>}
 
       {tab === "conocimiento" && <>
         <section className="grid gap-4">
-          {knowledgeGroups.length === 0 && !loadError && <p className="rounded-xl bg-white p-5">Todavía no hay conocimientos.</p>}
+          {knowledgeGroups.length === 0 && !loadError && <p className="rounded-xl bg-white p-5">{t.noKnowledge}</p>}
           {knowledgeGroups.map(({ key, versions }) => {
             const current = versions.find((v) => v.status === "published") ?? versions[0];
             return <article key={key} className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <div><h2 className="font-bold">{current.title}</h2><p className="text-xs text-slate-500">{KNOWLEDGE_TOPICS[current.topic as keyof typeof KNOWLEDGE_TOPICS]} · {current.language.toUpperCase()} · clave {key}</p></div>
-                <Badge status={current.status} />
+                <div><h2 className="font-bold">{current.title}</h2><p className="text-xs text-slate-500">{t.topics[current.topic] ?? current.topic} · {current.language.toUpperCase()} · {t.key} {key}</p></div>
+                <Badge status={current.status} t={t} />
               </div>
               <p className="mt-2 whitespace-pre-line text-sm text-slate-800">{current.answer}</p>
-              {current.keywords.length > 0 && <p className="mt-2 text-xs text-slate-500">Palabras clave: {current.keywords.join(", ")}</p>}
-              <details className="mt-3"><summary className="cursor-pointer text-sm font-semibold text-slate-700">Versiones ({versions.length})</summary>
+              {current.keywords.length > 0 && <p className="mt-2 text-xs text-slate-500">{t.keywords}: {current.keywords.join(", ")}</p>}
+              <details className="mt-3"><summary className="cursor-pointer text-sm font-semibold text-slate-700">{t.versions} ({versions.length})</summary>
                 <ul className="mt-2 grid gap-3">{versions.map((v) => <li key={v.version} className="rounded-lg border border-slate-200 p-3 text-sm">
-                  <div className="flex flex-wrap items-center gap-2"><strong>v{v.version}</strong><Badge status={v.status} /><span className="text-xs text-slate-500">{date.format(new Date(v.created_at))} · {v.change_reason || "sin motivo"}</span></div>
-                  {canEdit && <Link className="mt-2 inline-block text-sm font-semibold text-blue-700" href={`?tab=conocimiento&editar=${v.key}&v=${v.version}#formulario`}>Crear nueva versión a partir de esta</Link>}
-                  <VersionActions entity="knowledge" row={v} canEdit={canEdit} />
+                  <div className="flex flex-wrap items-center gap-2"><strong>v{v.version}</strong><Badge status={v.status} t={t} /><span className="text-xs text-slate-500">{date.format(new Date(v.created_at))} · {v.change_reason || t.noReason}</span></div>
+                  {canEdit && <Link className="mt-2 inline-block text-sm font-semibold text-blue-700" href={`?tab=conocimiento&editar=${v.key}&v=${v.version}#formulario`}>{t.newVersionFrom}</Link>}
+                  <VersionActions entity="knowledge" row={v} canEdit={canEdit} t={t} />
                 </li>)}</ul>
               </details>
             </article>;
           })}
         </section>
         {canEdit && <section id="formulario" className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
-          <h2 className="text-lg font-bold">{editKnowledge ? `Nueva versión de “${editKnowledge.title}”` : "Nuevo conocimiento (borrador)"}</h2>
+          <h2 className="text-lg font-bold">{editKnowledge ? t.newVersionOf(editKnowledge.title) : t.newKnowledge}</h2>
           <form action={saveKnowledgeDraft} className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field label="Clave única"><input name="key" required defaultValue={editKnowledge?.key} readOnly={Boolean(editKnowledge)} className={input} /></Field>
-            <Field label="Tema"><select name="topic" defaultValue={editKnowledge?.topic ?? "faq"} className={input}>{Object.entries(KNOWLEDGE_TOPICS).map(([v, l]) => <option key={v} value={v}>{l as string}</option>)}</select></Field>
-            <Field label="Idioma"><select name="language" defaultValue={editKnowledge?.language ?? "es"} className={input}><option value="es">Español</option><option value="en">Inglés</option></select></Field>
-            <Field label="Título o pregunta"><input name="title" required minLength={3} maxLength={160} defaultValue={editKnowledge?.title} className={input} /></Field>
-            <div className="sm:col-span-2"><Field label="Respuesta autorizada"><textarea name="answer" required minLength={3} maxLength={1500} rows={5} defaultValue={editKnowledge?.answer} className={input} /></Field></div>
-            <Field label="Palabras clave" hint="separadas por comas"><input name="keywords" defaultValue={editKnowledge?.keywords.join(", ")} className={input} /></Field>
-            <Field label="Vigente hasta (hora PR)" hint="opcional"><input type="datetime-local" name="validUntil" defaultValue={toLocal(editKnowledge?.valid_until)} className={input} /></Field>
-            <Field label="Motivo del cambio (auditoría)"><input name="reason" required minLength={3} maxLength={300} className={input} /></Field>
-            <div className="sm:col-span-2"><button className="w-full rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white sm:w-auto">Guardar borrador</button></div>
+            <Field label={t.uniqueKey}><input name="key" required defaultValue={editKnowledge?.key} readOnly={Boolean(editKnowledge)} className={input} /></Field>
+            <Field label={t.topic}><select name="topic" defaultValue={editKnowledge?.topic ?? "faq"} className={input}>{topicKeys.map((v) => <option key={v} value={v}>{t.topics[v] ?? v}</option>)}</select></Field>
+            <Field label={t.lang}><select name="language" defaultValue={editKnowledge?.language ?? "es"} className={input}><option value="es">{t.spanish}</option><option value="en">{t.english}</option></select></Field>
+            <Field label={t.titleOrQuestion}><input name="title" required minLength={3} maxLength={160} defaultValue={editKnowledge?.title} className={input} /></Field>
+            <div className="sm:col-span-2"><Field label={t.approvedAnswer}><textarea name="answer" required minLength={3} maxLength={1500} rows={5} defaultValue={editKnowledge?.answer} className={input} /></Field></div>
+            <Field label={t.keywords} hint={t.commaSeparated}><input name="keywords" defaultValue={editKnowledge?.keywords.join(", ")} className={input} /></Field>
+            <Field label={t.validUntil} hint={t.optional}><input type="datetime-local" name="validUntil" defaultValue={toLocal(editKnowledge?.valid_until)} className={input} /></Field>
+            <Field label={t.auditReason}><input name="reason" required minLength={3} maxLength={300} className={input} /></Field>
+            <div className="sm:col-span-2"><button className="w-full rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white sm:w-auto">{t.saveDraft}</button></div>
           </form>
         </section>}
       </>}
 
       {tab === "vista-previa" && <section className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
-        <h2 className="text-lg font-bold">¿Cómo respondería Axira?</h2>
-        <p className="mt-1 text-sm text-slate-600">Usa las versiones <strong>aprobadas y publicadas</strong> (no los borradores) para que veas el resultado antes de publicar. No envía mensajes ni usa créditos de IA.</p>
+        <h2 className="text-lg font-bold">{t.previewTitle}</h2>
+        <p className="mt-1 text-sm text-slate-600">{t.previewIntro1} <strong>{t.previewIntro2}</strong> {t.previewIntro3}</p>
         <form className="mt-4 flex flex-col gap-3 sm:flex-row">
           <input type="hidden" name="tab" value="vista-previa" />
-          <input name="q" defaultValue={question} placeholder="¿Cuánto cuesta AxiomOS Autopilot?" className={`${input} flex-1`} />
-          <button className="rounded-lg bg-slate-950 px-5 py-2.5 font-semibold text-white">Probar</button>
+          <input name="q" defaultValue={question} placeholder={t.previewPlaceholder} className={`${input} flex-1`} />
+          <button className="rounded-lg bg-slate-950 px-5 py-2.5 font-semibold text-white">{t.test}</button>
         </form>
         {question && <div className="mt-4 grid gap-3">
-          <div className="rounded-xl bg-slate-100 p-3 text-sm"><span className="font-semibold">Cliente:</span> {question}</div>
+          <div className="rounded-xl bg-slate-100 p-3 text-sm"><span className="font-semibold">{t.client}</span> {question}</div>
           <div className="rounded-xl bg-blue-600 p-3 text-sm text-white"><span className="font-semibold">Axira:</span> {previewAnswer
-            ? previewAnswer.reply : "No es una pregunta de precios: Axira respondería con IA usando el contexto aprobado de abajo."}</div>
-          {previewKnowledge.length > 0 && <div className="rounded-xl border border-slate-200 p-3 text-sm"><p className="font-semibold">Conocimientos que recibiría como contexto:</p>
+            ? previewAnswer.reply : t.notPriceQuestion}</div>
+          {previewKnowledge.length > 0 && <div className="rounded-xl border border-slate-200 p-3 text-sm"><p className="font-semibold">{t.contextReceived}</p>
             <ul className="mt-1 list-disc pl-5">{previewKnowledge.map((k) => <li key={k.key}>{k.title}</li>)}</ul></div>}
         </div>}
       </section>}
 
       {tab === "auditoria" && <section className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
-        <h2 className="text-lg font-bold">Historial de cambios</h2>
-        <p className="mt-1 text-sm text-slate-600">Quién cambió qué, cuándo y por qué. Cada evento guarda una copia completa de la versión. Este registro no se puede editar ni borrar.</p>
+        <h2 className="text-lg font-bold">{t.historyTitle}</h2>
+        <p className="mt-1 text-sm text-slate-600">{t.historyIntro}</p>
         <ul className="mt-4 grid gap-2">{audit.map((a) => <li key={a.id} className="rounded-lg border border-slate-200 p-3 text-sm">
-          <div className="flex flex-wrap items-center gap-2"><strong>{ACTIONS[a.action] ?? a.action}</strong><span className="text-slate-600">{a.entity === "item" ? "Catálogo" : "Conocimiento"} · {a.entity_key} v{a.version}</span>
-            <span className="text-xs text-slate-500">{a.from_status ? `${STATUS_LABELS[a.from_status as keyof typeof STATUS_LABELS]} → ` : ""}{STATUS_LABELS[a.to_status as keyof typeof STATUS_LABELS]}</span></div>
-          <p className="mt-1 text-xs text-slate-500">{date.format(new Date(a.recorded_at))} · {a.actor} · {a.reason || "sin motivo"}</p>
+          <div className="flex flex-wrap items-center gap-2"><strong>{t.actions[a.action] ?? a.action}</strong><span className="text-slate-600">{a.entity === "item" ? t.catalogEntity : t.knowledgeEntity} · {a.entity_key} v{a.version}</span>
+            <span className="text-xs text-slate-500">{a.from_status ? `${t.status[a.from_status] ?? a.from_status} → ` : ""}{t.status[a.to_status] ?? a.to_status}</span></div>
+          <p className="mt-1 text-xs text-slate-500">{date.format(new Date(a.recorded_at))} · {a.actor} · {a.reason || t.noReason}</p>
         </li>)}</ul>
       </section>}
     </div>

@@ -1,14 +1,16 @@
 import { commercialIdentityAuthConfig, commercialIdentityDatabase } from "../../../lib/commercial-identity";
+import { uiPrefs } from "../prefs";
 import AccessForm from "./access-form";
 
 export const dynamic = "force-dynamic";
 
-export default function AutopilotAccessPage() {
+export default async function AutopilotAccessPage() {
+  const { lang, mode, t } = await uiPrefs();
   if (!commercialIdentityAuthConfig() || !commercialIdentityDatabase()) {
-    return <main className="mx-auto grid min-h-screen max-w-md place-content-center px-5 text-slate-900">
-      <h1 className="text-2xl font-bold">Acceso comercial no habilitado</h1>
-      <p className="mt-3">El catálogo de AxiomOS Autopilot todavía no está disponible en este entorno.</p>
+    return <main lang={lang} className="mx-auto grid min-h-screen max-w-md place-content-center px-5 text-slate-900">
+      <h1 className="text-2xl font-bold">{t.accessDisabledTitle}</h1>
+      <p className="mt-3">{t.accessDisabledText}</p>
     </main>;
   }
-  return <AccessForm />;
+  return <AccessForm lang={lang} mode={mode} />;
 }

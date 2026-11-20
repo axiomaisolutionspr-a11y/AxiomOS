@@ -1,29 +1,32 @@
 /*
- * AxiomOS Autopilot — tema "Holo" (solo páginas del CRM que usan <main className="fx">).
- * Cristal oscuro + neón azul. Lo que tocas se eleva en 3D; lo demás retrocede.
- * Todo queda limitado a .fx para no afectar la página pública ni otras secciones.
+ * AxiomOS Autopilot — tema "Holo" v3 (solo páginas del CRM con <main className="fx">).
+ * Principios: interfaz estable; la interacción se indica iluminando el borde azul del
+ * elemento que se usa; elevación sutil y de una sola pieza; nada tapa texto ni controles.
+ * Modos (atributo data-fx-mode en <main>):
+ *   "3d"     → profundidad y elevación sutiles, transiciones cortas.
+ *   "sobrio" → mismo diseño y colores, sin 3D ni movimiento; solo el borde iluminado.
+ * "Reducir movimiento" del dispositivo se respeta en ambos modos.
  */
 .fx {
   --fx-bg: #030712;
   --fx-ink: #e6eeff;
-  --fx-muted: #9fb2d4;
-  --fx-line: rgba(125, 170, 255, 0.22);
-  --fx-glass: rgba(13, 24, 48, 0.72);
+  --fx-muted: #a7b8d8;
+  --fx-line: rgba(125, 170, 255, 0.24);
+  --fx-glass: rgba(13, 24, 48, 0.78);
   --fx-glass-2: rgba(30, 50, 92, 0.55);
   --fx-neon: #38bdf8;
-  --fx-blue: #3b82f6;
-  --fx-glow: 0 0 0 1px rgba(56, 189, 248, 0.45), 0 18px 50px -12px rgba(37, 99, 235, 0.65), 0 0 40px -8px rgba(56, 189, 248, 0.45);
+  --fx-ring: 0 0 0 1px rgba(56, 189, 248, 0.9), 0 0 16px -3px rgba(56, 189, 248, 0.7);
+  --fx-speed: 0.28s;
   color-scheme: dark;
   position: relative;
   isolation: isolate;
   color: var(--fx-ink);
   background:
-    radial-gradient(1200px 600px at 85% -10%, rgba(37, 99, 235, 0.35), transparent 60%),
-    radial-gradient(900px 500px at -10% 30%, rgba(14, 165, 233, 0.18), transparent 60%),
-    radial-gradient(800px 600px at 50% 120%, rgba(99, 102, 241, 0.2), transparent 60%),
+    radial-gradient(1200px 600px at 85% -10%, rgba(37, 99, 235, 0.3), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgba(14, 165, 233, 0.14), transparent 60%),
     var(--fx-bg);
 }
-/* Malla tecnológica de fondo con un leve movimiento. */
+/* Malla tecnológica fija (sin movimiento). */
 .fx::before {
   content: "";
   position: fixed;
@@ -31,41 +34,25 @@
   z-index: -1;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(96, 165, 250, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(96, 165, 250, 0.07) 1px, transparent 1px);
+    linear-gradient(rgba(96, 165, 250, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96, 165, 250, 0.06) 1px, transparent 1px);
   background-size: 34px 34px;
   mask-image: radial-gradient(ellipse at 50% 20%, #000 30%, transparent 80%);
-  animation: fx-grid 18s linear infinite;
-  translate: calc(var(--gx) * -1.5) calc(var(--gy) * -1.5);
 }
-@keyframes fx-grid { to { background-position: 34px 34px, 34px 34px; } }
 
 /* ---------- Encabezado ---------- */
 .fx > header {
   position: relative;
-  background: linear-gradient(180deg, rgba(2, 6, 23, 0.92), rgba(2, 6, 23, 0.55)) !important;
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--fx-line);
   z-index: 10;
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.94), rgba(2, 6, 23, 0.7)) !important;
+  border-bottom: 1px solid var(--fx-line);
+  box-shadow: 0 1px 0 rgba(56, 189, 248, 0.25);
 }
-.fx > header::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -1px;
-  width: 40%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--fx-neon), #a5b4fc, transparent);
-  filter: drop-shadow(0 0 6px var(--fx-neon));
-  animation: fx-scan 4.5s ease-in-out infinite;
-}
-@keyframes fx-scan { 0% { left: 0; opacity: 0; } 10% { opacity: 1; } 55% { opacity: 1; } 65%, 100% { left: 60%; opacity: 0; } }
 .fx > header h1 {
-  background: linear-gradient(92deg, #fff 0%, #bfe3ff 45%, #7dd3fc 70%, #a5b4fc 100%);
+  background: linear-gradient(92deg, #fff 0%, #cfe9ff 55%, #8fd8ff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 28px rgba(56, 189, 248, 0.25);
 }
 
 /* ---------- Colores: Tailwind claro → cristal oscuro ---------- */
@@ -82,7 +69,8 @@
 .fx .text-slate-600,
 .fx .text-slate-500 { color: var(--fx-muted) !important; }
 .fx .text-blue-700,
-.fx .text-blue-900 { color: #7cc8ff !important; }
+.fx .text-blue-800,
+.fx .text-blue-900 { color: #8fd2ff !important; }
 .fx .bg-blue-50 { background: rgba(59, 130, 246, 0.14) !important; border-color: rgba(96, 165, 250, 0.4) !important; }
 .fx .bg-amber-50,
 .fx .bg-amber-100 { background: rgba(245, 158, 11, 0.13) !important; border-color: rgba(251, 191, 36, 0.35) !important; }
@@ -93,228 +81,66 @@
 .fx .bg-red-100 { background: rgba(239, 68, 68, 0.14) !important; border-color: rgba(248, 113, 113, 0.4) !important; }
 .fx .text-red-950,
 .fx .text-red-900,
-.fx .text-red-800 { color: #fecaca !important; }
+.fx .text-red-800,
+.fx .text-red-700 { color: #fecaca !important; }
 .fx .bg-green-100 { background: rgba(34, 197, 94, 0.14) !important; }
 .fx .text-green-950 { color: #bbf7d0 !important; }
 .fx table th,
-.fx table td { border-color: var(--fx-line) !important; }
-.fx summary { color: var(--fx-ink); }
+.fx table td,
 .fx hr,
-.fx .border-t { border-color: var(--fx-line) !important; }
+.fx .border-t,
+.fx .border-b { border-color: var(--fx-line) !important; }
+.fx summary { color: var(--fx-ink); }
+.fx .text-3xl.text-blue-700 { color: #a5e3ff !important; }
 
-/* ---------- Profundidad 3D (v2 "Holo 3D") ----------
- * Técnicas de las pantallas 3D anamórficas, adaptadas a un teléfono:
- *  1. Romper el marco: la tarjeta activa sale de su hueco, que queda marcado con luz (.fx-slot).
- *  2. Profundidad por capas: título, precio y etiquetas flotan a distinta altura dentro de la tarjeta.
- *  3. Sombra proyectada lejos del objeto: la sombra grande y difusa abajo indica altura.
- *  4. Desenfoque de profundidad: lo que queda atrás se hunde, se oscurece y se desenfoca.
- *  5. Paralaje con el giroscopio: al mover el teléfono, lo de adelante se mueve más que el fondo.
- */
-@property --fx-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
-.fx {
-  --gx: 0deg; /* inclinación del teléfono (izquierda/derecha), la pone futuro-fx.tsx */
-  --gy: 0deg; /* inclinación del teléfono (adelante/atrás) */
-}
-.fx [data-fx-card] {
-  --fx-rx: 0deg;
-  --fx-ry: 0deg;
-  --fx-x: 50%;
-  --fx-y: 0%;
-  --fx-z: 0px;
-  --fx-lift: 0px;
-  --fx-scale: 1;
-  --fx-gyro: 0.25;
-  position: relative;
-  border: 1px solid var(--fx-line);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 10px 30px -18px rgba(0, 0, 0, 0.9);
-  transform:
-    perspective(900px)
-    translate3d(0, var(--fx-lift), var(--fx-z))
-    rotateX(calc(var(--fx-rx) + var(--gy) * var(--fx-gyro)))
-    rotateY(calc(var(--fx-ry) + var(--gx) * var(--fx-gyro)))
-    scale(var(--fx-scale));
-  transform-style: preserve-3d;
+/* ---------- Iluminación de bordes (igual para todo lo interactivo) ----------
+ * Se ilumina solo el elemento con el que se interactúa: el que tiene el puntero encima
+ * (computadora), el que tiene el foco del teclado, el que se está presionando o la
+ * tarjeta seleccionada. */
+.fx :is(button, a.rounded-lg, a.rounded-full, a.rounded, summary, input, select, textarea, [data-fx-card]) {
   transition:
-    transform 0.6s cubic-bezier(0.18, 1.25, 0.3, 1),
-    box-shadow 0.45s ease,
-    opacity 0.45s ease,
-    filter 0.45s ease,
-    border-color 0.35s ease;
-  will-change: transform;
-}
-/* Entrada: las tarjetas llegan desde el fondo de la pantalla. */
-.fx [data-fx-card][data-fx-enter] { animation: fx-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: var(--fx-delay, 0ms); }
-@keyframes fx-enter {
-  from { opacity: 0; transform: perspective(900px) translate3d(0, 40px, -260px) rotateX(18deg); filter: blur(6px); }
-}
-/* Luz holográfica que sigue el dedo o la inclinación. */
-.fx [data-fx-card]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0;
-  background:
-    radial-gradient(380px circle at var(--fx-x) var(--fx-y), rgba(125, 211, 252, 0.22), transparent 45%),
-    linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.07) 48%, transparent 60%);
-  transition: opacity 0.35s ease;
-  transform: translateZ(1px);
-}
-/* ---- Activa: sale de la pantalla ---- */
-.fx [data-fx-active] {
-  --fx-z: 70px;
-  --fx-lift: -14px;
-  --fx-gyro: 1;
-  z-index: 5;
-  border-color: rgba(56, 189, 248, 0.75) !important;
-  box-shadow:
-    0 0 0 1px rgba(56, 189, 248, 0.5),
-    0 0 50px -10px rgba(56, 189, 248, 0.75),
-    0 60px 70px -30px rgba(0, 0, 0, 0.95),
-    0 30px 90px -20px rgba(37, 99, 235, 0.55) !important;
-}
-.fx [data-fx-active]::before { opacity: 1; }
-/* Borde de energía que gira alrededor de la tarjeta activa. */
-.fx [data-fx-active]::after {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  padding: 1.5px;
-  border-radius: inherit;
-  pointer-events: none;
-  background: conic-gradient(from var(--fx-angle), transparent 0 55%, #38bdf8 70%, #a5b4fc 80%, #f0f9ff 85%, transparent 92%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  animation: fx-orbit 2.6s linear infinite;
-  transform: translateZ(2px);
-}
-@keyframes fx-orbit { to { --fx-angle: 360deg; } }
-/* Capas internas: cada nivel flota a distinta altura (paralaje). */
-.fx [data-fx-active] * { transform-style: preserve-3d; }
-.fx [data-fx-card] :is(h2, h3, .text-lg, .text-3xl, .text-2xl, ul, .rounded-full, p) {
-  transition: transform 0.6s cubic-bezier(0.18, 1.25, 0.3, 1);
-}
-.fx [data-fx-active] :is(h2, h3) { transform: translateZ(34px); }
-.fx [data-fx-active] :is(.text-lg.text-blue-700, .text-3xl, .text-2xl) { transform: translateZ(56px); text-shadow: 0 0 24px rgba(56, 189, 248, 0.7), 0 14px 18px rgba(0, 0, 0, 0.6); }
-.fx [data-fx-active] .rounded-full { transform: translateZ(44px); }
-.fx [data-fx-active] ul { transform: translateZ(22px); }
-.fx [data-fx-active] p { transform: translateZ(14px); }
-.fx [data-fx-active] :is(form, details) { transform: translateZ(10px); }
-/* ---- El resto: se hunde, se oscurece y se desenfoca ---- */
-.fx [data-fx-stage] [data-fx-card]:not([data-fx-active]) {
-  --fx-z: -80px;
-  --fx-gyro: -0.15;
-  opacity: 0.88;
-  filter: brightness(0.78) saturate(0.85);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 4px 10px -6px rgba(0, 0, 0, 0.9);
-}
-.fx [data-fx-stage] > :is(nav, p) { opacity: 0.85; transition: opacity 0.45s ease; }
-/* Hueco de donde salió la tarjeta (el "marco roto"). */
-.fx .fx-slot {
-  position: absolute;
-  pointer-events: none;
-  border-radius: 1rem;
-  border: 1px dashed rgba(56, 189, 248, 0.55);
-  background:
-    linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px) 0 0 / 16px 16px,
-    linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px) 0 0 / 16px 16px,
-    radial-gradient(ellipse at 50% 100%, rgba(56, 189, 248, 0.25), transparent 70%);
-  box-shadow: inset 0 0 40px -10px rgba(56, 189, 248, 0.6);
-  animation: fx-slot-in 0.5s ease-out both;
-}
-@keyframes fx-slot-in { from { opacity: 0; transform: scale(0.96); } }
-.fx [data-fx-focus] { position: relative; }
-@media (hover: hover) {
-  .fx [data-fx-card]:not([data-fx-active]):hover { border-color: rgba(56, 189, 248, 0.45); --fx-z: 12px; }
-  .fx [data-fx-card]:hover::before { opacity: 0.7; }
-}
-/* Pulso al tocar (lo crea futuro-fx.tsx). */
-.fx .fx-pulse {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  margin: -7px 0 0 -7px;
-  border-radius: 999px;
-  pointer-events: none;
-  border: 2px solid rgba(186, 230, 253, 0.95);
-  box-shadow: 0 0 18px rgba(56, 189, 248, 0.9);
-  transform: translateZ(60px);
-  animation: fx-pulse 0.7s ease-out forwards;
-}
-@keyframes fx-pulse { to { transform: translateZ(60px) scale(28); opacity: 0; border-width: 0.4px; } }
-/* Piso holográfico en perspectiva al fondo de la pantalla. */
-.fx::after {
-  content: "";
-  position: fixed;
-  left: -50%;
-  right: -50%;
-  bottom: -10vh;
-  height: 55vh;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(56, 189, 248, 0.28) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.28) 1px, transparent 1px);
-  background-size: 48px 48px;
-  transform: perspective(380px) rotateX(68deg) translateX(calc(var(--gx) * -2));
-  transform-origin: 50% 100%;
-  mask-image: linear-gradient(to top, #000 10%, transparent 85%);
-  animation: fx-floor 2.4s linear infinite;
-  opacity: 0.55;
-}
-@keyframes fx-floor { to { background-position: 0 48px, 0 48px; } }
-
-/* Números del resumen con brillo neón. */
-.fx .text-3xl.text-blue-700,
-.fx .text-2xl.font-bold { text-shadow: 0 0 18px rgba(56, 189, 248, 0.55); }
-.fx .text-3xl.text-blue-700 { color: #9be1ff !important; }
-
-/* ---------- Botones ---------- */
-.fx button,
-.fx :is(a, span).rounded-lg,
-.fx a.rounded-full {
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.18s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+    border-color var(--fx-speed) ease,
+    box-shadow var(--fx-speed) ease,
+    transform var(--fx-speed) ease,
+    filter var(--fx-speed) ease;
   -webkit-tap-highlight-color: transparent;
 }
-.fx button:active,
-.fx a.rounded-lg:active,
-.fx a.rounded-full:active { transform: scale(0.95) translateY(1px); }
+.fx :is(button, a.rounded-lg, a.rounded-full, a.rounded) { border: 1px solid transparent; }
+@media (hover: hover) {
+  .fx :is(button, a.rounded-lg, a.rounded-full, a.rounded, summary, [data-fx-card]):hover {
+    border-color: rgba(56, 189, 248, 0.9) !important;
+    box-shadow: var(--fx-ring) !important;
+  }
+}
+.fx :is(button, a, summary, [data-fx-card]):focus-visible,
+.fx :is(button, a.rounded-lg, a.rounded-full, a.rounded, summary):active,
+.fx :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea):focus,
+.fx [data-fx-active] {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.95) !important;
+  box-shadow: var(--fx-ring) !important;
+}
+.fx input[type="checkbox"]:focus-visible { outline: 2px solid var(--fx-neon); outline-offset: 2px; }
+.fx details[open] > summary { color: #bfe6ff; }
+
+/* ---------- Botones ---------- */
 .fx :is(button, a).bg-blue-600,
-.fx :is(button, a).bg-blue-700 {
-  background: linear-gradient(120deg, #2563eb, #0ea5e9 55%, #6366f1) !important;
-  background-size: 200% 100% !important;
-  box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.5) inset, 0 10px 28px -10px rgba(14, 165, 233, 0.9), 0 0 22px -6px rgba(56, 189, 248, 0.8);
-  animation: fx-flow 6s ease-in-out infinite;
+.fx :is(button, a).bg-blue-700,
+.fx :is(button, a).bg-blue-800 {
+  background: linear-gradient(120deg, #2563eb, #0ea5e9 60%, #4f46e5) !important;
+  color: #fff !important;
+  border-color: rgba(125, 211, 252, 0.45) !important;
 }
-@keyframes fx-flow { 50% { background-position: 100% 0; } }
-/* Destello que cruza el botón. */
-.fx :is(button, a).bg-blue-600::after,
-.fx :is(button, a).bg-blue-700::after {
-  content: "";
-  position: absolute;
-  inset: -2px auto -2px -60%;
-  width: 45%;
-  transform: skewX(-20deg);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
-  animation: fx-shine 3.8s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes fx-shine { 0%, 55% { left: -60%; } 85%, 100% { left: 130%; } }
 .fx :is(button, a).bg-slate-950,
 .fx :is(button, a).bg-slate-900,
-.fx button:not([class*="bg-"]) {
+.fx button:not([class*="bg-"]):not(.fx-seg button):not(.fx-logo) {
   background: rgba(2, 6, 23, 0.6) !important;
-  border: 1px solid rgba(56, 189, 248, 0.55) !important;
+  border: 1px solid var(--fx-line) !important;
   color: #e0f2fe !important;
-  box-shadow: 0 0 16px -6px rgba(56, 189, 248, 0.8), inset 0 0 12px -6px rgba(56, 189, 248, 0.8);
 }
-.fx a.rounded-full:not(.bg-blue-600) { border: 1px solid var(--fx-line); color: var(--fx-ink) !important; }
+.fx a.rounded-full:not(.bg-blue-600) { border-color: var(--fx-line); color: var(--fx-ink) !important; }
 .fx a.rounded-full.bg-blue-600 { color: #fff !important; }
-.fx header a.rounded-lg { background: rgba(15, 23, 42, 0.5); border-color: var(--fx-line) !important; }
+.fx header a.rounded-lg:not(.bg-blue-600) { background: rgba(15, 23, 42, 0.5); border-color: var(--fx-line) !important; }
 
 /* ---------- Campos ---------- */
 .fx :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
@@ -322,20 +148,19 @@
   color: var(--fx-ink) !important;
   border: 1px solid var(--fx-line) !important;
   border-radius: 0.75rem;
-  transition: border-color 0.2s ease, box-shadow 0.25s ease, transform 0.2s ease;
 }
-.fx :is(input, select, textarea)::placeholder { color: rgba(159, 178, 212, 0.6); }
-.fx :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea):focus {
-  outline: none;
-  border-color: var(--fx-neon) !important;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25), 0 0 24px -6px rgba(56, 189, 248, 0.9);
-  transform: translateY(-1px);
-}
+.fx :is(input, select, textarea)::placeholder { color: rgba(167, 184, 216, 0.6); }
 .fx input[type="checkbox"] { accent-color: var(--fx-neon); width: 1.15rem; height: 1.15rem; }
-.fx :focus-visible { outline: 2px solid var(--fx-neon); outline-offset: 2px; }
+
+/* ---------- Tarjetas ---------- */
+.fx [data-fx-card] {
+  position: relative;
+  border: 1px solid var(--fx-line);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 10px 24px -18px rgba(0, 0, 0, 0.9);
+}
 
 /* Barra de pestañas tipo cápsula. */
-.fx nav[aria-label="Secciones"] {
+.fx nav[aria-label] {
   padding: 4px;
   border-radius: 999px;
   background: rgba(2, 6, 23, 0.55);
@@ -343,42 +168,103 @@
   scrollbar-width: none;
 }
 
-/* Accesibilidad: sin movimiento si el teléfono lo pide. */
-@media (prefers-reduced-motion: reduce) {
-  .fx *,
-  .fx *::before,
-  .fx *::after,
-  .fx::before { animation: none !important; transition: none !important; }
-  .fx [data-fx-card],
-  .fx [data-fx-card] * { transform: none !important; }
-  .fx [data-fx-stage] [data-fx-card]:not([data-fx-active]) { filter: none; opacity: 0.9; }
+/* ===== Modo 3D: profundidad y elevación sutiles, de una sola pieza ===== */
+.fx[data-fx-mode="3d"] [data-fx-active] {
+  z-index: 3;
+  transform: translateY(-4px) scale(1.01);
+  box-shadow:
+    var(--fx-ring),
+    0 22px 36px -18px rgba(0, 0, 0, 0.95),
+    0 14px 40px -22px rgba(37, 99, 235, 0.8) !important;
 }
+/* La sección elevada se distingue: las demás bajan un poco de brillo, sin moverse ni desenfocarse. */
+.fx[data-fx-mode="3d"] [data-fx-stage] [data-fx-card]:not([data-fx-active]) { filter: brightness(0.8); }
+/* Entrada breve al cargar (solo 3D). */
+.fx[data-fx-mode="3d"] [data-fx-enter] { animation: fx-enter 0.4s ease-out backwards; animation-delay: var(--fx-delay, 0ms); }
+@keyframes fx-enter { from { opacity: 0; transform: translateY(8px); } }
+/* Piso holográfico estático al fondo (solo 3D). */
+.fx[data-fx-mode="3d"]::after {
+  content: "";
+  position: fixed;
+  left: -50%;
+  right: -50%;
+  bottom: -10vh;
+  height: 45vh;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.22) 1px, transparent 1px);
+  background-size: 48px 48px;
+  transform: perspective(380px) rotateX(68deg);
+  transform-origin: 50% 100%;
+  mask-image: linear-gradient(to top, #000 10%, transparent 85%);
+  opacity: 0.35;
+}
+/* Botones: hundimiento mínimo al presionar (solo 3D). */
+.fx[data-fx-mode="3d"] :is(button, a.rounded-lg, a.rounded-full):active { transform: scale(0.98); }
+/* Modo sobrio: sin elevación, sin entrada, sin piso. Solo bordes iluminados. */
+.fx[data-fx-mode="sobrio"] [data-fx-card],
+.fx[data-fx-mode="sobrio"] [data-fx-active],
+.fx[data-fx-mode="sobrio"] :is(button, a):active { transform: none !important; }
 
-/* ---------- Logo en relieve 3D con proyector holográfico ---------- */
+/* ---------- Controles de experiencia (efectos e idioma) ---------- */
+.fx-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.fx-seg {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 170, 255, 0.28);
+  background: rgba(2, 6, 23, 0.6);
+}
+.fx .fx-seg button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: #c7d7f2 !important;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fx .fx-seg button[aria-pressed="true"] {
+  background: linear-gradient(120deg, #2563eb, #0ea5e9) !important;
+  color: #fff !important;
+}
+.fx-seg-label { padding: 0 6px 0 8px; font-size: 0.7rem; color: #a7b8d8; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ---------- Logo AxiomAI: profundidad tipo pantalla 3D ----------
+ * Inspirado en las pantallas anamórficas (el panda que sale del marco): el logo vive en un
+ * "marco de pantalla"; al interactuar crece un poco y su parte superior sobrepasa el borde
+ * del marco, proyectando sombra dentro de él. Sin giros ni desplazamientos grandes. */
 .fx-logo {
   position: relative;
-  width: clamp(120px, 34vw, 190px);
+  width: clamp(112px, 30vw, 168px);
   aspect-ratio: 560 / 437;
-  perspective: 700px;
   flex: none;
-  margin-bottom: 14px;
-  --fx-spread: -2.2px;
+  margin: 12px 4px 6px;
+  padding: 0;
+  border-radius: 18px;
+  border: 1px solid rgba(125, 170, 255, 0.3) !important;
+  background:
+    linear-gradient(rgba(56, 189, 248, 0.07) 1px, transparent 1px) 0 0 / 14px 14px,
+    linear-gradient(90deg, rgba(56, 189, 248, 0.07) 1px, transparent 1px) 0 0 / 14px 14px,
+    radial-gradient(ellipse at 50% 100%, rgba(37, 99, 235, 0.35), rgba(2, 6, 23, 0.9) 70%) !important;
+  box-shadow: inset 0 0 24px -8px rgba(56, 189, 248, 0.5);
   cursor: pointer;
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  perspective: 600px;
   z-index: 20;
 }
 .fx-logo-stage {
   position: absolute;
-  inset: 0;
+  inset: 6% 6% 4%;
   transform-style: preserve-3d;
-  transform: rotateX(calc(8deg + var(--gy) * 0.9)) rotateY(calc(-12deg + var(--gx) * 1.1));
-  animation: fx-logo-float 6s ease-in-out infinite;
-  transition: transform 0.25s ease-out;
-}
-@keyframes fx-logo-float {
-  0%, 100% { translate: 0 0; }
-  50% { translate: 0 -6px; }
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: 50% 100%;
 }
 .fx-logo img {
   position: absolute;
@@ -389,100 +275,48 @@
   user-select: none;
   -webkit-user-drag: none;
 }
-/* Extrusión: capas detrás de la cara, cada vez más oscuras. */
-.fx-logo-depth {
-  transform: translateZ(calc(var(--fx-d) * var(--fx-spread)));
-  transition: transform 0.5s cubic-bezier(0.18, 1.3, 0.3, 1), filter 0.5s ease;
-  filter: brightness(calc(0.55 - var(--fx-d) * 0.06)) saturate(1.4) hue-rotate(-8deg);
-}
+.fx-logo-depth { display: none; }
 .fx-logo-face {
-  transform: translateZ(2px);
-  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.7)) drop-shadow(0 0 26px rgba(168, 85, 247, 0.35));
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.55));
+  transition: filter 0.3s ease;
 }
-/* Brillo especular recortado con la forma del logo. */
-.fx-logo-shine {
+/* Sombra que el logo proyecta sobre el "piso" del marco. */
+.fx-logo-shadow {
   position: absolute;
-  inset: 0;
-  transform: translateZ(3px);
-  pointer-events: none;
-  -webkit-mask: url(/axiomos-logo-holo.webp) center / contain no-repeat;
-  mask: url(/axiomos-logo-holo.webp) center / contain no-repeat;
-  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.85) 46%, rgba(186, 230, 253, 0.6) 50%, transparent 62%);
-  background-size: 260% 100%;
-  background-position: calc(120% + var(--gx) * 4) 0;
-  mix-blend-mode: screen;
-  animation: fx-logo-shine 5s ease-in-out infinite;
-}
-@keyframes fx-logo-shine { 0%, 100% { background-position: 130% 0; } 50% { background-position: -30% 0; } }
-/* Proyector: disco de luz y haz bajo el logo. */
-.fx-logo-base {
-  position: absolute;
-  left: 12%;
-  right: 12%;
-  bottom: -14px;
-  height: 18px;
+  left: 22%;
+  right: 22%;
+  bottom: 4%;
+  height: 10%;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(125, 211, 252, 0.95), rgba(37, 99, 235, 0.35) 45%, transparent 72%);
-  filter: blur(2px);
-  animation: fx-logo-base 6s ease-in-out infinite;
-}
-.fx-logo-base::before {
-  content: "";
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: 50%;
-  height: 120px;
-  background: linear-gradient(to top, rgba(56, 189, 248, 0.28), transparent);
-  clip-path: polygon(18% 100%, 82% 100%, 100% 0, 0 0);
-  filter: blur(6px);
-}
-@keyframes fx-logo-base { 50% { opacity: 0.65; transform: scaleX(0.9); } }
-@media (prefers-reduced-motion: reduce) {
-  .fx-logo-stage { transform: rotateX(8deg) rotateY(-12deg); }
-}
-
-/* Logo al tocarlo: sale de la pantalla, el relieve se abre y suelta una onda de energía. */
-.fx-logo[data-pop] { --fx-spread: -7px; }
-.fx-logo[data-pop] .fx-logo-stage { animation: fx-logo-pop 1.8s cubic-bezier(0.2, 0.9, 0.25, 1) both; }
-@keyframes fx-logo-pop {
-  0% { transform: rotateX(8deg) rotateY(-12deg) translateZ(0) scale(1); }
-  22% { transform: rotateX(16deg) rotateY(-32deg) translateZ(170px) scale(1.25); }
-  48% { transform: rotateX(6deg) rotateY(28deg) translateZ(190px) scale(1.3); }
-  72% { transform: rotateX(10deg) rotateY(-8deg) translateZ(120px) scale(1.15); }
-  100% { transform: rotateX(8deg) rotateY(-12deg) translateZ(0) scale(1); }
-}
-.fx-logo[data-pop] .fx-logo-depth { filter: brightness(calc(0.75 - var(--fx-d) * 0.07)) saturate(1.8) hue-rotate(-14deg); }
-.fx-logo[data-pop] .fx-logo-face {
-  filter: drop-shadow(0 0 16px rgba(56, 189, 248, 1)) drop-shadow(0 0 44px rgba(168, 85, 247, 0.7)) drop-shadow(0 30px 30px rgba(0, 0, 0, 0.8));
-}
-.fx-logo[data-pop] .fx-logo-shine { animation: fx-logo-shine 0.9s ease-in-out 2; }
-.fx-logo[data-pop] .fx-logo-base { animation: fx-logo-base-pop 1.8s ease-out both; }
-@keyframes fx-logo-base-pop { 20% { opacity: 1; transform: scaleX(1.5); filter: blur(1px) brightness(1.8); } 100% { opacity: 1; transform: none; } }
-.fx-logo-base::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 40px;
-  height: 14px;
-  margin: -7px 0 0 -20px;
-  border-radius: 50%;
-  border: 2px solid rgba(125, 211, 252, 0.95);
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.9);
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.75), transparent 70%);
   opacity: 0;
-  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.fx-logo[data-pop] .fx-logo-base::after { animation: fx-logo-wave 1.1s ease-out both; }
-@keyframes fx-logo-wave { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(9); } }
-/* Destello breve alrededor del logo. */
-.fx-logo[data-pop]::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(circle at 25% 12%, rgba(56, 189, 248, 0.35), transparent 55%);
-  animation: fx-flash 0.9s ease-out both;
-  z-index: -1;
+/* Modo 3D: relieve leve en reposo; "sale del marco" al interactuar. */
+.fx[data-fx-mode="3d"] .fx-logo-depth {
+  display: block;
+  transform: translateZ(calc(var(--fx-d) * -1.4px));
+  filter: brightness(calc(0.5 - var(--fx-d) * 0.05)) saturate(1.3);
 }
-@keyframes fx-flash { from { opacity: 1; } to { opacity: 0; } }
+.fx[data-fx-mode="3d"] .fx-logo-stage { transform: rotateX(6deg); }
+.fx[data-fx-mode="3d"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-stage { transform: rotateX(4deg) translate3d(0, -9%, 26px) scale(1.12); }
+.fx[data-fx-mode="3d"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-shadow { opacity: 1; transform: scaleX(0.85); }
+.fx[data-fx-mode="3d"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-face { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8)) drop-shadow(0 12px 10px rgba(0, 0, 0, 0.6)); }
+@media (hover: hover) {
+  .fx[data-fx-mode="3d"] .fx-logo:hover .fx-logo-stage { transform: rotateX(4deg) translate3d(0, -9%, 26px) scale(1.12); }
+  .fx[data-fx-mode="3d"] .fx-logo:hover .fx-logo-shadow { opacity: 1; transform: scaleX(0.85); }
+  .fx[data-fx-mode="3d"] .fx-logo:hover .fx-logo-face { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8)) drop-shadow(0 12px 10px rgba(0, 0, 0, 0.6)); }
+}
+/* En los dos modos: al interactuar se ilumina el borde del marco del logo. */
+.fx .fx-logo[data-pop] { border-color: rgba(56, 189, 248, 0.95) !important; box-shadow: var(--fx-ring), inset 0 0 24px -8px rgba(56, 189, 248, 0.6) !important; }
+
+/* ---------- Movimiento reducido del dispositivo: sin movimiento en ningún modo ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .fx *,
+  .fx *::before,
+  .fx *::after { animation: none !important; transition-duration: 0s !important; }
+  .fx [data-fx-card],
+  .fx [data-fx-active],
+  .fx :is(button, a):active,
+  .fx .fx-logo-stage { transform: none !important; }
+}
