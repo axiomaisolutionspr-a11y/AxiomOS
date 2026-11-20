@@ -2,13 +2,13 @@
 // Recorrido interactivo de AxiomOS Autopilot con datos de demostración.
 // Todo ocurre en el navegador: no envía mensajes, no hace llamadas y no escribe en la base de datos.
 // Las respuestas de precios de Axira sí usan el catálogo real publicado (lo pasa la página del servidor).
-import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { answerFromCatalog, money, relevantKnowledge, wantsHuman } from "../../../lib/axira-catalog-policy.js";
 import { answerBrain, brainAllowance } from "../../../lib/axiomos-brain.js";
 import type { Lang } from "../i18n";
 import {
-  CALLS, CONVERSATIONS, FOLLOWUPS, PROSPECTS, STAGES, demoText, pick,
-  type DemoConversation, type DemoFollowup, type DemoProspect, type Stage,
+  CALLS, CLIENT_REPLIES, CONVERSATIONS, FOLLOWUPS, PROSPECTS, STAGES, demoText, pick,
+  type DemoCall, type DemoConversation, type DemoFollowup, type DemoProspect, type Stage,
 } from "./demo-data";
 
 type Catalog = { status?: string; items: unknown[]; knowledge: unknown[] };
@@ -16,13 +16,21 @@ const SECTIONS = ["inicio", "conversaciones", "prospectos", "seguimientos", "lla
 type Section = typeof SECTIONS[number];
 const TOUR: Section[] = ["conversaciones", "prospectos", "seguimientos", "llamadas", "campanas", "panel", "brain"];
 
-type Thread = DemoConversation & { transferred?: boolean; extra: Array<{ from: "agent" | "axira"; text: string }> };
+type Extra = { from: "agent" | "axira" | "client" | "system"; text: string };
+type Thread = DemoConversation & { transferred?: boolean; extra: Extra[]; replies: number };
 
 function initialState() {
+  // Cada contacto tiene su conversación (vacía si no trae mensajes de ejemplo).
+  const threads: Thread[] = PROSPECTS.map((p) => {
+    const c = CONVERSATIONS.find((x) => x.prospectId === p.id);
+    return { prospectId: p.id, unread: c?.unread ?? 0, messages: c?.messages ?? [], extra: [], replies: 0 };
+  });
   return {
     prospects: PROSPECTS.map((p) => ({ ...p })),
-    threads: CONVERSATIONS.map((c) => ({ ...c, extra: [] })) as Thread[],
+    threads,
     followups: FOLLOWUPS.map((f) => ({ ...f })),
+    calls: CALLS.map((c) => ({ ...c })) as DemoCall[],
+    notes: {} as Record<string, string[]>,
     campaigns: [] as Array<{ name: string; recipients: number }>,
     log: [] as string[],
   };
@@ -33,6 +41,7 @@ export default function DemoTour({ lang, catalog }: { lang: Lang; catalog: Catal
   const [section, setSection] = useState<Section>("inicio");
   const [state, setState] = useState(initialState);
   const [selected, setSelected] = useState<string>(CONVERSATIONS[0].prospectId);
+  const [opened, setOpened] = useState(false);
 
   // Sincroniza la sección con el ancla de la dirección (#conversaciones, etc.).
   useEffect(() => {
@@ -51,6 +60,13 @@ export default function DemoTour({ lang, catalog }: { lang: Lang; catalog: Catal
   };
   const log = (line: string) => setState((st) => ({ ...st, log: [line, ...st.log].slice(0, 40) }));
   const prospect = (id: string) => state.prospects.find((p) => p.id === id)!;
+  // Tocar un contacto en cualquier sección abre su conversación.
+  const openContact = (id: string) => {
+    setSelected(id);
+    setOpened(true);
+    setState((st) => ({ ...st, threads: st.threads.map((th) => th.prospectId === id ? { ...th, unread: 0 } : th) }));
+    go("conversaciones");
+  };
 
   const tourIndex = TOUR.indexOf(section);
   const unread = state.threads.reduce((n, th) => n + th.unread, 0);
@@ -79,17 +95,17 @@ export default function DemoTour({ lang, catalog }: { lang: Lang; catalog: Catal
 
     {section === "inicio" && <Start t={t} go={go} />}
     {section === "conversaciones" && <Conversations t={t} lang={lang} catalog={catalog} state={state} setState={setState}
-      selected={selected} setSelected={setSelected} prospect={prospect} log={log} />}
-    {section === "prospectos" && <Prospects t={t} lang={lang} state={state} setState={setState} log={log} />}
-    {section === "seguimientos" && <Followups t={t} lang={lang} state={state} setState={setState} prospect={prospect} log={log} />}
-    {section === "llamadas" && <Calls t={t} lang={lang} prospect={prospect} />}
+      selected={selected} opened={opened} setOpened={setOpened} openContact={openContact} prospect={prospect} log={log} />}
+    {section === "prospectos" && <Prospects t={t} lang={lang} state={state} setState={setState} log={log} openContact={openContact} />}
+    {section === "seguimientos" && <Followups t={t} lang={lang} state={state} setState={setState} prospect={prospect} log={log} openContact={openContact} />}
+    {section === "llamadas" && <Calls t={t} lang={lang} state={state} prospect={prospect} openContact={openContact} />}
     {section === "campanas" && <Campaigns t={t} state={state} setState={setState} log={log} />}
     {section === "panel" && <Dashboard t={t} state={state} unread={unread} overdue={overdue} />}
     {section === "brain" && <BrainDemo t={t} lang={lang} catalog={catalog} state={state} overdue={overdue} log={log} />}
     {section === "actividad" && <Activity t={t} state={state} />}
 
     <div className="flex justify-end">
-      <button type="button" className="rounded-lg px-4 py-2 text-sm" onClick={() => { setState(initialState()); setSelected(CONVERSATIONS[0].prospectId); log(t.log.reset); }}>{t.reset}</button>
+      <button type="button" className="rounded-lg px-4 py-2 text-sm" onClick={() => { setState(initialState()); setSelected(CONVERSATIONS[0].prospectId); setOpened(false); log(t.log.reset); }}>{t.reset}</button>
     </div>
   </div>;
 }
@@ -133,77 +149,180 @@ function suggestion(catalog: Catalog, lang: Lang, message: string, t: T) {
   return { text: t.handoffReply, source: t.noSuggestion, handoff: true };
 }
 
-function Conversations({ t, lang, catalog, state, setState, selected, setSelected, prospect, log }: {
-  t: T; lang: Lang; catalog: Catalog; state: St; setState: SetSt; selected: string; setSelected: (id: string) => void;
-  prospect: (id: string) => DemoProspect; log: (l: string) => void;
+function Conversations({ t, lang, catalog, state, setState, selected, opened, setOpened, openContact, prospect, log }: {
+  t: T; lang: Lang; catalog: Catalog; state: St; setState: SetSt; selected: string; opened: boolean; setOpened: (v: boolean) => void;
+  openContact: (id: string) => void; prospect: (id: string) => DemoProspect; log: (l: string) => void;
 }) {
   const [draft, setDraft] = useState("");
+  const [note, setNote] = useState("");
+  const [typing, setTyping] = useState<string | null>(null);
+  const timers = useRef<number[]>([]);
+  useEffect(() => () => timers.current.forEach((id) => window.clearTimeout(id)), []);
   const thread = state.threads.find((th) => th.prospectId === selected)!;
   const p = prospect(selected);
-  const lastClient = [...thread.messages].reverse().find((m) => m.from === "client");
-  const sug = useMemo(() => suggestion(catalog, lang, lastClient ? pick(lastClient.text, lang) : "", t), [catalog, lang, lastClient, t]);
-  const answered = thread.extra.length > 0 || thread.messages[thread.messages.length - 1]?.from !== "client";
+  const all: Extra[] = [...thread.messages.map((m) => ({ from: m.from, text: pick(m.text, lang) })), ...thread.extra];
+  const lastClientText = [...all].reverse().find((m) => m.from === "client")?.text ?? "";
+  const sug = suggestion(catalog, lang, lastClientText, t);
+  const lastReal = [...all].reverse().find((m) => m.from !== "system");
+  const waiting = lastReal?.from === "client";
+  const priceReply = suggestion(catalog, lang, lang === "en" ? "How much is AxiomOS Basic?" : "¿Cuánto cuesta AxiomOS Básico?", t).text;
 
-  const add = (from: "agent" | "axira", text: string) => setState((st) => ({
-    ...st, threads: st.threads.map((th) => th.prospectId === selected ? { ...th, unread: 0, extra: [...th.extra, { from, text }] } : th),
+  const push = (id: string, item: Extra, patch: Partial<Thread> = {}) => setState((st) => ({
+    ...st, threads: st.threads.map((th) => th.prospectId === id ? { ...th, ...patch, unread: 0, extra: [...th.extra, item] } : th),
   }));
-  const open = (id: string) => {
-    setSelected(id);
-    setState((st) => ({ ...st, threads: st.threads.map((th) => th.prospectId === id ? { ...th, unread: 0 } : th) }));
+  // Después de responder, el cliente ficticio "escribe" y contesta con la siguiente línea de su guion.
+  const clientAnswers = (id: string) => {
+    const th = state.threads.find((x) => x.prospectId === id)!;
+    const next = CLIENT_REPLIES[id]?.[th.replies];
+    if (!next || th.transferred) return;
+    const who = prospect(id).name.split(" ")[0];
+    timers.current.push(window.setTimeout(() => setTyping(who), 700));
+    timers.current.push(window.setTimeout(() => {
+      setTyping(null);
+      setState((st) => ({ ...st, threads: st.threads.map((x) => x.prospectId === id
+        ? { ...x, replies: x.replies + 1, extra: [...x.extra, { from: "client", text: pick(next, lang) }] } : x) }));
+    }, 2300));
   };
+  const reply = (from: "agent" | "axira", text: string) => {
+    if (!text.trim()) return;
+    push(selected, { from, text: text.trim() });
+    log(t.log.sent(p.name));
+    setDraft("");
+    clientAnswers(selected);
+  };
+  const system = (text: string) => push(selected, { from: "system", text });
+  const updateProspect = (patch: Partial<DemoProspect>) =>
+    setState((st) => ({ ...st, prospects: st.prospects.map((x) => x.id === p.id ? { ...x, ...patch } : x) }));
+
+  const call = () => {
+    const minutes = 3 + (state.calls.length % 5);
+    setState((st) => ({ ...st, calls: [{ id: `c${Date.now()}`, prospectId: p.id, minutes, direction: "out", at: lang === "en" ? "Now" : "Ahora",
+      summary: { es: t.callSummary(p.name), en: t.callSummary(p.name) } }, ...st.calls] }));
+    system(t.sysCall(minutes)); log(t.log.called(p.name));
+  };
+  const followup = () => {
+    setState((st) => ({ ...st, followups: [...st.followups, { id: `f${Date.now()}`, prospectId: p.id, dueInHours: 24,
+      task: { es: t.followupTask, en: t.followupTask }, done: false }] }));
+    system(t.sysFollowup); log(t.log.followup(p.name));
+  };
+  const nextStage = () => {
+    const next = STAGES[STAGES.indexOf(p.stage) + 1];
+    if (!next) return;
+    updateProspect({ stage: next }); system(t.sysStage(t.stages[next])); log(t.log.moved(p.name, t.stages[next]));
+  };
+  const transfer = () => {
+    push(selected, { from: "system", text: t.sysTransfer }, { transferred: true });
+    log(t.log.transferred(p.name));
+  };
+  const toggleConsent = () => {
+    updateProspect({ consent: !p.consent });
+    system(p.consent ? t.sysOptOut : t.sysOptIn); log(p.consent ? t.log.optOut(p.name) : t.log.optIn(p.name));
+  };
+  const saveNote = () => {
+    if (!note.trim()) return;
+    setState((st) => ({ ...st, notes: { ...st.notes, [p.id]: [note.trim(), ...(st.notes[p.id] ?? [])] } }));
+    log(t.log.note(p.name)); setNote("");
+  };
+  const myFollowups = state.followups.filter((f) => f.prospectId === p.id);
+  const myCalls = state.calls.filter((c) => c.prospectId === p.id);
+  const chip = "shrink-0 whitespace-nowrap rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700";
 
   return <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
+    <div className={`rounded-2xl bg-white p-4 shadow-sm ${opened ? "hidden lg:block" : ""}`}>
       <h2 className="font-bold">{t.inbox}</h2>
       <ul className="mt-3 grid gap-2">
-        {state.threads.map((th) => { const pr = prospect(th.prospectId); const last = th.extra.at(-1)?.text ?? pick(th.messages.at(-1)!.text, lang);
-          return <li key={th.prospectId}><button type="button" onClick={() => open(th.prospectId)} aria-current={th.prospectId === selected ? "true" : undefined}
+        {state.threads.map((th) => { const pr = prospect(th.prospectId);
+          const lastItem = th.extra.at(-1)?.text ?? (th.messages.length ? pick(th.messages.at(-1)!.text, lang) : t.none);
+          return <li key={th.prospectId}><button type="button" onClick={() => openContact(th.prospectId)} aria-current={th.prospectId === selected ? "true" : undefined}
             className={`w-full rounded-xl p-3 text-left text-sm ${th.prospectId === selected ? "bg-blue-50" : ""}`}>
             <span className="flex items-center justify-between gap-2"><strong>{pr.name}</strong><span className="text-xs text-slate-500">{t.channels[pr.channel]}</span></span>
-            <span className="mt-1 block truncate text-slate-600">{last}</span>
+            <span className="mt-1 block truncate text-slate-600">{lastItem}</span>
             {th.unread > 0 && <span className="mt-1 inline-block rounded-full bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">{th.unread} {t.unread}</span>}
             {th.transferred && <span className="mt-1 ml-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900">{t.transferred}</span>}
           </button></li>; })}
       </ul>
     </div>
-    <div className="grid gap-3 rounded-2xl bg-white p-4 shadow-sm">
+
+    <div className={`grid content-start gap-3 rounded-2xl bg-white p-4 shadow-sm ${opened ? "" : "hidden lg:grid"}`}>
+      <button type="button" onClick={() => setOpened(false)} className="w-fit rounded-lg px-2 py-1 text-sm font-semibold text-blue-700 lg:hidden">{t.back}</button>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div><h2 className="font-bold">{p.name}</h2><p className="text-xs text-slate-500">{pick(p.business, lang)} · {t.channels[p.channel]} · ***{p.phoneLast4}</p></div>
+        <div><h2 className="font-bold">{p.name}</h2>
+          <p className="text-xs text-slate-500">{pick(p.business, lang)} · {t.channels[p.channel]} · ***{p.phoneLast4}</p>
+          <p className="mt-1 text-xs"><span className="rounded-full bg-slate-100 px-2 py-0.5 font-semibold">{t.stage}: {t.stages[p.stage]}</span>
+            <span className="ml-1 text-slate-500">{t.owner}: {p.owner ?? t.unassigned}</span></p></div>
         <span className={`rounded-full px-3 py-1 text-xs font-bold ${p.consent ? "bg-green-100 text-green-950" : "bg-red-100 text-red-900"}`}>{p.consent ? t.consentYes : t.consentNo}</span>
       </div>
-      <ul className="grid gap-2">
-        {thread.messages.map((m, i) => <Bubble key={i} who={m.from} text={pick(m.text, lang)} t={t} />)}
-        {thread.extra.map((m, i) => <Bubble key={`x${i}`} who={m.from} text={m.text} t={t} note={t.notSent} />)}
+
+      <div aria-label={t.actions} className="flex gap-2 overflow-x-auto pb-1">
+        <button type="button" className={chip} onClick={call}>{t.call}</button>
+        <button type="button" className={chip} onClick={followup}>{t.followup}</button>
+        {STAGES.indexOf(p.stage) < STAGES.length - 1 && <button type="button" className={chip} onClick={nextStage}>{t.nextStage}</button>}
+        {!p.owner && <button type="button" className={chip} onClick={() => { updateProspect({ owner: t.you }); log(t.log.assigned(p.name)); }}>{t.assignMe}</button>}
+        {!thread.transferred && <button type="button" className={chip} onClick={transfer}>{t.transfer}</button>}
+        <button type="button" className={chip} onClick={toggleConsent}>{p.consent ? t.optOut : t.optIn}</button>
+      </div>
+
+      <ul className="grid max-h-[55vh] gap-2 overflow-y-auto rounded-xl bg-slate-50 p-2">
+        {all.map((m, i) => <Bubble key={i} who={m.from} text={m.text} t={t}
+          note={i >= thread.messages.length ? (m.from === "client" ? t.clientDemo : m.from === "system" ? undefined : t.notSent) : undefined} />)}
+        {typing && <li className="w-fit rounded-xl bg-white px-3 py-2 text-xs italic text-slate-500">{t.typing(typing)}</li>}
       </ul>
-      {!answered && !thread.transferred && <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm">
+
+      {waiting && !thread.transferred && !typing && <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm">
         <p className="text-xs font-bold text-blue-700">{t.axiraSuggests} · {sug.source}</p>
         <p className="mt-1 text-blue-900">{sug.text}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" className="rounded-lg bg-blue-600 px-3 py-2 font-semibold text-white" onClick={() => { add("axira", sug.text); log(t.log.sent(p.name)); }}>{t.approveSend}</button>
-          <button type="button" className="rounded-lg px-3 py-2" onClick={() => {
-            setState((st) => ({ ...st, threads: st.threads.map((th) => th.prospectId === selected ? { ...th, transferred: true, unread: 0 } : th) }));
-            log(t.log.transferred(p.name));
-          }}>{t.transfer}</button>
+          <button type="button" className="rounded-lg bg-blue-600 px-3 py-2 font-semibold text-white" onClick={() => sug.handoff ? transfer() : reply("axira", sug.text)}>{sug.handoff ? t.transfer : t.approveSend}</button>
+          {!sug.handoff && <button type="button" className="rounded-lg px-3 py-2" onClick={() => setDraft(sug.text)}>{t.edit}</button>}
         </div>
       </div>}
-      <form className="flex flex-col gap-2 sm:flex-row" onSubmit={(e) => { e.preventDefault(); if (!draft.trim()) return; add("agent", draft.trim()); log(t.log.sent(p.name)); setDraft(""); }}>
-        <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={t.writeReply} className="flex-1 rounded-lg border p-2.5" maxLength={500} />
-        <button className="rounded-lg bg-slate-950 px-4 py-2.5 font-semibold text-white">{t.sendOwn}</button>
-      </form>
+
+      {!thread.transferred && <>
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-semibold text-slate-500">{t.quickReplies}:</span>
+          <button type="button" className={chip} onClick={() => setDraft(priceReply)}>{t.quickPrice}</button>
+          <button type="button" className={chip} onClick={() => setDraft(t.quickScheduleText)}>{t.quickSchedule}</button>
+          <button type="button" className={chip} onClick={() => setDraft(t.quickThanksText)}>{t.quickThanks}</button>
+        </div>
+        <form className="flex flex-col gap-2 sm:flex-row" onSubmit={(e) => { e.preventDefault(); reply("agent", draft); }}>
+          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={t.writeReply} rows={2} className="flex-1 rounded-lg border p-2.5 text-base" maxLength={600} />
+          <button className="rounded-lg bg-slate-950 px-4 py-2.5 font-semibold text-white" disabled={!draft.trim()}>{t.sendOwn}</button>
+        </form>
+      </>}
+
+      <details className="rounded-xl border border-slate-200 p-3 text-sm">
+        <summary className="cursor-pointer font-semibold">{t.contactInfo}</summary>
+        <p className="mt-2 text-slate-700">{pick(p.note, lang)}</p>
+        <h3 className="mt-3 text-xs font-bold uppercase tracking-wide text-slate-500">{t.notes}</h3>
+        <ul className="mt-1 grid gap-1">{(state.notes[p.id] ?? []).map((n, i) => <li key={i} className="rounded-lg bg-amber-50 p-2">{n}</li>)}</ul>
+        <div className="mt-2 flex gap-2">
+          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={t.notePlaceholder} maxLength={300} className="min-w-0 flex-1 rounded-lg border p-2 text-base" />
+          <button type="button" className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white" onClick={saveNote}>{t.addNote}</button>
+        </div>
+        <h3 className="mt-3 text-xs font-bold uppercase tracking-wide text-slate-500">{t.contactFollowups}</h3>
+        {myFollowups.length ? <ul className="mt-1 grid gap-1">{myFollowups.map((f) => <li key={f.id} className={f.done ? "line-through opacity-70" : ""}>
+          {pick(f.task, lang)} · {f.done ? t.done : f.dueInHours < 0 ? `${t.overdue} ${t.agoHours(f.dueInHours)}` : `${t.due} ${t.inHours(f.dueInHours)}`}</li>)}</ul>
+          : <p className="mt-1 text-slate-500">{t.none}</p>}
+        <h3 className="mt-3 text-xs font-bold uppercase tracking-wide text-slate-500">{t.contactCalls}</h3>
+        {myCalls.length ? <ul className="mt-1 grid gap-1">{myCalls.map((c) => <li key={c.id}>
+          <span className="text-xs text-slate-500">{c.direction === "in" ? t.callIn : t.callOut} · {c.minutes} {t.min} · {c.at}</span><br />{pick(c.summary, lang)}</li>)}</ul>
+          : <p className="mt-1 text-slate-500">{t.none}</p>}
+      </details>
     </div>
   </section>;
 }
 
-function Bubble({ who, text, t, note }: { who: "client" | "axira" | "agent"; text: string; t: T; note?: string }) {
+function Bubble({ who, text, t, note }: { who: Extra["from"]; text: string; t: T; note?: string }) {
+  if (who === "system") return <li className="mx-auto max-w-[90%] rounded-lg bg-slate-200 px-3 py-1.5 text-center text-xs text-slate-700">{text}</li>;
   const mine = who !== "client";
-  return <li className={`max-w-[85%] rounded-xl p-3 text-sm ${mine ? "ml-auto bg-blue-600 text-white" : "bg-slate-100"}`}>
+  return <li className={`max-w-[85%] rounded-xl p-3 text-sm ${mine ? "ml-auto bg-blue-600 text-white" : "bg-white"}`}>
     <p className="text-xs font-bold opacity-80">{who === "client" ? t.client : who === "axira" ? "Axira" : t.you}</p>
     <p className="mt-0.5">{text}</p>
     {note && <p className="mt-1 text-xs italic opacity-80">{note}</p>}
   </li>;
 }
 
-function Prospects({ t, lang, state, setState, log }: { t: T; lang: Lang; state: St; setState: SetSt; log: (l: string) => void }) {
+function Prospects({ t, lang, state, setState, log, openContact }: { t: T; lang: Lang; state: St; setState: SetSt; log: (l: string) => void; openContact: (id: string) => void }) {
   const move = (p: DemoProspect, dir: -1 | 1) => {
     const next = STAGES[STAGES.indexOf(p.stage) + dir];
     if (!next) return;
@@ -216,13 +335,14 @@ function Prospects({ t, lang, state, setState, log }: { t: T; lang: Lang; state:
         <h2 className="flex items-center justify-between font-bold">{t.stages[stage]}<span className="rounded-full bg-slate-100 px-2 text-xs">{list.length}</span></h2>
         <ul className="mt-3 grid gap-2">
           {list.map((p) => <li key={p.id} className="rounded-xl border border-slate-200 p-3 text-sm">
-            <p className="font-semibold">{p.name}</p>
+            <button type="button" onClick={() => openContact(p.id)} className="text-left font-semibold text-blue-700 underline-offset-2 hover:underline">{p.name}</button>
             <p className="text-xs text-slate-500">{pick(p.business, lang)} · {t.channels[p.channel]}</p>
             <p className="mt-1 text-xs">{pick(p.note, lang)}</p>
             <p className="mt-1 text-xs text-slate-500">{t.owner}: {p.owner ?? t.unassigned}</p>
             <div className="mt-2 flex flex-wrap gap-1">
               {STAGES.indexOf(stage) > 0 && <button type="button" className="rounded-lg px-2 py-1 text-xs" onClick={() => move(p, -1)}>{t.moveBack}</button>}
               {STAGES.indexOf(stage) < STAGES.length - 1 && <button type="button" className="rounded-lg bg-blue-600 px-2 py-1 text-xs font-semibold text-white" onClick={() => move(p, 1)}>{t.moveNext}</button>}
+              <button type="button" className="rounded-lg px-2 py-1 text-xs" onClick={() => openContact(p.id)}>{t.openChat}</button>
               {!p.owner && <button type="button" className="rounded-lg px-2 py-1 text-xs" onClick={() => {
                 setState((st) => ({ ...st, prospects: st.prospects.map((x) => x.id === p.id ? { ...x, owner: t.you } : x) })); log(t.log.assigned(p.name));
               }}>{t.assignMe}</button>}
@@ -233,8 +353,8 @@ function Prospects({ t, lang, state, setState, log }: { t: T; lang: Lang; state:
   </section>;
 }
 
-function Followups({ t, lang, state, setState, prospect, log }: {
-  t: T; lang: Lang; state: St; setState: SetSt; prospect: (id: string) => DemoProspect; log: (l: string) => void;
+function Followups({ t, lang, state, setState, prospect, log, openContact }: {
+  t: T; lang: Lang; state: St; setState: SetSt; prospect: (id: string) => DemoProspect; log: (l: string) => void; openContact: (id: string) => void;
 }) {
   const update = (f: DemoFollowup, patch: Partial<DemoFollowup>) =>
     setState((st) => ({ ...st, followups: st.followups.map((x) => x.id === f.id ? { ...x, ...patch } : x) }));
@@ -249,7 +369,7 @@ function Followups({ t, lang, state, setState, prospect, log }: {
             <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${f.done ? "bg-green-100 text-green-950" : late ? "bg-red-100 text-red-900" : "bg-slate-100"}`}>
               {f.done ? t.done : late ? `${t.overdue} · ${t.agoHours(f.dueInHours)}` : `${t.due} ${t.inHours(f.dueInHours)}`}</span>
           </div>
-          <p className="mt-1 text-xs text-slate-500">{p.name} · {pick(p.business, lang)}</p>
+          <p className="mt-1 text-xs text-slate-500"><button type="button" onClick={() => openContact(p.id)} className="font-semibold text-blue-700">{p.name}</button> · {pick(p.business, lang)}</p>
           {!f.done && <div className="mt-2 flex flex-wrap gap-2">
             <button type="button" className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white" onClick={() => { update(f, { done: true }); log(t.log.done(pick(f.task, lang))); }}>{t.markDone}</button>
             <button type="button" className="rounded-lg px-3 py-1.5 text-xs" onClick={() => { update(f, { dueInHours: Math.max(f.dueInHours, 0) + 24 }); log(t.log.postponed(pick(f.task, lang))); }}>{t.postpone}</button>
@@ -259,8 +379,8 @@ function Followups({ t, lang, state, setState, prospect, log }: {
   </section>;
 }
 
-function Calls({ t, lang, prospect }: { t: T; lang: Lang; prospect: (id: string) => DemoProspect }) {
-  const used = CALLS.reduce((n, c) => n + c.minutes, 0);
+function Calls({ t, lang, state, prospect, openContact }: { t: T; lang: Lang; state: St; prospect: (id: string) => DemoProspect; openContact: (id: string) => void }) {
+  const used = state.calls.reduce((n, c) => n + c.minutes, 0);
   return <section className="grid gap-4">
     <div className="rounded-2xl bg-white p-4 shadow-sm">
       <p className="text-sm text-slate-600">{t.minutesUsed}</p>
@@ -269,9 +389,9 @@ function Calls({ t, lang, prospect }: { t: T; lang: Lang; prospect: (id: string)
       <p className="mt-2 text-xs text-slate-500">{t.callNote}</p>
     </div>
     <ul className="grid gap-2">
-      {CALLS.map((c) => { const p = prospect(c.prospectId);
+      {state.calls.map((c) => { const p = prospect(c.prospectId);
         return <li key={c.id} className="rounded-2xl bg-white p-4 text-sm shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-2"><strong>{p.name}</strong>
+          <div className="flex flex-wrap items-center justify-between gap-2"><button type="button" onClick={() => openContact(p.id)} className="font-bold text-blue-700">{p.name}</button>
             <span className="text-xs text-slate-500">{c.direction === "in" ? t.callIn : t.callOut} · {c.minutes} {t.min} · {c.at}</span></div>
           <p className="mt-1"><span className="text-xs font-bold text-blue-700">Axira · </span>{pick(c.summary, lang)}</p>
         </li>; })}

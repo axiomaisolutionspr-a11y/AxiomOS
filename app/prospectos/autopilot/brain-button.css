@@ -1,11 +1,15 @@
 /* Botón de Brain (cerebro neón) arriba a la derecha. Reutiliza el marcado y los efectos de .fx-logo;
  * aquí solo cambia el tamaño, la forma redonda y la máscara del brillo. */
+/* Alineado con el logo de AxiomAI: mismo centro vertical y misma distancia al borde (en espejo).
+ * Centro del logo = relleno de la cabecera + 12px de margen + mitad de su alto (ancho × 437/560). */
 .fx .fx-logo.fx-brain,
 .fx[data-fx-mode="3d"] .fx-logo.fx-brain {
+  --fx-brain: clamp(58px, 15vw, 76px);
+  --fx-logo-w: clamp(112px, 30vw, 168px);
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: clamp(58px, 15vw, 76px);
+  top: calc(var(--fx-hp, 28px) + 12px + var(--fx-logo-w) * 0.3902 - var(--fx-brain) / 2);
+  right: calc(max(20px, (100% - 72rem) / 2) + 4px);
+  width: var(--fx-brain);
   aspect-ratio: 1;
   margin: 0;
   border-radius: 50%;
@@ -30,6 +34,8 @@
 .fx[data-fx-theme="claro"][data-fx-mode] button.fx-logo.fx-brain { border-radius: 50%; }
 /* En la pantalla de Brain el botón marca que ya estás ahí. */
 .fx .fx-logo.fx-brain[aria-current="page"] .fx-logo-face { filter: drop-shadow(0 0 12px rgb(34 211 238 / 0.95)) drop-shadow(0 0 26px rgba(217, 70, 239, 0.6)); }
+.fx[data-fx-mode="3d"] .fx-logo.fx-brain { --fx-logo-w: clamp(120px, 34vw, 190px); }
+.fx header.fx-has-brain.py-8 { --fx-hp: 32px; }
 /* Deja espacio para el botón en la cabecera. */
 .fx header.fx-has-brain { position: relative; }
 .fx header.fx-has-brain > div { padding-right: clamp(64px, 17vw, 88px); }

@@ -42,7 +42,41 @@ export const CONVERSATIONS: DemoConversation[] = [
   { prospectId: "p4", unread: 0, messages: [
     { from: "client", text: { es: "¿Me pueden atender en inglés? Soy de Puerto Rico.", en: "Can you help me in English? I am in Puerto Rico." }, at: "Lun" },
   ] },
+  { prospectId: "p5", unread: 1, messages: [
+    { from: "client", text: { es: "Hola, ¿tienen horario los sábados?", en: "Hi, are you open on Saturdays?" }, at: "10:05" },
+  ] },
+  { prospectId: "p6", unread: 0, messages: [
+    { from: "client", text: { es: "Gracias, por ahora vamos a esperar.", en: "Thanks, we'll wait for now." }, at: "Mar" },
+    { from: "agent", text: { es: "Entendido, Pedro. Aquí estamos cuando lo necesites.", en: "Understood, Pedro. We're here whenever you need us." }, at: "Mar" },
+  ] },
 ];
+
+// Lo que el cliente ficticio contesta, en orden, cuando le respondes en la demostración.
+export const CLIENT_REPLIES: Record<string, L[]> = {
+  p1: [
+    { es: "¿Y qué incluye ese precio?", en: "And what does that price include?" },
+    { es: "Perfecto. ¿Cómo lo activo?", en: "Perfect. How do I activate it?" },
+    { es: "Gracias, mañana te confirmo.", en: "Thanks, I'll confirm tomorrow." },
+  ],
+  p2: [
+    { es: "Uso Google Calendar. ¿Sirve?", en: "I use Google Calendar. Does that work?" },
+    { es: "Bien. ¿Me pueden llamar mañana en la mañana?", en: "Good. Can you call me tomorrow morning?" },
+  ],
+  p3: [
+    { es: "Recibo como 40 llamadas al día.", en: "I get about 40 calls a day." },
+    { es: "Perfecto, espero la llamada del asesor.", en: "Perfect, I'll wait for the advisor's call." },
+  ],
+  p4: [
+    { es: "Great, thank you! Everything is working well.", en: "Great, thank you! Everything is working well." },
+  ],
+  p5: [
+    { es: "Ok, gracias. ¿Y cuánto cuesta el plan?", en: "Ok, thanks. And how much is the plan?" },
+    { es: "Lo voy a pensar. Gracias.", en: "I'll think about it. Thanks." },
+  ],
+  p6: [
+    { es: "Gracias, los tendré en cuenta.", en: "Thanks, I'll keep you in mind." },
+  ],
+};
 
 export const FOLLOWUPS: DemoFollowup[] = [
   { id: "f1", prospectId: "p3", dueInHours: -20, task: { es: "Llamar para cotizar Recepcionista de IA", en: "Call to quote the AI Receptionist" }, done: false },
@@ -86,7 +120,7 @@ export const DEMO_TEXT = {
     notSent: "Demostración: este mensaje no se envió a nadie.", transferred: "Transferido a asesor", you: "Tú", client: "Cliente",
     owner: "Responsable", unassigned: "Sin asignar", assignMe: "Asignarme", moveBack: "← Etapa anterior", moveNext: "Etapa siguiente →",
     consentYes: "Acepta promociones", consentNo: "Baja de promociones",
-    due: "Vence", overdue: "Vencido", inHours: (h: number) => (h < 24 ? `en ${h} h` : `en ${Math.round(h / 24)} días`), agoHours: (h: number) => `hace ${Math.abs(h)} h`,
+    due: "Vence", overdue: "Vencido", inHours: (h: number) => { const d = Math.round(h / 24); return h < 24 ? `en ${h} h` : `en ${d} ${d === 1 ? "día" : "días"}`; }, agoHours: (h: number) => `hace ${Math.abs(h)} h`,
     markDone: "Marcar hecho", postpone: "Posponer 1 día", done: "Hecho", pendingFollowups: "pendientes", overdueCount: "vencidos",
     minutesUsed: "Minutos usados (demo)", ofPlan: "de 200 incluidos", callIn: "Entrante", callOut: "Saliente", min: "min",
     callNote: "En el CRM terminado las llamadas pasan por la línea del negocio. Aquí solo se muestran ejemplos.",
@@ -97,8 +131,25 @@ export const DEMO_TEXT = {
     defaultCampaign: "Promoción AxiomOS Autopilot", defaultCampaignMsg: "Hola {nombre}, este mes AxiomOS Autopilot está a $9.99 los primeros 3 meses.",
     kpiProspects: "Prospectos", kpiClients: "Clientes", kpiConversion: "Conversión", kpiMonthly: "Ingreso mensual (demo)", kpiOverdue: "Seguimientos vencidos", kpiUnread: "Mensajes sin leer",
     byStage: "Por etapa", activityEmpty: "Todavía no has hecho nada en la demostración.",
+    back: "← Conversaciones", openChat: "Abrir conversación", typing: (n: string) => `${n} está escribiendo…`, edit: "Editar",
+    actions: "Acciones", call: "Llamar", followup: "Crear seguimiento", nextStage: "Pasar a la siguiente etapa", stage: "Etapa",
+    quickReplies: "Respuestas rápidas", quickPrice: "Precios", quickSchedule: "Agendar llamada", quickThanks: "Agradecer",
+    quickScheduleText: "¿Qué día y hora te funciona para una llamada de 15 minutos? Te confirmamos enseguida.",
+    quickThanksText: "¡Gracias por escribirnos! Cualquier pregunta, aquí estamos.",
+    contactInfo: "Ficha del contacto", notes: "Notas", addNote: "Guardar nota", notePlaceholder: "Escribe una nota interna…",
+    contactFollowups: "Seguimientos", contactCalls: "Llamadas", none: "Ninguno todavía.",
+    optOut: "Marcar baja de promociones", optIn: "Reactivar promociones",
+    followupTask: "Dar seguimiento a la conversación",
+    callSummary: (n: string) => `Llamada de demostración con ${n}. Axira resumió: el cliente pidió más información y queda pendiente enviarla.`,
+    sysCall: (m: number) => `Llamada de ${m} min registrada. Axira hizo el resumen (demostración).`,
+    sysFollowup: "Seguimiento creado para mañana (demostración).",
+    sysStage: (s: string) => `Etapa cambiada a «${s}».`, sysTransfer: "Conversación transferida a un asesor.",
+    sysOptOut: "El contacto quedó dado de baja de promociones. Las campañas lo excluyen.", sysOptIn: "Promociones reactivadas para este contacto.",
+    clientDemo: "Respuesta ficticia del cliente (demostración).",
     log: {
-      sent: (n: string) => `Respuesta aprobada para ${n} (no enviada).`, transferred: (n: string) => `${n} transferido a asesor.`,
+      sent: (n: string) => `Respuesta aprobada para ${n} (no enviada).`,
+      called: (n: string) => `Llamada de demostración con ${n}.`, followup: (n: string) => `Seguimiento creado para ${n}.`,
+      note: (n: string) => `Nota añadida a ${n}.`, optOut: (n: string) => `${n} dado de baja de promociones.`, optIn: (n: string) => `${n} acepta promociones otra vez.`, transferred: (n: string) => `${n} transferido a asesor.`,
       moved: (n: string, s: string) => `${n} pasó a «${s}».`, assigned: (n: string) => `${n} asignado a ti.`,
       done: (t: string) => `Seguimiento hecho: ${t}.`, postponed: (t: string) => `Seguimiento pospuesto: ${t}.`,
       campaign: (c: string, r: number) => `Campaña «${c}» preparada para ${r} contactos (no enviada).`, reset: "Demostración reiniciada.",
@@ -153,7 +204,7 @@ export const DEMO_TEXT = {
     notSent: "Demo: this message was not sent to anyone.", transferred: "Handed off to advisor", you: "You", client: "Client",
     owner: "Owner", unassigned: "Unassigned", assignMe: "Assign to me", moveBack: "← Previous stage", moveNext: "Next stage →",
     consentYes: "Accepts promotions", consentNo: "Opted out of promotions",
-    due: "Due", overdue: "Overdue", inHours: (h: number) => (h < 24 ? `in ${h} h` : `in ${Math.round(h / 24)} days`), agoHours: (h: number) => `${Math.abs(h)} h ago`,
+    due: "Due", overdue: "Overdue", inHours: (h: number) => { const d = Math.round(h / 24); return h < 24 ? `in ${h} h` : `in ${d} ${d === 1 ? "day" : "days"}`; }, agoHours: (h: number) => `${Math.abs(h)} h ago`,
     markDone: "Mark done", postpone: "Postpone 1 day", done: "Done", pendingFollowups: "pending", overdueCount: "overdue",
     minutesUsed: "Minutes used (demo)", ofPlan: "of 200 included", callIn: "Inbound", callOut: "Outbound", min: "min",
     callNote: "In the finished CRM calls go through the business line. Only examples are shown here.",
@@ -164,7 +215,24 @@ export const DEMO_TEXT = {
     defaultCampaign: "AxiomOS Autopilot promotion", defaultCampaignMsg: "Hi {nombre}, this month AxiomOS Autopilot is $9.99 for the first 3 months.",
     kpiProspects: "Prospects", kpiClients: "Clients", kpiConversion: "Conversion", kpiMonthly: "Monthly revenue (demo)", kpiOverdue: "Overdue follow-ups", kpiUnread: "Unread messages",
     byStage: "By stage", activityEmpty: "You haven't done anything in the demo yet.",
+    back: "← Conversations", openChat: "Open conversation", typing: (n: string) => `${n} is typing…`, edit: "Edit",
+    actions: "Actions", call: "Call", followup: "Create follow-up", nextStage: "Move to next stage", stage: "Stage",
+    quickReplies: "Quick replies", quickPrice: "Prices", quickSchedule: "Schedule a call", quickThanks: "Thank",
+    quickScheduleText: "What day and time works for a 15-minute call? We'll confirm right away.",
+    quickThanksText: "Thanks for writing to us! Any questions, we're here.",
+    contactInfo: "Contact card", notes: "Notes", addNote: "Save note", notePlaceholder: "Write an internal note…",
+    contactFollowups: "Follow-ups", contactCalls: "Calls", none: "None yet.",
+    optOut: "Opt out of promotions", optIn: "Re-enable promotions",
+    followupTask: "Follow up on the conversation",
+    callSummary: (n: string) => `Demo call with ${n}. Axira summarized: the client asked for more information, which is pending.`,
+    sysCall: (m: number) => `${m}-min call logged. Axira wrote the summary (demo).`,
+    sysFollowup: "Follow-up created for tomorrow (demo).",
+    sysStage: (s: string) => `Stage changed to “${s}”.`, sysTransfer: "Conversation handed off to an advisor.",
+    sysOptOut: "The contact opted out of promotions. Campaigns exclude them.", sysOptIn: "Promotions re-enabled for this contact.",
+    clientDemo: "Fictitious client reply (demo).",
     log: {
+      called: (n: string) => `Demo call with ${n}.`, followup: (n: string) => `Follow-up created for ${n}.`,
+      note: (n: string) => `Note added to ${n}.`, optOut: (n: string) => `${n} opted out of promotions.`, optIn: (n: string) => `${n} accepts promotions again.`,
       sent: (n: string) => `Reply approved for ${n} (not sent).`, transferred: (n: string) => `${n} handed off to an advisor.`,
       moved: (n: string, s: string) => `${n} moved to “${s}”.`, assigned: (n: string) => `${n} assigned to you.`,
       done: (t: string) => `Follow-up done: ${t}.`, postponed: (t: string) => `Follow-up postponed: ${t}.`,
