@@ -3,8 +3,9 @@
  * Principios: interfaz estable; la interacción se indica iluminando el borde azul del
  * elemento que se usa; elevación sutil y de una sola pieza; nada tapa texto ni controles.
  * Modos (atributo data-fx-mode en <main>):
- *   "3d"     → profundidad y elevación sutiles, transiciones cortas.
- *   "sobrio" → mismo diseño y colores, sin 3D ni movimiento; solo el borde iluminado.
+ *   "sobrio" → este archivo: profundidad y elevación sutiles, transiciones cortas (era el "3D" de la v3).
+ *   "3d"     → futuro-3d.css: efectos completos de la v2 (sección que sale de la pantalla,
+ *              logo con relieve que gira y sale) aplicados encima de esta base.
  * "Reducir movimiento" del dispositivo se respeta en ambos modos.
  */
 .fx {
@@ -168,8 +169,8 @@
   scrollbar-width: none;
 }
 
-/* ===== Modo 3D: profundidad y elevación sutiles, de una sola pieza ===== */
-.fx[data-fx-mode="3d"] [data-fx-active] {
+/* ===== Modo sobrio: profundidad y elevación sutiles, de una sola pieza ===== */
+.fx[data-fx-mode="sobrio"] [data-fx-active] {
   z-index: 3;
   transform: translateY(-4px) scale(1.01);
   box-shadow:
@@ -178,12 +179,12 @@
     0 14px 40px -22px rgba(37, 99, 235, 0.8) !important;
 }
 /* La sección elevada se distingue: las demás bajan un poco de brillo, sin moverse ni desenfocarse. */
-.fx[data-fx-mode="3d"] [data-fx-stage] [data-fx-card]:not([data-fx-active]) { filter: brightness(0.8); }
-/* Entrada breve al cargar (solo 3D). */
-.fx[data-fx-mode="3d"] [data-fx-enter] { animation: fx-enter 0.4s ease-out backwards; animation-delay: var(--fx-delay, 0ms); }
+.fx[data-fx-mode="sobrio"] [data-fx-stage] [data-fx-card]:not([data-fx-active]) { filter: brightness(0.8); }
+/* Entrada breve al cargar (solo sobrio). */
+.fx[data-fx-mode="sobrio"] [data-fx-enter] { animation: fx-enter 0.4s ease-out backwards; animation-delay: var(--fx-delay, 0ms); }
 @keyframes fx-enter { from { opacity: 0; transform: translateY(8px); } }
-/* Piso holográfico estático al fondo (solo 3D). */
-.fx[data-fx-mode="3d"]::after {
+/* Piso holográfico estático al fondo (solo sobrio). */
+.fx[data-fx-mode="sobrio"]::after {
   content: "";
   position: fixed;
   left: -50%;
@@ -201,12 +202,8 @@
   mask-image: linear-gradient(to top, #000 10%, transparent 85%);
   opacity: 0.35;
 }
-/* Botones: hundimiento mínimo al presionar (solo 3D). */
-.fx[data-fx-mode="3d"] :is(button, a.rounded-lg, a.rounded-full):active { transform: scale(0.98); }
-/* Modo sobrio: sin elevación, sin entrada, sin piso. Solo bordes iluminados. */
-.fx[data-fx-mode="sobrio"] [data-fx-card],
-.fx[data-fx-mode="sobrio"] [data-fx-active],
-.fx[data-fx-mode="sobrio"] :is(button, a):active { transform: none !important; }
+/* Botones: hundimiento mínimo al presionar (solo sobrio). */
+.fx[data-fx-mode="sobrio"] :is(button, a.rounded-lg, a.rounded-full):active { transform: scale(0.98); }
 
 /* ---------- Controles de experiencia (efectos e idioma) ---------- */
 .fx-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
@@ -275,7 +272,9 @@
   user-select: none;
   -webkit-user-drag: none;
 }
-.fx-logo-depth { display: none; }
+.fx-logo-depth,
+.fx-logo-shine,
+.fx-logo-base { display: none; }
 .fx-logo-face {
   filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.55));
   transition: filter 0.3s ease;
@@ -292,20 +291,20 @@
   opacity: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-/* Modo 3D: relieve leve en reposo; "sale del marco" al interactuar. */
-.fx[data-fx-mode="3d"] .fx-logo-depth {
+/* Modo sobrio: relieve leve en reposo; "sale del marco" al interactuar. */
+.fx[data-fx-mode="sobrio"] .fx-logo-depth {
   display: block;
   transform: translateZ(calc(var(--fx-d) * -1.4px));
   filter: brightness(calc(0.5 - var(--fx-d) * 0.05)) saturate(1.3);
 }
-.fx[data-fx-mode="3d"] .fx-logo-stage { transform: rotateX(6deg); }
-.fx[data-fx-mode="3d"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-stage { transform: rotateX(4deg) translate3d(0, -9%, 26px) scale(1.12); }
-.fx[data-fx-mode="3d"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-shadow { opacity: 1; transform: scaleX(0.85); }
-.fx[data-fx-mode="3d"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-face { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8)) drop-shadow(0 12px 10px rgba(0, 0, 0, 0.6)); }
+.fx[data-fx-mode="sobrio"] .fx-logo-stage { transform: rotateX(6deg); }
+.fx[data-fx-mode="sobrio"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-stage { transform: rotateX(4deg) translate3d(0, -9%, 26px) scale(1.12); }
+.fx[data-fx-mode="sobrio"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-shadow { opacity: 1; transform: scaleX(0.85); }
+.fx[data-fx-mode="sobrio"] .fx-logo:is([data-pop], :focus-visible) .fx-logo-face { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8)) drop-shadow(0 12px 10px rgba(0, 0, 0, 0.6)); }
 @media (hover: hover) {
-  .fx[data-fx-mode="3d"] .fx-logo:hover .fx-logo-stage { transform: rotateX(4deg) translate3d(0, -9%, 26px) scale(1.12); }
-  .fx[data-fx-mode="3d"] .fx-logo:hover .fx-logo-shadow { opacity: 1; transform: scaleX(0.85); }
-  .fx[data-fx-mode="3d"] .fx-logo:hover .fx-logo-face { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8)) drop-shadow(0 12px 10px rgba(0, 0, 0, 0.6)); }
+  .fx[data-fx-mode="sobrio"] .fx-logo:hover .fx-logo-stage { transform: rotateX(4deg) translate3d(0, -9%, 26px) scale(1.12); }
+  .fx[data-fx-mode="sobrio"] .fx-logo:hover .fx-logo-shadow { opacity: 1; transform: scaleX(0.85); }
+  .fx[data-fx-mode="sobrio"] .fx-logo:hover .fx-logo-face { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8)) drop-shadow(0 12px 10px rgba(0, 0, 0, 0.6)); }
 }
 /* En los dos modos: al interactuar se ilumina el borde del marco del logo. */
 .fx .fx-logo[data-pop] { border-color: rgba(56, 189, 248, 0.95) !important; box-shadow: var(--fx-ring), inset 0 0 24px -8px rgba(56, 189, 248, 0.6) !important; }
