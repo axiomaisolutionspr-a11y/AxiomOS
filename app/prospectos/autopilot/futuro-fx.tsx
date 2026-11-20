@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import "./futuro.css";
 import "./futuro-3d.css";
 
-const CARD = "article, section.rounded-xl, section.rounded-2xl, div.rounded-xl, div.rounded-2xl";
+const CARD = "article, section.rounded-xl, section.rounded-2xl, div.rounded-xl, div.rounded-2xl, a.fx-tile";
 const MAX_TILT = 9;
 const MAX_GYRO = 10; // grados máximos de paralaje por giroscopio (solo 3D)
 
@@ -184,6 +184,16 @@ export default function FuturoFx() {
       if (card) activate(card);
     };
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") activate(null); };
+    // Etiquetas de estado que abren el historial de versiones (funciona con toque, ratón y teclado).
+    const onClick = (e: MouseEvent) => {
+      const opener = e.target instanceof Element ? e.target.closest<HTMLElement>("[data-open-details]") : null;
+      if (!opener) return;
+      const details = document.getElementById(opener.dataset.openDetails ?? "");
+      if (!(details instanceof HTMLDetailsElement)) return;
+      details.open = !details.open;
+      opener.setAttribute("aria-expanded", String(details.open));
+      if (details.open) details.scrollIntoView({ block: "nearest", behavior: still ? "auto" : "smooth" });
+    };
     // En el teléfono la barra del navegador cambia el alto al hacer scroll: solo reaccionar al ancho.
     let lastWidth = innerWidth;
     const onResize = () => { if (innerWidth !== lastWidth) { lastWidth = innerWidth; activate(null); } };
@@ -192,6 +202,7 @@ export default function FuturoFx() {
     root.addEventListener("pointermove", onMove, { passive: true });
     root.addEventListener("focusin", onFocus);
     document.addEventListener("keydown", onKey);
+    root.addEventListener("click", onClick);
     window.addEventListener("resize", onResize);
     return () => {
       activate(null);
@@ -204,6 +215,7 @@ export default function FuturoFx() {
       root.removeEventListener("pointermove", onMove);
       root.removeEventListener("focusin", onFocus);
       document.removeEventListener("keydown", onKey);
+      root.removeEventListener("click", onClick);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("deviceorientation", onOrient);
     };

@@ -47,8 +47,12 @@ function groupByKey<T extends { key: string; version: number }>(rows: T[]) {
   return [...map.entries()].map(([key, versions]) => ({ key, versions: versions.sort((a, b) => b.version - a.version) }));
 }
 
-function Badge({ status, t }: { status: string; t: Dict }) {
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${BADGE[status] ?? ""}`}>{t.status[status] ?? status}</span>;
+function Badge({ status, t, opens }: { status: string; t: Dict; opens?: string }) {
+  const cls = `rounded-full px-2.5 py-0.5 text-xs font-semibold ${BADGE[status] ?? ""}`;
+  if (!opens) return <span className={cls}>{t.status[status] ?? status}</span>;
+  // Abre el historial de versiones de la tarjeta (lo maneja futuro-fx.tsx).
+  return <button type="button" data-open-details={opens} aria-controls={opens} title={t.versions}
+    className={`${cls} cursor-pointer`}>{t.status[status] ?? status} ▾</button>;
 }
 
 function VersionActions({ entity, row, canEdit, t }: { entity: "item" | "knowledge"; row: { key: string; version: number; status: string }; canEdit: boolean; t: Dict }) {
@@ -79,6 +83,13 @@ function VersionActions({ entity, row, canEdit, t }: { entity: "item" | "knowled
   </details>;
 }
 
+function FilterNote({ t, tab, view, count }: { t: Dict; tab: string; view: string; count: number }) {
+  return <p className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-blue-50 p-3 text-sm text-blue-900">
+    <span>{t.showing}: <strong>{t.views[view]}</strong> ({count})</span>
+    <Link href={`?tab=${tab}`} className="rounded-full bg-white px-3 py-1 font-semibold text-blue-700">{t.showAll}</Link>
+  </p>;
+}
+
 function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
   return <label className="grid gap-1 text-sm font-medium text-slate-800">{label}{children}{hint && <span className="text-xs font-normal text-slate-500">{hint}</span>}</label>;
 }
@@ -90,7 +101,7 @@ function toLocal(iso: string | null | undefined) {
 }
 
 export default async function CatalogoPage({ searchParams }: {
-  searchParams: Promise<{ tab?: string; ok?: string; error?: string; editar?: string; v?: string; q?: string }>;
+  searchParams: Promise<{ tab?: string; ok?: string; error?: string; editar?: string; v?: string; q?: string; ver?: string }>;
 }) {
   const { lang, mode, t, locale } = await uiPrefs();
   const date = new Intl.DateTimeFormat(locale, { timeZone: "America/Puerto_Rico", dateStyle: "medium", timeStyle: "short" });
@@ -123,6 +134,15 @@ export default async function CatalogoPage({ searchParams }: {
     (a.versions[0].kind === "plan" ? 0 : 1) - (b.versions[0].kind === "plan" ? 0 : 1) ||
     a.versions[0].name.localeCompare(b.versions[0].name, "es"));
   const knowledgeGroups = groupByKey(knowledge);
+  // Filtro que abren las tarjetas del resumen: planes, servicios o pendientes.
+  const view = ["planes", "servicios", "pendientes"].includes(params.ver ?? "") ? params.ver as "planes" | "servicios" | "pendientes" : null;
+  const isPending = (rows: { status: string }[]) => rows.some((r) => r.status === "draft" || r.status === "approved");
+  const shownItems = itemGroups.filter(({ versions }) =>
+    view === "planes" ? versions[0].kind === "plan" : view === "servicios" ? versions[0].kind === "service"
+      : view === "pendientes" ? isPending(versions) : true);
+  const shownKnowledge = knowledgeGroups.filter(({ versions }) => view === "pendientes" ? isPending(versions) : true);
+  const pendingItems = itemGroups.filter(({ versions }) => isPending(versions)).length;
+  const pendingTab = pendingItems > 0 || pending === 0 ? "catalogo" : "conocimiento";
   const published = (rows: { status: string }[]) => rows.filter((r) => r.status === "published").length;
   const pending = [...items, ...knowledge].filter((r) => r.status === "draft" || r.status === "approved").length;
   const editItem = params.editar ? items.find((i) => i.key === params.editar && String(i.version) === params.v) : undefined;
@@ -158,9 +178,15 @@ export default async function CatalogoPage({ searchParams }: {
       {loadError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-900">{t.catalogLoadError}</p>}
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label={t.summary}>
-        {([["plans", t.plansPublished, published(items.filter((i) => i.kind === "plan"))], ["services", t.servicesPublished, published(items.filter((i) => i.kind === "service"))],
-          ["knowledge", t.knowledgePublished, published(knowledge)], ["pending", t.pending, pending]] as const).map(([id, label, value]) =>
-          <div key={id} className="rounded-xl bg-white p-4 shadow-sm"><p className="text-3xl font-bold text-blue-700">{value}</p><p className="mt-1 text-xs text-slate-600">{label}</p></div>)}
+        {([["plans", t.plansPublished, published(items.filter((i) => i.kind === "plan")), "?tab=catalogo&ver=planes", tab === "catalogo" && view === "planes"],
+          ["services", t.servicesPublished, published(items.filter((i) => i.kind === "service")), "?tab=catalogo&ver=servicios", tab === "catalogo" && view === "servicios"],
+          ["knowledge", t.knowledgePublished, published(knowledge), "?tab=conocimiento", tab === "conocimiento" && !view],
+          ["pending", t.pending, pending, `?tab=${pendingTab}&ver=pendientes`, view === "pendientes"]] as const).map(([id, label, value, href, current]) =>
+          <Link key={id} href={href} aria-current={current ? "page" : undefined}
+            className={`fx-tile block rounded-xl bg-white p-4 shadow-sm ${current ? "fx-tile-current" : ""}`}>
+            <p className="text-3xl font-bold text-blue-700">{value}</p><p className="mt-1 text-xs text-slate-600">{label}</p>
+            <p className="mt-2 text-xs font-semibold text-blue-700">{t.open} →</p>
+          </Link>)}
       </section>
 
       <nav className="flex gap-2 overflow-x-auto" aria-label={t.sections}>
@@ -171,13 +197,14 @@ export default async function CatalogoPage({ searchParams }: {
 
       {tab === "catalogo" && <>
         <section className="grid gap-4">
+          {view && <FilterNote t={t} tab="catalogo" view={view} count={shownItems.length} />}
           {itemGroups.length === 0 && !loadError && <p className="rounded-xl bg-white p-5">{t.noItems}</p>}
-          {itemGroups.map(({ key, versions }) => {
+          {shownItems.map(({ key, versions }) => {
             const current = versions.find((v) => v.status === "published") ?? versions[0];
             return <article key={key} className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div><h2 className="text-lg font-bold">{current.name}</h2><p className="text-xs text-slate-500">{current.kind === "plan" ? t.plan : t.serviceKind} · {t.key} {key}{current.category && ` · ${current.category}`}</p></div>
-                <Badge status={current.status} t={t} />
+                <Badge status={current.status} t={t} opens={`versiones-${key}`} />
               </div>
               <p className="mt-2 text-lg font-semibold text-blue-700">{current.pricing_mode === "quote" ? t.quote
                 : current.promo_cents !== null ? `${money(current.promo_cents)}/${t.period[current.billing_period ?? "month"]} × ${current.promo_months} ${t.months} → ${money(current.regular_cents ?? 0)}`
@@ -191,7 +218,7 @@ export default async function CatalogoPage({ searchParams }: {
               </ul>
               {current.benefits.length > 0 && <ul className="mt-2 list-disc pl-5 text-sm text-slate-700">{current.benefits.map((b) => <li key={b}>{b}</li>)}</ul>}
               {current.promo_valid_until && <p className="mt-1 text-xs text-slate-600">{t.promoUntil(date.format(new Date(current.promo_valid_until)))}</p>}
-              <details className="mt-3"><summary className="cursor-pointer text-sm font-semibold text-slate-700">{t.versions} ({versions.length})</summary>
+              <details id={`versiones-${key}`} className="mt-3 scroll-mt-4"><summary className="cursor-pointer text-sm font-semibold text-slate-700">{t.versions} ({versions.length})</summary>
                 <ul className="mt-2 grid gap-3">{versions.map((v) => <li key={v.version} className="rounded-lg border border-slate-200 p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2"><strong>v{v.version}</strong><Badge status={v.status} t={t} />
                     <span className="text-xs text-slate-500">{date.format(new Date(v.created_at))} · {v.change_reason || t.noReason}</span></div>
@@ -243,17 +270,18 @@ export default async function CatalogoPage({ searchParams }: {
 
       {tab === "conocimiento" && <>
         <section className="grid gap-4">
+          {view === "pendientes" && <FilterNote t={t} tab="conocimiento" view={view} count={shownKnowledge.length} />}
           {knowledgeGroups.length === 0 && !loadError && <p className="rounded-xl bg-white p-5">{t.noKnowledge}</p>}
-          {knowledgeGroups.map(({ key, versions }) => {
+          {shownKnowledge.map(({ key, versions }) => {
             const current = versions.find((v) => v.status === "published") ?? versions[0];
             return <article key={key} className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div><h2 className="font-bold">{current.title}</h2><p className="text-xs text-slate-500">{t.topics[current.topic] ?? current.topic} · {current.language.toUpperCase()} · {t.key} {key}</p></div>
-                <Badge status={current.status} t={t} />
+                <Badge status={current.status} t={t} opens={`versiones-${key}`} />
               </div>
               <p className="mt-2 whitespace-pre-line text-sm text-slate-800">{current.answer}</p>
               {current.keywords.length > 0 && <p className="mt-2 text-xs text-slate-500">{t.keywords}: {current.keywords.join(", ")}</p>}
-              <details className="mt-3"><summary className="cursor-pointer text-sm font-semibold text-slate-700">{t.versions} ({versions.length})</summary>
+              <details id={`versiones-${key}`} className="mt-3 scroll-mt-4"><summary className="cursor-pointer text-sm font-semibold text-slate-700">{t.versions} ({versions.length})</summary>
                 <ul className="mt-2 grid gap-3">{versions.map((v) => <li key={v.version} className="rounded-lg border border-slate-200 p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2"><strong>v{v.version}</strong><Badge status={v.status} t={t} /><span className="text-xs text-slate-500">{date.format(new Date(v.created_at))} · {v.change_reason || t.noReason}</span></div>
                   {canEdit && <Link className="mt-2 inline-block text-sm font-semibold text-blue-700" href={`?tab=conocimiento&editar=${v.key}&v=${v.version}#formulario`}>{t.newVersionFrom}</Link>}

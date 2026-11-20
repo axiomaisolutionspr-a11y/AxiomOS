@@ -124,12 +124,14 @@ export default async function AutopilotQaPage({ searchParams }: {
         {([
           ["active", t.activePromos, active.length], ["review", t.toReview, drafts.length],
           ["expiring", t.expiring72, expiring.length], ["prospects", t.prospects, legacyProspectCount ?? t.noConnection],
-        ] as const).map(([id, label, value]) => <div key={id} className="rounded-xl border border-slate-200 bg-white p-5">
+        ] as const).map(([id, label, value]) => <a key={id} href={id === "prospects" ? (prospectSummary ? "#resumen-prospectos" : "#proxima-conexion") : "#catalogo-ofertas"}
+          className="fx-tile block rounded-xl border border-slate-200 bg-white p-5">
           <p className="text-sm font-medium text-slate-600">{label}</p>
           <p className="mt-2 text-2xl font-bold">{catalogError && id !== "prospects" ? "—" : value}</p>
-        </div>)}
+          <p className="mt-2 text-xs font-semibold text-blue-700">{t.open} →</p>
+        </a>)}
       </section>
-      {prospectSummary && <section aria-label={t.prospectSummary} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      {prospectSummary && <section id="resumen-prospectos" aria-label={t.prospectSummary} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold">{t.prospectSummary}</h2>
         <p className="mt-2 text-sm text-slate-600">{t.prospectSummaryNote}</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -143,7 +145,7 @@ export default async function AutopilotQaPage({ searchParams }: {
           {followupReview.map(item => <tr key={item.prospect_id} className="border-b"><td className="py-2">#{item.prospect_id}</td><td>{item.stage}</td><td>{dateFormat.format(new Date(item.due_at))}</td><td>{item.priority === "overdue" ? t.overdueReview : t.upcoming}</td></tr>)}
         </tbody></table></div>}
       </section>}
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section id="catalogo-ofertas" className="scroll-mt-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold">{t.offersCatalog}</h2>
         <p className="mt-1 text-sm text-slate-600">{t.offersCatalogNote}</p>
         {!catalogError && catalog.length === 0 && <p className="mt-4">{t.noOffers}</p>}
@@ -192,7 +194,7 @@ export default async function AutopilotQaPage({ searchParams }: {
           <button className="w-fit rounded bg-blue-700 px-5 py-3 font-semibold text-white">{t.saveDraft}</button>
         </form>
       </section>}
-      <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
+      <section id="proxima-conexion" className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
         <h2 className="font-bold">{t.nextConnection}</h2>
         <p className="mt-1 text-sm">{t.nextConnectionNote}</p>
       </section>

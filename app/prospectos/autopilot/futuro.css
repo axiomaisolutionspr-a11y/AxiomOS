@@ -319,3 +319,6 @@
   .fx :is(button, a):active,
   .fx .fx-logo-stage { transform: none !important; }
 }
+
+/* Tarjeta del resumen que corresponde a la vista abierta. */
+.fx .fx-tile-current { border-color: rgba(56, 189, 248, 0.95) !important; box-shadow: var(--fx-ring) !important; }
