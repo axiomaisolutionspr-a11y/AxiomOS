@@ -1,7 +1,8 @@
 "use client";
 // Comportamiento visual de las páginas de Autopilot en sus dos modos (atributo data-fx-mode en <main>):
 // - "3d": efectos completos de la v2 (commit 709810c). La sección tocada sale de la pantalla y deja su
-//   hueco iluminado, inclinación hacia el dedo, giroscopio, pulso de luz, vibración y logo que sale.
+//   tarjeta seleccionada sale como una pieza con borde azul, inclinación leve, fondo con giroscopio,
+//   vibración corta y logo que sale hacia quien mira. Sin efectos circulares.
 // - "sobrio": la v3 estable. Solo se marca la sección seleccionada (borde azul y elevación leve) y el
 //   logo sobresale un poco de su marco.
 // El cambio de modo se aplica al instante sin recargar. Se respeta "reducir movimiento" del sistema.
@@ -12,8 +13,8 @@ import "./futuro-3d.css";
 import "./futuro-temas.css";
 
 const CARD = "article, section.rounded-xl, section.rounded-2xl, div.rounded-xl, div.rounded-2xl, a.fx-tile";
-const MAX_TILT = 9;
-const MAX_GYRO = 10; // grados máximos de paralaje por giroscopio (solo 3D)
+const MAX_TILT = 4; // inclinación leve hacia el punto tocado (solo 3D)
+const MAX_GYRO = 4; // el giroscopio solo mueve un poco el fondo (solo 3D)
 
 type OrientationPermission = { requestPermission?: () => Promise<"granted" | "denied"> };
 
@@ -24,7 +25,6 @@ export default function FuturoFx() {
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const full = () => root.getAttribute("data-fx-mode") === "3d" && !still;
     let active: HTMLElement | null = null;
-    let slot: HTMLElement | null = null;
     let settle = 0;
     let order = 0;
     let logoTimer = 0;
@@ -71,32 +71,14 @@ export default function FuturoFx() {
         active.parentElement?.removeAttribute("data-fx-focus");
         flatten(active);
       }
-      slot?.remove();
-      slot = null;
       root.querySelectorAll("[data-fx-stage]").forEach((el) => el.removeAttribute("data-fx-stage"));
       active = card;
       if (!card) return;
-      if (full() && card.parentElement) {
-        card.parentElement.setAttribute("data-fx-focus", "");
-        slot = document.createElement("div");
-        slot.className = "fx-slot";
-        slot.style.cssText = `top:${card.offsetTop}px;left:${card.offsetLeft}px;width:${card.offsetWidth}px;height:${card.offsetHeight}px`;
-        card.parentElement.insertBefore(slot, card);
-        navigator.vibrate?.(8);
-      }
+      if (full()) navigator.vibrate?.(8);
       card.setAttribute("data-fx-active", "");
       Array.from(root.children).find((el) => el.contains(card))?.setAttribute("data-fx-stage", "");
     };
 
-    const pulse = (card: HTMLElement, x: number, y: number) => {
-      const r = card.getBoundingClientRect();
-      const dot = document.createElement("span");
-      dot.className = "fx-pulse";
-      dot.style.left = `${x - r.left}px`;
-      dot.style.top = `${y - r.top}px`;
-      card.appendChild(dot);
-      dot.addEventListener("animationend", () => dot.remove(), { once: true });
-    };
 
     const popLogo = (logo: HTMLElement) => {
       logo.removeAttribute("data-pop");
@@ -131,10 +113,6 @@ export default function FuturoFx() {
       base.b += (e.beta - base.b) * 0.01;
       base.g += (e.gamma - base.g) * 0.01;
       aim((e.gamma - base.g) * 0.6, -(e.beta - base.b) * 0.6);
-      if (active) {
-        active.style.setProperty("--fx-x", `${50 + (e.gamma - base.g) * 3}%`);
-        active.style.setProperty("--fx-y", `${30 - (e.beta - base.b) * 3}%`);
-      }
     };
     let gyroAsked = false;
     const startGyro = () => {
@@ -170,7 +148,6 @@ export default function FuturoFx() {
       activate(card);
       if (!full()) return;
       point(card, e.clientX, e.clientY, true);
-      pulse(card, e.clientX, e.clientY);
       window.clearTimeout(settle);
       if (e.pointerType !== "mouse") settle = window.setTimeout(() => flatten(card), 480);
     };

@@ -5,6 +5,7 @@ import { commercialIdentityDatabase, commercialMember, commercialOfferWriterData
 import { recordWhatsAppOptOut } from "./actions";
 import FuturoFx from "../futuro-fx";
 import ExperienceControls from "../experience-controls";
+import AppNav from "../app-nav";
 import { uiPrefs } from "../prefs";
 import { whatsappManualOptOutMode, whatsappManualOptOutSharesCampaignDatabase } from "../../../lib/whatsapp-manual-opt-out-mode.mjs";
 
@@ -43,6 +44,7 @@ export default async function WhatsAppOptOutPage({ searchParams }: {
   return <main lang={lang} data-fx-mode={fxMode} data-fx-theme={theme} className="fx min-h-screen bg-slate-100 px-5 py-10 text-slate-950">
     <FuturoFx />
     <div className="mx-auto mb-4 flex max-w-lg justify-end"><ExperienceControls lang={lang} mode={fxMode} theme={theme} /></div>
+    <div className="mx-auto mb-4 max-w-lg"><AppNav t={t} current="bajas" optOut /></div>
     <section className="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-sm">
       <Link className="text-blue-800 underline" href="/prospectos/autopilot">{t.backToAutopilot}</Link>
       <h1 className="mt-4 text-2xl font-bold">{t.optOutTitle}{qa ? " · QA" : ""}</h1>

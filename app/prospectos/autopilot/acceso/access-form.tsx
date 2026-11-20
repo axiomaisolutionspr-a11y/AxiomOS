@@ -35,10 +35,8 @@ export default function AutopilotAccessPage({ lang, mode, theme }: { lang: Lang;
   return <main lang={lang} data-fx-mode={mode} data-fx-theme={theme} className="fx min-h-screen px-5 py-8">
     <FuturoFx />
     <div className="mx-auto grid max-w-md gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <HoloLogo label={t.logoLabel} />
-        <ExperienceControls lang={lang} mode={mode} theme={theme} />
-      </div>
+      <div className="flex justify-end"><ExperienceControls lang={lang} mode={mode} theme={theme} /></div>
+      <HoloLogo label={t.logoLabel} />
       <section className="grid gap-5 rounded-2xl bg-white p-6">
         <h1 className="text-2xl font-bold sm:text-3xl">{t.accessTitle}</h1>
         <p className="text-slate-700">{t.accessIntro}</p>
@@ -50,6 +48,7 @@ export default function AutopilotAccessPage({ lang, mode, theme }: { lang: Lang;
         {sent&&<button type="button" className="text-left text-blue-700 underline" onClick={()=>{setSent(false);setError("");}}>{t.changeEmail}</button>}
         {error&&<p role="alert" className="text-red-700">{error}</p>}
       </section>
+      <a href="/prospectos/autopilot/demo" className="rounded-lg px-4 py-3 text-center text-sm font-semibold">{t.tryDemo}</a>
     </div>
   </main>;
 }

@@ -5,8 +5,8 @@
 
 export type Lang = "es" | "en";
 export type FxMode = "3d" | "sobrio";
-export type FxTheme = "azul" | "cian" | "violeta" | "claro";
-export const FX_THEMES: FxTheme[] = ["azul", "cian", "violeta", "claro"];
+export type FxTheme = "azul" | "cian" | "violeta" | "esmeralda" | "dorado" | "claro";
+export const FX_THEMES: FxTheme[] = ["azul", "cian", "violeta", "esmeralda", "dorado", "claro"];
 export const LANG_COOKIE = "axiomos_lang";
 export const FX_COOKIE = "axiomos_fx";
 export const THEME_COOKIE = "axiomos_theme";
@@ -22,14 +22,16 @@ const es = {
   roleOwner: "Propietario", roleOperator: "Operador", roleViewer: "Consulta",
   effects: "Efectos", effects3d: "3D", effectsCalm: "Sobrio", language: "Idioma",
   effectsHelp: "Cambiar entre efectos 3D y modo sobrio", languageHelp: "Cambiar idioma de la interfaz",
-  color: "Color", colorHelp: "Cambiar el color de la interfaz",
-  themes: { azul: "Azul", cian: "Cian", violeta: "Violeta", claro: "Claro" } as Record<string, string>,
+  color: "Color", colorHelp: "Cambiar el color de la interfaz", settings: "Ajustes",
+  effects3dHint: "Profundidad: lo que tocas se eleva.", effectsCalmHint: "Sin profundidad: solo se ilumina el borde de lo que tocas.",
+  themes: { azul: "Azul", cian: "Cian", violeta: "Violeta", esmeralda: "Esmeralda", dorado: "Dorado", claro: "Claro" } as Record<string, string>,
   logoLabel: "AxiomAI Solutions",
+  navLabel: "Menú principal", navPanel: "Panel", navCatalog: "Centro Comercial", navDemo: "Demostración", navOptOut: "Bajas de WhatsApp",
   // Acceso
   accessTitle: "Acceso individual · AxiomOS Autopilot",
   accessIntro: "Ingresa con tu cuenta autorizada. Recibirás un código de un solo uso en tu correo.",
   email: "Correo", code: "Código", codeSentTo: "Código enviado a", processing: "Procesando…",
-  verifyAndEnter: "Verificar y entrar", sendCode: "Enviar código",
+  verifyAndEnter: "Verificar y entrar", sendCode: "Enviar código", tryDemo: "Explorar la demostración del CRM (sin cuenta) →",
   changeEmail: "Cambiar correo o solicitar otro código",
   sendFailed: "No se pudo enviar el código. Intenta nuevamente.",
   codeInvalid: "Código inválido o vencido. Solicita uno nuevo.",
@@ -97,13 +99,13 @@ const es = {
   changeStateOf: (v: number) => `Cambiar estado de la v${v}`, action: "Acción", confirmation: "Confirmación",
   reason: "Motivo", confirm: "Confirmar", publish: "Publicar", archive: "Archivar", restoreAsNew: "Restaurar como nueva versión",
   status: { draft: "Borrador", approved: "Aprobado", published: "Publicado", archived: "Archivado" } as Record<string, string>,
-  limitsTitle: "Límites ofrecidos vs. controles técnicos",
+  limitsTitle: "Límites del plan: qué se cuenta solo y qué no (todavía)",
   limits: {
-    users_included: "Sin control técnico: el CRM no limita la cantidad de usuarios por negocio.",
-    call_minutes: "Sin control técnico: no existe medición ni corte de minutos por negocio.",
-    axira_responses: "Sin control técnico: no existe contador mensual de respuestas de Axira por negocio.",
+    users_included: "Usuarios: el plan incluye 2, pero el sistema todavía no impide añadir más. Por ahora lo controla la administración.",
+    call_minutes: "Minutos de llamadas: todavía no se cuentan por cliente ni se cortan al llegar a 200.",
+    axira_responses: "Respuestas de Axira: todavía no se cuentan por mes; Axira no se detiene sola al llegar a 500.",
   } as Record<string, string>,
-  limitsNote: "Axira informa estos límites como condiciones comerciales; todavía no se aplican automáticamente.",
+  limitsNote: "Axira le explica estos límites al cliente como parte del plan. Para que se apliquen solos falta conectar el contador de uso (pendiente de integración). Esta nota solo la ve el dueño.",
   newVersionOf: (n: string) => `Nueva versión de “${n}”`, newItem: "Nuevo plan o servicio (borrador)",
   draftFlow: "Guardar crea un borrador. Después debes aprobarlo y publicarlo. Las versiones anteriores no se borran.",
   uniqueKey: "Clave única", keyHint: "minúsculas y guiones, ej. axiomos-autopilot", type: "Tipo", category: "Categoría",
@@ -162,13 +164,15 @@ const en: Dict = {
   roleOwner: "Owner", roleOperator: "Operator", roleViewer: "Viewer",
   effects: "Effects", effects3d: "3D", effectsCalm: "Calm", language: "Language",
   effectsHelp: "Switch between 3D effects and calm mode", languageHelp: "Change interface language",
-  color: "Color", colorHelp: "Change the interface color",
-  themes: { azul: "Blue", cian: "Cyan", violeta: "Violet", claro: "Light" },
+  color: "Color", colorHelp: "Change the interface color", settings: "Settings",
+  effects3dHint: "Depth: what you touch lifts up.", effectsCalmHint: "No depth: only the border of what you touch lights up.",
+  themes: { azul: "Blue", cian: "Cyan", violeta: "Violet", esmeralda: "Emerald", dorado: "Gold", claro: "Light" },
   logoLabel: "AxiomAI Solutions",
+  navLabel: "Main menu", navPanel: "Dashboard", navCatalog: "Commercial Center", navDemo: "Demo tour", navOptOut: "WhatsApp opt-outs",
   accessTitle: "Individual access · AxiomOS Autopilot",
   accessIntro: "Sign in with your authorized account. You will receive a one-time code by email.",
   email: "Email", code: "Code", codeSentTo: "Code sent to", processing: "Processing…",
-  verifyAndEnter: "Verify and sign in", sendCode: "Send code",
+  verifyAndEnter: "Verify and sign in", sendCode: "Send code", tryDemo: "Explore the CRM demo (no account needed) →",
   changeEmail: "Change email or request another code",
   sendFailed: "Could not send the code. Please try again.",
   codeInvalid: "Invalid or expired code. Request a new one.",
@@ -234,13 +238,13 @@ const en: Dict = {
   changeStateOf: (v: number) => `Change status of v${v}`, action: "Action", confirmation: "Confirmation",
   reason: "Reason", confirm: "Confirm", publish: "Publish", archive: "Archive", restoreAsNew: "Restore as a new version",
   status: { draft: "Draft", approved: "Approved", published: "Published", archived: "Archived" },
-  limitsTitle: "Offered limits vs. technical controls",
+  limitsTitle: "Plan limits: what is counted automatically and what is not (yet)",
   limits: {
-    users_included: "No technical control: the CRM does not limit the number of users per business.",
-    call_minutes: "No technical control: minutes are not metered or cut off per business.",
-    axira_responses: "No technical control: there is no monthly counter of Axira replies per business.",
+    users_included: "Users: the plan includes 2, but the system does not block adding more yet. Management controls it for now.",
+    call_minutes: "Call minutes: not counted per client yet, and not cut off at 200.",
+    axira_responses: "Axira replies: not counted per month yet; Axira does not stop by itself at 500.",
   },
-  limitsNote: "Axira states these limits as commercial terms; they are not enforced automatically yet.",
+  limitsNote: "Axira explains these limits to clients as part of the plan. A usage counter still needs to be connected for them to apply automatically (pending integration). Only the owner sees this note.",
   newVersionOf: (n: string) => `New version of “${n}”`, newItem: "New plan or service (draft)",
   draftFlow: "Saving creates a draft. Then approve and publish it. Previous versions are never deleted.",
   uniqueKey: "Unique key", keyHint: "lowercase and hyphens, e.g. axiomos-autopilot", type: "Type", category: "Category",

@@ -62,6 +62,42 @@
   --fx-t2: 196 181 222;
   --fx-t3: 243 232 255;
 }
+.fx[data-fx-theme="esmeralda"] {
+  --fx-a: 52 211 153;
+  --fx-a2: 16 185 129;
+  --fx-a-soft: 110 231 183;
+  --fx-b: 5 150 105;
+  --fx-b2: 4 120 87;
+  --fx-c: 13 148 136;
+  --fx-c2: 153 246 228;
+  --fx-tint: 167 243 208;
+  --fx-l: 110 231 183;
+  --fx-s0: 2 12 9;
+  --fx-s: 2 14 11;
+  --fx-s2: 6 32 25;
+  --fx-s3: 12 64 50;
+  --fx-t: 236 253 245;
+  --fx-t2: 163 207 190;
+  --fx-t3: 209 250 229;
+}
+.fx[data-fx-theme="dorado"] {
+  --fx-a: 251 191 36;
+  --fx-a2: 245 158 11;
+  --fx-a-soft: 252 211 77;
+  --fx-b: 217 119 6;
+  --fx-b2: 180 83 9;
+  --fx-c: 234 88 12;
+  --fx-c2: 253 186 116;
+  --fx-tint: 253 230 138;
+  --fx-l: 252 211 77;
+  --fx-s0: 12 9 3;
+  --fx-s: 14 10 3;
+  --fx-s2: 32 24 8;
+  --fx-s3: 66 48 14;
+  --fx-t: 255 250 235;
+  --fx-t2: 214 199 164;
+  --fx-t3: 254 243 199;
+}
 .fx[data-fx-theme="claro"] {
   --fx-a: 2 132 199;
   --fx-a2: 14 165 233;
@@ -132,6 +168,8 @@
 .fx-swatch[data-theme="azul"] { background: linear-gradient(135deg, #2563eb, #38bdf8); }
 .fx-swatch[data-theme="cian"] { background: linear-gradient(135deg, #0891b2, #22d3ee); }
 .fx-swatch[data-theme="violeta"] { background: linear-gradient(135deg, #7c3aed, #f472b6); }
+.fx-swatch[data-theme="esmeralda"] { background: linear-gradient(135deg, #059669, #34d399); }
+.fx-swatch[data-theme="dorado"] { background: linear-gradient(135deg, #d97706, #fbbf24); }
 .fx-swatch[data-theme="claro"] { background: linear-gradient(135deg, #ffffff, #bfdbfe); box-shadow: 0 0 0 1px rgb(15 23 42 / 0.35); }
 .fx[data-fx-theme="claro"][data-fx-mode] .fx-seg { background: rgb(255 255 255 / 0.85); }
 .fx[data-fx-theme="claro"][data-fx-mode] .fx-seg button:not([aria-pressed="true"]) { color: rgb(var(--fx-t3)) !important; }
@@ -155,3 +193,56 @@
 .fx[data-fx-theme="claro"][data-fx-mode="3d"] .fx-logo-stage { inset: 4%; }
 .fx[data-fx-theme="claro"][data-fx-mode] .fx-logo-face { filter: drop-shadow(0 0 8px rgb(56 189 248 / 0.55)); }
 .fx[data-fx-theme="claro"][data-fx-mode="3d"] .fx-logo-base { bottom: -10px; }
+
+/* ---------- Ajustes (área secundaria) ---------- */
+.fx-controls { position: relative; display: flex; align-items: center; gap: 6px; }
+.fx .fx-seg-sm button { min-height: 28px !important; padding: 0 9px !important; font-size: 0.72rem !important; }
+.fx[data-fx-mode] .fx-settings-btn {
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--fx-l) / 0.3) !important;
+  background: rgb(var(--fx-s) / 0.55) !important;
+  color: rgb(var(--fx-t2)) !important;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: none;
+  cursor: pointer;
+  overflow: visible;
+}
+.fx[data-fx-mode] .fx-settings-btn[aria-expanded="true"] { border-color: rgb(var(--fx-a)) !important; color: rgb(var(--fx-t)) !important; box-shadow: var(--fx-ring) !important; }
+.fx .fx-settings-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  width: min(300px, calc(100vw - 32px));
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgb(var(--fx-l) / 0.35);
+  background: rgb(var(--fx-s2) / 0.98);
+  box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.9), 0 0 0 1px rgb(var(--fx-a) / 0.15);
+  color: rgb(var(--fx-t));
+  text-align: left;
+}
+.fx[data-fx-theme="claro"] .fx-settings-panel { background: rgb(255 255 255 / 0.98); box-shadow: 0 24px 50px -20px rgb(15 23 42 / 0.45); }
+.fx-settings-title { margin: 4px 0 6px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--fx-t2)); }
+.fx-settings-hint { margin: 6px 0 12px; font-size: 0.75rem; color: rgb(var(--fx-t2)); }
+.fx-swatches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.fx[data-fx-mode] .fx-swatches button {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgb(var(--fx-l) / 0.25) !important;
+  background: rgb(var(--fx-s) / 0.4) !important;
+  color: rgb(var(--fx-t)) !important;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: none !important;
+  cursor: pointer;
+  overflow: visible;
+}
+.fx[data-fx-mode] .fx-swatches button[aria-pressed="true"] { border-color: rgb(var(--fx-a)) !important; box-shadow: var(--fx-ring) !important; }
+.fx[data-fx-mode] .fx-settings-panel .fx-seg button { min-height: 32px; padding: 0 16px; }
