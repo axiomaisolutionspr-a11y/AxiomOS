@@ -6,7 +6,7 @@ import { listOffers } from "../../../lib/axira-offers-store.js";
 import { AXIOMAI_TENANT, loadPublishedCatalog, neonCatalogDb } from "../../../lib/axira-catalog-store.js";
 import { knowledgeContext, relevantKnowledge } from "../../../lib/axira-catalog-policy.js";
 import {
-  answerBrain, BRAIN_MAX_QUESTION, BRAIN_PLAN_KEYS, brainAllowance, brainPeriod, cancelPack, confirmPackForTest,
+  answerBrain, BRAIN_MAX_QUESTION, BRAIN_PLAN_KEYS, brainAiInstructions, brainAllowance, brainHistory, brainPeriod, cancelPack, confirmPackForTest,
   consumeQuestion, readBrainState, refundQuestion, requestPack, setTestPlan,
 } from "../../../lib/axiomos-brain.js";
 import { commercialIdentityAuth } from "../../../lib/commercial-identity-auth";
@@ -58,7 +58,7 @@ async function crmSnapshot(reader: Reader) {
 }
 
 /** IA opcional: solo si el ambiente la tiene encendida a propósito. Si falla, se devuelve la pregunta. */
-async function aiAnswer(question: string, lang: "es" | "en", context: string): Promise<string | null> {
+async function aiAnswer(question: string, lang: "es" | "en", context: string, history: Array<{ role: string; content: string }> = []): Promise<string | null> {
   const key = process.env.OPENAI_API_KEY;
   if (process.env.AXIOMOS_BRAIN_AI_ENABLED !== "true" || !key) return null;
   try {
@@ -66,11 +66,12 @@ async function aiAnswer(question: string, lang: "es" | "en", context: string): P
       method: "POST", signal: AbortSignal.timeout(25000),
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || "gpt-5.6-luna", max_output_tokens: 700, store: false,
-        instructions: `Eres Brain, el asistente de negocio del dueño dentro de AxiomOS (CRM de AxiomAI Solutions, Puerto Rico). ` +
-          `Responde en ${lang === "en" ? "inglés" : "español"} claro y breve (máximo 6 oraciones), práctico y sin inventar datos del negocio. ` +
-          `Si la pregunta necesita datos que no están en el contexto, dilo. No envíes mensajes ni hagas cambios: solo aconsejas.\n${context}`,
-        input: question,
+        // Esfuerzo de razonamiento bajo: con el valor por defecto el razonamiento puede gastar todo el
+        // límite de salida y devolver una respuesta vacía (la pregunta se devolvería sin contestar).
+        model: process.env.OPENAI_MODEL || "gpt-5.6-luna", max_output_tokens: 1200, store: false,
+        reasoning: { effort: "low" },
+        instructions: brainAiInstructions(lang, context),
+        input: [...history, { role: "user", content: question }],
       }),
     });
     if (!response.ok) return null;
@@ -82,7 +83,7 @@ async function aiAnswer(question: string, lang: "es" | "en", context: string): P
 }
 
 /** Una pregunta a Brain. Cuenta contra el límite del mes solo si Brain pudo contestarla. */
-export async function askBrain(question: string, lang: "es" | "en"): Promise<BrainReply> {
+export async function askBrain(question: string, lang: "es" | "en", previous: unknown = []): Promise<BrainReply> {
   const english = lang === "en";
   const text = String(question ?? "").trim().slice(0, BRAIN_MAX_QUESTION);
   if (text.length < 2) return { ok: false, error: english ? "Write a question." : "Escribe una pregunta." };
@@ -107,7 +108,7 @@ export async function askBrain(question: string, lang: "es" | "en"): Promise<Bra
         (crm.prospects ? `, prospectos ${crm.prospects.total}, seguimientos atrasados ${crm.prospects.overdue_count}` : ", prospectos sin conectar");
       const used = await consumeQuestion(writer, AXIOMAI_TENANT, period, allowance.limit, who.actor, "ai");
       if (used === null) return { ok: true, blocked: true, used: allowance.limit, limit: allowance.limit };
-      const ai = await aiAnswer(text, lang, context);
+      const ai = await aiAnswer(text, lang, context, brainHistory(previous));
       if (ai) return { ok: true, answer: ai, used, limit: allowance.limit };
       await refundQuestion(writer, AXIOMAI_TENANT, period, who.actor);
       return { ok: true, answer: local.text, used: used - 1, limit: allowance.limit, free: true };

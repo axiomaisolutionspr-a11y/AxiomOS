@@ -24,9 +24,10 @@ export default function BrainChat({ t, lang, used: usedStart, limit: limitStart,
     const q = question.trim();
     if (q.length < 2 || pending) return;
     setError(""); setDraft("");
+    const previous = messages.map(({ role, text }) => ({ role, text }));
     setMessages((m) => [...m, { role: "user", text: q }]);
     start(async () => {
-      const r = await askBrain(q, lang);
+      const r = await askBrain(q, lang, previous);
       if (!r.ok) { setError(r.error ?? ""); return; }
       if (typeof r.used === "number") setUsed(r.used);
       if (typeof r.limit === "number") setLimit(r.limit);
