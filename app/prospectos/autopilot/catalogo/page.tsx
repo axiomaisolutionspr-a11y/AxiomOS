@@ -134,6 +134,7 @@ export default async function CatalogoPage({ searchParams }: {
     (a.versions[0].kind === "plan" ? 0 : 1) - (b.versions[0].kind === "plan" ? 0 : 1) ||
     a.versions[0].name.localeCompare(b.versions[0].name, "es"));
   const knowledgeGroups = groupByKey(knowledge);
+  const pending = [...items, ...knowledge].filter((r) => r.status === "draft" || r.status === "approved").length;
   // Filtro que abren las tarjetas del resumen: planes, servicios o pendientes.
   const view = ["planes", "servicios", "pendientes"].includes(params.ver ?? "") ? params.ver as "planes" | "servicios" | "pendientes" : null;
   const isPending = (rows: { status: string }[]) => rows.some((r) => r.status === "draft" || r.status === "approved");
@@ -144,7 +145,6 @@ export default async function CatalogoPage({ searchParams }: {
   const pendingItems = itemGroups.filter(({ versions }) => isPending(versions)).length;
   const pendingTab = pendingItems > 0 || pending === 0 ? "catalogo" : "conocimiento";
   const published = (rows: { status: string }[]) => rows.filter((r) => r.status === "published").length;
-  const pending = [...items, ...knowledge].filter((r) => r.status === "draft" || r.status === "approved").length;
   const editItem = params.editar ? items.find((i) => i.key === params.editar && String(i.version) === params.v) : undefined;
   const editKnowledge = params.editar ? knowledge.find((k) => k.key === params.editar && String(k.version) === params.v) : undefined;
   const preview = previewCatalog({ items, knowledge });
