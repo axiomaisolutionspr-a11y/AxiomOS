@@ -20,7 +20,15 @@ export function brainPeriod(now = Date.now()) {
 const brainLimit = (item) => (Number.isInteger(item?.limits?.brain_questions) && item.limits.brain_questions >= 0 ? item.limits.brain_questions : null);
 const liveItems = (catalog, now) => (catalog?.status === "ok" ? catalog.items.filter((i) => isLive(i, now)) : []);
 
-/** Cuántas preguntas tiene el negocio este mes, según su plan y paquetes, usando solo el catálogo publicado. */
+/**
+ * Cuántas preguntas tiene el negocio este mes, según su plan y paquetes, usando solo el catálogo publicado.
+ * @param {any} catalog
+ * @param {{ plan_key?: string, addon_packs?: number }} [account]
+ * @param {number} [now]
+ * @returns {{ available: boolean, plan: { key: string, name: string, questions: number } | null,
+ *   pack: { key: string, version: number, name: string, questions: number, price_cents: number } | null, packs: number, limit: number,
+ *   upgrades: Array<{ key: string, name: string, questions: number, regular_cents: number | null, promo_cents: number | null, promo_months: number | null }> }}
+ */
 export function brainAllowance(catalog, account = {}, now = Date.now()) {
   const items = liveItems(catalog, now);
   const planKey = KEY_RE.test(String(account.plan_key ?? "")) ? account.plan_key : BRAIN_DEFAULT_PLAN;
@@ -97,6 +105,8 @@ function usageAnswer(allowance, used, english) {
 /**
  * Respuesta sin IA. Devuelve { text, source, charge }:
  * source = data | catalog | knowledge | help; charge=false cuando Brain no pudo contestar (no se cobra).
+ * @param {{ message?: string, language?: string, catalog?: any, crm?: any, allowance?: any, used?: number, now?: number }} [options]
+ * @returns {{ text: string, source: string, charge: boolean }}
  */
 export function answerBrain({ message = "", language = "es", catalog = null, crm = {}, allowance = null, used = 0, now = Date.now() } = {}) {
   const english = language === "en";
