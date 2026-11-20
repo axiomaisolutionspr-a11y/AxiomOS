@@ -36,4 +36,12 @@ GRANT SELECT, INSERT ON public.demo_autopilot_events TO axiomai_demo_qa_writer;
 REVOKE UPDATE, DELETE, TRUNCATE ON public.demo_autopilot_events FROM axiomai_demo_qa_writer;
 REVOKE DELETE, TRUNCATE ON public.demo_lead_ops FROM axiomai_demo_qa_writer;
 
+-- Tope diario de llamadas a la IA del DEMO (control de costo).
+CREATE TABLE IF NOT EXISTS public.demo_ai_usage (
+  day date PRIMARY KEY,
+  calls integer NOT NULL DEFAULT 0 CHECK (calls >= 0)
+);
+GRANT SELECT, INSERT, UPDATE ON public.demo_ai_usage TO axiomai_demo_qa_writer;
+REVOKE DELETE, TRUNCATE ON public.demo_ai_usage FROM axiomai_demo_qa_writer;
+
 COMMIT;

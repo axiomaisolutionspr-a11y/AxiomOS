@@ -71,9 +71,19 @@ Leyenda: **SUP** superior · **EQ** equivalente · **MEJ** mejorable · **FALT**
 - Si Neon QA no responde, la anotación queda en el navegador y la pantalla lo dice.
 - Banco E2E: **37/37 PASS**.
 
+### IA real en la conversación (autorizada el 19 nov)
+
+- Ruta `/api/demo-comercial/axira`, con instrucciones propias de cada sector ficticio.
+- Usa una clave exclusiva del DEMO, **`AXIOMAI_DEMO_OPENAI_API_KEY`**. No reutiliza la clave de producción.
+- Tope diario atómico en `demo_ai_usage` (`AXIOMAI_DEMO_AI_DAILY_CAP`, 200 por defecto); se probó con tope 2.
+- Las preguntas de precio no llegan al modelo, y si una respuesta trae montos se reemplaza.
+- Se rechazan teléfonos fuera de 787-555-0100 a 0199 y cualquier correo.
+- `store:false`, sin acciones externas.
+- Sin la clave, el campo aparece deshabilitado con un aviso.
+- Pruebas: E2E **41/41**, filtro de datos 3/3, motor 15/15.
+
 ## 6. Pendiente (decisiones y trabajo)
 
 - **Ver v3 en Vercel:** las variables Preview del DEMO están limitadas a la rama v2. Para probar v3 con Neon QA en Preview hay que copiar esas 4 variables a la rama v3 (sin cambiar valores ni producción) **o** fusionar v3 dentro de la rama v2. Decisión tuya.
-- Respuestas de Axira con el modelo real (`/api/brain`) dentro del DEMO: el costo por token sería de OpenAI. Requiere tu autorización.
 - Condiciones ramificadas en el flujo (horario, canal, palabra clave), al estilo de NEXT Studio.
 - Calendario real, reseñas, voz, cotizaciones con el catálogo verificado, más industrias y versión en inglés del DEMO.

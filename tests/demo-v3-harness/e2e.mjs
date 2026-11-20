@@ -11,6 +11,26 @@ await page.waitForSelector("text=Pulso comercial");
 ok("Acceso y carga de 5 prospectos QA", true);
 await page.screenshot({ path: "shots/01-hero.png" });
 
+// IA real: sin clave configurada el campo queda deshabilitado y lo dice
+await page.click(".ad-tabs button:has-text('Conversación')");
+await page.waitForSelector("#ap-ask-input[placeholder*='pendiente de activar']");
+ok("Sin clave de IA: campo deshabilitado con aviso", await page.locator("#ap-ask-input").isDisabled() );
+await page.addInitScript(() => { window.__aiEnabled = true; });
+await page.reload(); await page.fill("#demo-code", "harness-local-code"); await page.click("text=Entrar al DEMO"); await page.waitForSelector("text=Pulso comercial");
+await page.waitForSelector("#ap-ask-input:not([disabled])");
+const b0 = await page.locator(".ad-chat .ad-bubble").count();
+await page.fill("#ap-ask-input", "¿Tienen mesa para cuatro el viernes?"); await page.click(".ap-ask button");
+await page.waitForSelector("text=Respuesta generada por Axira con IA real");
+ok("IA real: pregunta libre agrega cliente + Axira", (await page.locator(".ad-chat .ad-bubble").count()) === b0 + 2);
+await page.fill("#ap-ask-input", "llámame al 787-450-3679"); await page.click(".ap-ask button");
+await page.waitForSelector("text=Usa solo datos ficticios");
+ok("IA real: rechaza teléfono real y no lo deja en el chat", (await page.locator(".ad-chat .ad-bubble").count()) === b0 + 2 && (await page.inputValue("#ap-ask-input")).includes("787-450"));
+await page.fill("#ap-ask-input", "¿Cuánto cuesta?"); await page.click(".ap-ask button");
+await page.waitForSelector("text=Axira aplicó una regla de seguridad");
+ok("IA real: preguntas de precio no llaman al modelo", (await page.evaluate(() => window.__aiCalls)) === 1);
+await page.click(".ad-scenario:has-text('Dealer')");
+await page.click(".ad-tabs button:has-text('Conversación')");
+
 // Funciones originales intactas: pregunta rápida + captura
 await page.click(".ad-quickbuttons button >> nth=0");
 ok("Pregunta rápida agrega 2 turnos", (await page.locator(".ad-chat .ad-bubble").count()) === 4);

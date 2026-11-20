@@ -98,3 +98,11 @@
 @media(max-width:900px){.ap-grid,.ap-charts{grid-template-columns:1fr}.ap-kpis{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:750px){.ap-node{grid-template-columns:26px 1fr}.ap-node label,.ap-node em{grid-column:2}.ap-log li{grid-template-columns:1fr}.ap-log time{grid-row:auto}.ap-intel-head{flex-direction:column}.ap-card{margin:10px}.ap-grid{padding:10px 10px 0}.ap-tab .ad-panelhead .ap-run{width:100%}}
 @media(prefers-reduced-motion:reduce){.ap-gauge{transition:none}}
+.ap-ask{padding:16px 22px;border-top:1px solid #263b55;background:#0b1626}
+.ap-ask label{display:block;font-size:12px;color:#8fc9ff;margin-bottom:8px;font-weight:700}
+.ap-ask>div{display:flex;gap:8px}
+.ap-ask input{flex:1;min-width:0;background:#111f34;border:1px solid #334965;color:#f2f8ff;padding:12px;border-radius:9px;font:inherit;font-size:14px}
+.ap-ask input:disabled{opacity:.6}
+.ad-root .ap-ask .ad-primary{margin-top:0;white-space:nowrap}
+.ap-ask small{display:block;color:#8197b0;font-size:11px;margin-top:7px}
+@media(max-width:750px){.ap-ask{padding:14px}.ap-ask>div{flex-direction:column}}

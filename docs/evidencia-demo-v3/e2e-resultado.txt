@@ -1,5 +1,9 @@
 PASS · Código incorrecto rechazado
 PASS · Acceso y carga de 5 prospectos QA
+PASS · Sin clave de IA: campo deshabilitado con aviso
+PASS · IA real: pregunta libre agrega cliente + Axira
+PASS · IA real: rechaza teléfono real y no lo deja en el chat
+PASS · IA real: preguntas de precio no llaman al modelo
 PASS · Pregunta rápida agrega 2 turnos
 PASS · Rechaza nombre no ficticio
 PASS · Captura crea prospecto y abre ficha
@@ -17,7 +21,7 @@ PASS · Paso de envío externo viene desactivado por defecto
 PASS · Activar envío externo: Axira lo bloquea y lo registra · Autopilot terminó: 0 acciones ejecutadas, 5 bloqueadas por política y 5 esperan tu aprobación. No se envió ningún mensaje.
 PASS · Bloqueo: ningún envío, solo se anota en la bitácora · 5 anotaciones
 PASS · Cola de aprobación con pendientes · antes=5 después=5
-PASS · Aprobar avance de etapa hace 1 PATCH confirmado · PATCH /api/demo-comercial {"id":"08174d0b-6398-407e-a222-02dc0f2657ae","status":"Cita solicitada"}
+PASS · Aprobar avance de etapa hace 1 PATCH confirmado · PATCH /api/demo-comercial {"id":"73cd934a-894c-44f7-a478-f86171888808","status":"Cita solicitada"}
 PASS · Si Neon QA falla, se registra error y no se finge éxito
 PASS · Modo Asistir: 0 acciones ejecutadas · Autopilot terminó: 0 acciones ejecutadas, 0 bloqueadas por política y 4 esperan tu aprobación. No se envió ningún mensaje.
 PASS · Paso desactivado se ve atenuado

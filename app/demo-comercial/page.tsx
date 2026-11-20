@@ -89,6 +89,9 @@ export default function DemoComercialPage() {
  const [selected, setSelected] = useState<string | null>(null);
  const [tab, setTab] = useState<"conversation" | "crm" | "autopilot">("conversation");
  const [query, setQuery] = useState("");
+ const [aiEnabled, setAiEnabled] = useState<boolean | null>(null);
+ const [aiText, setAiText] = useState("");
+ const [aiBusy, setAiBusy] = useState(false);
  const [filter, setFilter] = useState<LeadFilter>("todos");
  const [notice, setNotice] = useState("");
  useEffect(() => {
@@ -197,6 +200,37 @@ export default function DemoComercialPage() {
   } finally { setBusy(false); }
  }
  const autopilot = useAutopilot(leads, updateStatus, ready);
+ useEffect(() => {
+  if (!ready) return;
+  let live = true;
+  fetch("/api/demo-comercial/axira", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then((d: { enabled?: boolean } | null) => { if (live) setAiEnabled(!!d?.enabled); }).catch(() => { if (live) setAiEnabled(false); });
+  return () => { live = false; };
+ }, [ready]);
+ async function askAxira(event: FormEvent<HTMLFormElement>) {
+  event.preventDefault();
+  const text = aiText.trim();
+  if (!text || aiBusy || busy || !ready || messages.length > 9) return;
+  setAiBusy(true);
+  const history = messages.map(m => ({ by: m.by, text: m.text }));
+  setMessages(prev => [...prev, { id: uid(), by: "cliente", text }]);
+  setAiText("");
+  try {
+   const res = await fetch("/api/demo-comercial/axira", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ industry, message: text, history }) });
+   const data: { reply?: string; source?: string; error?: string; code?: string } = await res.json().catch(() => ({}));
+   if (res.ok && data.reply) {
+    setMessages(prev => [...prev, { id: uid(), by: "axira", text: data.reply! }]);
+    setNotice(data.source === "ia" ? "Respuesta generada por Axira con IA real · no se envió nada fuera del demo." : "Axira aplicó una regla de seguridad (precios o datos) en lugar de llamar a la IA.");
+   } else {
+    setMessages(prev => prev.slice(0, -1));
+    setAiText(text);
+    if (data.code === "not_configured") setAiEnabled(false);
+    setNotice(data.error || "No se pudo obtener respuesta de Axira.");
+   }
+  } catch {
+   setMessages(prev => prev.slice(0, -1)); setAiText(text);
+   setNotice("No se pudo conectar con Axira. Inténtalo de nuevo.");
+  } finally { setAiBusy(false); }
+ }
  const visibleLeads = useMemo(() => filterLeads(leads, query, filter, autopilot.now), [leads, query, filter, autopilot.now]);
  function openLead(id: string) { setQuery(""); setFilter("todos"); setSelected(id); setTab("crm"); }
  function reset() { setSelected(null); setMessages(initialMessages(industry)); setTab("conversation"); setNotice("Conversación reiniciada. Los registros compartidos en Neon QA se conservan para mantener su historial."); }
@@ -260,6 +294,7 @@ export default function DemoComercialPage() {
      <div className="ad-panelhead"><div><b>Axira · Atención inteligente</b><small>{industries[industry].channel} — entorno de simulación</small></div><span className="ad-status">● Demo activo</span></div>
      <div className="ad-chat" aria-live="polite">{messages.map(m => <div className={m.by === "axira" ? "ad-bubble bot" : "ad-bubble"} key={m.id}><small>{m.by === "axira" ? "AXIRA" : "CLIENTE FICTICIO"}</small><p>{m.text}</p></div>)}</div>
      <div className="ad-quick"><div><strong>Prueba una pregunta</strong><small>Respuestas preparadas para esta simulación; sin proveedor de IA ni datos reales</small></div><div className="ad-quickbuttons">{sampleQuestions[industry].map((item, i) => <button type="button" key={i} disabled={!ready || busy || messages.length > 7} onClick={() => sendSampleQuestion(i)}>{item.question}</button>)}</div></div>
+     <form className="ap-ask" onSubmit={askAxira}><label htmlFor="ap-ask-input">{aiEnabled ? "Escríbele a Axira como si fueras el cliente · IA real" : "Escribir libremente a Axira"}</label><div><input id="ap-ask-input" value={aiText} onChange={e => setAiText(e.target.value)} maxLength={300} autoComplete="off" disabled={!aiEnabled || aiBusy || busy || !ready || messages.length > 9} placeholder={aiEnabled === null ? "Comprobando IA…" : aiEnabled ? (messages.length > 9 ? "Conversación completa: registra el prospecto o reinicia" : "Ej.: ¿Tienen algo para cuatro el viernes?") : "IA real pendiente de activar en este entorno"} /><button type="submit" className="ad-primary" disabled={!aiEnabled || aiBusy || busy || !ready || !aiText.trim() || messages.length > 9}>{aiBusy ? "Axira escribe…" : "Enviar"}</button></div><small>{aiEnabled ? "Usa solo datos ficticios. Axira no confirma citas ni precios; nada sale del demo." : "Mientras tanto funcionan las preguntas preparadas."}</small></form>
      <div className="ad-capture"><h3>Completa la solicitud de prueba</h3><div className="ad-fields"><label>Nombre ficticio<input value={name} onChange={e => setName(e.target.value)} maxLength={90} placeholder="Ej.: Andrea Rivera (ficticia)" autoComplete="off" /></label><label>Teléfono ficticio<input value={contact} onChange={e => setContact(e.target.value)} maxLength={12} placeholder="787-555-0101" inputMode="tel" autoComplete="off" /></label></div><button type="button" className="ad-primary" disabled={!ready || busy} onClick={() => captureLead()}>{busy ? "Guardando en Neon QA…" : !ready ? "Neon QA no disponible" : "Registrar en AxiomOS CRM →"}</button><button type="button" className="ad-guided" disabled={!ready || busy} onClick={guidedDemo}>▶ Iniciar recorrido guiado</button><p className="ad-guide-note">El recorrido simula preguntas y registra un prospecto ficticio en Neon QA. No envía mensajes ni solicita citas reales.</p></div>
     </section> : tab === "autopilot" ? <AutopilotTab leads={leads} api={autopilot} busy={busy} onNotice={setNotice} onOpenLead={openLead} /> : <section className="ad-panel">
      <div className="ad-panelhead"><div><b>AxiomOS · Centro comercial</b><small>Prospectos ficticios almacenados en Neon QA; si falla la conexión se deshabilitan los cambios</small></div><button className="ad-reset" type="button" onClick={reset}>Reiniciar demo</button></div>

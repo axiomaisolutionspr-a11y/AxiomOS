@@ -2,6 +2,7 @@
 import { createRoot } from "react-dom/client";
 import Page from "../../app/demo-comercial/page";
 import seed from "./seed.json";
+import { hasRealContactData } from "../../app/lib/demo-contact-guard";
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const statuses = ["Nuevo", "Contactar", "Cita solicitada", "Ganado"];
@@ -22,6 +23,19 @@ window.fetch = async (input: any, init: any = {}) => {
     if (method === "GET") return json({ authenticated: authed });
     if (method === "POST") { const { code } = JSON.parse(init.body); if (code === "harness-local-code") { authed = true; return json({ authenticated: true }); } return json({ error: "x" }, 401); }
     if (method === "DELETE") { authed = false; return json({ authenticated: false }); }
+  }
+  if (url === "/api/demo-comercial/axira") {
+    // Simula la ruta real: mismas reglas de datos ficticios y de precios; la IA se sustituye por texto fijo.
+    if (!authed) return json({ error: "Acceso al demo requerido" }, 401);
+    const enabled = !!(window as any).__aiEnabled;
+    if (method === "GET") return json({ enabled, model: "simulado" });
+    if (!enabled) return json({ error: "IA del demo no configurada", code: "not_configured" }, 503);
+    const b = JSON.parse(init.body);
+    if (!["dealer","restaurant","optica"].includes(b.industry) || !b.message || b.message.length > 300 || b.history.length > 12) return json({ error: "inválido" }, 400);
+    if (hasRealContactData(b.message)) return json({ error: "Usa solo datos ficticios: teléfonos 787-555-0100 a 0199 y ningún correo.", code: "real_data" }, 400);
+    if (/precio|cuanto cuesta|cuánto cuesta/i.test(b.message)) return json({ reply: "No puedo confirmar precios desde aquí; el equipo te los compartirá.", source: "regla" });
+    (window as any).__aiCalls = ((window as any).__aiCalls || 0) + 1;
+    return json({ reply: "Con gusto. El equipo confirmará la disponibilidad. ¿A nombre de quién sería?", source: "ia" });
   }
   if (url === "/api/demo-comercial/autopilot") {
     if (!authed) return json({ error: "Acceso al demo requerido" }, 401);
