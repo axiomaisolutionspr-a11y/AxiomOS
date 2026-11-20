@@ -9,7 +9,9 @@
       "feature/axiomos-commercial-production-v1-20261108": false,
       "feature/axiomos-manual-whatsapp-optout-qa-20261112": false,
       "feature/axiomos-manual-whatsapp-optout-release-20261112": false,
-      "feature/axira-catalogo-comercial-20261119": false
+      "feature/axira-catalogo-comercial-20261119": false,
+      "feature/precios-planes-brain-20261120": false,
+      "feature/brain-dueno-fase1-20261120": false
     }
   }
 }
