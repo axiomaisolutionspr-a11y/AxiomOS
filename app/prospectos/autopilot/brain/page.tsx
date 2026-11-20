@@ -53,9 +53,9 @@ export default async function BrainPage({ searchParams }: { searchParams: Promis
   return <main lang={lang} data-fx-mode={mode} data-fx-theme={theme} className="fx min-h-screen bg-slate-100 text-slate-950">
     <FuturoFx />
     <header className="fx-has-brain bg-slate-950 px-5 py-7 text-white">
-      <BrainButton label={t.brainButton} current />
+      <BrainButton label={t.backToCrm} current />
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4">
-        <HoloLogo label={t.logoLabel} />
+        <HoloLogo label={t.backToCrm} href="/prospectos/autopilot" />
         <div className="flex min-w-0 flex-1 basis-64 items-center gap-4">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-widest text-blue-300">AxiomOS Autopilot {isQa && "· QA"}</p>
@@ -71,6 +71,7 @@ export default async function BrainPage({ searchParams }: { searchParams: Promis
     </header>
 
     <div className="mx-auto grid max-w-6xl gap-5 px-4 py-6 sm:px-5">
+      <Link href="/prospectos/autopilot" className="w-fit rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white">{t.backToCrm}</Link>
       <AppNav t={t} current="brain" optOut={showOptOut} />
       {params.ok && <p role="status" className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-blue-900">{systemMessage(lang, params.ok)}</p>}
       {params.error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-900">{systemMessage(lang, params.error)}</p>}

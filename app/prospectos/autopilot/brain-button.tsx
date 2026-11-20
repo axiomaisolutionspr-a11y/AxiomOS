@@ -2,7 +2,7 @@
 // Botón de Brain arriba a la derecha de cada pantalla de Autopilot: el cerebro de Brain con los
 // mismos efectos del logo (relieve 3D que sale de la pantalla en modo 3D; marco en modo sobrio).
 // El efecto lo dispara futuro-fx.tsx (.fx-logo); aquí solo se espera un instante para que se vea
-// antes de abrir Brain.
+// antes de abrir Brain (o de volver al CRM si ya estás en Brain).
 import { useRouter } from "next/navigation";
 import { useEffect, type CSSProperties } from "react";
 
@@ -10,16 +10,19 @@ const HREF = "/prospectos/autopilot/brain";
 const LAYERS = 6;
 const IMG = "/axiomos-brain-3d.webp";
 
+const CRM = "/prospectos/autopilot";
+
+// En la pantalla de Brain (current), tocar el cerebro regresa al CRM.
 export default function BrainButton({ label, current = false }: { label: string; current?: boolean }) {
   const router = useRouter();
-  useEffect(() => { if (!current) router.prefetch(HREF); }, [current, router]);
+  const target = current ? CRM : HREF;
+  useEffect(() => { router.prefetch(target); }, [target, router]);
 
   const open = () => {
-    if (current) return;
     const main = document.querySelector<HTMLElement>("main.fx");
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const full = main?.getAttribute("data-fx-mode") === "3d" && !still;
-    window.setTimeout(() => router.push(HREF), full ? 650 : still ? 0 : 180);
+    window.setTimeout(() => router.push(target), full ? 650 : still ? 0 : 180);
   };
 
   return <button type="button" onClick={open} aria-label={label} title={label} aria-current={current ? "page" : undefined}

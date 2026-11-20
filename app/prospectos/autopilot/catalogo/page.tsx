@@ -163,7 +163,7 @@ export default async function CatalogoPage({ searchParams }: {
     <header className="fx-has-brain bg-slate-950 px-5 py-7 text-white">
       <BrainButton label={t.brainButton} />
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4">
-        <HoloLogo label={t.logoLabel} />
+        <HoloLogo label={t.backToCrm} href="/prospectos/autopilot" />
         <div className="min-w-0 flex-1 basis-64">
           <p className="text-xs font-bold uppercase tracking-widest text-blue-300">AxiomOS Autopilot · {t.configuration} {isQa && "· QA"}</p>
           <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{t.centerTitle}</h1>
