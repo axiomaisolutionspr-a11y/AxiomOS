@@ -207,7 +207,7 @@ export default async function CatalogoPage({ searchParams }: {
           {itemGroups.length === 0 && !loadError && <p className="rounded-xl bg-white p-5">{t.noItems}</p>}
           {shownItems.map(({ key, versions }) => {
             const current = versions.find((v) => v.status === "published") ?? versions[0];
-            return <article key={key} className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
+            return <article key={key} className="fx-card rounded-xl bg-white p-4 shadow-sm sm:p-5">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div><h2 className="text-lg font-bold">{current.name}</h2><p className="text-xs text-slate-500">{current.kind === "plan" ? t.plan : t.serviceKind} · {t.key} {key}{current.category && ` · ${current.category}`}</p></div>
                 <Badge status={current.status} t={t} opens={`versiones-${key}`} />
@@ -284,7 +284,7 @@ export default async function CatalogoPage({ searchParams }: {
           {knowledgeGroups.length === 0 && !loadError && <p className="rounded-xl bg-white p-5">{t.noKnowledge}</p>}
           {shownKnowledge.map(({ key, versions }) => {
             const current = versions.find((v) => v.status === "published") ?? versions[0];
-            return <article key={key} className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
+            return <article key={key} className="fx-card rounded-xl bg-white p-4 shadow-sm sm:p-5">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div><h2 className="font-bold">{current.title}</h2><p className="text-xs text-slate-500">{t.topics[current.topic] ?? current.topic} · {current.language.toUpperCase()} · {t.key} {key}</p></div>
                 <Badge status={current.status} t={t} opens={`versiones-${key}`} />

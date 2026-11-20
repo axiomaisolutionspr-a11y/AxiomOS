@@ -121,7 +121,7 @@ function Start({ t, go }: { t: T; go: (s: Section) => void }) {
     <div className="rounded-2xl bg-white p-6 shadow-sm">
       <h2 className="text-2xl font-bold">{t.title}</h2>
       <ol className="mt-4 grid gap-3 sm:grid-cols-2">
-        {t.tour.map(([title, text], i) => <li key={title} className="rounded-xl border border-slate-200 p-4">
+        {t.tour.map(([title, text], i) => <li key={title} className="fx-card rounded-xl border border-slate-200 p-4">
           <p className="text-xs font-bold text-blue-700">{t.step} {i + 1}</p>
           <h3 className="mt-1 font-semibold">{title}</h3>
           <p className="mt-1 text-sm text-slate-600">{text}</p>
@@ -133,7 +133,7 @@ function Start({ t, go }: { t: T; go: (s: Section) => void }) {
     <div className="rounded-2xl bg-white p-6 shadow-sm">
       <h2 className="text-lg font-bold">{t.statusTitle}</h2>
       <ul className="mt-3 grid gap-2 text-sm">
-        {t.status.map(([label, ok]) => <li key={label} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3">
+        {t.status.map(([label, ok]) => <li key={label} className="fx-card flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3">
           <span>{label}</span>
           <span className={`rounded-full px-3 py-1 text-xs font-bold ${ok ? "bg-green-100 text-green-950" : "bg-amber-100 text-amber-900"}`}>{ok ? t.connected : t.integration}</span>
         </li>)}
@@ -307,7 +307,7 @@ function Conversations({ t, lang, catalog, state, setState, selected, opened, se
         <summary className="cursor-pointer font-semibold">{t.contactInfo}</summary>
         <p className="mt-2 text-slate-700">{pick(p.note, lang)}</p>
         <h3 className="mt-3 text-xs font-bold uppercase tracking-wide text-slate-500">{t.notes}</h3>
-        <ul className="mt-1 grid gap-1">{(state.notes[p.id] ?? []).map((n, i) => <li key={i} className="rounded-lg bg-amber-50 p-2">{n}</li>)}</ul>
+        <ul className="mt-1 grid gap-1">{(state.notes[p.id] ?? []).map((n, i) => <li key={i} className="fx-card rounded-lg bg-amber-50 p-2">{n}</li>)}</ul>
         <div className="mt-2 flex gap-2">
           <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={t.notePlaceholder} maxLength={300} className="min-w-0 flex-1 rounded-lg border p-2 text-base" />
           <button type="button" className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white" onClick={saveNote}>{t.addNote}</button>
@@ -574,7 +574,7 @@ function Campaigns({ t, state, setState, log }: { t: T; state: St; setState: Set
     </form>
     <div className="rounded-2xl bg-white p-4 shadow-sm">
       <ul className="grid gap-2 text-sm">
-        {recipients.slice(0, 4).map((p) => <li key={p.id} className="rounded-xl bg-slate-100 p-3">
+        {recipients.slice(0, 4).map((p) => <li key={p.id} className="fx-card rounded-xl bg-slate-100 p-3">
           <p className="text-xs font-bold">{p.name}</p><p className="mt-1">{msg.replaceAll("{nombre}", p.name.split(" ")[0])}</p></li>)}
       </ul>
     </div>
@@ -608,7 +608,7 @@ function Activity({ t, state }: { t: T; state: St }) {
   return <section className="rounded-2xl bg-white p-4 shadow-sm">
     <h2 className="font-bold">{t.sections.actividad}</h2>
     {state.log.length === 0 ? <p className="mt-2 text-sm text-slate-600">{t.activityEmpty}</p>
-      : <ol className="mt-3 grid gap-2 text-sm">{state.log.map((l, i) => <li key={i} className="rounded-lg border border-slate-200 p-2">{l}</li>)}</ol>}
+      : <ol className="mt-3 grid gap-2 text-sm">{state.log.map((l, i) => <li key={i} className="fx-card rounded-lg border border-slate-200 p-2">{l}</li>)}</ol>}
   </section>;
 }
 
