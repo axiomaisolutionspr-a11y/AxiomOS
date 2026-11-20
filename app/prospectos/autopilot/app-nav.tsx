@@ -2,9 +2,10 @@ import Link from "next/link";
 import type { Dict } from "./i18n";
 
 // Menú principal del CRM: lleva a cada pantalla de Autopilot. "Bajas" solo aparece si está habilitado.
-export default function AppNav({ t, current, optOut = false }: { t: Dict; current: "panel" | "catalogo" | "demo" | "bajas"; optOut?: boolean }) {
+export default function AppNav({ t, current, optOut = false }: { t: Dict; current: "panel" | "brain" | "catalogo" | "demo" | "bajas"; optOut?: boolean }) {
   const items: Array<[typeof current, string, string]> = [
     ["panel", t.navPanel, "/prospectos/autopilot"],
+    ["brain", t.navBrain, "/prospectos/autopilot/brain"],
     ["catalogo", t.navCatalog, "/prospectos/autopilot/catalogo"],
     ["demo", t.navDemo, "/prospectos/autopilot/demo"],
   ];

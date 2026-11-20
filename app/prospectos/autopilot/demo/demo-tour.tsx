@@ -3,7 +3,8 @@
 // Todo ocurre en el navegador: no envía mensajes, no hace llamadas y no escribe en la base de datos.
 // Las respuestas de precios de Axira sí usan el catálogo real publicado (lo pasa la página del servidor).
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
-import { answerFromCatalog, relevantKnowledge, wantsHuman } from "../../../lib/axira-catalog-policy.js";
+import { answerFromCatalog, money, relevantKnowledge, wantsHuman } from "../../../lib/axira-catalog-policy.js";
+import { answerBrain, brainAllowance } from "../../../lib/axiomos-brain.js";
 import type { Lang } from "../i18n";
 import {
   CALLS, CONVERSATIONS, FOLLOWUPS, PROSPECTS, STAGES, demoText, pick,
@@ -11,9 +12,9 @@ import {
 } from "./demo-data";
 
 type Catalog = { status?: string; items: unknown[]; knowledge: unknown[] };
-const SECTIONS = ["inicio", "conversaciones", "prospectos", "seguimientos", "llamadas", "campanas", "panel", "actividad"] as const;
+const SECTIONS = ["inicio", "conversaciones", "prospectos", "seguimientos", "llamadas", "campanas", "panel", "brain", "actividad"] as const;
 type Section = typeof SECTIONS[number];
-const TOUR: Section[] = ["conversaciones", "prospectos", "seguimientos", "llamadas", "campanas", "panel"];
+const TOUR: Section[] = ["conversaciones", "prospectos", "seguimientos", "llamadas", "campanas", "panel", "brain"];
 
 type Thread = DemoConversation & { transferred?: boolean; extra: Array<{ from: "agent" | "axira"; text: string }> };
 
@@ -84,6 +85,7 @@ export default function DemoTour({ lang, catalog }: { lang: Lang; catalog: Catal
     {section === "llamadas" && <Calls t={t} lang={lang} prospect={prospect} />}
     {section === "campanas" && <Campaigns t={t} state={state} setState={setState} log={log} />}
     {section === "panel" && <Dashboard t={t} state={state} unread={unread} overdue={overdue} />}
+    {section === "brain" && <BrainDemo t={t} lang={lang} catalog={catalog} state={state} overdue={overdue} log={log} />}
     {section === "actividad" && <Activity t={t} state={state} />}
 
     <div className="flex justify-end">
@@ -340,5 +342,57 @@ function Activity({ t, state }: { t: T; state: St }) {
     <h2 className="font-bold">{t.sections.actividad}</h2>
     {state.log.length === 0 ? <p className="mt-2 text-sm text-slate-600">{t.activityEmpty}</p>
       : <ol className="mt-3 grid gap-2 text-sm">{state.log.map((l, i) => <li key={i} className="rounded-lg border border-slate-200 p-2">{l}</li>)}</ol>}
+  </section>;
+}
+
+// Brain en la demostración: mismas respuestas que el Brain real, con un límite de 5 preguntas solo en esta pantalla.
+const DEMO_BRAIN_LIMIT = 5;
+function BrainDemo({ t, lang, catalog, state, overdue, log }: { t: T; lang: Lang; catalog: Catalog; state: St; overdue: number; log: (l: string) => void }) {
+  const [messages, setMessages] = useState<Array<{ role: "user" | "brain"; text: string; free?: boolean }>>([]);
+  const [used, setUsed] = useState(0);
+  const [extra, setExtra] = useState(0);
+  const [draft, setDraft] = useState("");
+  const allowance = useMemo(() => brainAllowance(catalog, {}), [catalog]);
+  const limit = DEMO_BRAIN_LIMIT + extra;
+  const count = (s: Stage) => state.prospects.filter((p) => p.stage === s).length;
+  const crm = {
+    offers: { active: [lang === "en" ? "Autopilot promo (demo)" : "Promoción Autopilot (demo)"], drafts: [], expiring: [] },
+    prospects: { total: state.prospects.length, new_count: count("nuevo"), interested_count: count("interesado"), followup_count: count("seguimiento"),
+      overdue_count: overdue, due_next_7_days: state.followups.filter((f) => !f.done && f.dueInHours >= 0).length },
+  };
+  const ask = (q: string) => {
+    const text = q.trim();
+    if (text.length < 2 || used >= limit) return;
+    const demoAllowance = { ...allowance, plan: { key: "demo", name: lang === "en" ? "Demo" : "Demostración", questions: DEMO_BRAIN_LIMIT }, limit, packs: extra ? 1 : 0 };
+    const r = answerBrain({ message: text, language: lang, catalog, crm, allowance: demoAllowance, used: used + 1 });
+    if (r.charge) setUsed((u) => u + 1);
+    setMessages((m) => [...m, { role: "user", text }, { role: "brain", text: r.text, free: !r.charge }]);
+    setDraft("");
+  };
+  const b = t.brain;
+  return <section className="grid gap-4">
+    <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-6">
+      <div className="flex items-center gap-3">
+        <img src="/axiomos-brain-icon.webp" alt="" width={48} height={48} className="h-12 w-12 rounded-full bg-slate-950 p-1" />
+        <p className="text-sm text-slate-700">{b.intro}</p>
+      </div>
+      <p className="mt-3 text-sm font-semibold" aria-live="polite">{b.meter(Math.max(0, limit - used), limit)}</p>
+      <div className="mt-3 grid max-h-[50vh] gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3">
+        {messages.length === 0 && <div className="flex flex-wrap gap-2">{b.suggestions.map((s) => <button key={s} type="button" onClick={() => ask(s)}
+          className="rounded-full border border-blue-200 bg-white px-3 py-1.5 text-left text-sm font-medium text-blue-800">{s}</button>)}</div>}
+        {messages.map((m, i) => <p key={i} className={`max-w-[85%] whitespace-pre-line rounded-2xl px-3 py-2 text-sm ${m.role === "user" ? "justify-self-end bg-blue-600 text-white" : "border border-slate-200 bg-white"}`}>
+          {m.text}{m.free && <span className="mt-1 block text-xs font-semibold text-slate-500">{b.free}</span>}</p>)}
+      </div>
+      {used >= limit ? <div role="alert" className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950">
+        <p className="text-sm">{b.blocked}</p>
+        {allowance.pack && <p className="mt-1 text-sm font-semibold">{b.pack(allowance.pack.questions.toLocaleString(lang === "en" ? "en-US" : "es-PR"), money(allowance.pack.price_cents))}</p>}
+        <button type="button" className="mt-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
+          onClick={() => { setExtra((e) => e + (allowance.pack?.questions ?? 5)); log(b.packAdded); }}>{b.addPack}</button>
+      </div> : <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); ask(draft); }}>
+        <input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={600} placeholder={b.placeholder} aria-label={b.placeholder}
+          className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-base" />
+        <button type="submit" disabled={draft.trim().length < 2} className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50">{b.send}</button>
+      </form>}
+    </div>
   </section>;
 }

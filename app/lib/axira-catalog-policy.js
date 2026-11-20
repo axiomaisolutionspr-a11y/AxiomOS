@@ -303,5 +303,5 @@ export const LIMIT_ENFORCEMENT = {
   call_minutes: "Sin control técnico: no existe medición ni corte de minutos por negocio.",
   axira_voice_minutes: "Sin control técnico: no existe medición ni corte de minutos de Axira por voz por negocio.",
   axira_responses: "Sin control técnico: no existe contador mensual de respuestas de Axira por negocio.",
-  brain_questions: "Sin control técnico: Brain (asistente del dueño) todavía no existe ni cuenta preguntas.",
+  brain_questions: "Con control técnico (20-nov-2026, QA): Brain cuenta las preguntas por mes y se detiene al llegar al límite del plan más paquetes.",
 };
