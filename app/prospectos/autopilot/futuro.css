@@ -21,6 +21,7 @@
   color-scheme: dark;
   position: relative;
   isolation: isolate;
+  overflow-x: clip; /* la tarjeta elevada no debe crear desplazamiento lateral en el teléfono */
   color: var(--fx-ink);
   background:
     radial-gradient(1200px 600px at 85% -10%, rgb(var(--fx-b) / 0.3), transparent 60%),
