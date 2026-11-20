@@ -29,6 +29,8 @@ type Knowledge = {
   key: string; version: number; topic: string; language: string; title: string; answer: string; keywords: string[];
   valid_from: string; valid_until: string | null; status: string; change_reason: string; created_at: string;
 };
+type Audit = { id: string; entity: string; entity_key: string; version: number; action: string; from_status: string | null;
+  to_status: string; actor: string; reason: string; recorded_at: string };
 
 const TAB_KEYS = ["catalogo", "conocimiento", "vista-previa", "auditoria"] as const;
 type Tab = typeof TAB_KEYS[number];
