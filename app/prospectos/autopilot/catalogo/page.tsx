@@ -119,7 +119,7 @@ export default async function CatalogoPage({ searchParams }: {
   const preview = previewCatalog({ items, knowledge });
   const question = (params.q ?? "").slice(0, 300);
   const previewAnswer = question ? answerFromCatalog(preview, { message: question, channel: "whatsapp" }) : null;
-  const previewKnowledge = question ? relevantKnowledge(preview, question) : [];
+  const previewKnowledge = (question ? relevantKnowledge(preview, question) : []) as Array<{ key: string; title: string }>;
 
   return <main className="min-h-screen bg-slate-100 text-slate-950">
     <header className="bg-slate-950 px-5 py-7 text-white">
