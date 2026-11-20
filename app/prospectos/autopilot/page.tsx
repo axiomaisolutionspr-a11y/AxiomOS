@@ -8,6 +8,7 @@ import { commercialIdentityAuth } from "../../lib/commercial-identity-auth";
 import { whatsappManualOptOutMode, whatsappManualOptOutSharesCampaignDatabase } from "../../lib/whatsapp-manual-opt-out-mode.mjs";
 import { changeQaOfferStatus, createQaOffer } from "./offer-actions";
 import SignOut from "./sign-out";
+import HoloLogo from "./holo-logo";
 import FuturoFx from "./futuro-fx";
 
 export const dynamic = "force-dynamic";
@@ -91,7 +92,8 @@ export default async function AutopilotQaPage({ searchParams }: {
     <FuturoFx />
     <header className="bg-slate-950 px-5 py-8 text-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-5">
-        <div>
+        <HoloLogo />
+        <div className="min-w-0 flex-1 basis-64">
           <p className="text-sm font-bold uppercase tracking-widest text-blue-300">AxiomOS Autopilot {isQa ? "· QA" : ""}</p>
           <h1 className="mt-2 text-3xl font-bold">Hola, {data.user.name || data.user.email}</h1>
           <p className="mt-2 text-slate-300">AxiomAI Solutions · {role} · {canEdit ? "Gestión de ofertas" : "Solo lectura"}</p>

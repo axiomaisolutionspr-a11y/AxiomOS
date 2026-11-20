@@ -9,6 +9,7 @@ import { AXIOMAI_TENANT, listCatalog, neonCatalogDb } from "../../../lib/axira-c
 import { commercialIdentityAuth } from "../../../lib/commercial-identity-auth";
 import { commercialIdentityDatabase, commercialMember, commercialOfferWriterDatabase } from "../../../lib/commercial-identity";
 import SignOut from "../sign-out";
+import HoloLogo from "../holo-logo";
 import FuturoFx from "../futuro-fx";
 import { changeVersion, saveItemDraft, saveKnowledgeDraft } from "./actions";
 
@@ -132,7 +133,8 @@ export default async function CatalogoPage({ searchParams }: {
     <FuturoFx />
     <header className="bg-slate-950 px-5 py-7 text-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4">
-        <div>
+        <HoloLogo />
+        <div className="min-w-0 flex-1 basis-64">
           <p className="text-xs font-bold uppercase tracking-widest text-blue-300">AxiomOS Autopilot · Configuración {isQa && "· QA"}</p>
           <h1 className="mt-2 text-2xl font-bold sm:text-3xl">Centro Comercial y Conocimiento de Axira</h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-300">Precios, ofertas, servicios y respuestas que Axira puede usar. Axira solo consulta lo <strong className="text-white">publicado y vigente</strong>.</p>
