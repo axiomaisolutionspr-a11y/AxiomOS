@@ -193,7 +193,7 @@ export default async function CatalogoPage({ searchParams }: {
 
       <nav className="flex gap-2 overflow-x-auto" aria-label={t.sections}>
         {TAB_KEYS.map((key) => <Link key={key} href={`?tab=${key}`} aria-current={tab === key ? "page" : undefined}
-          className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${tab === key ? "bg-blue-600 text-white" : "bg-white text-slate-700"}`}>{t.tabs[key]}</Link>)}
+          className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${tab === key ? "bg-blue-600 text-white" : "bg-white text-slate-700"}`}>{t.tabs[key]}</Link>)}
       </nav>
       <p className="text-sm text-slate-600">{t.role}: {membership.role === "owner" ? t.ownerCanEdit : t.readOnly}{!canEdit && membership.role === "owner" && t.writeDisabled}</p>
 

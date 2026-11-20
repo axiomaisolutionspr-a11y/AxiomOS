@@ -10,7 +10,7 @@ import {
   type DemoConversation, type DemoFollowup, type DemoProspect, type Stage,
 } from "./demo-data";
 
-type Catalog = { items: unknown[]; knowledge: unknown[] };
+type Catalog = { status?: string; items: unknown[]; knowledge: unknown[] };
 const SECTIONS = ["inicio", "conversaciones", "prospectos", "seguimientos", "llamadas", "campanas", "panel", "actividad"] as const;
 type Section = typeof SECTIONS[number];
 const TOUR: Section[] = ["conversaciones", "prospectos", "seguimientos", "llamadas", "campanas", "panel"];
@@ -63,7 +63,7 @@ export default function DemoTour({ lang, catalog }: { lang: Lang; catalog: Catal
 
     <nav aria-label={t.title} className="flex gap-2 overflow-x-auto">
       {SECTIONS.map((s) => <button key={s} type="button" aria-current={section === s ? "page" : undefined} onClick={() => go(s)}
-        className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${section === s ? "bg-blue-600 text-white" : "bg-white text-slate-700"}`}>
+        className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${section === s ? "bg-blue-600 text-white" : "bg-white text-slate-700"}`}>
         {t.sections[s]}{s === "conversaciones" && unread > 0 ? ` · ${unread}` : ""}{s === "seguimientos" && overdue > 0 ? ` · ${overdue}!` : ""}
       </button>)}
     </nav>

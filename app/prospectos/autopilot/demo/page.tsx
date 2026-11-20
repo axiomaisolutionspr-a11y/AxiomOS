@@ -19,7 +19,7 @@ export default async function DemoPage() {
   const { lang, mode, theme, t } = await uiPrefs();
   const d = demoText(lang);
   const loaded = await loadPublishedCatalog(axiraCatalogReader(), AXIOMAI_TENANT, "whatsapp");
-  const catalog = JSON.parse(JSON.stringify({ items: loaded.items ?? [], knowledge: loaded.knowledge ?? [] }));
+  const catalog = JSON.parse(JSON.stringify({ status: loaded.status, items: loaded.items ?? [], knowledge: loaded.knowledge ?? [] }));
 
   return <main lang={lang} data-fx-mode={mode} data-fx-theme={theme} className="fx min-h-screen bg-slate-100 text-slate-950">
     <FuturoFx />
