@@ -40,7 +40,7 @@ export const CONVERSATIONS: DemoConversation[] = [
     { from: "client", text: { es: "Sí, quiero hablar con una persona.", en: "Yes, I want to talk to a person." }, at: "Ayer" },
   ] },
   { prospectId: "p4", unread: 0, messages: [
-    { from: "client", text: { es: "¿En qué idiomas atiende Axira?", en: "What languages does Axira speak?" }, at: "Lun" },
+    { from: "client", text: { es: "¿Me pueden atender en inglés? Soy de Puerto Rico.", en: "Can you help me in English? I am in Puerto Rico." }, at: "Lun" },
   ] },
 ];
 
