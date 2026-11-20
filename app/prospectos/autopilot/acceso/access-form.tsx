@@ -35,8 +35,10 @@ export default function AutopilotAccessPage({ lang, mode, theme }: { lang: Lang;
   return <main lang={lang} data-fx-mode={mode} data-fx-theme={theme} className="fx min-h-screen px-5 py-8">
     <FuturoFx />
     <div className="mx-auto grid max-w-md gap-5">
-      <div className="flex justify-end"><ExperienceControls lang={lang} mode={mode} theme={theme} /></div>
-      <HoloLogo label={t.logoLabel} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <HoloLogo label={t.logoLabel} />
+        <ExperienceControls lang={lang} mode={mode} theme={theme} />
+      </div>
       <section className="grid gap-5 rounded-2xl bg-white p-6">
         <h1 className="text-2xl font-bold sm:text-3xl">{t.accessTitle}</h1>
         <p className="text-slate-700">{t.accessIntro}</p>

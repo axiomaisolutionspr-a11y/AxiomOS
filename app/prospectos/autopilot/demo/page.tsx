@@ -23,14 +23,14 @@ export default async function DemoPage() {
 
   return <main lang={lang} data-fx-mode={mode} data-fx-theme={theme} className="fx min-h-screen bg-slate-100 text-slate-950">
     <FuturoFx />
-    <header className="bg-slate-950 px-5 pb-7 pt-3 text-white">
-      <div className="mx-auto mb-2 flex max-w-6xl justify-end"><ExperienceControls lang={lang} mode={mode} theme={theme} /></div>
-      <div className="mx-auto flex max-w-6xl flex-wrap items-start gap-4">
+    <header className="bg-slate-950 px-5 py-7 text-white">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4">
         <HoloLogo label={t.logoLabel} />
         <div className="min-w-0 flex-1 basis-64">
           <p className="text-xs font-bold uppercase tracking-widest text-blue-300">AxiomOS Autopilot · {d.badge}</p>
           <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{d.title}</h1>
         </div>
+        <ExperienceControls lang={lang} mode={mode} theme={theme} />
       </div>
     </header>
     <div className="mx-auto grid max-w-6xl gap-5 px-4 py-6 sm:px-5">

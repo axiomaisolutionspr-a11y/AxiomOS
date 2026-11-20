@@ -16,7 +16,7 @@
   --fx-glass: rgb(var(--fx-s2) / 0.78);
   --fx-glass-2: rgb(var(--fx-s3) / 0.55);
   --fx-neon: rgb(var(--fx-a));
-  --fx-ring: 0 0 0 2px rgb(var(--fx-a) / 0.95), 0 0 18px -3px rgb(var(--fx-a) / 0.75);
+  --fx-ring: 0 0 0 1px rgb(var(--fx-a) / 0.9), 0 0 16px -3px rgb(var(--fx-a) / 0.7);
   --fx-speed: 0.28s;
   color-scheme: dark;
   position: relative;
