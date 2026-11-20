@@ -1,0 +1,41 @@
+PASS · Código incorrecto rechazado
+PASS · Acceso y carga de 5 prospectos QA
+PASS · Sin clave de IA: campo deshabilitado con aviso
+PASS · IA real: pregunta libre agrega cliente + Axira
+PASS · IA real: rechaza teléfono real y no lo deja en el chat
+PASS · IA real: preguntas de precio no llaman al modelo
+PASS · Pregunta rápida agrega 2 turnos
+PASS · Rechaza nombre no ficticio
+PASS · Captura crea prospecto y abre ficha
+PASS · Ficha muestra inteligencia de Axira
+PASS · Puntuación visible 0–100 · score=72
+PASS · Razones de puntuación explicables
+PASS · Búsqueda sin coincidencias muestra aviso
+PASS · Búsqueda en historial encuentra a María
+PASS · Filtro Olvidados (SLA vencido) · 3 olvidados
+PASS · Autopilot ejecuta y reporta · Autopilot terminó: 21 acciones ejecutadas, 0 bloqueadas por política y 5 esperan tu aprobación. No se envió ningún mensaje.
+PASS · Modo Supervisado no cambia etapas sin aprobación (0 PATCH) · 21 escrituras, todas en la bitácora: true
+PASS · Ninguna llamada a proveedores externos
+PASS · Registro de auditoría con entradas
+PASS · Paso de envío externo viene desactivado por defecto
+PASS · Activar envío externo: Axira lo bloquea y lo registra · Autopilot terminó: 0 acciones ejecutadas, 5 bloqueadas por política y 5 esperan tu aprobación. No se envió ningún mensaje.
+PASS · Bloqueo: ningún envío, solo se anota en la bitácora · 5 anotaciones
+PASS · Cola de aprobación con pendientes · antes=5 después=5
+PASS · Aprobar avance de etapa hace 1 PATCH confirmado · PATCH /api/demo-comercial {"id":"73cd934a-894c-44f7-a478-f86171888808","status":"Cita solicitada"}
+PASS · Si Neon QA falla, se registra error y no se finge éxito
+PASS · Modo Asistir: 0 acciones ejecutadas · Autopilot terminó: 0 acciones ejecutadas, 0 bloqueadas por política y 4 esperan tu aprobación. No se envió ningún mensaje.
+PASS · Paso desactivado se ve atenuado
+PASS · Aprobación del borrador no se puede quitar
+PASS · Aprobar respuesta no la envía: solo 1 anotación en la bitácora
+PASS · Borrador aprobado desaparece (sin duplicado)
+PASS · Acciones guardadas en la bitácora del servidor · 29 eventos
+PASS · Bitácora marcada como Neon QA
+PASS · Sin datos locales, la bitácora se recupera del servidor · 29 visibles de 29
+PASS · Ninguna acción resuelta dos veces
+PASS · Aprobar desde la cola agrega exactamente 1 evento · 1
+PASS · Repetir una acción ya resuelta devuelve 409
+PASS · Con Neon QA caído se avisa y la anotación queda solo local · Etapa actualizada en Neon QA. La bitácora quedó solo en este navegador.
+PASS · Recorrido guiado original registra y abre ficha
+PASS · Móvil 390px sin desbordamiento horizontal · exceso=0px
+PASS · Móvil ficha sin desbordamiento · exceso=0px
+PASS · Sin errores de JavaScript en consola
