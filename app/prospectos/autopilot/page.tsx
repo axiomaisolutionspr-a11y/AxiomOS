@@ -8,7 +8,7 @@ import { commercialIdentityAuth } from "../../lib/commercial-identity-auth";
 import { whatsappManualOptOutMode, whatsappManualOptOutSharesCampaignDatabase } from "../../lib/whatsapp-manual-opt-out-mode.mjs";
 import { changeQaOfferStatus, createQaOffer } from "./offer-actions";
 import SignOut from "./sign-out";
-import HideSiteWidgets from "./hide-site-widgets";
+import FuturoFx from "./futuro-fx";
 
 export const dynamic = "force-dynamic";
 type Offer = {
@@ -87,8 +87,8 @@ export default async function AutopilotQaPage({ searchParams }: {
   }
   const feedback = await searchParams;
 
-  return <main className="min-h-screen bg-slate-100 text-slate-950">
-    <HideSiteWidgets />
+  return <main className="fx min-h-screen bg-slate-100 text-slate-950">
+    <FuturoFx />
     <header className="bg-slate-950 px-5 py-8 text-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-5">
         <div>

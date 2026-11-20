@@ -9,7 +9,7 @@ import { AXIOMAI_TENANT, listCatalog, neonCatalogDb } from "../../../lib/axira-c
 import { commercialIdentityAuth } from "../../../lib/commercial-identity-auth";
 import { commercialIdentityDatabase, commercialMember, commercialOfferWriterDatabase } from "../../../lib/commercial-identity";
 import SignOut from "../sign-out";
-import HideSiteWidgets from "../hide-site-widgets";
+import FuturoFx from "../futuro-fx";
 import { changeVersion, saveItemDraft, saveKnowledgeDraft } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -128,8 +128,8 @@ export default async function CatalogoPage({ searchParams }: {
   const previewAnswer = question ? answerFromCatalog(preview, { message: question, channel: "whatsapp" }) : null;
   const previewKnowledge = (question ? relevantKnowledge(preview, question) : []) as Array<{ key: string; title: string }>;
 
-  return <main className="min-h-screen bg-slate-100 text-slate-950">
-    <HideSiteWidgets />
+  return <main className="fx min-h-screen bg-slate-100 text-slate-950">
+    <FuturoFx />
     <header className="bg-slate-950 px-5 py-7 text-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4">
         <div>

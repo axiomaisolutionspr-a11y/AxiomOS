@@ -1,0 +1,257 @@
+/*
+ * AxiomOS Autopilot — tema "Holo" (solo páginas del CRM que usan <main className="fx">).
+ * Cristal oscuro + neón azul. Lo que tocas se eleva en 3D; lo demás retrocede.
+ * Todo queda limitado a .fx para no afectar la página pública ni otras secciones.
+ */
+.fx {
+  --fx-bg: #030712;
+  --fx-ink: #e6eeff;
+  --fx-muted: #9fb2d4;
+  --fx-line: rgba(125, 170, 255, 0.22);
+  --fx-glass: rgba(13, 24, 48, 0.72);
+  --fx-glass-2: rgba(30, 50, 92, 0.55);
+  --fx-neon: #38bdf8;
+  --fx-blue: #3b82f6;
+  --fx-glow: 0 0 0 1px rgba(56, 189, 248, 0.45), 0 18px 50px -12px rgba(37, 99, 235, 0.65), 0 0 40px -8px rgba(56, 189, 248, 0.45);
+  color-scheme: dark;
+  position: relative;
+  isolation: isolate;
+  color: var(--fx-ink);
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(37, 99, 235, 0.35), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgba(14, 165, 233, 0.18), transparent 60%),
+    radial-gradient(800px 600px at 50% 120%, rgba(99, 102, 241, 0.2), transparent 60%),
+    var(--fx-bg);
+  perspective: 1400px;
+}
+/* Malla tecnológica de fondo con un leve movimiento. */
+.fx::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(96, 165, 250, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96, 165, 250, 0.07) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(ellipse at 50% 20%, #000 30%, transparent 80%);
+  animation: fx-grid 18s linear infinite;
+}
+@keyframes fx-grid { to { background-position: 34px 34px, 34px 34px; } }
+
+/* ---------- Encabezado ---------- */
+.fx > header {
+  position: relative;
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.92), rgba(2, 6, 23, 0.55)) !important;
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--fx-line);
+  overflow: hidden;
+}
+.fx > header::after {
+  content: "";
+  position: absolute;
+  left: -40%;
+  bottom: -1px;
+  width: 40%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--fx-neon), #a5b4fc, transparent);
+  filter: drop-shadow(0 0 6px var(--fx-neon));
+  animation: fx-scan 4.5s ease-in-out infinite;
+}
+@keyframes fx-scan { 0% { left: -40%; } 60%, 100% { left: 110%; } }
+.fx > header h1 {
+  background: linear-gradient(92deg, #fff 0%, #bfe3ff 45%, #7dd3fc 70%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 28px rgba(56, 189, 248, 0.25);
+}
+
+/* ---------- Colores: Tailwind claro → cristal oscuro ---------- */
+.fx .bg-white,
+.fx .bg-slate-50 { background: var(--fx-glass) !important; }
+.fx .bg-slate-100,
+.fx .bg-slate-200 { background: var(--fx-glass-2) !important; color: var(--fx-ink); }
+.fx .border,
+.fx [class*="border-slate-"] { border-color: var(--fx-line) !important; }
+.fx .text-slate-950,
+.fx .text-slate-900,
+.fx .text-slate-800,
+.fx .text-slate-700 { color: var(--fx-ink) !important; }
+.fx .text-slate-600,
+.fx .text-slate-500 { color: var(--fx-muted) !important; }
+.fx .text-blue-700,
+.fx .text-blue-900 { color: #7cc8ff !important; }
+.fx .bg-blue-50 { background: rgba(59, 130, 246, 0.14) !important; border-color: rgba(96, 165, 250, 0.4) !important; }
+.fx .bg-amber-50,
+.fx .bg-amber-100 { background: rgba(245, 158, 11, 0.13) !important; border-color: rgba(251, 191, 36, 0.35) !important; }
+.fx .text-amber-950,
+.fx .text-amber-900 { color: #fde68a !important; }
+.fx .border-amber-200 { border-color: rgba(251, 191, 36, 0.35) !important; }
+.fx .bg-red-50,
+.fx .bg-red-100 { background: rgba(239, 68, 68, 0.14) !important; border-color: rgba(248, 113, 113, 0.4) !important; }
+.fx .text-red-950,
+.fx .text-red-900,
+.fx .text-red-800 { color: #fecaca !important; }
+.fx .bg-green-100 { background: rgba(34, 197, 94, 0.14) !important; }
+.fx .text-green-950 { color: #bbf7d0 !important; }
+.fx table th,
+.fx table td { border-color: var(--fx-line) !important; }
+.fx summary { color: var(--fx-ink); }
+.fx hr,
+.fx .border-t { border-color: var(--fx-line) !important; }
+
+/* ---------- Tarjetas con profundidad ---------- */
+.fx :is(article, section.rounded-xl, section.rounded-2xl, div.rounded-xl, div.rounded-2xl) {
+  --fx-rx: 0deg;
+  --fx-ry: 0deg;
+  --fx-x: 50%;
+  --fx-y: 0%;
+  position: relative;
+  border: 1px solid var(--fx-line);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 10px 30px -18px rgba(0, 0, 0, 0.9);
+  transform: rotateX(var(--fx-rx)) rotateY(var(--fx-ry)) translateZ(0);
+  transform-style: preserve-3d;
+  transition:
+    transform 0.45s cubic-bezier(0.2, 0.9, 0.2, 1.15),
+    box-shadow 0.35s ease,
+    opacity 0.35s ease,
+    filter 0.35s ease,
+    border-color 0.35s ease;
+}
+/* Luz holográfica que sigue el dedo / puntero. */
+.fx :is(article, section.rounded-xl, section.rounded-2xl, div.rounded-xl, div.rounded-2xl)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(420px circle at var(--fx-x) var(--fx-y), rgba(56, 189, 248, 0.18), transparent 45%);
+  transition: opacity 0.35s ease;
+}
+/* Profundidad real para translateZ dentro de las cuadrículas. */
+.fx :is(section, div, ul).grid { perspective: 1200px; }
+/* Activo: brota hacia ti. */
+.fx [data-fx-active] {
+  z-index: 2;
+  border-color: rgba(56, 189, 248, 0.6) !important;
+  box-shadow: var(--fx-glow) !important;
+  transform: translateY(-6px) translateZ(40px) rotateX(var(--fx-rx)) rotateY(var(--fx-ry)) scale(1.015) !important;
+}
+.fx [data-fx-active]::before { opacity: 1; }
+/* El resto retrocede pero sigue visible. */
+.fx [data-fx-focus] > :is(article, section.rounded-xl, section.rounded-2xl, div.rounded-xl, div.rounded-2xl):not([data-fx-active]) {
+  opacity: 0.55;
+  filter: saturate(0.6) brightness(0.85);
+  transform: translateZ(-30px) scale(0.975);
+}
+@media (hover: hover) {
+  .fx :is(article, section.rounded-xl, section.rounded-2xl, div.rounded-xl, div.rounded-2xl):hover {
+    border-color: rgba(56, 189, 248, 0.45);
+  }
+  .fx :is(article, section.rounded-xl, section.rounded-2xl, div.rounded-xl, div.rounded-2xl):hover::before { opacity: 0.7; }
+}
+/* Pulso al tocar. */
+.fx [data-fx-pulse]::after {
+  content: "";
+  position: absolute;
+  left: var(--fx-x);
+  top: var(--fx-y);
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 999px;
+  pointer-events: none;
+  border: 2px solid rgba(125, 211, 252, 0.9);
+  animation: fx-pulse 0.6s ease-out forwards;
+}
+@keyframes fx-pulse { to { transform: scale(26); opacity: 0; border-width: 0.5px; } }
+
+/* Números del resumen con brillo neón. */
+.fx .text-3xl.text-blue-700,
+.fx .text-2xl.font-bold { text-shadow: 0 0 18px rgba(56, 189, 248, 0.55); }
+.fx .text-3xl.text-blue-700 { color: #9be1ff !important; }
+
+/* ---------- Botones ---------- */
+.fx button,
+.fx :is(a, span).rounded-lg,
+.fx a.rounded-full {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.fx button:active,
+.fx a.rounded-lg:active,
+.fx a.rounded-full:active { transform: scale(0.95) translateY(1px); }
+.fx :is(button, a).bg-blue-600,
+.fx :is(button, a).bg-blue-700 {
+  background: linear-gradient(120deg, #2563eb, #0ea5e9 55%, #6366f1) !important;
+  background-size: 200% 100% !important;
+  box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.5) inset, 0 10px 28px -10px rgba(14, 165, 233, 0.9), 0 0 22px -6px rgba(56, 189, 248, 0.8);
+  animation: fx-flow 6s ease-in-out infinite;
+}
+@keyframes fx-flow { 50% { background-position: 100% 0; } }
+/* Destello que cruza el botón. */
+.fx :is(button, a).bg-blue-600::after,
+.fx :is(button, a).bg-blue-700::after {
+  content: "";
+  position: absolute;
+  inset: -2px auto -2px -60%;
+  width: 45%;
+  transform: skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  animation: fx-shine 3.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes fx-shine { 0%, 55% { left: -60%; } 85%, 100% { left: 130%; } }
+.fx :is(button, a).bg-slate-950,
+.fx :is(button, a).bg-slate-900,
+.fx button:not([class*="bg-"]) {
+  background: rgba(2, 6, 23, 0.6) !important;
+  border: 1px solid rgba(56, 189, 248, 0.55) !important;
+  color: #e0f2fe !important;
+  box-shadow: 0 0 16px -6px rgba(56, 189, 248, 0.8), inset 0 0 12px -6px rgba(56, 189, 248, 0.8);
+}
+.fx a.rounded-full:not(.bg-blue-600) { border: 1px solid var(--fx-line); color: var(--fx-ink) !important; }
+.fx a.rounded-full.bg-blue-600 { color: #fff !important; }
+.fx header a.rounded-lg { background: rgba(15, 23, 42, 0.5); border-color: var(--fx-line) !important; }
+
+/* ---------- Campos ---------- */
+.fx :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background: rgba(2, 8, 23, 0.65) !important;
+  color: var(--fx-ink) !important;
+  border: 1px solid var(--fx-line) !important;
+  border-radius: 0.75rem;
+  transition: border-color 0.2s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+.fx :is(input, select, textarea)::placeholder { color: rgba(159, 178, 212, 0.6); }
+.fx :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea):focus {
+  outline: none;
+  border-color: var(--fx-neon) !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25), 0 0 24px -6px rgba(56, 189, 248, 0.9);
+  transform: translateY(-1px);
+}
+.fx input[type="checkbox"] { accent-color: var(--fx-neon); width: 1.15rem; height: 1.15rem; }
+.fx :focus-visible { outline: 2px solid var(--fx-neon); outline-offset: 2px; }
+
+/* Barra de pestañas tipo cápsula. */
+.fx nav[aria-label="Secciones"] {
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.55);
+  border: 1px solid var(--fx-line);
+  scrollbar-width: none;
+}
+
+/* Accesibilidad: sin movimiento si el teléfono lo pide. */
+@media (prefers-reduced-motion: reduce) {
+  .fx *,
+  .fx *::before,
+  .fx *::after,
+  .fx::before { animation: none !important; transition: none !important; }
+  .fx [data-fx-active],
+  .fx [data-fx-focus] > * { transform: none !important; }
+}
