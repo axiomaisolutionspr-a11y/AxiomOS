@@ -1,6 +1,9 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { POST as askBrain } from "../brain/route";
+import {
+  instagramSignatureSecrets,
+  verifyInstagramSignature,
+} from "../../lib/instagram-signature.mjs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -28,36 +31,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const appSecret = process.env.META_APP_SECRET;
     const signature = request.headers.get("x-hub-signature-256");
     const rawBody = await request.text();
+    const check = verifyInstagramSignature(
+      rawBody,
+      signature,
+      instagramSignatureSecrets()
+    );
 
-    if (!appSecret || !signature?.startsWith("sha256=")) {
-      return NextResponse.json(
-        { error: "Firma inválida" },
-        { status: 401 }
-      );
-    }
-
-    const received = signature.slice("sha256=".length);
-
-    if (!/^[a-f0-9]{64}$/i.test(received)) {
-      return NextResponse.json(
-        { error: "Firma inválida" },
-        { status: 401 }
-      );
-    }
-
-    const expected = createHmac("sha256", appSecret)
-      .update(rawBody)
-      .digest("hex");
-
-    if (
-      !timingSafeEqual(
-        Buffer.from(received, "hex"),
-        Buffer.from(expected, "hex")
-      )
-    ) {
+    if (!check.valid) {
+      // Never log secret values or the body; only the reason.
+      console.warn("instagram_webhook_rejected", { reason: check.reason });
       return NextResponse.json(
         { error: "Firma inválida" },
         { status: 401 }
