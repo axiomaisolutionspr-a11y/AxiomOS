@@ -29,3 +29,39 @@ export function instagramSignatureSecrets(env = process.env) {
     { name: "META_APP_SECRET", value: env.META_APP_SECRET },
   ];
 }
+
+// Meta entrega mensajes de Instagram como entry[].messaging[] y, en algunos
+// casos (p. ej. el botón "Probar"), como entry[].changes[] con field "messages".
+export function instagramMessagingEvents(entry) {
+  const events = Array.isArray(entry?.messaging) ? [...entry.messaging] : [];
+  for (const change of Array.isArray(entry?.changes) ? entry.changes : []) {
+    if (change?.field === "messages" && change.value && typeof change.value === "object") {
+      events.push(change.value);
+    }
+  }
+  return events;
+}
+
+// Mensaje enviado por la propia cuenta de negocio (eco), no por un cliente.
+export function isOwnInstagramMessage(event, entry) {
+  if (event?.message?.is_echo) return true;
+  const sender = event?.sender?.id;
+  return Boolean(sender) && String(sender) === String(entry?.id ?? "");
+}
+
+// Resumen sin IDs, textos ni datos personales, apto para logs.
+export function summarizeInstagramPayload(body) {
+  const entries = Array.isArray(body?.entry) ? body.entry : [];
+  return {
+    object: typeof body?.object === "string" ? body.object : null,
+    entries: entries.length,
+    messaging: entries.reduce((n, e) => n + (Array.isArray(e?.messaging) ? e.messaging.length : 0), 0),
+    changes: entries.flatMap((e) => (Array.isArray(e?.changes) ? e.changes.map((c) => c?.field ?? null) : [])),
+    kinds: entries.flatMap((e) =>
+      instagramMessagingEvents(e).map((ev) =>
+        ev?.message?.is_echo ? "echo" : ev?.message?.text ? "text" : ev?.message ? "message_other" :
+        ev?.read ? "read" : ev?.reaction ? "reaction" : ev?.postback ? "postback" : "other"
+      )
+    ),
+  };
+}
