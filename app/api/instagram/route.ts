@@ -1,9 +1,14 @@
+import { neon } from "@neondatabase/serverless";
 import { NextRequest, NextResponse } from "next/server";
 import { POST as askBrain } from "../brain/route";
 import {
   instagramSignatureSecrets,
   verifyInstagramSignature,
 } from "../../lib/instagram-signature.mjs";
+import {
+  buildSocialProspect,
+  saveSocialProspect,
+} from "../../lib/social-prospect.mjs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -27,6 +32,39 @@ export async function GET(request: NextRequest) {
     { error: "Verificación inválida" },
     { status: 403 }
   );
+}
+
+// Guarda el prospecto en el CRM. Un fallo aquí nunca bloquea la respuesta.
+async function registerInstagramProspect(
+  senderId: string,
+  messageId: string | undefined,
+  text: string,
+  reply: string | null
+) {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    console.error("INSTAGRAM_PROSPECT_SKIPPED", "Falta DATABASE_URL");
+    return;
+  }
+
+  try {
+    await saveSocialProspect(
+      neon(databaseUrl),
+      buildSocialProspect({
+        channel: "instagram",
+        senderId,
+        messageId,
+        text,
+        reply,
+      })
+    );
+  } catch (error) {
+    console.error(
+      "INSTAGRAM_PROSPECT_ERROR",
+      error instanceof Error ? error.name : "UnknownError"
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -101,6 +139,12 @@ export async function POST(request: NextRequest) {
             brainResponse.status,
             brainData.error
           );
+          await registerInstagramProspect(
+            senderId,
+            event.message?.mid,
+            text.trim(),
+            null
+          );
           continue;
         }
 
@@ -128,6 +172,13 @@ export async function POST(request: NextRequest) {
             await sendResponse.text()
           );
         }
+
+        await registerInstagramProspect(
+          senderId,
+          event.message?.mid,
+          text.trim(),
+          brainData.result.slice(0, 1000)
+        );
       }
     }
 
