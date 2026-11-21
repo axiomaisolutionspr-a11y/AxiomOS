@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { POST as askBrain } from "../brain/route";
 import {
+  instagramMessagingEvents,
   instagramSignatureSecrets,
+  isOwnInstagramMessage,
+  summarizeInstagramPayload,
   verifyInstagramSignature,
 } from "../../lib/instagram-signature.mjs";
 
@@ -50,6 +53,9 @@ export async function POST(request: NextRequest) {
 
     const body = JSON.parse(rawBody);
 
+    // Diagnóstico sin datos personales: solo la forma del payload.
+    console.info("instagram_webhook_received", summarizeInstagramPayload(body));
+
     if (body?.object !== "instagram") {
       return NextResponse.json({ ok: true });
     }
@@ -62,7 +68,10 @@ export async function POST(request: NextRequest) {
     }
 
     for (const entry of body.entry ?? []) {
-      for (const event of entry.messaging ?? []) {
+      for (const event of instagramMessagingEvents(entry)) {
+        if (isOwnInstagramMessage(event, entry)) {
+          continue; // mensaje enviado por la propia cuenta de negocio
+        }
         const senderId = event.sender?.id;
         const text = event.message?.text;
 
