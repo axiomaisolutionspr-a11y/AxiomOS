@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { neon } from "@neondatabase/serverless";
 import { POST as askBrain } from "../brain/route";
+import { getInstagramAccessToken } from "../../lib/instagram-token.mjs";
 import {
   instagramMessagingEvents,
   instagramSignatureSecrets,
@@ -60,7 +62,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    const token = process.env.INSTAGRAM_ACCESS_TOKEN;
+    const databaseUrl = process.env.DATABASE_URL;
+    const token = await getInstagramAccessToken(
+      databaseUrl ? neon(databaseUrl) : null
+    );
 
     if (!token) {
       console.error("Falta INSTAGRAM_ACCESS_TOKEN");

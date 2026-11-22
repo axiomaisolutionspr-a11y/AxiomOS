@@ -11,5 +11,11 @@
       "feature/axiomos-manual-whatsapp-optout-release-20261112": false,
       "fix/axira-acentos-20261120": false
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/instagram-token",
+      "schedule": "17 10 * * *"
+    }
+  ]
 }
