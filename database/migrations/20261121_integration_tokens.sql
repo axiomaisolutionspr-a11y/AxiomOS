@@ -1,4 +1,5 @@
 -- Token store for third-party integrations whose tokens rotate (Instagram long-lived token).
+-- Applied 21-nov-2026 to the Vercel production branch (br-proud-frog-avxt19iu).
 -- Only the app owner role reads/writes it; no grants to other roles.
 BEGIN;
 SET LOCAL lock_timeout = '3s';
@@ -11,7 +12,15 @@ CREATE TABLE IF NOT EXISTS public.integration_tokens (
   expires_at timestamptz,
   refreshed_at timestamptz NOT NULL DEFAULT statement_timestamp()
 );
-REVOKE ALL ON public.integration_tokens FROM PUBLIC,
-  axiomos_commercial_reader, axiomos_commercial_writer, axiomos_meta_preferences_ingress;
+REVOKE ALL ON public.integration_tokens FROM PUBLIC;
+DO $$
+DECLARE r text;
+BEGIN
+  FOREACH r IN ARRAY ARRAY['axiomos_commercial_reader','axiomos_commercial_writer','axiomos_meta_preferences_ingress'] LOOP
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r) THEN
+      EXECUTE format('REVOKE ALL ON public.integration_tokens FROM %I', r);
+    END IF;
+  END LOOP;
+END $$;
 
 COMMIT;
