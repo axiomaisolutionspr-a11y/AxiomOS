@@ -1,0 +1,14 @@
+.aa-panel{font:inherit;background:linear-gradient(145deg,#101c32,#17284a);border:1px solid #365c91;border-radius:18px;padding:20px;color:#f3f8ff;max-width:850px;margin:20px 0;box-sizing:border-box}
+.aa-panel *{box-sizing:border-box}.aa-panel [hidden]{display:none!important}
+.aa-header{display:flex;gap:12px;justify-content:space-between;align-items:flex-start}.aa-title h3{font-size:21px;margin:7px 0 6px}.aa-title p{font-size:14px;color:#b5cbed;line-height:1.5;margin:0 0 16px}
+.aa-kicker{font-weight:800;letter-spacing:.1em;color:#8bbcfb}.aa-pill{white-space:nowrap;background:#1b3c64;color:#c3e0ff;border-radius:99px;font-size:12px;padding:7px 11px}
+.aa-button{background:#195fd1;color:white;border:1px solid #7caaf0;border-radius:10px;padding:11px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}.aa-button:disabled{opacity:.6;cursor:default}.aa-button:focus-visible{outline:3px solid #d7e7ff;outline-offset:3px}
+.aa-open{width:100%;margin-top:9px}.aa-body{padding-top:18px;margin-top:16px;border-top:1px solid #31547f}
+.aa-field{display:block;margin:0 0 15px}.aa-field-label,.aa-conversation-label{display:block;color:#e5f2ff;font-size:13px;font-weight:700;margin:0 0 8px}
+.aa-textarea{display:block;width:100%;border-radius:10px;border:1px solid #9fb9dd;background:white;color:#11223e;padding:12px;font:inherit;font-size:15px;resize:vertical}
+.aa-conversation{list-style:none;padding:0;margin:12px 0 16px;display:grid;gap:9px}.aa-conversation li{padding:11px;border:1px solid #3b5b8c;border-radius:10px;background:#20365a}.aa-conversation p{margin:5px 0 0;color:#e5ecff;white-space:pre-wrap;overflow-wrap:anywhere}
+.aa-conversation .aa-from-business{background:#172a48}.aa-note{font-size:12px;color:#bfd4ee;margin:12px 0}.aa-status{font-size:13px;color:#cbe8ff}
+.aa-results{display:grid;gap:12px}.aa-results h4{margin:12px 0 0;font-size:18px}
+.aa-insight,.aa-answer{border-radius:12px;border:1px solid #375983;background:#1b3050;padding:14px}.aa-insight p{margin:6px 0 0;font-size:14px;color:#d4e5fb;white-space:pre-wrap;overflow-wrap:anywhere}
+.aa-answer-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}.aa-copy{padding:7px 12px;background:#204375;font-size:12px}.aa-answer .aa-field{margin-bottom:0}
+@media(max-width:600px){.aa-panel{padding:15px}.aa-header{flex-direction:column}.aa-pill{margin:0 0 10px}.aa-title h3{font-size:19px}}
