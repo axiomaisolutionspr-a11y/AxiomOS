@@ -38,5 +38,7 @@ jobs:
         run: node --test tests/axira-asiste.test.mjs
       - name: Install dependencies with no credentials
         run: npm ci --no-fund --no-audit
+      - name: Generate Next.js route types without running a build
+        run: npx next typegen
       - name: TypeScript static check - no deployment
         run: npx tsc --noEmit
