@@ -98,6 +98,7 @@ export default async function AutopilotQaPage({ searchParams }: {
       </div>
     </header>
     <div className="mx-auto grid max-w-6xl gap-6 px-5 py-7">
+      {isQa && membership.role !== "viewer" && <Link className="inline-block rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white hover:bg-blue-800" href="/prospectos/autopilot/axira-asiste">✦ Abrir Axira Asiste · QA</Link>}
       {membership.role === "owner" && (isQa ? whatsappManualOptOutMode() === "qa" : whatsappManualOptOutMode() === "production" && whatsappManualOptOutSharesCampaignDatabase()) && commercialOfferWriterDatabase() &&
         <Link className="font-semibold text-blue-800 underline" href="/prospectos/autopilot/bajas-whatsapp">Registrar baja de WhatsApp{isQa ? " · QA" : ""}</Link>}
       {feedback.ok && <p role="status" className="rounded-xl bg-green-100 p-4 text-green-950">{feedback.ok}</p>}
