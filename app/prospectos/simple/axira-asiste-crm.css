@@ -1,0 +1,37 @@
+.axira-crm {
+  margin: 20px 0;
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid #bcd2fb;
+  background: linear-gradient(145deg, #ffffff, #f1f6ff);
+  color: #10213b;
+}
+.axira-crm-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; }
+.axira-crm-eyebrow { color: #1451a3; font-size: 12px; letter-spacing: .1em; font-weight: 800; }
+.axira-crm-heading h2 { margin: 6px 0; font-size: 24px; line-height: 1.2; }
+.axira-crm-heading p { margin: 6px 0 12px; color: #4f6380; font-size: 15px; }
+.axira-crm-qa { display: inline-flex; flex-shrink: 0; color: #245086; border-radius: 999px; background: #e1ecff; padding: 8px 12px; font-size: 12px; font-weight: 700; }
+.axira-crm-launch { width: 100%; margin-top: 4px; }
+.axira-crm-panel { margin-top: 20px; border-top: 1px solid #ccd9ed; padding-top: 20px; }
+.axira-crm-label { display: block; font-size: 14px; font-weight: 700; color: #183e70; margin-bottom: 8px; }
+.axira-crm-textarea { width: 100%; max-width: 100%; padding: 12px; color: #10213b; background: #fff; border: 1px solid #b6c8e3; border-radius: 12px; font: inherit; resize: vertical; }
+.axira-crm-textarea:focus-visible { outline: 3px solid #86b4ff; outline-offset: 2px; }
+.axira-crm-tip { color: #4f6380; font-size: 13px; margin: 10px 0 16px; }
+.axira-crm-error { padding: 12px; color: #941b1b; background: #fff1ef; border-radius: 10px; margin: 14px 0; }
+.axira-crm-result { display: grid; gap: 16px; margin-top: 20px; font-size: 15px; }
+.axira-crm-result > div:not(.axira-crm-answer) { background: #fff; border: 1px solid #dbe5f5; border-radius: 12px; padding: 14px; }
+.axira-crm-result p { margin: 6px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.axira-crm-result h3 { margin: 10px 0 0; font-size: 19px; }
+.axira-crm-result .axira-crm-next { background: #e8f2ff !important; border-color: #b8d4ff !important; }
+.axira-crm-result .axira-crm-risk { background: #fff7e9 !important; border-color: #f5dcae !important; }
+.axira-crm-answer { border-top: 1px solid #d2dded; padding-top: 15px; }
+.axira-crm-answer-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.axira-crm-answer-heading .axira-crm-label { margin: 0; }
+.axira-crm-answer-heading button { min-height: 40px; font-size: 13px; padding: 8px 12px; }
+@media (max-width: 600px) {
+  .axira-crm { padding: 18px; margin: 16px 0; }
+  .axira-crm-heading { flex-direction: column; gap: 0; }
+  .axira-crm-heading h2 { font-size: 22px; }
+  .axira-crm-qa { margin: 3px 0 12px; }
+  .axira-crm-answer-heading { align-items: flex-start; }
+}
