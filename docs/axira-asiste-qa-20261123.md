@@ -62,3 +62,19 @@ Verificar en QA:
 ## Decisión arquitectónica
 
 Axira Asiste es el nombre del copiloto integrado y Axira Agente sigue siendo la asistente que interactúa directamente con clientes. Sus permisos y rutas deben permanecer separados. El MVP comienza sin acciones externas para demostrar utilidad antes de permitir automatización.
+
+
+## Integración visual con el CRM (QA, 2026-11-23)
+
+Se añadió Axira Asiste como panel dentro de la ficha del prospecto en el CRM compartido con el demo:
+
+- El componente está montado en la misma interfaz CRM, debajo de Ver la conversación.
+- El servidor solo lo habilita para /prospectos/demo cuando VERCEL_ENV=preview y AXIRA_ASISTE_QA_ENABLED=true.
+- La vista de contactos reales /prospectos/simple no pasa el permiso y sigue sin mostrar el panel ni enviar información a la IA.
+- El panel reutiliza la API QA existente y exige su sesión individual Neon QA; el CRM demo por sí mismo no da permiso para llamadas al modelo.
+- El adaptador acepta exclusivamente datos ficticios de demostración, excluye teléfono y notas y rechaza historiales cuyo último mensaje es del negocio.
+- El cliente controla la consulta manualmente y puede revisar, editar y copiar sugerencias sin enviar mensajes.
+- No se cambió ninguna variable de entorno, llave, base, webhook, integración, DNS, token o número telefónico.
+- El diseño y las pruebas se mantienen en la rama de QA y el PR #123 continúa en borrador.
+
+Antes de llevarlo al CRM de prospectos reales se necesita una revisión separada de autorización, aislamiento de tenant, lectura de conversaciones y protección de datos personales. La integración real no está activada ni certificada.
