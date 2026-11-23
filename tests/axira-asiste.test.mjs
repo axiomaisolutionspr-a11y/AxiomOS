@@ -66,7 +66,7 @@ test("la entrada distingue datos del negocio, etapa e historial sin ejecutar ór
   assert.equal(obj.business.name, "Clínica Demo");
   assert.equal(obj.conversationChronological.at(-1).role, "customer");
   const instructions = asisteInstructions();
-  assert.match(instructions, /no se envían|no se envían desde esta función/i);
+  assert.match(instructions, /nunca se envían desde esta función/i);
   assert.match(instructions, /No inventes precios/i);
 });
 
