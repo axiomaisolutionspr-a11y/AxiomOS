@@ -1,0 +1,42 @@
+name: Axira Asiste isolated QA
+
+on:
+  push:
+    branches:
+      - feature/axira-asiste-copilot-qa-20261123
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/lib/axira-asiste.mjs"
+      - "app/api/autopilot/axira-asiste/**"
+      - "app/prospectos/autopilot/axira-asiste/**"
+      - "tests/axira-asiste.test.mjs"
+      - ".github/workflows/axira-asiste-isolated-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CI: "true"
+      VERCEL_ENV: "development"
+      AXIRA_ASISTE_QA_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Pure unit tests - no messaging or database
+        run: node --test tests/axira-asiste.test.mjs
+      - name: Install dependencies with no credentials
+        run: npm ci --no-fund --no-audit
+      - name: TypeScript static check - no deployment
+        run: npx tsc --noEmit
