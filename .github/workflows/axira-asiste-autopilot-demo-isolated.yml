@@ -1,0 +1,33 @@
+name: AxiomOS Autopilot Demo - Axira Asiste isolated QA
+
+on:
+  push:
+    branches:
+      - feature/axira-asiste-axiomos-autopilot-demo-qa-20261123
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "integrations/axiomos-autopilot-demo/**"
+      - "tests/axiomos-autopilot-demo-axira-asiste.test.mjs"
+      - ".github/workflows/axira-asiste-autopilot-demo-isolated.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Synthetic safety tests (no tokens or network)
+        run: node --test tests/axiomos-autopilot-demo-axira-asiste.test.mjs
