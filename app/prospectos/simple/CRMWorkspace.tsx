@@ -10,6 +10,7 @@ import CerrarSesionButton from "../CerrarSesionButton";
 import { saveSimpleContact, markContactReviewed, deleteSimpleContact } from "./actions";
 import AxiraAsisteCrmDemo from "./AxiraAsisteCrmDemo";
 import "./workspace.css";
+import "./axira-asiste-crm.css";
 
 type View = "inicio" | "clientes" | "seguimientos";
 type FocusFilter = "Todos" | "Sin revisar" | "Vencidos" | "Oportunidades";
