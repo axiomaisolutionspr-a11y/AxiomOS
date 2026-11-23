@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import { sendSmsAlert } from "../../lib/send-sms-alert";
 import { sendEmailAlert } from "../../lib/send-email-alert";
+import { callSourceFor } from "../../lib/whatsapp-call-source";
 
 export const runtime = "nodejs";
 
@@ -475,7 +476,7 @@ export async function POST(request: NextRequest) {
         ${nextAction},
         ${conversationId},
         ${callControlId},
-        ${"Telnyx AxiomAI Receptionist"},
+        ${callSourceFor(metadata)},
         ${JSON.stringify(webhook)}::jsonb,
         ${prospectId}
       WHERE NOT EXISTS (
