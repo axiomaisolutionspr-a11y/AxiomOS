@@ -52,10 +52,15 @@ export async function POST(request: NextRequest) {
   }
   if (!input.ok) return reply({ error: input.error }, 400);
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  const model = process.env.AXIRA_ASISTE_MODEL_QA || process.env.OPENAI_MODEL;
+  // Fail closed: a generic OpenAI key/model may be shared with production.
+  // Do not call any provider until an operator confirms isolated QA credentials.
+  if (process.env.AXIRA_ASISTE_QA_PROVIDER_ISOLATED !== "true") {
+    return reply({ error: "El proveedor de IA QA no está certificado como aislado." }, 503);
+  }
+  const apiKey = process.env.AXIRA_ASISTE_OPENAI_API_KEY_QA;
+  const model = process.env.AXIRA_ASISTE_MODEL_QA;
   if (!apiKey || !model) {
-    return reply({ error: "La IA QA no tiene proveedor o modelo configurado." }, 503);
+    return reply({ error: "Falta la configuración dedicada del proveedor de IA QA." }, 503);
   }
 
   try {
