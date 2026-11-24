@@ -9,7 +9,7 @@ No declarar certificación ni funcionamiento productivo hasta completar pruebas 
 ## Alcance actual (MVP QA)
 
 - /prospectos/autopilot/axira-asiste: formulario de conocimiento del negocio y conversación introducidos manualmente, análisis, tres borradores editables, consejo comercial y siguiente paso.
-- /api/autopilot/axira-asiste: sugerencias de IA exclusivamente en modo Preview + autenticación comercial QA.
+- /api/autopilot/axira-asiste: la ruta exige Preview + autenticación comercial QA; las llamadas al proveedor quedan bloqueadas salvo que exista una clave/modelo QA dedicados y la variable AXIRA_ASISTE_QA_PROVIDER_ISOLATED=true.
 - app/lib/axira-asiste.mjs: validación estricta de entrada, contexto y salida de modelo.
 - No se consulta la tabla productiva prospects, no se toca DATABASE_URL, no se sincroniza Meta/WhatsApp/Telnyx.
 - No hay envíos, aprobaciones persistidas, tareas ni escritura de base de datos. Copiar solo utiliza el portapapeles local.
@@ -23,7 +23,7 @@ La ruta y la pantalla permanecen inaccesibles salvo que se cumplan todas estas c
 2. AXIRA_ASISTE_QA_ENABLED=true en un Preview QA autorizado, nunca en producción.
 3. Identidad individual Neon QA correctamente configurada (AXIOMOS_INDIVIDUAL_AUTH_QA_ENABLED=true y credenciales QA ya aisladas).
 4. El usuario tiene membresía activa owner u operator; viewer no puede usar el servicio.
-5. OPENAI_API_KEY y AXIRA_ASISTE_MODEL_QA (o OPENAI_MODEL) están disponibles en el entorno Preview autorizado.
+5. AXIRA_ASISTE_OPENAI_API_KEY_QA, AXIRA_ASISTE_MODEL_QA y AXIRA_ASISTE_QA_PROVIDER_ISOLATED=true están establecidos únicamente después de confirmar que la credencial y el proveedor son exclusivos de QA. No se usan OPENAI_API_KEY ni OPENAI_MODEL como respaldo.
 
 No cambiar llaves, tokens, URLs de bases de datos, permisos o variables existentes sin autorización separada. Si la configuración de QA no está completa, el módulo falla cerrado.
 
