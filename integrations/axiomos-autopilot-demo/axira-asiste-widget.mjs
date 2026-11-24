@@ -3,7 +3,7 @@ import { DEMO_SECTORS, safeDemoSuggestions, validateDemoConversation, validateSu
 /**
  * UI de Axira Asiste diseñada como complemento de la ficha de AxiomOS Autopilot DEMO.
  * Se monta por decisión explícita del código fuente de la app. NO se ejecuta al importarla.
- * No usa fetch, secretos, cookies, localStorage, SMS ni mensajería.
+ * No realiza solicitudes de red, no usa credenciales ni almacena información de sesión.
  *
  * mountAxiraAsisteDemo({ container: document.getElementById("..."), initial: {
  *   sector: "dealer", businessFacts: "...", messages: [{ by: "cliente", text: "..." }]
