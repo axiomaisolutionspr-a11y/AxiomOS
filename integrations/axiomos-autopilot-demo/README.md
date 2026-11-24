@@ -6,7 +6,7 @@ Estado: código portable de integración SOLO QA, todavía NO incorporado al des
 
 ## Auditoría de origen
 
-Se identificó el despliegue Vercel dpl_jNPp9BGuHbpv3FTnb6eoGLAQSpQQ con alias axiomos-autopilot-demo.vercel.app, construido a partir de archivos estáticos, entre ellos src/index.html y las partes comprimidas src/c0.bin, src/c1.bin, src/c2.bin, src/c3.bin. El origen editable completo no figura en el repositorio principal GitHub AxiomOS ni apareció enlazado en la metadata del despliegue. La lectura de los fragmentos compilados desde el conector devuelve datos truncados.
+Se identificó el despliegue Vercel dpl_jNPp9BGuHbpv3FTnb6eoGLAQSpQQ con alias axiomos-autopilot-demo.vercel.app. La metadata consultada informa framework=null y no muestra metadatos Git. El árbol de archivos del despliegue contiene src/index.html, src/logo.webp y src/c0.bin–src/c3.bin. Esto confirma el contenido publicado observado, pero no demuestra cómo se compiló ni que la aplicación sea estática. El código editable completo no se identificó en el repositorio AxiomOS ni en los repositorios GitHub accesibles; por ello, falta localizar la fuente original. No se recuperó el contenido completo de los archivos binarios para reconstruirla.
 
 No es seguro sustituir un sitio compilado sin su fuente completa y sin comprobar la compilación resultante. No sobrescribir ni reconstruir archivos productivos a partir de fragmentos.
 
