@@ -8,7 +8,9 @@ import { authorizeSimpleCalls, checkSimpleCallAuthorization, startSimpleCall } f
 import WhatsAppAvisos from "../WhatsAppAvisos";
 import CerrarSesionButton from "../CerrarSesionButton";
 import { saveSimpleContact, markContactReviewed, deleteSimpleContact } from "./actions";
+import AxiraAsisteCrmDemo from "./AxiraAsisteCrmDemo";
 import "./workspace.css";
+import "./axira-asiste-crm.css";
 
 type View = "inicio" | "clientes" | "seguimientos";
 type FocusFilter = "Todos" | "Sin revisar" | "Vencidos" | "Oportunidades";
@@ -31,7 +33,7 @@ function Icon({name,size=22}:{name:string;size?:number}) {
   const paths:Record<string,string> = {home:"M3 10 12 3l9 7v10h-6v-7H9v7H3Z",users:"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M20 8v6M17 11h6",clock:"M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0",chat:"M21 11.5a8 8 0 0 1-8 8H5l-4 3 2-6a8 8 0 1 1 18-5Z",arrow:"M5 12h14m-6-6 6 6-6 6",check:"m5 12 4 4L19 6",search:"M21 21l-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0",spark:"m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z",reset:"M3 10a9 9 0 1 1 2 9M3 3v7h7",close:"m6 6 12 12M6 18 18 6"};
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name] || paths.spark}/></svg>;
 }
-export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";initialContacts:Contact[]}) {
+export default function CRMWorkspace({mode,initialContacts,axiraAsisteQaEnabled=false}:{mode:"live"|"demo";initialContacts:Contact[];axiraAsisteQaEnabled?:boolean}) {
   const router=useRouter();
   const [sector,setSector]=useState<Sector>("optica");
   const [demoRows,setDemoRows]=useState<Contact[]>(()=>demoContacts("optica"));
@@ -188,6 +190,7 @@ export default function CRMWorkspace({mode,initialContacts}:{mode:"live"|"demo";
         </form>}
         {calling&&(!callAuthorized&&mode==="live"?<form className="simple-form" onSubmit={authorizeCalls}><h2>Autorizar llamadas</h2><p>Introduce el PIN de llamada en el formulario privado. Verificarlo no inicia ninguna llamada.</p><label>PIN de llamada<input name="crm_call_pin" type="password" inputMode="numeric" autoComplete="current-password" required/></label><div className="simple-actions"><button type="submit" className="simple-button primary" disabled={saving}>{saving?"Verificando…":"Autorizar llamadas"}</button><button type="button" className="simple-button secondary" disabled={saving} onClick={()=>setCalling(false)}>Cancelar</button></div></form>:<form className="simple-form" onSubmit={placeCall}><h2>Llamar con AxiomAI</h2><p>{mode==="demo"?"Ejemplo de llamada del asistente. No contacta a nadie.":`El asistente llamará a ${selected.name} al ${selected.phone}.`}</p>{mode==="live"&&<p className="simple-help">PIN verificado. La llamada todavía no se ha iniciado.</p>}<input type="hidden" name="id" value={selected.id}/><div className="simple-actions"><button type="submit" className="simple-button primary" disabled={saving}>{saving?"Iniciando…":mode==="demo"?"Simular llamada":"Iniciar llamada"}</button><button type="button" className="simple-button secondary" disabled={saving} onClick={()=>setCalling(false)}>Cancelar</button></div></form>)}
         <details className="simple-history" open={mode==="demo" && selected.id.startsWith("flow-") || undefined}><summary>Ver la conversación</summary><div className="simple-messages">{selected.messages.length===0?<p>No hay conversación guardada.</p>:[...selected.messages].reverse().map(m=><article className={m.incoming?"incoming":"outgoing"} key={m.id}><strong>{m.incoming?displayContactName(selected):"Brain"}</strong><p>{m.text}</p><small>{dateLabel(m.at)}</small></article>)}</div></details>
+        {mode==="demo" && axiraAsisteQaEnabled && <AxiraAsisteCrmDemo key={selected.id+"-"+sector} contact={selected} sector={sector} />}
         <details className="simple-history"><summary>Ver notas y más detalles</summary><p className="simple-notes">{selected.notes||"Sin notas adicionales."}</p><p>Estado: {selected.stage} · Responsable: {selected.assignee||"Sin asignar"}</p><button type="button" disabled={saving} className="simple-button secondary" onClick={()=>openForm("details")}>Editar estos datos</button>
           {mode==="live"&&<div className="simple-delete-zone">{!confirmingDelete?<button type="button" disabled={saving} className="simple-button danger-outline" onClick={()=>setConfirmingDelete(true)}>Eliminar contacto</button>:<><p><strong>Esta acción es permanente.</strong> Eliminará el contacto y sus llamadas asociadas del CRM. Los mensajes originales de WhatsApp se conservarán para no alterar Brain.</p><div className="simple-actions"><button type="button" disabled={saving} className="simple-button danger" onClick={deleteContact}>{saving?"Eliminando…":"Eliminar definitivamente"}</button><button type="button" disabled={saving} className="simple-button secondary" onClick={()=>setConfirmingDelete(false)}>Cancelar</button></div></>}</div>}
         </details>
