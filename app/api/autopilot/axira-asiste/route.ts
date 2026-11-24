@@ -4,6 +4,7 @@ import { commercialIdentityDatabase, commercialMember } from "../../../lib/comme
 import {
   AXIRA_ASISTE_SCHEMA, asisteInstructions, asisteModelInput,
   extractAsisteText, parseAsisteModelOutput, validateAsisteRequest,
+  getAsisteQaProviderConfig,
 } from "../../../lib/axira-asiste.mjs";
 
 export const runtime = "nodejs";
@@ -52,16 +53,11 @@ export async function POST(request: NextRequest) {
   }
   if (!input.ok) return reply({ error: input.error }, 400);
 
-  // Fail closed: a generic OpenAI key/model may be shared with production.
-  // Do not call any provider until an operator confirms isolated QA credentials.
-  if (process.env.AXIRA_ASISTE_QA_PROVIDER_ISOLATED !== "true") {
-    return reply({ error: "El proveedor de IA QA no está certificado como aislado." }, 503);
+  const provider = getAsisteQaProviderConfig();
+  if (!provider) {
+    return reply({ error: "El proveedor de IA QA no está configurado y certificado como aislado." }, 503);
   }
-  const apiKey = process.env.AXIRA_ASISTE_OPENAI_API_KEY_QA;
-  const model = process.env.AXIRA_ASISTE_MODEL_QA;
-  if (!apiKey || !model) {
-    return reply({ error: "Falta la configuración dedicada del proveedor de IA QA." }, 503);
-  }
+  const { apiKey, model } = provider;
 
   try {
     const upstream = await fetch("https://api.openai.com/v1/responses", {
