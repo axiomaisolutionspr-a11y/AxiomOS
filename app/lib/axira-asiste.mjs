@@ -22,6 +22,14 @@ export const AXIRA_ASISTE_SCHEMA = {
   },
 };
 
+// Provider calls require a dedicated QA key and explicit operator attestation.
+export function getAsisteQaProviderConfig(env = process.env) {
+  if (env.AXIRA_ASISTE_QA_PROVIDER_ISOLATED !== "true") return null;
+  const apiKey = env.AXIRA_ASISTE_OPENAI_API_KEY_QA;
+  const model = env.AXIRA_ASISTE_MODEL_QA;
+  return apiKey && model ? { apiKey, model } : null;
+}
+
 const CHANNELS = new Set(["whatsapp", "instagram", "messenger", "sms", "manual"]);
 const ROLES = new Set(["customer", "business"]);
 const STAGES = new Set([
