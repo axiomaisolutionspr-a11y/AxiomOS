@@ -77,3 +77,20 @@ test("lee la salida de Responses API y rechaza salidas vacías", () => {
   }), "respuesta");
   assert.equal(extractAsisteText({ output: [] }), "");
 });
+
+test("provider config ignores generic credentials and fails closed without QA attestation", async () => {
+  const { getAsisteQaProviderConfig } = await import("../app/lib/axira-asiste.mjs");
+  assert.equal(getAsisteQaProviderConfig({
+    OPENAI_API_KEY: "shared-or-unknown",
+    OPENAI_MODEL: "generic-model",
+  }), null);
+  assert.equal(getAsisteQaProviderConfig({
+    AXIRA_ASISTE_OPENAI_API_KEY_QA: "qa-key",
+    AXIRA_ASISTE_MODEL_QA: "qa-model",
+  }), null);
+  assert.deepEqual(getAsisteQaProviderConfig({
+    AXIRA_ASISTE_QA_PROVIDER_ISOLATED: "true",
+    AXIRA_ASISTE_OPENAI_API_KEY_QA: "qa-key",
+    AXIRA_ASISTE_MODEL_QA: "qa-model",
+  }), { apiKey: "qa-key", model: "qa-model" });
+});
