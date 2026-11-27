@@ -32,3 +32,11 @@ test("fallback never presents unverified terms as current and supports both lang
     assert.match(reply, /confirmar|confirm/i);
   }
 });
+
+test("routes a plan name reply after a price question to the verified catalog", async () => {
+  const { isUnverifiedOfferQuestion } = await import("../app/lib/commercial-guard.mjs");
+  const history = [{ role: "user", text: "Que precios tienen?" }, { role: "assistant", text: "Plan Básico: $9.99/mes" }];
+  assert.equal(isUnverifiedOfferQuestion("El plan básico", history), true);
+  assert.equal(isUnverifiedOfferQuestion("El plan básico", []), false);
+  assert.equal(isUnverifiedOfferQuestion("Prueba Axira", history), false);
+});

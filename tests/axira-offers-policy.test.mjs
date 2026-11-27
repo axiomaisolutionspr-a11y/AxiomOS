@@ -125,3 +125,18 @@ test("the pilot fails closed on production, the legacy database, or an unapprove
   assert.equal(commercialOffersDatabase({ ...env, AXIRA_OFFERS_QA_DATABASE_URL: env.AXIRA_OFFERS_QA_DATABASE_URL.replace("axiomos_offers_qa", "neondb") }), null);
   assert.equal(commercialOffersDatabase({ ...env, DATABASE_URL: "postgresql://app:qa@ep-test.example/neondb" }), null);
 });
+
+test("lists every plan with its price for catalog questions and details the plan the customer names", () => {
+  const basic = { ...offer, id: "10", name: "Plan Básico AxiomOS", product_key: "whatsapp", normal_cents: 1795,
+    promo_cents: 999, activation_cents: 0, terms_es: "Incluye Axira.", external_es: "Cargos de Meta aparte." };
+  const pro = { ...basic, id: "11", name: "Plan Pro AxiomOS", product_key: "crm", normal_cents: 2999, promo_cents: 2999 };
+  const both = catalog([basic, pro]);
+  const list = formatOffersReply(both, { now: activeTime, message: "Que precios tienen?" });
+  assert.match(list, /Plan Básico AxiomOS: \$9\.99\/mes \(regular \$17\.95\)/);
+  assert.match(list, /Plan Pro AxiomOS: \$29\.99\/mes\./);
+  assert.match(list, /Sin cargo de activación/);
+  assert.doesNotMatch(list, /^WhatsApp ·/);
+  assert.match(formatOffersReply(both, { now: activeTime, message: "El plan básico" }), /^Plan Básico AxiomOS · \$9\.99/);
+  assert.match(formatOffersReply(both, { now: activeTime, message: "El pro" }), /^Plan Pro AxiomOS · \$29\.99\/mes\. Sin cargo/);
+  assert.doesNotMatch(formatOffersReply(both, { now: activeTime, message: "Cuánto cuesta pintar un apartamento" }), /\$/);
+});
