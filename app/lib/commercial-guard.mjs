@@ -3,7 +3,7 @@ const normalize = (value) => String(value ?? "").normalize("NFD")
   .replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 const priceQuestion = /\b(?:ofertas?|promocion(?:es)?|promos?|descuentos?|precios?|tarifas?|costos?|cuesta(?:n)?|cuanto (?:vale|cuesta|cobran)|offers?|promotions?|deals?|discounts?|pric(?:e|es|ing)|costs?|how much)\b/;
-const followUp = /\b(?:hasta cuando|sigue(?: vigente)?|todavia|vence|vencimiento|la de|el de|still|that one|until when|expires?|when does it end)\b/;
+const followUp = /\b(?:hasta cuando|sigue(?: vigente)?|todavia|vence|vencimiento|la de|el de|plan(?:es)?|basico|pro|premium|still|that one|until when|expires?|when does it end)\b/;
 const money = /[$€£]|\b(?:usd|d[oó]lares?|dollars?|centavos?|cents)\b|\b\d{1,6}[.,]\d{2}\b/i;
 const monthlyAmount = /\b\d{1,6}(?:[.,]\d{1,2})?\s*(?:al mes|por mes|mensuales?|\/mes|per month|monthly)\b/i;
 

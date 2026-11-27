@@ -19,12 +19,14 @@ const PRODUCT_ALIASES = {
   integraciones: ["integracion", "integraciones", "integration", "integrations"],
 };
 
+const catalogQuestion = / (?:tienen|ofrecen|manejan|planes|plan|sus precios|que precios|cuales son|lista|catalogo|ofertas|promociones|you have|do you offer|plans|your prices|what prices|offers|deals) /;
+const GENERIC_NAME_WORDS = new Set(["plan", "axiomos", "axiomai", "de", "del", "el", "la"]);
 const PUERTO_RICO = "America/Puerto_Rico";
 const MAX_MONEY = /^(?:0|[1-9]\d{0,5})(?:\.(\d{1,2}))?$/;
 const normalize = (value) => String(value ?? "").normalize("NFD")
   .replace(/[\u0300-\u036f]/g, "").toLowerCase();
 const commercialWords = /\b(?:ofertas?|promocion(?:es)?|promos?|descuentos?|especiales?|precios?|tarifas?|costos?|cuesta(?:n)?|offers?|promotions?|deals?|specials?|discounts?|pric(?:e|es|ing)|costs?|how much)\b/;
-const followUp = /\b(?:hasta cuando|hasta que dia|sigue(?: vigente)?|todavia|vence|vencimiento|la de|el de|still|that one|until when|expires?|when does it end)\b/;
+const followUp = /\b(?:hasta cuando|hasta que dia|sigue(?: vigente)?|todavia|vence|vencimiento|la de|el de|plan(?:es)?|basico|pro|premium|still|that one|until when|expires?|when does it end)\b/;
 const moneyMention = /[$€£]|\b(?:usd|d[oó]lares?|dollars?|centavos?|cents)\b|\b\d{1,6}[.,]\d{2}\b/i;
 
 export function puertoRicoLocalDateTime(now = new Date()) {
@@ -153,7 +155,10 @@ export function formatOffersReply(catalog, { language = "es", message = "", hist
     requested.push(...Object.entries(PRODUCT_ALIASES).filter(([, aliases]) =>
       aliases.some((alias) => context.includes(` ${alias} `))));
   }
-  const names = active.filter((offer) => query.includes(` ${normalize(offer.name).replace(/[^a-z0-9]+/g, " ")} `));
+  const names = active.filter((offer) => {
+    const words = normalize(offer.name).split(/[^a-z0-9]+/).filter((word) => word && !GENERIC_NAME_WORDS.has(word));
+    return words.length > 0 && words.every((word) => query.includes(` ${word} `));
+  });
   const offers = names.length ? names : requested.length
     ? active.filter((offer) => requested.some(([key]) => key === offer.product_key)) : active;
   if (!offers.length) {
@@ -161,10 +166,31 @@ export function formatOffersReply(catalog, { language = "es", message = "", hist
       : "Para esa consulta no tenemos una promoción vigente confirmada. Podemos prepararte una cotización.";
   }
   if (offers.length > 1 || (!requested.length && !names.length)) {
-    const list = offers.map((offer) =>
-      `${OFFER_PRODUCTS[offer.product_key]} · ${english ? "ends" : "vence"} ${offerEnd(offer.ends_at, english)} (PR)`).join(". ");
-    const result = english ? `${list}. Which service would you like pricing and terms for?`
-      : `${list}. ¿De qué servicio quieres los precios y las condiciones?`;
+    if (!catalogQuestion.test(query)) {
+      const names = offers.map((offer) => offer.name).join(", ");
+      const result = english ? `Our current plans are ${names}. Which one would you like pricing and terms for?`
+        : `Nuestros planes vigentes son ${names}. ¿De cuál quieres los precios y las condiciones?`;
+      if (result.length <= maxChars) return result;
+      return english ? "Which service would you like us to check pricing and terms for?"
+        : "¿De qué servicio quieres que verifiquemos los precios y las condiciones?";
+    }
+    const list = offers.map((offer) => {
+      const regular = offer.normal_cents > offer.promo_cents
+        ? (english ? ` (regular ${offerMoney(offer.normal_cents)})` : ` (regular ${offerMoney(offer.normal_cents)})`) : "";
+      return `${offer.name}: ${offerMoney(offer.promo_cents)}/${english ? "mo" : "mes"}${regular}`;
+    }).join(". ");
+    const sameEnd = offers.every((offer) => offer.ends_at === offers[0].ends_at);
+    const noSetup = offers.every((offer) => Number(offer.activation_cents) === 0);
+    const sameTax = offers.every((offer) => offer.tax_included === offers[0].tax_included);
+    const extras = [
+      noSetup ? (english ? "No setup fee." : "Sin cargo de activación.") : "",
+      sameTax ? (english ? (offers[0].tax_included ? "Tax included." : "Tax extra.")
+        : (offers[0].tax_included ? "Impuestos incluidos." : "Impuestos aparte.")) : "",
+      sameEnd ? (english ? `Ends ${offerEnd(offers[0].ends_at, true)} (Puerto Rico time).`
+        : `Vence el ${offerEnd(offers[0].ends_at, false)} (hora de Puerto Rico).`) : "",
+    ].filter(Boolean).join(" ");
+    const result = english ? `${list}. ${extras} Which one would you like the full details for?`
+      : `${list}. ${extras} ¿De cuál quieres todos los detalles?`;
     if (result.length <= maxChars) return result;
     return english ? "Which service would you like us to check pricing and terms for?"
       : "¿De qué servicio quieres que verifiquemos los precios y las condiciones?";
@@ -183,8 +209,12 @@ export function formatOffersReply(catalog, { language = "es", message = "", hist
   const tax = english ? (offer.tax_included ? "Tax included." : "Tax extra.")
     : (offer.tax_included ? "Impuestos incluidos." : "Impuestos aparte.");
   const capacity = !offer.max_clients ? "" : english ? " Availability must be confirmed." : " Cupos sujetos a confirmación.";
+  const regularText = offer.normal_cents > offer.promo_cents ? ` (regular ${regular})` : "";
+  const setup = Number(offer.activation_cents) === 0
+    ? (english ? "No setup fee." : "Sin cargo de activación.")
+    : (english ? `Setup ${activation}.` : `Activación ${activation}.`);
   const result = english
-    ? `${offer.name} · ${price}/mo (regular ${regular}). Setup ${activation}. Ends ${expiry} (Puerto Rico time). ${tax} Terms. ${terms} External charges. ${external}${capacity}`
-    : `${offer.name} · ${price}/mes (regular ${regular}). Activación ${activation}. Vence el ${expiry} (hora de Puerto Rico). ${tax} Condiciones. ${terms} Gastos externos. ${external}${capacity}`;
+    ? `${offer.name} · ${price}/mo${regularText}. ${setup} ${tax} ${terms} ${external} Ends ${expiry} (Puerto Rico time).${capacity}`
+    : `${offer.name} · ${price}/mes${regularText}. ${setup} ${tax} ${terms} ${external} Vence el ${expiry} (hora de Puerto Rico).${capacity}`;
   return result.length <= maxChars ? result : fallback;
 }
