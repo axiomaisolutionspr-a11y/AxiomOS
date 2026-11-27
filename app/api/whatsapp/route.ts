@@ -841,6 +841,7 @@ export async function POST(
                           ${conversationKey},
                           ${legacyConversationKey}
                         )
+                        AND created_at > NOW() - INTERVAL '72 hours'
                         ORDER BY created_at DESC, id DESC
                         LIMIT 24
                       `
@@ -849,6 +850,7 @@ export async function POST(
                         FROM whatsapp_messages
                         WHERE conversation_key =
                           ${conversationKey}
+                        AND created_at > NOW() - INTERVAL '72 hours'
                         ORDER BY created_at DESC, id DESC
                         LIMIT 24
                       `;
@@ -990,6 +992,7 @@ export async function POST(
                       ${conversationKey},
                       ${legacyConversationKey}
                     )
+                    AND created_at > NOW() - INTERVAL '72 hours'
                     ORDER BY
                       created_at DESC,
                       id DESC
@@ -1002,6 +1005,7 @@ export async function POST(
                     FROM whatsapp_messages
                     WHERE conversation_key =
                       ${conversationKey}
+                    AND created_at > NOW() - INTERVAL '72 hours'
                     ORDER BY
                       created_at DESC,
                       id DESC
